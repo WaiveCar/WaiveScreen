@@ -1,0 +1,2 @@
+ATTRS{idProduct}=="7523", ATTRS{idVendor}=="1a86", MODE="664", GROUP="dialout" SYMLINK+="ttyACM0"
+

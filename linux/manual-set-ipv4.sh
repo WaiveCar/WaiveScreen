@@ -3,6 +3,7 @@
 # TODO: All of this in DBUS one day
 #
 
+sudo mmcli -m 0 --location-enable-gps-raw --location-enable-gps-nmea
 sudo mmcli -m 0 --simple-connect="apn=internet"
 wwan=`ip addr show | grep wwp | head -1 | awk -F ':' ' { print $2 } '`
 
@@ -15,7 +16,9 @@ eval `mmcli -b 0 | grep -A 3 IPv4| awk -F '|' ' { print $2 } ' | sed s'/: /=/' |
 sudo ip addr add $address/$prefix  dev $wwan
 sudo ip route add default via $gateway dev $wwan
 
-cat > /etc/resolv.conf << ENDL
+cat << ENDL | sudo tee /etc/resolv.conf
 nameserver 8.8.8.8
 nameserver 4.2.2.1
+nameserver 2001:4860:4860::8888 
+nameserver 2001:4860:4860::8844
 ENDL
