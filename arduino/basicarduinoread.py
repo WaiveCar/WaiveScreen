@@ -1,9 +1,17 @@
+#!/usr/bin/env python3
 import serial
 import time
 import math
 import struct
+import sys
 
-arduino = serial.Serial('COM6', 9600, timeout=0.1)
+if sys.platform == "linux" or sys.platform == "linux2":
+    comPort = '/dev/ttyACM0'
+else:
+    comPort = 'COM6'
+
+arduino = serial.Serial(comPort, 9600, timeout=0.1)
+sys.exit(0)
 time.sleep(3)
 arduino.readall()
 for _ in range(10):
@@ -40,16 +48,16 @@ for _ in range(10):
     if backlight_value < 255:
         arduino.write('\x10'+struct.pack('B',backlight_value + 20))
     time.sleep(.5)
-    print 'Header: {}'.format(header)
-    print 'current_read: {}'.format(current_read)
-    print 'Current: {} A'.format(current)
-    print 'Thermistor read: {}'.format(therm_read)
-    print 'Thermistor resistance: {} Ohm'.format(therm_resistance)
-    print 'Temperature: {} C'.format(temp_c)
-    print 'Accel X: {}, Y: {}, Z: {}'.format(accel_x, accel_y, accel_z)
-    print 'Pitch: {} deg, Roll: {} deg, Yaw: {} deg'.format(pitch, roll, yaw)
-    print 'Gyro X: {}, Y: {}, Z: {}'.format(gyro_x, gyro_y, gyro_z)
-    print 'Fan Speed: {}'.format(fan_speed)
-    print 'Backlight_brightness: {}'.format(backlight_value)
+    print('Header: {}'.format(header))
+    print('current_read: {}'.format(current_read))
+    print('Current: {} A'.format(current))
+    print('Thermistor read: {}'.format(therm_read))
+    print('Thermistor resistance: {} Ohm'.format(therm_resistance))
+    print('Temperature: {} C'.format(temp_c))
+    print('Accel X: {}, Y: {}, Z: {}'.format(accel_x, accel_y, accel_z))
+    print('Pitch: {} deg, Roll: {} deg, Yaw: {} deg'.format(pitch, roll, yaw))
+    print('Gyro X: {}, Y: {}, Z: {}'.format(gyro_x, gyro_y, gyro_z))
+    print('Fan Speed: {}'.format(fan_speed))
+    print('Backlight_brightness: {}'.format(backlight_value))
 
 arduino.close()
