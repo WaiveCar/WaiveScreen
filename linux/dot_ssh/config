@@ -1,0 +1,4 @@
+Host  home
+  User  screen
+  Hostname  static-real.waivecar.com
+  IdentityFile ~/.ssh/phoneHome
