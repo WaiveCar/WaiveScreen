@@ -99,9 +99,6 @@ void loop() {
     delay(10);
     if (selector == 0x01){
       // set fan speed, min viable setting for 8x fans is 102/255 (40% duty cycle)
-      if (setting < 102){
-        setting = 102
-      }
       fanSpeed = setting;
     }
     else if (selector == 0x10){
