@@ -1,0 +1,12 @@
+/var/log/screen
+{
+	rotate 180
+	daily
+	missingok
+	dateext
+	dateformat %Y%m%d
+	notifempty
+	delaycompress
+	compress
+}
+
