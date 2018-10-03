@@ -11,21 +11,22 @@ else:
     comPort = 'COM6'
 
 arduino = serial.Serial(comPort, 9600, timeout=0.1)
-sys.exit(0)
+# sys.exit(0)
 time.sleep(3)
-arduino.readall()
 for _ in range(10):
-    arduino.readall()
-    time.sleep(1)
+    # first byte is the header
     header = ord(arduino.read())
-    time_ms = (ord(arduino.read())<<24) + (ord(arduino.read())<<16) + (ord(arduino.read())<<8) + (ord(arduino.read()))
-    current_read = (ord(arduino.read())) + (ord(arduino.read())<<8)
+    # next 4 byte are the time
+    time_ms = (ord(arduino.read())) + (ord(arduino.read())<<8) + (ord(arduino.read())<<16) + (ord(arduino.read())<<24)
+    # 2 bytes for current and thermistor readings
+    current_read = (ord(arduino.read())<<8) + (ord(arduino.read()))
     current = 73.3*current_read/1023 - 36.7
-    therm_read = (ord(arduino.read())) + (ord(arduino.read()) << 8)
+    therm_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
     therm_resistance = (1023.0/therm_read - 1) * 100000
     temp_c = therm_resistance/100000
     temp_c = math.log(temp_c)/3950 + (1/(25 + 273.13))
     temp_c = 1/temp_c - 273.15
+    # 2 bytes each for accel x, y, z, and gyro x, y, and z
     accel_x = (ord(arduino.read()) << 8) + (ord(arduino.read()))
     accel_x = -1*(0xFFFF - accel_x) if accel_x > 0x8000 else accel_x
     accel_y = (ord(arduino.read()) << 8) + (ord(arduino.read()))
@@ -42,13 +43,9 @@ for _ in range(10):
     gyro_z = (ord(arduino.read()) << 8) + (ord(arduino.read()))
     gyro_z = -1*(0xFFFF - gyro_z) if gyro_z > 0x8000 else gyro_z
     fan_speed = ord(arduino.read())
-    if fan_speed < 255:
-        arduino.write('\x01'+struct.pack('B',fan_speed+10))
     backlight_value = ord(arduino.read())
-    if backlight_value < 255:
-        arduino.write('\x10'+struct.pack('B',backlight_value + 20))
-    time.sleep(.5)
     print('Header: {}'.format(header))
+    print('Timestamp: {}ms'.format(time_ms))
     print('current_read: {}'.format(current_read))
     print('Current: {} A'.format(current))
     print('Thermistor read: {}'.format(therm_read))
@@ -59,5 +56,6 @@ for _ in range(10):
     print('Gyro X: {}, Y: {}, Z: {}'.format(gyro_x, gyro_y, gyro_z))
     print('Fan Speed: {}'.format(fan_speed))
     print('Backlight_brightness: {}'.format(backlight_value))
+    time.sleep(.1)
 
 arduino.close()
