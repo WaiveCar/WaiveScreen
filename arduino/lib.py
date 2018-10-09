@@ -20,23 +20,35 @@ def get_arduino():
 
 # arduino.close()
 
-iface = false
-def get_gps():
+iface = False
+def get_iface(num = False):
     global iface
-    if !iface:
-        bus = dbus.SystemBus()
-        proxy = bus.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/Modem/0')
-        iface = {
-            'location': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Location'),
-            'time': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Time')
-        }
+    if num == False and iface != False:
+        return iface
 
-    location = iface['location'].GetLocation()
-    networktime = iface['time'].GetNetworkTime()
+    print("Trying modem {}".format(num))
+    proxy = bus.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/Modem/{}'.format(num))
+    iface = {
+        'location': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Location'),
+        'time': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Time'),
+        'ix': num
+    }
+    return iface
+
+def get_gps():
+    iface = get_iface()
+
+    try: 
+        location = iface['location'].GetLocation()
+        networktime = iface['time'].GetNetworkTime()
+    except:
+        iface = next_iface(iface['ix'] + 1)
 
     return {
+        'altitude': location[2]['altitude']
         'latitude': location[2]['latitude']
         'longitude': location[2]['longitude'],
+        'gps_time': location[2]['utc-time'],
         'time': networktime[0]
     }
 
