@@ -37,7 +37,7 @@ def nominal_operation(arduino):
             df.loc[i] = received_dict
             i += 1
             voltage = received_dict['Voltage']
-            print received_dict
+            print(received_dict)
     now = time.localtime()
     log_name += '-{}.{}.{}.{}.{}.{}'.format(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min,
                                             now.tm_sec)
@@ -57,7 +57,7 @@ def nominal_operation(arduino):
         if received_dict != -1:
             voltage = received_dict['Voltage']
             current = received_dict['Current']
-            print voltage, current
+            print (voltage, current)
 
     return received_dict
 
@@ -66,7 +66,7 @@ def read_until_empty(arduino):
     arduino = arduino
     while arduino.in_waiting > 0:
         received_dict = arduino_read(arduino)
-    return received_dict
+    return 0
 
 
 def set_fanspeed(arduino, value):
@@ -92,12 +92,12 @@ def send_wakeup_signal(arduino):
 
 
 def send_sleep_signal():
-    print time.localtime()
+    print (time.localtime())
     if sys.platform == "linux" and sys.platform == "linux2":
         os.system("sudo acpitool -s")
     else:
         os.system("rundll32.exe powrprof.dll,SetSuspendState sleep")
-    print time.localtime()
+    print (time.localtime())
 
 
 def arduino_read(arduino):
@@ -127,7 +127,7 @@ def arduino_read(arduino):
     r2 = 68000.0
     voltage = voltage_read / 1023.0 * v_ref
     v_in = voltage * (r1 / r2 + 1)
-    arduino.iread_until()
+
     therm_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
     try:
         therm_resistance = (1023.0 / therm_read - 1) * 100000
