@@ -51,13 +51,12 @@ def nominal_operation(arduino):
         send_sleep_signal()
         set_backlight(arduino, backlight_value)
 
-
     while current < 1:
         received_dict = arduino_read(arduino)
         if received_dict != -1:
             voltage = received_dict['Voltage']
             current = received_dict['Current']
-            print (voltage, current)
+            print(voltage, current)
 
     return received_dict
 
@@ -73,31 +72,32 @@ def set_fanspeed(arduino, value):
     fan_speed = value
     if fan_speed > 255:
         fan_speed = 255
-    arduino.write('\x01{}'.format(struct.pack('!B', fan_speed)))
+    arduino.write(b'\x01{}'.format(struct.pack('!B', fan_speed)))
 
 
 def set_fan_auto(arduino):
-    arduino.write('\x01\x01')
+    arduino.write(b'\x01\x01')
 
 
 def set_backlight(arduino, value):
     backlight = value
     if backlight > 255:
         backlight = 255
-    arduino.write('\x01{}'.format(struct.pack('!B', backlight)))
+    arduino.write('\x10'.encode())
+    arduino.write(struct.pack('!B', backlight))
 
 
 def send_wakeup_signal(arduino):
-    arduino.write('\x11\xff')
+    arduino.write(b'\x11\xff')
 
 
 def send_sleep_signal():
-    print (time.localtime())
+    print(time.localtime())
     if sys.platform == "linux" and sys.platform == "linux2":
         os.system("sudo acpitool -s")
     else:
         os.system("rundll32.exe powrprof.dll,SetSuspendState sleep")
-    print (time.localtime())
+    print(time.localtime())
 
 
 def arduino_read(arduino):
@@ -119,6 +119,7 @@ def arduino_read(arduino):
     current_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
     current = 73.3 * current_read / 1023 - 36.7
     voltage_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
+
     # v_ref is the 3v3 pin on the nano board, however, practically speaking
     # this pin is generally between 3.5 and 3.7v on the nanos tested. Need to confirm
     # on each brand of the nano and potentially adjust.
@@ -129,6 +130,7 @@ def arduino_read(arduino):
     v_in = voltage * (r1 / r2 + 1)
 
     therm_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
+    # print(voltage_read, current_read, therm_read)
     try:
         therm_resistance = (1023.0 / therm_read - 1) * 100000
     except ZeroDivisionError:
