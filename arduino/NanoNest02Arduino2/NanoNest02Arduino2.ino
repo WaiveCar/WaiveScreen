@@ -331,57 +331,57 @@ void loop() {
 
   // Send the data over the serial bus
   // write header (1B), generic 0xFF 
-//  Serial.write(0xFF);
-//  // write time
-//  Serial.write(timeBuf, 4);
-//  // write current reading and thermistor reading to serial (HB, LB)
-//  Serial.write(highByte(currentTransmit));
-//  Serial.write(lowByte(currentTransmit));
-//  Serial.write(highByte(voltageTransmit));
-//  Serial.write(lowByte(voltageTransmit));
-//  Serial.write(highByte(thermTransmit));
-//  Serial.write(lowByte(thermTransmit));
-//  //Write Accel data, Gyro data, fanSpeed, and backlightValue to serial
-//  Serial.write(highByte(accel_t_gyro.value.x_accel));
-//  Serial.write(lowByte(accel_t_gyro.value.x_accel));
-//  Serial.write(highByte(accel_t_gyro.value.y_accel));
-//  Serial.write(lowByte(accel_t_gyro.value.y_accel));
-//  Serial.write(highByte(accel_t_gyro.value.z_accel));
-//  Serial.write(lowByte(accel_t_gyro.value.z_accel));
-//  Serial.write(highByte(accel_t_gyro.value.x_gyro));
-//  Serial.write(lowByte(accel_t_gyro.value.x_gyro));
-//  Serial.write(highByte(accel_t_gyro.value.y_gyro));
-//  Serial.write(lowByte(accel_t_gyro.value.y_gyro));
-//  Serial.write(highByte(accel_t_gyro.value.z_gyro));
-//  Serial.write(lowByte(accel_t_gyro.value.z_gyro));
-//  Serial.write(fanSpeed);
-//  Serial.write(backlightValue);
+  Serial.write(0xFF);
+  // write time
+  Serial.write(timeBuf, 4);
+  // write current reading and thermistor reading to serial (HB, LB)
+  Serial.write(highByte(currentTransmit));
+  Serial.write(lowByte(currentTransmit));
+  Serial.write(highByte(voltageTransmit));
+  Serial.write(lowByte(voltageTransmit));
+  Serial.write(highByte(thermTransmit));
+  Serial.write(lowByte(thermTransmit));
+  //Write Accel data, Gyro data, fanSpeed, and backlightValue to serial
+  Serial.write(highByte(accel_t_gyro.value.x_accel));
+  Serial.write(lowByte(accel_t_gyro.value.x_accel));
+  Serial.write(highByte(accel_t_gyro.value.y_accel));
+  Serial.write(lowByte(accel_t_gyro.value.y_accel));
+  Serial.write(highByte(accel_t_gyro.value.z_accel));
+  Serial.write(lowByte(accel_t_gyro.value.z_accel));
+  Serial.write(highByte(accel_t_gyro.value.x_gyro));
+  Serial.write(lowByte(accel_t_gyro.value.x_gyro));
+  Serial.write(highByte(accel_t_gyro.value.y_gyro));
+  Serial.write(lowByte(accel_t_gyro.value.y_gyro));
+  Serial.write(highByte(accel_t_gyro.value.z_gyro));
+  Serial.write(lowByte(accel_t_gyro.value.z_gyro));
+  Serial.write(fanSpeed);
+  Serial.write(backlightValue);
 
   //Optional switch to serial.print for troubleshooting.
-  Serial.print(F("Elapsed time in ms: "));
-  Serial.println(t_now);
-  Serial.print(F("Current reading, value: "));
-  Serial.print(currentTransmit);
-  Serial.print(F(", "));
-  Serial.println(current);
-  Serial.print(F("Voltage reading, value: "));
-  Serial.print(voltageTransmit);
-  Serial.print(F(", "));
-  Serial.println(voltage);
-  Serial.print(F("Thermistor reading, temp_c value: "));
-  Serial.print(thermTransmit);
-  Serial.print(F(", "));
-  Serial.println(temp_c);
-  Serial.print(F("Accel X, Y, Z: "));
-  Serial.print(accel_t_gyro.value.x_accel);
-  Serial.print(F(", "));
-  Serial.print(accel_t_gyro.value.y_accel);
-  Serial.print(F(", "));
-  Serial.println(accel_t_gyro.value.z_accel);
-  Serial.print(F("Fan Speed, Backlight Brightness: "));
-  Serial.print(fanSpeed);
-  Serial.print(F(", "));
-  Serial.println(backlightValue);
+//  Serial.print(F("Elapsed time in ms: "));
+//  Serial.println(t_now);
+//  Serial.print(F("Current reading, value: "));
+//  Serial.print(currentTransmit);
+//  Serial.print(F(", "));
+//  Serial.println(current);
+//  Serial.print(F("Voltage reading, value: "));
+//  Serial.print(voltageTransmit);
+//  Serial.print(F(", "));
+//  Serial.println(voltage);
+//  Serial.print(F("Thermistor reading, temp_c value: "));
+//  Serial.print(thermTransmit);
+//  Serial.print(F(", "));
+//  Serial.println(temp_c);
+//  Serial.print(F("Accel X, Y, Z: "));
+//  Serial.print(accel_t_gyro.value.x_accel);
+//  Serial.print(F(", "));
+//  Serial.print(accel_t_gyro.value.y_accel);
+//  Serial.print(F(", "));
+//  Serial.println(accel_t_gyro.value.z_accel);
+//  Serial.print(F("Fan Speed, Backlight Brightness: "));
+//  Serial.print(fanSpeed);
+//  Serial.print(F(", "));
+//  Serial.println(backlightValue);
 
   if (current < 1.0){
     cpu_on = false;
