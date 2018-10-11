@@ -93,7 +93,7 @@ def send_wakeup_signal(arduino):
 
 def send_sleep_signal():
     print(time.localtime())
-    if sys.platform == "linux" and sys.platform == "linux2":
+    if sys.platform == "linux" or sys.platform == "linux2":
         os.system("sudo acpitool -s")
     else:
         os.system("rundll32.exe powrprof.dll,SetSuspendState sleep")
