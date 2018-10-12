@@ -25,8 +25,8 @@ def nominal_operation(arduino):
     df = pd.DataFrame(columns=['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y',
                            'Gyro_z', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
     now = time.localtime()
-    log_name = '{}.{}.{}.{}.{}.{}'.format(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min,
-                                          now.tm_sec)
+    log_name = '{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
+                                                              now.tm_hour, now.tm_min, now.tm_sec)
     arduino.reset_input_buffer()
     received_dict = arduino_read(arduino)
     voltage = received_dict['Voltage']
@@ -39,10 +39,10 @@ def nominal_operation(arduino):
             voltage = received_dict['Voltage']
             print(voltage)
     now = time.localtime()
-    log_name += '-{}.{}.{}.{}.{}.{}'.format(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min,
-                                            now.tm_sec)
+    log_name += '-{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
+                                                                now.tm_hour, now.tm_min, now.tm_sec)
     # uncomment the below line to save the log to a folder called logs
-    df.to_csv("logs\\{}.csv".format(log_name), index=False)
+    df.to_csv("logs//{}.csv".format(log_name), index=False)
 
     current = received_dict['Current']
     if voltage < 12.5 and current > 1:
@@ -180,8 +180,8 @@ def low_power_mode(arduino, backlight_resume_value):
     set_backlight(arduino, 0)
     send_sleep_signal()
     now = time.localtime()
-    log_name = '{}.{}.{}.{}.{}.{}'.format(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min,
-                                          now.tm_sec)
+    log_name = '{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
+                                                              now.tm_hour, now.tm_min, now.tm_sec)
     i = 0
     df = pd.DataFrame(columns=['Time', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
     received_dict = arduino_read(arduino)
@@ -207,10 +207,10 @@ def low_power_mode(arduino, backlight_resume_value):
         }
     set_backlight(arduino, stored_backlight_value)
     now = time.localtime()
-    log_name += '-{}.{}.{}.{}.{}.{}'.format(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min,
-                                            now.tm_sec)
+    log_name += '-{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
+                                                                now.tm_hour, now.tm_min, now.tm_sec)
     # uncomment the below line to save the log to a folder called logs
-    df.to_csv("logs\{}.csv".format(log_name), index=False)
+    df.to_csv("logs//{}.csv".format(log_name), index=False)
     return received_dict
 
 
