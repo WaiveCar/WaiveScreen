@@ -37,27 +37,25 @@ def nominal_operation(arduino):
             df.loc[i] = received_dict
             i += 1
             voltage = received_dict['Voltage']
-            print(received_dict)
+            print(voltage)
     now = time.localtime()
     log_name += '-{}.{}.{}.{}.{}.{}'.format(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min,
                                             now.tm_sec)
     # uncomment the below line to save the log to a folder called logs
-    # df.to_csv("logs\{}.csv".format(log_name), index=False)
+    df.to_csv("logs\\{}.csv".format(log_name), index=False)
 
     current = received_dict['Current']
     if voltage < 12.5 and current > 1:
-        backlight_value = received_dict['Backlight']
-        set_backlight(arduino, 0)
-        send_sleep_signal()
-        set_backlight(arduino, backlight_value)
+        received_dict = low_power_mode(arduino, received_dict['Backlight'])
+        if sys.platform == "linux" or sys.platform == "linux2":
+            os.system("xset -display :0 dpmx force on")
 
-    while current < 1:
-        received_dict = arduino_read(arduino)
-        if received_dict != -1:
-            voltage = received_dict['Voltage']
-            current = received_dict['Current']
-            print(voltage, current)
-
+    # while current < 1:
+    #     received_dict = arduino_read(arduino)
+    #     if received_dict != -1:
+    #         voltage = received_dict['Voltage']
+    #         current = received_dict['Current']
+    # #        print(voltage, current)
     return received_dict
 
 
@@ -72,7 +70,8 @@ def set_fanspeed(arduino, value):
     fan_speed = value
     if fan_speed > 255:
         fan_speed = 255
-    arduino.write(b'\x01{}'.format(struct.pack('!B', fan_speed)))
+    arduino.write(b'\x01{}')
+    arduino.write(struct.pack('!B', fan_speed))
 
 
 def set_fan_auto(arduino):
@@ -92,12 +91,10 @@ def send_wakeup_signal(arduino):
 
 
 def send_sleep_signal():
-    print(time.localtime())
     if sys.platform == "linux" or sys.platform == "linux2":
-        os.system("sudo acpitool -s")
+        os.system("xset -display :0 dpmx force suspend")
     else:
         os.system("rundll32.exe powrprof.dll,SetSuspendState sleep")
-    print(time.localtime())
 
 
 def arduino_read(arduino):
@@ -174,6 +171,46 @@ def arduino_read(arduino):
         'FanSpeed': fan_speed,
         'Backlight': backlight_value
     }
+    return received_dict
+
+
+def low_power_mode(arduino, backlight_resume_value):
+    arduino = arduino
+    stored_backlight_value = backlight_resume_value
+    set_backlight(arduino, 0)
+    send_sleep_signal()
+    now = time.localtime()
+    log_name = '{}.{}.{}.{}.{}.{}'.format(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min,
+                                          now.tm_sec)
+    i = 0
+    df = pd.DataFrame(columns=['Time', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
+    received_dict = arduino_read(arduino)
+    df.loc[i] = {
+        'Time': received_dict['Time'],
+        'Current': received_dict['Current'],
+        'Voltage': received_dict['Voltage'],
+        'Temp_C': received_dict['Temp_C'],
+        'FanSpeed': received_dict['FanSpeed'],
+        'Backlight': received_dict['Backlight']
+    }
+    while received_dict['Voltage'] < 13.5:
+        i += 1
+        received_dict = arduino_read(arduino)
+        print('Low Power: ', received_dict['Voltage'])
+        df.loc[i] = {
+            'Time': received_dict['Time'],
+            'Current': received_dict['Current'],
+            'Voltage': received_dict['Voltage'],
+            'Temp_C': received_dict['Temp_C'],
+            'FanSpeed': received_dict['FanSpeed'],
+            'Backlight': received_dict['Backlight']
+        }
+    set_backlight(arduino, stored_backlight_value)
+    now = time.localtime()
+    log_name += '-{}.{}.{}.{}.{}.{}'.format(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min,
+                                            now.tm_sec)
+    # uncomment the below line to save the log to a folder called logs
+    df.to_csv("logs\{}.csv".format(log_name), index=False)
     return received_dict
 
 
