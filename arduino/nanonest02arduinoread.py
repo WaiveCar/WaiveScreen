@@ -3,7 +3,7 @@ import serial
 import time
 import math
 import struct
-import pandas as pd
+# import pandas as pd
 import sys
 import os
 
@@ -22,8 +22,8 @@ def main():
 
 def nominal_operation(arduino):
     arduino = arduino
-    df = pd.DataFrame(columns=['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y',
-                           'Gyro_z', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
+    # df = pd.DataFrame(columns=['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y',
+    #                        'Gyro_z', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
     now = time.localtime()
     log_name = '{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
                                                               now.tm_hour, now.tm_min, now.tm_sec)
@@ -34,7 +34,7 @@ def nominal_operation(arduino):
     while voltage > 12.5:
         received_dict = arduino_read(arduino)
         if received_dict != -1:
-            df.loc[i] = received_dict
+            # df.loc[i] = received_dict
             i += 1
             voltage = received_dict['Voltage']
             print(voltage)
@@ -93,6 +93,11 @@ def send_wakeup_signal(arduino):
 def send_sleep_signal():
     if sys.platform == "linux" or sys.platform == "linux2":
         os.system("xset -display :0 dpmx force suspend")
+    print(time.localtime())
+    """
+    if sys.platform == "linux" or sys.platform == "linux2":
+        os.system("sudo acpitool -s")
+    """
     else:
         os.system("rundll32.exe powrprof.dll,SetSuspendState sleep")
 
@@ -127,7 +132,7 @@ def arduino_read(arduino):
     v_in = voltage * (r1 / r2 + 1)
 
     therm_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
-    # print(voltage_read, current_read, therm_read)
+    print(voltage_read, current_read, therm_read)
     try:
         therm_resistance = (1023.0 / therm_read - 1) * 100000
     except ZeroDivisionError:
