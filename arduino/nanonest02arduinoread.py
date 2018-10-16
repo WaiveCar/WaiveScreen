@@ -127,7 +127,6 @@ def arduino_read(arduino):
     v_in = voltage * (r1 / r2 + 1)
 
     therm_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
-    # print(voltage_read, current_read, therm_read)
     try:
         therm_resistance = (1023.0 / therm_read - 1) * 100000
     except ZeroDivisionError:
@@ -193,7 +192,10 @@ def low_power_mode(arduino, backlight_resume_value):
         'FanSpeed': received_dict['FanSpeed'],
         'Backlight': received_dict['Backlight']
     }
-    while received_dict['Voltage'] < 13.5:
+    # todo: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
+    # triggered by either the door closing or the car starting to move.
+    z_init = received_dict['Accel_z']
+    while received_dict['Voltage'] < 13.5 and -1500 < received_dict['Accel_z'] - z_init < 1500:
         i += 1
         received_dict = arduino_read(arduino)
         df.loc[i] = {
