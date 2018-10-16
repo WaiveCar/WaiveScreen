@@ -60,7 +60,7 @@ def nominal_operation(arduino, first_read):
         received_dict = low_power_mode(arduino, received_dict['Backlight'])
         # the below line will wake up the dpms if it's a linux machine
         if sys.platform == "linux" or sys.platform == "linux2":
-            os.system("xset -display :0 dpmx force on")
+            os.system("xset -display :0 dpms force on")
 
     return received_dict
 
@@ -91,7 +91,7 @@ def send_wakeup_signal(arduino):
 
 def send_sleep_signal():
     if sys.platform == "linux" or sys.platform == "linux2":
-        os.system("xset -display :0 dpmx force suspend")
+        os.system("xset -display :0 dpms force suspend")
     else:
         os.system("rundll32.exe powrprof.dll,SetSuspendState sleep")
 
