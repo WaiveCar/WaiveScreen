@@ -195,7 +195,8 @@ def low_power_mode(arduino, backlight_resume_value):
     # todo: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
     # triggered by either the door closing or the car starting to move.
     z_init = received_dict['Accel_z']
-    while received_dict['Voltage'] < 13.5 and -1500 < received_dict['Accel_z'] - z_init < 1500:
+    while received_dict['Voltage'] < 13.5 or \
+            (received_dict['Voltage'] > 13.5 and -1500 < received_dict['Accel_z'] - z_init < 1500):
         i += 1
         received_dict = arduino_read(arduino)
         df.loc[i] = {
@@ -216,15 +217,15 @@ def low_power_mode(arduino, backlight_resume_value):
 
 
 def get_move_status(first_read, last_read, last_smooth):
-    alpha = 0.005
+    alpha = 0.01
     move_threshold = 250
     move_magnitude = {'x': math.fabs(last_read['Accel_x']-first_read['Accel_x']),
                       'y': math.fabs(last_read['Accel_y']-first_read['Accel_y']),
                       'z': math.fabs(last_read['Accel_z'] - first_read['Accel_z'])}
     smooth_move = {
-        'x': move_magnitude['x']*alpha + last_smooth['x']*(1-alpha),
-        'y': move_magnitude['y']*alpha + last_smooth['y']*(1-alpha),
-        'z': move_magnitude['z']*alpha + last_smooth['z']*(1-alpha)
+        'x': min(move_magnitude['x']*alpha + last_smooth['x']*(1-alpha), 600),
+        'y': min(move_magnitude['y']*alpha + last_smooth['y']*(1-alpha), 600),
+        'z': min(move_magnitude['z']*alpha + last_smooth['z']*(1-alpha), 600)
     }
     if smooth_move['x'] > move_threshold or smooth_move['y'] > move_threshold or smooth_move['z'] > move_threshold:
         moving = True
