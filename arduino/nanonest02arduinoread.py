@@ -10,34 +10,46 @@ import os
 
 def main():
     if sys.platform == "linux" or sys.platform == "linux2":
-        comPort = '/dev/ttyACM0'
+        com_port = '/dev/ttyACM0'
     else:
-        comPort = 'COM6'
-    arduino = serial.Serial(comPort, 115200, timeout=0.1)
+        com_port = 'COM6'
+    arduino = serial.Serial(com_port, 115200, timeout=0.1)
+    first_read = arduino_read(arduino)
     while(1):
-        last_reading = nominal_operation(arduino=arduino)
+        last_reading = nominal_operation(arduino=arduino, first_read=first_read)
 
-    arduino.close()
+    # arduino.close()
 
 
-def nominal_operation(arduino):
+def nominal_operation(arduino, first_read):
     arduino = arduino
     # df = pd.DataFrame(columns=['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y',
     #                        'Gyro_z', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
+    # first_read = first_read
+    df = pd.DataFrame(columns=['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y',
+                               'Gyro_z', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
     now = time.localtime()
     log_name = '{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
                                                               now.tm_hour, now.tm_min, now.tm_sec)
     arduino.reset_input_buffer()
     received_dict = arduino_read(arduino)
+    moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
+                                          last_smooth={'x': 0, 'y': 0, 'z': 0})
     voltage = received_dict['Voltage']
     i = 0
-    while voltage > 12.5:
+    voltage_timeout = 0
+    while voltage > 12.5 or moving or voltage_timeout < 150:
         received_dict = arduino_read(arduino)
         if received_dict != -1:
             # df.loc[i] = received_dict
             i += 1
             voltage = received_dict['Voltage']
-            print(voltage)
+            if voltage < 12.5:
+                voltage_timeout += 1
+            else:
+                voltage_timeout = 0
+            moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
+                                                  last_smooth=last_smooth)
     now = time.localtime()
     log_name += '-{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
                                                                 now.tm_hour, now.tm_min, now.tm_sec)
@@ -46,24 +58,13 @@ def nominal_operation(arduino):
 
     current = received_dict['Current']
     if voltage < 12.5 and current > 1:
+        # low_power_mode will hold and record until voltage goes above 13.5V
         received_dict = low_power_mode(arduino, received_dict['Backlight'])
+        # the below line will wake up the dpms if it's a linux machine
         if sys.platform == "linux" or sys.platform == "linux2":
-            os.system("xset -display :0 dpmx force on")
+            os.system("xset -display :0 dpms force on")
 
-    # while current < 1:
-    #     received_dict = arduino_read(arduino)
-    #     if received_dict != -1:
-    #         voltage = received_dict['Voltage']
-    #         current = received_dict['Current']
-    # #        print(voltage, current)
     return received_dict
-
-
-def read_until_empty(arduino):
-    arduino = arduino
-    while arduino.in_waiting > 0:
-        received_dict = arduino_read(arduino)
-    return 0
 
 
 def set_fanspeed(arduino, value):
@@ -93,11 +94,11 @@ def send_wakeup_signal(arduino):
 def send_sleep_signal():
     if sys.platform == "linux" or sys.platform == "linux2":
         os.system("xset -display :0 dpmx force suspend")
-    print(time.localtime())
-    """
-    if sys.platform == "linux" or sys.platform == "linux2":
-        os.system("sudo acpitool -s")
-    """
+        print(time.localtime())
+        """
+        if sys.platform == "linux" or sys.platform == "linux2":
+            os.system("sudo acpitool -s")
+        """
     else:
         os.system("rundll32.exe powrprof.dll,SetSuspendState sleep")
 
@@ -116,7 +117,8 @@ def arduino_read(arduino):
     while header != 0xff:
         header = ord(arduino.read())
     # next 4 bytes are the time the arduino has been on in milliseconds
-    time_ms = (ord(arduino.read())) + (ord(arduino.read()) << 8) + (ord(arduino.read()) << 16) + (ord(arduino.read()) << 24)
+    time_ms = (ord(arduino.read())) + (ord(arduino.read()) << 8) + \
+              (ord(arduino.read()) << 16) + (ord(arduino.read()) << 24)
     # 2 bytes for the current, thermistor, and voltage readings
     current_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
     current = 73.3 * current_read / 1023 - 36.7
@@ -185,8 +187,8 @@ def low_power_mode(arduino, backlight_resume_value):
     set_backlight(arduino, 0)
     send_sleep_signal()
     now = time.localtime()
-    log_name = '{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
-                                                              now.tm_hour, now.tm_min, now.tm_sec)
+    log_name = 'lowpower{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
+                                                                      now.tm_hour, now.tm_min, now.tm_sec)
     i = 0
     df = pd.DataFrame(columns=['Time', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
     received_dict = arduino_read(arduino)
@@ -198,10 +200,13 @@ def low_power_mode(arduino, backlight_resume_value):
         'FanSpeed': received_dict['FanSpeed'],
         'Backlight': received_dict['Backlight']
     }
-    while received_dict['Voltage'] < 13.5:
+    # todo: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
+    # triggered by either the door closing or the car starting to move.
+    z_init = received_dict['Accel_z']
+    while received_dict['Voltage'] < 13.5 or \
+            (received_dict['Voltage'] > 13.5 and -1500 < received_dict['Accel_z'] - z_init < 1500):
         i += 1
         received_dict = arduino_read(arduino)
-        print('Low Power: ', received_dict['Voltage'])
         df.loc[i] = {
             'Time': received_dict['Time'],
             'Current': received_dict['Current'],
@@ -219,9 +224,26 @@ def low_power_mode(arduino, backlight_resume_value):
     return received_dict
 
 
+def get_move_status(first_read, last_read, last_smooth):
+    alpha = 0.01
+    move_threshold = 250
+    move_magnitude = {'x': math.fabs(last_read['Accel_x']-first_read['Accel_x']),
+                      'y': math.fabs(last_read['Accel_y']-first_read['Accel_y']),
+                      'z': math.fabs(last_read['Accel_z'] - first_read['Accel_z'])}
+    smooth_move = {
+        'x': min(move_magnitude['x']*alpha + last_smooth['x']*(1-alpha), 600),
+        'y': min(move_magnitude['y']*alpha + last_smooth['y']*(1-alpha), 600),
+        'z': min(move_magnitude['z']*alpha + last_smooth['z']*(1-alpha), 600)
+    }
+    if smooth_move['x'] > move_threshold or smooth_move['y'] > move_threshold or smooth_move['z'] > move_threshold:
+        moving = True
+    else:
+        moving = False
+    return moving, smooth_move
+
+
 if __name__ == '__main__':
     main()
-
 
 
 """
