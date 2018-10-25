@@ -34,7 +34,7 @@ def nominal_operation(arduino, first_read):
     arduino.reset_input_buffer()
     received_dict = arduino_read(arduino)
     moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
-                                          last_smooth={'x': 0, 'y': 0, 'z': 0})
+                                          last_smooth={'x': 0.0, 'y': 0.0, 'z': 0.0})
     voltage = received_dict['Voltage']
     i = 0
     voltage_timeout = 0
