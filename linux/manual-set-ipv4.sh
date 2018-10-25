@@ -1,9 +1,12 @@
 #!/bin/bash
-#
-# TODO: All of this in DBUS one day
-#
 
-sudo mmcli -m 0 --location-enable-gps-raw --location-enable-gps-nmea
+sudo mmcli -m 0 -e
+
+sudo mmcli -m 0 \
+	--location-enable-gps-raw \
+	--location-enable-gps-nmea \
+	--location-set-enable-signal
+
 sudo mmcli -m 0 --simple-connect="apn=internet"
 wwan=`ip addr show | grep wwp | head -1 | awk -F ':' ' { print $2 } '`
 
