@@ -326,7 +326,7 @@ void loop() {
   }   
 
   // set the fan and backlight each loop
-  analogWrite(backlightPin, backlightValue*backlight_adjust);
+  analogWrite(backlightPin, backlightValue);
   analogWrite(fanPin, fanSpeed);
 
   // Send the data over the serial bus
@@ -383,24 +383,28 @@ void loop() {
 //  Serial.print(F(", "));
 //  Serial.println(backlightValue);
 
-  if (current < 1.0){
-    cpu_on = false;
-    delay(1000);
-    if (voltage > 13.0){
-        digitalWrite(resetPin, HIGH);
-        delay (100);
-        digitalWrite(resetPin, LOW);
-        cpu_on == true;
-        delay(3000);
-    }
-  } else {
-    cpu_on = true;
-  }
+//  if (current < 1.0){
+//    cpu_on = false;
+//    delay(1000);
+//    if (voltage > 13.0){
+//        digitalWrite(resetPin, HIGH);
+//        delay (100);
+//        digitalWrite(resetPin, LOW);
+//        cpu_on == true;
+//        delay(3000);
+//    }
+//  } else {
+//    cpu_on = true;
+//  }
+//
+//  if (voltage < 12.5 & cpu_on == true) {
+//    backlight_adjust = 0;
+//  } else {
+//    backlight_adjust = 1;
+//  }
 
-  if (voltage < 12.5 & cpu_on == true) {
-    backlight_adjust = 0;
-  } else {
-    backlight_adjust = 1;
+  if (voltage < 13.0 & current < 2.0){
+    delay(1000);
   }
 
   // check if there has been serial signal received (min 2 bytes)
