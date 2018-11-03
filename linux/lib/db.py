@@ -18,8 +18,10 @@ _SCHEMA = {
   'streams' : [	
     ('id', 'integer primary key autoincrement'), 
     ('datatype', 'integer default null'),
-    ('value',  'text default null'),
-    ('created_at', 'datetime default current_timestamp')
+    ('name', 'text default null'),
+    ('size', 'integer default 0'),
+    ('start_unix', 'datetime default current_timestamp'),
+    ('end_unix', 'datetime default current_timestamp')
   ],
   'kv': [
     ('id', 'INTEGER PRIMARY KEY'),
@@ -207,7 +209,7 @@ def set(key, value):
         )''', (key, key, value, ))
 
   except:
-    logging.warn("Couldn't set %s to %s" % (key, value))
+    logging.warn("Couldn't set {} to {}".format(key, value))
 
   g_params[key] = value
 
@@ -310,34 +312,25 @@ def unregister_entry(name, do_all=False):
 
 
 def register_entry(info):
-  # Registers a stream as existing to be found later when trying to stitch and slice files together.
-  # This is all that ought to be needed to know if the streams should attempt to be stitched. The input
-  # info is grabbed from audio.stream_info(filename)
-  name = info['name']
-  start_unix = info['start_date']
-  end_unix = info['start_date'] + timedelta(seconds=info['duration_sec']) 
-  start_minute = float(info['start_minute'])
-  end_minute = float(info['end_minute'])
-  week_number = info['week_number']
-  size = info['size']
+  end_unix = info['start_unix'] + timedelta(seconds=info['duration_sec']) 
 
-  res = run('select id from streams where name = ?', (name, )).fetchone()
+  res = run('select id from streams where value = ?', (info['value'], )).fetchone()
 
   # If something exists then we remove it and reinsert ... this is not as effecient
   # as an upsert with coalesce, but this is done on rare occasions in heavy workloads ...
   # so we don't really need to be entirely efficient about it.
   if res:
-    unregister_stream(name, do_all=True)
+    unregister_entry(info['value'], do_all=True)
 
   last = False
   try:
     res, last = run("""insert into streams 
-    (name, start_unix, end_unix, start_minute, end_minute, week_number, size) values
-    (   ?,          ?,        ?,            ?,          ?,           ?,    ?) """, 
-    (name, start_unix, end_unix, start_minute, end_minute, week_number, size), with_last=True)
+    (datatype,         value,         start_unix,         end_unix, size) values
+    (   ?,             ?,             ?,                  ?,        ?   ) """, 
+    (info['datatype'], info['value'], info['start_unix'], end_unix, info['size']), with_last=True)
 
   except:
-    logging.warn("Unable to insert a record with a name %s" % name)
+    logging.warn("Unable to insert a record with a value {}".format(info['value']))
 
   return last
 
