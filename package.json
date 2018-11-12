@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "sass": "sass --watch scss/custom.scss static/custom.min.css --style compressed"
+    "sass": "sass --watch scss/custom.scss static/custom.min.css --style compressed",
+    "start": "FLASK_APP=index.py flask run"
   },
   "author": "",
   "license": "ISC",
