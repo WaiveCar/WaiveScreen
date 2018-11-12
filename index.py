@@ -9,13 +9,16 @@ def respond():
         "popularLocations": [
             {
                 "name": "Daytime Santa Monica",
-                "image": "sm-day.jpg"
+                "image": "sm-day.jpg",
+                "multiplier": 1.5
             }, {
                 "name": "Night Time Hollywood",
-                "image": "hollywood-night.jpg"
+                "image": "hollywood-night.jpg",
+                "multiplier": 2,
             }, {
                 "name": "Morning Traffic",
-                "image": "traffic-morning.jpg"
+                "image": "traffic-morning.jpg",
+                "multiplier": 2.5
             }
         ],
         "cheapLocations": ["Morning Hollywood", "Night Time Santa Monica", "Day Time Mid-City"]
