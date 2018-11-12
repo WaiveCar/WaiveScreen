@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "sass": "sass --watch scss/custom.scss static/custom.min.css --style compressed",
-    "start": "FLASK_APP=index.py flask run"
+    "start": "python3 index.py"
   },
   "author": "",
   "license": "ISC",
