@@ -4,9 +4,8 @@
   "description": "Waive Advertising Portal",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "sass": "sass --watch scss/custom.scss static/custom.min.css --style compressed",
-    "start": "python3 index.py"
+    "start": "python3 index.py && npm run sass",
+    "sass": "sass --watch scss/custom.scss static/custom.min.css --style compressed"
   },
   "author": "",
   "license": "ISC",
