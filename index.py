@@ -14,14 +14,25 @@ def respond():
             }, {
                 "name": "Night Time Hollywood",
                 "image": "hollywood-night.jpg",
-                "multiplier": 2,
+                "multiplier": 2
             }, {
                 "name": "Morning Traffic",
                 "image": "traffic-morning.jpg",
                 "multiplier": 2.5
             }
         ],
-        "cheapLocations": ["Morning Hollywood", "Night Time Santa Monica", "Day Time Mid-City"]
+        "cheapLocations": [
+            {
+                "name": "Morning Hollywood",
+                "multiplier": 0.75
+            }, {
+                "name": "Night Time Santa Monica",
+                "multiplier": 0.75
+            }, {
+                "name": "Day Time Mid-City",
+                "multiplier": 0.5
+            }
+        ]
     })
 
 @app.route("/", defaults={"path": ""})
