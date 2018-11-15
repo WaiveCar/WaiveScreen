@@ -4,7 +4,7 @@
   "description": "Waive Advertising Portal",
   "main": "index.js",
   "scripts": {
-    "start": "python3 index.py && npm run sass",
+    "start": "python3 index.py",
     "sass": "sass --watch scss/custom.scss static/custom.min.css --style compressed"
   },
   "author": "",
