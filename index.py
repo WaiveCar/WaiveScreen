@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory, request, abort
+from flask import Flask, send_from_directory, request, abort, redirect, url_for
 from werkzeug.utils import secure_filename
 import os
 import json
@@ -40,13 +40,13 @@ def respond():
 @app.route("/purchase", methods=["POST"])
 def handle_cart():
     if request.method == "POST":
-        print(request.form.get("cart"))
-    if "file" not in request.files:
-        return abort(404)
-    file = request.files.get("file")
-    filename = secure_filename(file.name)
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename + ".jpg"))
-    return request.form.get("cart")
+        if "file" not in request.files:
+            return abort(404)
+        file = request.files.get("file")
+        filename = secure_filename(file.name)
+        file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename + ".jpg"))
+        print('cart: ', request.form["cart"])
+        return redirect('/')
 
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
