@@ -2,20 +2,10 @@ from flask import Flask, send_from_directory, request, abort, redirect, url_for
 from werkzeug.utils import secure_filename
 import os
 import json
-import boto3, botocore
+from modules import s3
 app = Flask(__name__, static_folder='/static')
 app.config["UPLOAD_FOLDER"] = "./user_images"
 
-S3_BUCKET = "daleighan.com"
-S3_KEY = os.environ.get("S3_ACCESS_KEY")
-S3_SECRET = os.environ.get("S3_SECRET_ACCESS_KEY")
-S3_LOCATION = 'http://{}.s3.amazonaws.com/'.format(S3_BUCKET)
-
-s3 = boto3.client(
-   "s3",
-   aws_access_key_id=S3_KEY,
-   aws_secret_access_key=S3_SECRET
-)
 
 @app.route("/splash_resources")
 def respond():
@@ -55,14 +45,11 @@ def handle_cart():
         if "file" not in request.files:
             return abort(404)
         file = request.files.get("file")
-        print("file:", file)
         file.filename = secure_filename(file.name) + ".jpg"
 
         if file:
-            print("filename: ", file.filename)
-            #file.save(os.path.join(app.config["UPLOAD_FOLDER"], file.filename + ".jpg"))
-            uploaded = upload_s3(file, S3_BUCKET)
-            print('uploaded: ', uploaded)
+            uploaded = s3.upload_s3(file)
+            print("file path: ", uploaded)
             return json.dumps({"location": "payment/paynow.html"})
         else:
             return "error"
@@ -75,21 +62,6 @@ def serve(path):
         return send_from_directory("static", path)
     else:
         return send_from_directory('static', 'index.html')
-
-def upload_s3(file, bucket_name, acl="public-read"):
-    try: 
-        s3.upload_fileobj(
-            file,
-            bucket_name,
-            file.filename,
-            ExtraArgs={
-                "ACL": acl,
-            }
-        ) 
-    except Exception as e:
-        print("error: ", e)
-        return e
-    return "{}{}".format(S3_LOCATION, file.filename)
 
 if __name__ == "__main__":
     app.run(use_reloader=True, port=5050)
