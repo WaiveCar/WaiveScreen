@@ -1,11 +1,12 @@
-from flask import Flask, send_from_directory, request, abort, redirect, url_for
+from flask import Flask, send_from_directory, request, abort, redirect
 from werkzeug.utils import secure_filename
 import os
 import json
 from modules import s3
+from config.db import *
+
 app = Flask(__name__, static_folder='/static')
 app.config["UPLOAD_FOLDER"] = "./user_images"
-
 
 @app.route("/splash_resources")
 def respond():
@@ -46,7 +47,6 @@ def handle_cart():
             return abort(404)
         file = request.files.get("file")
         file.filename = secure_filename(file.name) + ".jpg"
-
         if file:
             uploaded = s3.upload_s3(file)
             print("file path: ", uploaded)
