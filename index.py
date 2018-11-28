@@ -4,8 +4,9 @@ import os
 import json
 from modules import s3
 from config.db import *
+import uuid
 
-app = Flask(__name__, static_folder='/static')
+app = Flask(__name__, static_folder="/static")
 app.config["UPLOAD_FOLDER"] = "./user_images"
 
 @app.route("/splash_resources")
@@ -46,7 +47,7 @@ def handle_cart():
         if "file" not in request.files:
             return abort(404)
         file = request.files.get("file")
-        file.filename = secure_filename(file.name) + ".jpg"
+        file.filename = str(uuid.uuid4()) + ".jpg"
         if file:
             uploaded = s3.upload_s3(file)
             print("file path: ", uploaded)
