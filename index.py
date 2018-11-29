@@ -48,6 +48,7 @@ def handle_cart():
             return abort(404)
         file = request.files.get("file")
         file.filename = str(uuid.uuid4()) + ".jpg"
+        print(request)
         if file:
             uploaded = s3.upload_s3(file)
             print("file path: ", uploaded)
