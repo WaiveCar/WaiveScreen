@@ -14,14 +14,10 @@ active_sessions = dict()
 
 @app.route("/splash_resources")
 def respond():
-    print(session)
     old_session_id = request.headers.get("Session-Id")
-    print("old", old_session_id)
     session_uuid = old_session_id if old_session_id in active_sessions else str(uuid4()) 
-    print(str(session_uuid))
     if not session_uuid in active_sessions:
         active_sessions[session_uuid] = []
-    print(active_sessions)
     response = make_response(jsonify({
         "popularLocations": [
             {
@@ -52,7 +48,6 @@ def respond():
         ]
     }))
     response.headers.set("Session-Id", session_uuid)
-    print("session id in response: ", response.headers["Session-Id"])
     return response
 
 @app.route("/deal")
