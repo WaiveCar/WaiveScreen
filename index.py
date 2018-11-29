@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory, request, make_response, abort, redirect, jsonify
+from flask import Flask, send_from_directory, request, session, make_response, abort, redirect, jsonify
 from werkzeug.utils import secure_filename
 import os
 import json
@@ -10,10 +10,18 @@ import datetime
 app = Flask(__name__, static_folder="/static")
 app.config["UPLOAD_FOLDER"] = "./user_images"
 
+active_sessions = dict()
+
 @app.route("/splash_resources")
 def respond():
-    print(request.headers.get("Set-Cookies"))
-    session_uuid = uuid4() 
+    print(session)
+    old_session_id = request.headers.get("Session-Id")
+    print("old", old_session_id)
+    session_uuid = old_session_id if old_session_id in active_sessions else str(uuid4()) 
+    print(str(session_uuid))
+    if not session_uuid in active_sessions:
+        active_sessions[session_uuid] = []
+    print(active_sessions)
     response = make_response(jsonify({
         "popularLocations": [
             {
@@ -43,8 +51,8 @@ def respond():
             }
         ]
     }))
-    response.headers.set("Session-Id", "session={}".format(session_uuid))
-    print(response.headers["Session-Id"])
+    response.headers.set("Session-Id", session_uuid)
+    print("session id in response: ", response.headers["Session-Id"])
     return response
 
 @app.route("/deal")
