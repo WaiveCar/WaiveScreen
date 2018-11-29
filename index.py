@@ -5,6 +5,7 @@ import json
 from modules import s3
 from config.db import *
 import uuid
+import datetime
 
 app = Flask(__name__, static_folder="/static")
 app.config["UPLOAD_FOLDER"] = "./user_images"
@@ -41,6 +42,24 @@ def respond():
         ]
     })
 
+@app.route("/deal")
+def get_deal():
+    zone = request.args.get("zone")
+    price = request.args.get("price")
+    start = request.args.get("start")
+    start_obj = datetime.datetime.utcfromtimestamp(int(request.args.get("start")))
+    end = request.args.get("end")
+    end_obj = datetime.datetime.utcfromtimestamp(int(request.args.get("end")))
+    oldId = request.args.get("oldId")
+    return json.dumps({
+        "id": "1",
+        "zone": "the zone",
+        "start": start,
+        "end": end,
+        "price": price,
+        "perDay": int(price) / (end_obj - start_obj).days
+    })
+
 @app.route("/purchase", methods=["POST"])
 def handle_cart():
     if request.method == "POST":
@@ -59,7 +78,6 @@ def handle_cart():
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve(path):
-    print('path: ', path)
     if path != "" and os.path.exists("static/" + path):
         return send_from_directory("static", path)
     else:
