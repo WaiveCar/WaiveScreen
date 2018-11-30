@@ -51,12 +51,12 @@ def respond():
     return response
 
 @app.route("/deal")
-def get_deal():
+def get_deals():
     zone = request.args.get("zone")
     price = request.args.get("price")
     start = request.args.get("start")
     is_splash = request.args.get("splash")
-    print(is_splash)
+    quote_id = request.args.get("quoteId")
     if start:
         start_obj = datetime.datetime.utcfromtimestamp(int(request.args.get("start")))
     else:
@@ -75,7 +75,20 @@ def get_deal():
             "minutesPerDay": "some amount"
         })
     else:
-        return "This is from the splash page"
+        start = datetime.datetime.now()
+        return jsonify({
+            "quotes": [
+                {
+                    "days": 1       
+                },
+                {
+                    "days": 7
+                },
+                {
+                    "days": 30
+                }
+            ]
+        })
 
 @app.route("/purchase", methods=["POST"])
 def handle_cart():
