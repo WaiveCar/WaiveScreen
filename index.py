@@ -55,6 +55,8 @@ def get_deal():
     zone = request.args.get("zone")
     price = request.args.get("price")
     start = request.args.get("start")
+    is_splash = request.args.get("splash")
+    print(is_splash)
     if start:
         start_obj = datetime.datetime.utcfromtimestamp(int(request.args.get("start")))
     else:
@@ -63,14 +65,17 @@ def get_deal():
     if end:
         end_obj = datetime.datetime.utcfromtimestamp(int(request.args.get("end")))
     quoteId = request.args.get("quoteId")
-    return jsonify({
-        "id": quoteId,
-        "zone": "the zone",
-        "start": start,
-        "end": end,
-        "price": price,
-        "minutesPerDay": "some amount"
-    })
+    if not is_splash:
+        return jsonify({
+            "id": quoteId,
+            "zone": "the zone",
+            "start": start,
+            "end": end,
+            "price": price,
+            "minutesPerDay": "some amount"
+        })
+    else:
+        return "This is from the splash page"
 
 @app.route("/purchase", methods=["POST"])
 def handle_cart():
