@@ -55,17 +55,20 @@ def get_deal():
     zone = request.args.get("zone")
     price = request.args.get("price")
     start = request.args.get("start")
-    start_obj = datetime.datetime.utcfromtimestamp(int(request.args.get("start")))
+    if start:
+        start_obj = datetime.datetime.utcfromtimestamp(int(request.args.get("start")))
+    else:
+        start_obj = datetime.datetime.now() 
     end = request.args.get("end")
-    end_obj = datetime.datetime.utcfromtimestamp(int(request.args.get("end")))
-    oldId = request.args.get("oldId")
+    if end:
+        end_obj = datetime.datetime.utcfromtimestamp(int(request.args.get("end")))
+    quoteId = request.args.get("quoteId")
     return jsonify({
-        "id": "1",
+        "id": quoteId,
         "zone": "the zone",
         "start": start,
         "end": end,
         "price": price,
-        "pricePerDay": int(price) / (end_obj - start_obj).days,
         "minutesPerDay": "some amount"
     })
 
