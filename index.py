@@ -21,14 +21,17 @@ def respond():
     response = make_response(jsonify({
         "popularLocations": [
             {
+                "id": 1,
                 "name": "Daytime Santa Monica",
                 "image": "sm-day.jpg",
                 "multiplier": 1.5
             }, {
+                "id": 2,
                 "name": "Night Time Hollywood",
                 "image": "hollywood-night.jpg",
                 "multiplier": 2
             }, {
+                "id": 3,
                 "name": "Morning Traffic",
                 "image": "traffic-morning.jpg",
                 "multiplier": 2.5
@@ -75,17 +78,32 @@ def get_deals():
             "minutesPerDay": "some amount"
         })
     else:
+        # For now, the dummy data below is going to be sent to the client
+        price_per_second = 200 / 60 # $1 per 30 seconds 
+        total_seconds = price / price_per_second 
         start = datetime.datetime.now()
         return jsonify({
             "quotes": [
                 {
-                    "days": 1       
+                    "days": 1,       
+                    "start": start,
+                    "end": start + datetime.timedelta(days=1),
+                    "total": price,
+                    "pricePerDay": price,
                 },
                 {
-                    "days": 7
+                    "days": 7,
+                    "start": start,
+                    "end": start + datetime.timedelta(days=7),
+                    "total": price,
+                    "pricePerDay": price // 7,
                 },
                 {
-                    "days": 30
+                    "days": 30,
+                    "start": start,
+                    "end": start + datetime.timedelta(days=30),
+                    "total": price,
+                    "pricePerDay": price // 30,
                 }
             ]
         })
