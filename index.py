@@ -80,33 +80,54 @@ def get_deals():
     else:
         # For now, the dummy data below is going to be sent to the client
         price_per_second = 200 / 60 # $1 per 30 seconds 
-        total_seconds = price / price_per_second 
+        total_seconds = int(price) / price_per_second 
         start = datetime.datetime.now()
-        return jsonify({
+        deal = {
             "quotes": [
                 {
                     "days": 1,       
                     "start": start,
                     "end": start + datetime.timedelta(days=1),
+                    "basePrice": price,
                     "total": price,
                     "pricePerDay": price,
+                    "secondsPerDay": total_seconds,
+                    "perMinutePerDay": price_per_second * 60, 
+                    "addedDays": 0,
+                    "addedMinutes": 0,
+                    "color": "light",
                 },
                 {
                     "days": 7,
                     "start": start,
                     "end": start + datetime.timedelta(days=7),
+                    "basePrice": price,
                     "total": price,
-                    "pricePerDay": price // 7,
+                    "pricePerDay": int(price) / 7,
+                    "secondsPerDay": total_seconds / 7,
+                    "perMinutePerDay": price_per_second * 60, 
+                    "addedDays": 0,
+                    "addedMinutes": 0,
+                    "color": "warning"
                 },
                 {
                     "days": 30,
                     "start": start,
                     "end": start + datetime.timedelta(days=30),
+                    "basePrice": price,
                     "total": price,
-                    "pricePerDay": price // 30,
+                    "pricePerDay": int(price) / 30,
+                    "secondsPerDay": total_seconds / 30,
+                    "perMinutePerDay": price_per_second * 60, 
+                    "addedDays": 0,
+                    "addedMinutes": 0,
+                    "color": "secondary" 
                 }
             ]
-        })
+        }
+        active_sessions[quote_id] = deal
+        print(active_sessions)
+        return jsonify(deal)
 
 @app.route("/purchase", methods=["POST"])
 def handle_cart():
