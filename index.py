@@ -126,6 +126,7 @@ def get_deals():
             ]
         }
         active_sessions[quote_id] = deal
+        print(active_sessions[quote_id])
         return jsonify(deal)
 
 @app.route("/capture", methods=["POST", "PUT"])
@@ -134,6 +135,8 @@ def handle_cart():
         try:
             if "file" not in request.files:
                 return abort(404)
+            payer = request.files.get("payer")
+            cart = request.form.get("cart")
             file = request.files.get("file")
             file.filename = str(uuid4()) + ".jpg"
             if file:
@@ -143,7 +146,7 @@ def handle_cart():
             # the payment has succeeded
                 return "success!"
         except:
-            return "error", 400
+            return "error capturing cart", 400
     if request.method == "PUT":
         # handle updating the user's purchase in db
         return jsonify({"location": "payment/paynow.html"})
