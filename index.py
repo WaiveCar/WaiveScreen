@@ -131,18 +131,19 @@ def get_deals():
 @app.route("/capture", methods=["POST", "PUT"])
 def handle_cart():
     if request.method == "POST":
-        if "file" not in request.files:
-            return abort(404)
-        file = request.files.get("file")
-        file.filename = str(uuid4()) + ".jpg"
-        if file:
-            uploaded = s3.upload_s3(file)
-        # This will also need to keep make database entries for the user's purchase as well as for
-        # the new image file that has been uploaded. It will be updated with a payment id after 
-        # the payment has succeeded
-            return "success!"
-        else:
-            return "error"
+        try:
+            if "file" not in request.files:
+                return abort(404)
+            file = request.files.get("file")
+            file.filename = str(uuid4()) + ".jpg"
+            if file:
+                uploaded = s3.upload_s3(file)
+            # This will also need to keep make database entries for the user's purchase as well as for
+            # the new image file that has been uploaded. It will be updated with a payment id after 
+            # the payment has succeeded
+                return "success!"
+        except:
+            return "error", 400
     if request.method == "PUT":
         # handle updating the user's purchase in db
         return jsonify({"location": "payment/paynow.html"})
