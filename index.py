@@ -132,26 +132,28 @@ def get_deals():
 def handle_cart():
     if request.method == "POST":
         try:
-            print('data: ', request.data)
-            return 'success', 200
-        except:
-            return "error capturing cart", 400
-    if request.method == "PUT":
-        try:
             if "file" not in request.files:
-                return abort(404)
-            payer = request.form.get("payer")
-            print("payer: ", payer)
-            cart = request.form.get("cart")
-            print("cart", cart)
+                return abort(400)
+            # In the future, the availability of the amount of time in the cart that is being sent will 
+            # need to be verified before the user is allowed to purchase the ads 
             file = request.files.get("file")
-            print("file: ", file)
+            file.filename = str(uuid4()) + ".jpg"
+            payer = request.form.get("payer")
+            cart = request.form.get("cart")
+            file = request.files.get("file")
             file.filename = str(uuid4()) + ".jpg"
             if file:
                 uploaded = s3.upload_s3(file)
-            # This will also need to keep make database entries for the user's purchase as well as for
-            # the new image file that has been uploaded. It will be updated with a payment id after 
-            # the payment has succeeded
+            # The object that is persisted needs to have quote id, service (currently paypal), asset id (photo),
+            #order id (from paypal), user's email (from paypal), total cost, added days, added mins per day, Paid (true or false)
+            return 'Advertising Successfully Reserved', 200
+        except:
+            return "error capturing cart", 500
+    if request.method == "PUT":
+        try:
+            quote_id = request.json["quoteId"]
+            payer = request.json["payer"]
+            payment_info = request.json["paymentInfo"]
             return jsonify({"location": "payment/paynow.html"})
         except:
             return "error capturing cart", 400
