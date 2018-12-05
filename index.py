@@ -126,30 +126,35 @@ def get_deals():
             ]
         }
         active_sessions[quote_id] = deal
-        print(active_sessions[quote_id])
         return jsonify(deal)
 
 @app.route("/capture", methods=["POST", "PUT"])
 def handle_cart():
     if request.method == "POST":
         try:
+            print('data: ', request.data)
+            return 'success', 200
+        except:
+            return "error capturing cart", 400
+    if request.method == "PUT":
+        try:
             if "file" not in request.files:
                 return abort(404)
-            payer = request.files.get("payer")
+            payer = request.form.get("payer")
+            print("payer: ", payer)
             cart = request.form.get("cart")
+            print("cart", cart)
             file = request.files.get("file")
+            print("file: ", file)
             file.filename = str(uuid4()) + ".jpg"
             if file:
                 uploaded = s3.upload_s3(file)
             # This will also need to keep make database entries for the user's purchase as well as for
             # the new image file that has been uploaded. It will be updated with a payment id after 
             # the payment has succeeded
-                return "success!"
+            return jsonify({"location": "payment/paynow.html"})
         except:
             return "error capturing cart", 400
-    if request.method == "PUT":
-        # handle updating the user's purchase in db
-        return jsonify({"location": "payment/paynow.html"})
 
 
 @app.route("/", defaults={"path": ""})
