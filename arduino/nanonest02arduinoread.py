@@ -3,7 +3,7 @@ import serial
 import time
 import math
 import struct
-# import pandas as pd
+import pandas as pd
 import sys
 import os
 
@@ -93,8 +93,7 @@ def send_wakeup_signal(arduino):
 
 def send_sleep_signal():
     if sys.platform == "linux" or sys.platform == "linux2":
-        os.system("xset -display :0 dpmx force suspend")
-        print(time.localtime())
+        os.system("xset -display :0 dpms force suspend")
         """
         if sys.platform == "linux" or sys.platform == "linux2":
             os.system("sudo acpitool -s")
@@ -121,7 +120,14 @@ def arduino_read(arduino):
               (ord(arduino.read()) << 16) + (ord(arduino.read()) << 24)
     # 2 bytes for the current, thermistor, and voltage readings
     current_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
-    current = 73.3 * current_read / 1023 - 36.7
+    # the two different current sense chips are oppositely directioned and need to be calculated differently
+    # luckily, because we're using DC current, the returned value indicates which component is being used.
+    if current_read > 511:
+        # ACS711EX
+        current = 73.3 * current_read / 1023 - 36.7
+    else:
+        # GY-712-30A
+        current = (513.0-current_read) / 1023.0 * 60.0
     voltage_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
 
     # v_ref is the 3v3 pin on the nano board, however, practically speaking
