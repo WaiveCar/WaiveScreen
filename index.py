@@ -131,8 +131,10 @@ def handle_cart():
             quote_id = request.form.get("quoteId")
             file = request.files.get("file")
             file.filename = str(uuid4()) + ".jpg"
+            '''
             if file:
                 uploaded = s3.upload_s3(file)
+            '''
             asset_query = "insert into assets (path) values ('{}');".format(file.filename)
             db_connection = sqlite3.connect(DATABASE)
             cursor = db_connection.cursor()
@@ -142,8 +144,6 @@ def handle_cart():
             purchases_query = "insert into purchases (quote_id, service, asset_id, extra_days, extra_minutes_per_day, total_price, days, price_per_day, per_minute_per_day, start_date, end_date) values ('{}', 'paypal', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(quote_id, asset_id, cart["addedDays"], cart["addedMinutes"], cart["total"], cart["days"], cart["pricePerDay"], cart["perMinutePerDay"], cart["start"], cart["end"])
             cursor.execute(purchases_query)
             db_connection.commit()
-            cursor.execute("SELECT * FROM table ORDER BY id DESC LIMIT 1")
-            print(cursor.fetchone())
             db_connection.close()
             # The object that is persisted needs to have quote id, service (currently paypal), asset id (photo),
             # order id (from paypal), user's email (from paypal), total cost, added days, added mins per day, Paid (true or false)
@@ -154,13 +154,19 @@ def handle_cart():
     if request.method == "PUT":
         try:
             quote_id = request.json["quoteId"]
-            payer = request.json["payer"]
-            payment_info = request.json["paymentInfo"]
-
+            payer = json.loads(request.json["payer"])
+            payment_info = json.loads(request.json["paymentInfo"])
+            db_connection = sqlite3.connect(DATABASE)
+            cursor = db_connection.cursor()
+            update_query = "update purchases set order_id='{}', email='{}', phone='{}', first_name='{}', last_name='{}' where quote_id='{}';".format(payment_info["orderID"], payer["payer_info"]["email"], payer["payer_info"]["phone"], payer["payer_info"]["first_name"], payer["payer_info"]["last_name"], quote_id) 
+            cursor.execute(update_query)
+            db_connection.commit();
+            db_connection.close()
             # Once all requesite info is collected, for an advertisment, an email will also need to be sent out and
             # the user is redirected to a page summarizing what they just ordered
             return jsonify({"location": "payment/paynow.html"})
-        except:
+        except Exception as e:
+            print("error: ", e)
             return "Error at capture update", 400
 
 
