@@ -28,29 +28,14 @@ def respond():
                 "id": 1,
                 "name": "Daytime Santa Monica",
                 "image": "sm-day.jpg",
-                "multiplier": 1.5
             }, {
                 "id": 2,
                 "name": "Night Time Hollywood",
                 "image": "hollywood-night.jpg",
-                "multiplier": 2
             }, {
                 "id": 3,
                 "name": "Morning Traffic",
                 "image": "traffic-morning.jpg",
-                "multiplier": 2.5
-            }
-        ],
-        "cheapLocations": [
-            {
-                "name": "Morning Hollywood",
-                "multiplier": 0.75
-            }, {
-                "name": "Night Time Santa Monica",
-                "multiplier": 0.75
-            }, {
-                "name": "Day Time Mid-City",
-                "multiplier": 0.5
             }
         ]
     }))
@@ -142,8 +127,8 @@ def handle_cart():
             # need to be verified before the user is allowed to purchase the ads 
             file = request.files.get("file")
             file.filename = str(uuid4()) + ".jpg"
-            payer = request.form.get("payer")
-            cart = request.form.get("cart")
+            cart = json.loads(request.form.get("cart"))
+            quote_id = request.form.get("quoteId")
             file = request.files.get("file")
             file.filename = str(uuid4()) + ".jpg"
             if file:
@@ -153,12 +138,18 @@ def handle_cart():
             cursor = db_connection.cursor()
             cursor.execute(asset_query)
             db_connection.commit()
-
+            asset_id = cursor.lastrowid
+            purchases_query = "insert into purchases (quote_id, service, asset_id, extra_days, extra_minutes_per_day, total_price, days, price_per_day, per_minute_per_day, start_date, end_date) values ('{}', 'paypal', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(quote_id, asset_id, cart["addedDays"], cart["addedMinutes"], cart["total"], cart["days"], cart["pricePerDay"], cart["perMinutePerDay"], cart["start"], cart["end"])
+            cursor.execute(purchases_query)
+            db_connection.commit()
+            cursor.execute("SELECT * FROM table ORDER BY id DESC LIMIT 1")
+            print(cursor.fetchone())
             db_connection.close()
             # The object that is persisted needs to have quote id, service (currently paypal), asset id (photo),
             # order id (from paypal), user's email (from paypal), total cost, added days, added mins per day, Paid (true or false)
             return 'Advertising Successfully Reserved', 200
-        except:
+        except Exception as e:
+            print(e)
             return "Error on attempt at initial capture", 500
     if request.method == "PUT":
         try:
