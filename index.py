@@ -7,9 +7,12 @@ import json
 from modules import s3
 from uuid import uuid4
 import datetime
+from flask_mail import Mail, Message
 
 app = Flask(__name__, static_folder="/static")
 app.config["UPLOAD_FOLDER"] = "./user_images"
+app.config["TESTING"] = True
+mail = Mail(app)
 
 DATABASE = os.getcwd() + "/ad-platform.db"
 
@@ -163,6 +166,14 @@ def handle_cart():
             db_connection.close()
             # Once all requesite info is collected, for an advertisment, an email will also need to be sent out and
             # the user is redirected to a page summarizing what they just ordered
+            msg = Message("Hello", 
+                sender="alex@waive.car",
+                recipients=["daleighan@gmail.com"]#[payer["payer_info"]["email"]]
+            )
+            msg.html = "<div>Test Email</div>"
+            with mail.record_messages() as outbox:
+                mail.send(msg)
+                print(outbox[0])
             return jsonify({"location": "payment/paynow.html"})
         except Exception as e:
             print("error: ", e)
