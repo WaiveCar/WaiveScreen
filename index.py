@@ -5,7 +5,6 @@ import sqlite3
 import os
 import json
 from modules import s3
-#from config.db import *
 from uuid import uuid4
 import datetime
 
