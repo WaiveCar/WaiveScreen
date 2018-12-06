@@ -1,14 +1,18 @@
-from flask import Flask, send_from_directory, request, session, make_response, abort, redirect, jsonify
+from flask import Flask, send_from_directory, request, session, make_response, abort, redirect, jsonify, g
+import sqlite3
 from werkzeug.utils import secure_filename
+import sqlite3
 import os
 import json
 from modules import s3
-from config.db import *
+#from config.db import *
 from uuid import uuid4
 import datetime
 
 app = Flask(__name__, static_folder="/static")
 app.config["UPLOAD_FOLDER"] = "./user_images"
+
+DATABASE = os.getcwd() + "/ad-platform.db"
 
 active_sessions = dict()
 
@@ -144,11 +148,18 @@ def handle_cart():
             file.filename = str(uuid4()) + ".jpg"
             if file:
                 uploaded = s3.upload_s3(file)
+            asset_query = "insert into assets (path) values ('{}');".format(file.filename)
+            db_connection = sqlite3.connect(DATABASE)
+            cursor = db_connection.cursor()
+            cursor.execute(asset_query)
+            db_connection.commit()
+
+            db_connection.close()
             # The object that is persisted needs to have quote id, service (currently paypal), asset id (photo),
             #order id (from paypal), user's email (from paypal), total cost, added days, added mins per day, Paid (true or false)
             return 'Advertising Successfully Reserved', 200
         except:
-            return "error capturing cart", 500
+            return "Error on attempt at initial capture", 500
     if request.method == "PUT":
         try:
             quote_id = request.json["quoteId"]
@@ -156,7 +167,7 @@ def handle_cart():
             payment_info = request.json["paymentInfo"]
             return jsonify({"location": "payment/paynow.html"})
         except:
-            return "error capturing cart", 400
+            return "Error at capture update", 400
 
 
 @app.route("/", defaults={"path": ""})
