@@ -156,7 +156,7 @@ def handle_cart():
 
             db_connection.close()
             # The object that is persisted needs to have quote id, service (currently paypal), asset id (photo),
-            #order id (from paypal), user's email (from paypal), total cost, added days, added mins per day, Paid (true or false)
+            # order id (from paypal), user's email (from paypal), total cost, added days, added mins per day, Paid (true or false)
             return 'Advertising Successfully Reserved', 200
         except:
             return "Error on attempt at initial capture", 500
@@ -165,6 +165,9 @@ def handle_cart():
             quote_id = request.json["quoteId"]
             payer = request.json["payer"]
             payment_info = request.json["paymentInfo"]
+
+            # Once all requesite info is collected, for an advertisment, an email will also need to be sent out and
+            # the user is redirected to a page summarizing what they just ordered
             return jsonify({"location": "payment/paynow.html"})
         except:
             return "Error at capture update", 400
