@@ -119,6 +119,14 @@ def get_deals():
         active_sessions[quote_id] = deal
         return jsonify(deal)
 
+@app.route("/prev_cart")
+def retrieve_cart():
+    old_session_id = request.headers.get("Session-Id")
+    if old_session_id in active_sessions:
+        return jsonify(active_sessions[old_session_id][0])
+    else:
+        return "No Previous Purchase", 400
+
 @app.route("/capture", methods=["POST", "PUT"])
 def handle_cart():
     if request.method == "POST":
