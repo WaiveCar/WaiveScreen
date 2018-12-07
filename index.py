@@ -153,7 +153,7 @@ def handle_cart():
             return 'Advertising Successfully Reserved', 200
         except Exception as e:
             print(e)
-            return "Error on attempt at initial capture", 500
+            return "Error on attempt at initial capture", 400
     if request.method == "PUT":
         try:
             quote_id = request.json["quoteId"]
@@ -184,7 +184,7 @@ def handle_cart():
             with mail.record_messages() as outbox:
                 mail.send(msg)
                 print(outbox[0])
-            return jsonify({"location": "payment/paynow.html"})
+            return jsonify({"location": "confirm.html"})
         except Exception as e:
             print("error: ", e)
             return "Error at capture update", 400
