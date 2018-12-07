@@ -131,6 +131,7 @@ def handle_cart():
             file.filename = str(uuid4()) + ".jpg"
             cart = json.loads(request.form.get("cart"))
             quote_id = request.form.get("quoteId")
+            active_sessions[quote_id] = [cart]
             file = request.files.get("file")
             file.filename = str(uuid4()) + ".jpg"
             '''
@@ -166,11 +167,20 @@ def handle_cart():
             db_connection.close()
             # Once all requesite info is collected, for an advertisment, an email will also need to be sent out and
             # the user is redirected to a page summarizing what they just ordered
+            cart = active_sessions[quote_id][0]
             msg = Message("Hello", 
                 sender="alex@waive.car",
-                recipients=["daleighan@gmail.com"]#[payer["payer_info"]["email"]]
+                recipients=[payer["payer_info"]["email"]]
             )
-            msg.html = "<div>Test Email</div>"
+            msg.subject = "Thank you for your WaiveAds purchase!"
+            msg.html = f"""<div>
+                <div>Dear {payer['payer_info']['first_name']} {payer['payer_info']['last_name']}</div>
+                <div>Thank you for your recent purchase of screentime with Waive! Your advertising will run from {cart['start']} to 
+                {cart['end']} and a total of {cart['days'] + cart['addedDays']} days for {cart['addedMinutes'] + round(cart['secondsPerDay'] / 60, 2)} 
+                minutes a day. The total price for this advertising is ${round(cart['total'] / 100, 2)}</div>
+                <div>Thanks,</div>
+                <div>Waive</div>
+                </div>"""
             with mail.record_messages() as outbox:
                 mail.send(msg)
                 print(outbox[0])
