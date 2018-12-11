@@ -292,7 +292,16 @@ void loop() {
   voltageTransmit = aveVoltageReading;
   thermTransmit = aveThermReading;
 
-  float current = aveCurrentReading/1023.0 * 73.3 - 36.7;
+  float current = 0.0;
+  if(aveCurrentReading > 511){    // different current sense chips are in opposite directions with different null offsets. 
+    //ACS711EX
+    current = aveCurrentReading/1023.0 * 73.3 - 36.7;
+  }
+  else{
+    //GY-712-30A
+    current = (513-aveCurrentReading)/1023.0 * 60.0;
+  }
+
   float voltage = aveVoltageReading/1023.0 * 3.6; // voltage reading is based on aref which is appx 3.6V
   voltage = voltage * 368000.0/68000.0; // voltage is now v_in after reversing the voltage divider
   float temp_c = 1023.0/aveThermReading - 1;
@@ -357,11 +366,11 @@ void loop() {
   Serial.write(fanSpeed);
   Serial.write(backlightValue);
 
-  //Optional switch to serial.print for troubleshooting.
+////  Optional switch to serial.print for troubleshooting.
 //  Serial.print(F("Elapsed time in ms: "));
 //  Serial.println(t_now);
 //  Serial.print(F("Current reading, value: "));
-//  Serial.print(currentTransmit);
+//  Serial.print(aveCurrentReading);
 //  Serial.print(F(", "));
 //  Serial.println(current);
 //  Serial.print(F("Voltage reading, value: "));
