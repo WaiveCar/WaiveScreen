@@ -1,4 +1,4 @@
-create table screen(
+create table if not exists screen(
   id integer primary key autoincrement, 
   uid text not null, 
   lat integer,
@@ -9,7 +9,7 @@ create table screen(
   last_seen datetime
 );
 
-create table campaign(
+create table if not exists campaign(
   id integer primary key autoincrement,
   asset text not null,
   duration_seconds integer,
@@ -17,7 +17,7 @@ create table campaign(
   end_time datetime
 )
 
-create table job(
+create table if not exists job(
   job_id integer primary key autoincrement,
   campaign_id integer,
   screen_id integer,
