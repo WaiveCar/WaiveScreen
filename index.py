@@ -176,6 +176,7 @@ def handle_cart():
             # Once all requesite info is collected, for an advertisment, an email will also need to be sent out and
             # the user is redirected to a page summarizing what they just ordered
             cart = active_sessions[quote_id][0]
+            active_sessions[quote_id][0]["email"] = payer["payer_info"]["email"]
             msg = Message("Hello", 
                 sender="alex@waive.car",
                 recipients=[payer["payer_info"]["email"]]
@@ -191,7 +192,6 @@ def handle_cart():
                 </div>"""
             with mail.record_messages() as outbox:
                 mail.send(msg)
-                print(outbox[0])
             return jsonify({"location": "confirm.html"})
         except Exception as e:
             print("error: ", e)
