@@ -11,6 +11,17 @@ from flask_mail import Mail, Message
 
 app = Flask(__name__, static_folder="/static")
 app.config["UPLOAD_FOLDER"] = "./user_images"
+# Currently, emails cannot be sent out sender info added to the config. Once the config items below are added, 
+# Emails should be able to be sent out. The info that is currently there just filler info, so it is all commented out
+'''
+app.config['MAIL_SERVER']='smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'yourId@gmail.com'
+app.config['MAIL_PASSWORD'] = '*****'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+'''
+# For emails to actually be sent out, the line below needs to be sent to False.
 app.config["TESTING"] = True
 mail = Mail(app)
 
@@ -122,7 +133,7 @@ def get_deals():
 @app.route("/prev_cart")
 def retrieve_cart():
     old_session_id = request.headers.get("Session-Id")
-    if old_session_id in active_sessions:
+    if old_session_id in active_sessions and active_sessions[old_session_id][0]:
         return jsonify(active_sessions[old_session_id][0])
     else:
         return "No Previous Purchase", 400
@@ -142,6 +153,7 @@ def handle_cart():
             active_sessions[quote_id] = [cart]
             file = request.files.get("file")
             file.filename = str(uuid4()) + ".jpg"
+            # To make the file actually upload to the s3 bucket, the lines below need to be commented back in
             '''
             if file:
                 uploaded = s3.upload_s3(file)
@@ -157,7 +169,9 @@ def handle_cart():
             db_connection.commit()
             db_connection.close()
             # The object that is persisted needs to have quote id, service (currently paypal), asset id (photo),
-            # order id (from paypal), user's email (from paypal), total cost, added days, added mins per day, Paid (true or false)
+            # order id (from paypal), user's email (from paypal), total cost, added days, added mins per day, Paid (true or false).
+            # the items that are not already added in this request are added in the put request that is made after the paypal
+            # payment is completed.
             return 'Advertising Successfully Reserved', 200
         except Exception as e:
             print(e)
