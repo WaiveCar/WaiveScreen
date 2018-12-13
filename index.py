@@ -230,15 +230,14 @@ def handle_cart():
                         </p>
                     </div>
                 </div>"""
-            print("Confirmation email: ", msg.html)
             with mail.record_messages() as outbox:
                 mail.send(msg)
             return jsonify({"location": "confirm.html"})
         except Exception as e:
-            print("error: ", e)
-            return "Error at capture update", 400
+            return "Error at capture update: {}".format(e), 400
 
-
+# This route is a catch-all for serving static resources. If the resource does not exist, the user
+# is sent the index page
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve(path):
