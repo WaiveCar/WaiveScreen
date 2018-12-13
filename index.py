@@ -196,14 +196,41 @@ def handle_cart():
                 recipients=[payer["payer_info"]["email"]]
             )
             msg.subject = "Thank you for your WaiveAds purchase!"
-            msg.html = f"""<div>
-                <div>Dear {payer['payer_info']['first_name']} {payer['payer_info']['last_name']}</div>
-                <div>Thank you for your recent purchase of screentime with Waive! Your advertising will run from {cart['start']} to 
-                {cart['end']} and a total of {cart['days'] + cart['addedDays']} days for {cart['addedMinutes'] + round(cart['secondsPerDay'] / 60, 2)} 
-                minutes a day. The total price for this advertising is ${round(cart['total'] / 100, 2)}</div>
-                <div>Thanks,</div>
-                <div>Waive</div>
+            msg.html = f"""
+                <div>
+                    <style>
+                        body, * {{
+                          font-family: 'Roboto', 'Helvetica', 'sans-serif';
+                        }}
+                        .header {{
+                          width: 100%;
+                        }}
+                        .header img {{
+                          width: 100%;
+                          height: auto;
+                        }}
+                        .main {{
+                          padding: 20px;
+                        }}
+                    </style>
+                    <div class="header">
+                        <img src="https://s3.amazonaws.com/waivecar-assets/email-logo.png">
+                    </div>
+                    <div class="main">
+                        <h3>Hello {payer['payer_info']['first_name']} {payer['payer_info']['last_name']}</h3>
+                        <p>
+                            Thank you for your recent purchase of screentime with Waive! Your advertising will run from {cart['start']} to 
+                            {cart['end']} and a total of {cart['days'] + cart['addedDays']} days for {cart['addedMinutes'] + 
+                            round(cart['secondsPerDay'] / 60, 2)} minutes a day. The total price for this advertising is 
+                            ${round(cart['total'] / 100, 2)}. Don't hesitate to contact us with any further questions!
+                        </p>
+                        <p>
+                            Best regards,<br>
+                            Waive
+                        </p>
+                    </div>
                 </div>"""
+            print("Confirmation email: ", msg.html)
             with mail.record_messages() as outbox:
                 mail.send(msg)
             return jsonify({"location": "confirm.html"})
