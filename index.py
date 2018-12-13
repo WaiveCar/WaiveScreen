@@ -88,8 +88,8 @@ def get_deals():
             "quotes": [
                 {
                     "days": 1,       
-                    "start": start,
-                    "end": start + datetime.timedelta(days=1),
+                    "start": start.strftime("%A %B %d %Y"),
+                    "end": (start + datetime.timedelta(days=1)).strftime("%A %B %d %Y"),
                     "basePrice": price,
                     "total": price,
                     "pricePerDay": price,
@@ -101,8 +101,8 @@ def get_deals():
                 },
                 {
                     "days": 7,
-                    "start": start,
-                    "end": start + datetime.timedelta(days=7),
+                    "start": start.strftime("%A %B %d %Y"),
+                    "end": (start + datetime.timedelta(days=7)).strftime("%A %B %d %Y"),
                     "basePrice": price,
                     "total": price,
                     "pricePerDay": int(price) / 7,
@@ -114,8 +114,8 @@ def get_deals():
                 },
                 {
                     "days": 30,
-                    "start": start,
-                    "end": start + datetime.timedelta(days=30),
+                    "start": start.strftime("%A %B %d %Y"),
+                    "end": (start + datetime.timedelta(days=30)).strftime("%A %B %d %Y"),
                     "basePrice": price,
                     "total": price,
                     "pricePerDay": int(price) / 30,
