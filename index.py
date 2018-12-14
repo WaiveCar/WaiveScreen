@@ -165,10 +165,8 @@ def handle_cart():
             file.filename = str(uuid4()) + ".jpg"
             # To make the file actually upload to the s3 bucket, the lines below need to be commented back in
             # They are currently commented out so as not to waste space in it
-            '''
             if file:
                 uploaded = s3.upload_s3(file)
-            '''
             # Here an entry is made in the assets table for the uploaded image. Additional info about
             # the asset will probably need to be added in the future
             asset_query = "insert into assets (path) values ('{}');".format(file.filename)
