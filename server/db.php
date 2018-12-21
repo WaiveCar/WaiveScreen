@@ -1,43 +1,59 @@
 <?php
 date_default_timezone_set('UTC');
-$dbPath = "${_SERVER['DOCUMENT_ROOT']}/../db/main.db";
-if(!file_exists($dbPath)) {
-  touch($dbPath);
+
+$_db = false;
+function getDb() {
+  global $_db;
+  if(!$_db) {
+    $dbPath = "${_SERVER['DOCUMENT_ROOT']}/../db/main.db";
+    if(!file_exists($dbPath)) {
+      touch($dbPath);
+    }
+    $_db = new SQLite3($dbPath);
+  }
+  return $_db;
 }
-$db = new SQLite3($dbPath);
-$db->exec('
-create table if not exists screen(
-  id integer primary key autoincrement, 
-  uid text not null, 
-  lat integer,
-  lng integer,
-  text default null, 
-  port integer, 
-  first_seen datetime, 
-  last_seen datetime
-);
 
-create table if not exists campaign(
-  id integer primary key autoincrement,
-  asset text not null,
-  duration_seconds integer,
-  start_time datetime,
-  end_time datetime
-);
+function setup() {
+  $db = getDb();
+  $schema = [
+    'create table if not exists screen(
+      id integer primary key autoincrement, 
+      uid text not null, 
+      lat integer,
+      lng integer,
+      text default null, 
+      port integer, 
+      first_seen datetime, 
+      last_seen datetime
+    )',
 
-create table if not exists job(
-  job_id integer primary key autoincrement,
-  campaign_id integer,
-  screen_id integer,
-  start_time datetime,
-  end_time datetime,
-  duration_seconds integer,
-  completion_seconds integer,
-  last_update datetime
-)');
+    'create table if not exists campaign(
+      id integer primary key autoincrement,
+      asset text not null,
+      duration_seconds integer,
+      start_time datetime,
+      end_time datetime
+    )',
+
+    'create table if not exists job(
+      job_id integer primary key autoincrement,
+      campaign_id integer,
+      screen_id integer,
+      start_time datetime,
+      end_time datetime,
+      duration_seconds integer,
+      completion_seconds integer,
+      last_update datetime
+    )'
+  ];
+  foreach($schema as $table) {
+    $res = $db->exec($table);
+  }
+}
 
 function db_incrstats($what) {
-  global $db;
+  $db = getDb();
   $me = me();
   $id = $me['id'];
 
@@ -46,13 +62,13 @@ function db_incrstats($what) {
 }
 
 function db_get($key) {
-  global $db;
+  $db = getDb();
   $key = $db->escapeString($key);
   return $db->querySingle("select name from location_cache where latlng='$key'");
 }
 
 function db_set($key, $val) {
-  global $db;
+  $db = getDb();
   $key = $db->escapeString($key);
   $val = $db->escapeString($val);
 

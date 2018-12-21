@@ -1,5 +1,10 @@
 #!/usr/bin/python3
 
+storage_base = '/var/lib/waivescreen/'
+
+import uuid
+import configparser
+
 # For the UUID of the system. This should
 # be robust to everything but the an actual
 # board replacement.
@@ -13,6 +18,12 @@ def get_uuid():
     import subprocess
     import json
 
+    fp = storage_base + 'config.ini'
+    config = configparser.ConfigParser()
+    if os.path.exists(fp)
+        config.read(fp)
+
+    
     m = subprocess.run(["/bin/ip","-j","-p","addr","show","enp3s0"], stdout=subprocess.PIPE)
     json = json.loads(m.stdout.decode('utf-8'))
 

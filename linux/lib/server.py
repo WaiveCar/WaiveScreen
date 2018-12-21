@@ -9,6 +9,7 @@ from datetime import timedelta, date
 import lib.misc as misc
 import lib.ts as TS
 import lib.db as DB
+import lib.cloud as cloud
 
 from flask import Flask, request, jsonify, Response, url_for, redirect, send_file
 from urllib.parse import quote
