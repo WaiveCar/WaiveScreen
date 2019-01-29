@@ -1,13 +1,10 @@
-# WaiveScreen
-WaiveScreen related stuff.
+Some terms:
 
-So some terms:
-
-  * Contract - this is what someone has paid us for displaying in a specific region at a specific time range. It's either satisfying, completed, failed, or pending.
+  * Contract - What someone has paid us for displaying in a specific region at a specific time range. There's assets and an account associated with it. It's either satisfying, completed, failed, or pending.
   * Screen - The thing that sits on top of the car
   * Server - Machine(s) living off in the cloud with Peter Pan, may be distributed with a load balancer
 
-Let's go over the SCREEN parts:
+The SCREEN parts:
 
   * Screen display 
     * Displays advertisements on the screen. 
@@ -29,15 +26,15 @@ Let's go over the SCREEN parts:
       * Talks to the Screen display to display specific assets
       * Gets the duration of time an asset was displayed on the screen and reports back to the Ad daemon
 
-Now the SERVER parts:
+The SERVER parts:
 
   * Ad daemon
     * Has contracts which states when and where ads should be displayed.
-    * Gets gps requests rom the Screen daemon and then responds with ad descriptions and terms to be displayed
+    * Gets gps requests rom the Screen daemon and then responds with ad descriptions and terms to be displayed.
     * Keeps track of who satisfied what part of the contract. This is a message passing model in distributed computing terms.
   * Report system
     * Talks with the Ad daemon and can generate real time "reports" of the current state of a contract. 
-    * FUTURE: Permits a user to change the terms of a contract, talking to the Ad daemon
+    * FUTURE: Permits a user to change the terms of a contract, talking to the Ad daemon.
     * Sends out reports at the end of a contract on whether it's completed or failed. 
 
 Things currently not covered:
