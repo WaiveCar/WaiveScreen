@@ -42,3 +42,13 @@ Things currently not covered:
   * Upgrade strategies
   * Installation management
   * Failure detection 
+
+Some notes:
+
+  * These are mostly ontological distinctions which may or may not manifest themselves in code or distinctly separate projects. For instance, there may not be "time-daemon.py" that does a bunch of stuff. It may just be a cronjob to a few shell scripts. The satisfiability of need is the requirement, not the existence of a siloed project.
+  * The overall goal is to keep each component 
+    * Good only at one thing
+    * Stupid at everything else  
+    * Not required to make judgements or have a dscriminatory power 
+    * A "vessel of intention" that chaperones contracts and physical records between end-points
+
