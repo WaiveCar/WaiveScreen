@@ -9,6 +9,7 @@ The SCREEN parts:
   * Screen display 
     * Displays advertisements on the screen. 
     * In charge of making sure it has the assets to display cached and has the content on the screen that it's been told to display.
+    * Records when and how long a display was shown to report back to the screen daemon.
   * Time daemon
     * Syncs timestamps and records the last time it was sync'd via an incrementing counter stored on disk. Should be simple
   * Screen sensor 
