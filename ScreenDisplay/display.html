@@ -1,0 +1,113 @@
+<style>
+body {
+  margin: 0;
+  background: black; 
+}
+img { 
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+@keyframes fadeOut {
+   0% {opacity: 1;}
+   100% {opacity: 0;} 
+} 
+@keyframes fadeIn {
+   0% {opacity: 0;}
+   100% {opacity: 1;} 
+} 
+.fadeOut {
+  animation-name: fadeOut;
+  animation-duration: 0.4s;
+}
+.fadeIn {
+  animation-name: fadeIn;
+  animation-duration: 0.4s;
+}
+</style>
+<body></body>
+<script>
+var assetList = [
+  "000-azure-005.png",
+  "000-azure-006.png",
+  "000-azure-007.png",
+  "000-green-005.png",
+  "000-green-006.png",
+  "000-green-007.png",
+  "000-purple-005.png",
+  "000-purple-006.png",
+  "000-purple-007.png",
+  "000-red-005.png",
+  "000-red-006.png",
+  "000-red-007.png"
+], dbList = [],
+  startTime = new Date(),
+  last = false,
+  fallback,
+  count = 0,
+  duration = 15;
+
+function image(what) {
+  var img = document.createElement('img');
+  img.src = "assets/" + what;
+  return img;
+}
+
+function createDoms() {
+  fallback = {
+    what: 'fallback.png',
+    dom:  image('fallback.png'),
+    satisfied: 0
+  };
+  assetList.forEach(function(row) {
+    dbList.push({
+      what: row,
+      dom: image(row),
+      commitment: 4,
+      satisfied: 0
+    });
+  });
+}
+createDoms();
+setInterval(function() {
+  // We note something we call "breaks" which designate which asset to show.
+  // This is a composite of what remains - this is two pass, eh, kill me.
+  var total = dbList.reduce(function (a, b) { return a + b.commitment - b.satisfied }, 0);
+  var breakpoint = Math.random() * total;
+  var toShow, accum = 0, row, prev = last;
+
+  if(total <= 0 ) {
+    toShow = fallback;
+  } else {
+
+    for(row of dbList) {
+      accum += row.commitment - row.satisfied;
+      if( accum > breakpoint ) {
+        toShow = row;
+        break;
+      }
+    }
+    if(!toShow) {
+      toShow = row;
+    }
+  }
+  toShow.satisfied += 1;
+  try {
+    if(prev && (prev.what !== toShow.what)) {
+      prev.dom.classList.add('fadeOut');
+      setTimeout(function() {
+        prev.dom.classList.remove('fadeOut');
+        document.body.removeChild(prev.dom);
+      }, 500);
+    }
+  } catch(ex) { console.log(ex)} 
+  if(prev && (prev.what !== toShow.what)) {
+    console.log(toShow, total);
+    toShow.dom.classList.add('fadeIn');
+    document.body.appendChild(toShow.dom);
+  }
+  last = toShow;
+}, 1200);
+</script>
