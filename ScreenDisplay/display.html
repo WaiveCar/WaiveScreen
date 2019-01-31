@@ -11,12 +11,12 @@ img {
   left: 0;
 }
 @keyframes fadeOut {
-   0% {opacity: 1;}
-   100% {opacity: 0;} 
+  0% {opacity: 1;}
+  100% {opacity: 0;} 
 } 
 @keyframes fadeIn {
-   0% {opacity: 0;}
-   100% {opacity: 1;} 
+  0% {opacity: 0;}
+  100% {opacity: 1;} 
 } 
 .fadeOut {
   animation-name: fadeOut;
@@ -43,6 +43,7 @@ var assetList = [
   "000-red-006.png",
   "000-red-007.png"
 ], dbList = [],
+  log = [],
   startTime = new Date(),
   last = false,
   fallback,
@@ -70,13 +71,18 @@ function createDoms() {
     });
   });
 }
+
 createDoms();
+
 setInterval(function() {
   // We note something we call "breaks" which designate which asset to show.
   // This is a composite of what remains - this is two pass, eh, kill me.
   var total = dbList.reduce(function (a, b) { return a + b.commitment - b.satisfied }, 0);
   var breakpoint = Math.random() * total;
-  var toShow, accum = 0, row, prev = last;
+  var toShow, 
+    accum = 0, 
+    row, 
+    prev = last;
 
   if(total <= 0 ) {
     toShow = fallback;
@@ -93,7 +99,9 @@ setInterval(function() {
       toShow = row;
     }
   }
+
   toShow.satisfied += 1;
+
   try {
     if(prev && (prev.what !== toShow.what)) {
       prev.dom.classList.add('fadeOut');
@@ -104,7 +112,8 @@ setInterval(function() {
     }
   } catch(ex) { console.log(ex)} 
   if(prev && (prev.what !== toShow.what)) {
-    console.log(toShow, total);
+    log.push([new Date(), toShow.what]);
+
     toShow.dom.classList.add('fadeIn');
     document.body.appendChild(toShow.dom);
   }
