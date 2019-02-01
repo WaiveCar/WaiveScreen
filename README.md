@@ -21,7 +21,6 @@ The SCREEN parts:
     * It's also responsible for recording these states in a timestamped way so that they can be retrieved later.
   * Screen daemon
     * Instruments and works with the screen sensor to pass readings over the network.
-    * Fork of my [DRR radio server](https://github.com/kristopolous/DRR/tree/waivescreen)
     * Works with the Ad daemon: 
       * Sends over gps readings from the Screen sensor and retrieves assets to display
       * Talks to the Screen display to display specific assets
