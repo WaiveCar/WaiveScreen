@@ -72,6 +72,18 @@ function createDoms() {
   });
 }
 
+function ws() {
+  var ws = new WebSocket("ws://127.0.0.1:5678/");
+  ws.onmessage = function (event) {
+    try {
+      var payload = JSON.parse(event.data);
+      assetList = payload;
+      createDoms();
+    } catch(ex) {
+    }
+  };
+}
+
 createDoms();
 
 setInterval(function() {
