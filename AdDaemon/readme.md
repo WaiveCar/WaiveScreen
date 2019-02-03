@@ -12,4 +12,8 @@ Screens are assigned tasks and timelines for completion.
 }
 
 
+Screens query the server for at most, the next (for now) 15 minutes of ads
 
+Notes:
+
+ MySQL spatial extension
