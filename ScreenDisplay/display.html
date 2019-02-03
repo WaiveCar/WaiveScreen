@@ -77,8 +77,21 @@ function ws() {
   ws.onmessage = function (event) {
     try {
       var payload = JSON.parse(event.data);
-      assetList = payload;
-      createDoms();
+
+      switch(payload.type) {
+        case 'asset': 
+          assetList = payload;
+          createDoms();
+          break;
+
+        case 'request':
+          ws.send({type: 'log', data: log.slice()});
+          log = [];
+          break;
+
+        default:
+          console.log("Unknown payload", payload);
+      } 
     } catch(ex) {
     }
   };
