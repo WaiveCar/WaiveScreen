@@ -140,7 +140,6 @@ def arduino_read(arduino):
     v_in = voltage * (r1 / r2 + 1)
 
     therm_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
-    print(voltage_read, current_read, therm_read)
     try:
         therm_resistance = (1023.0 / therm_read - 1) * 100000
     except ZeroDivisionError:
