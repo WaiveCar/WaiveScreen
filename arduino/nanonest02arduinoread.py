@@ -8,12 +8,21 @@ import sys
 import os
 
 
+arduino = False
+def get_arduino():
+    global arduino
+    if !arduino:
+        if sys.platform == "linux" or sys.platform == "linux2":
+            comPort = '/dev/ttyACM0'
+        else:
+            comPort = 'COM6'
+
+        arduino = serial.Serial(comPort, 9600, timeout=0.1)
+    return arduino
+
 def main():
-    if sys.platform == "linux" or sys.platform == "linux2":
-        com_port = '/dev/ttyACM0'
-    else:
-        com_port = 'COM6'
-    arduino = serial.Serial(com_port, 115200, timeout=0.1)
+    arduino = get_arduino()
+
     first_read = arduino_read(arduino)
     while(1):
         last_reading = nominal_operation(arduino=arduino, first_read=first_read)

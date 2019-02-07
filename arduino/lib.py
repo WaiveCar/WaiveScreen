@@ -5,6 +5,7 @@ import time
 import math
 import struct
 import sys
+import nanonest02arduinoread as ar
 
 arduino = False
 def get_arduino():
@@ -53,11 +54,9 @@ def get_gps():
     }
 
 def set_backlight(value):
-    arduino = get_arduino()
     if value < 1: 
         value = round(value * 256)
-
-    arduino.write(struct.pack('BB', 16, value))
+    return ar.set_backlight( get_arduino(), value )
 
 def set_fan(value):
     arduino = get_arduino()
