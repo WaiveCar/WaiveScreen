@@ -31,7 +31,7 @@ function setup() {
     'create table if not exists campaign(
       id integer primary key autoincrement,
       asset text not null,
-      duration_seconds integer,
+      duration integer,
       lat float default null,
       lng float default null,
       radius float default null,

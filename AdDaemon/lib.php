@@ -1,6 +1,25 @@
 <?
 include_once('db.php');
 
+function doError($what) {
+  return [
+    'res' => false,
+    'err' => $what
+  ];
+}
+
+function missing($what, $list) {
+  $res = [];
+  foreach($list as $field) {
+    if(!isset($what[$field])) {
+      $res[] = $field;
+    }
+  }
+  if(count($res)) {
+    return $res;
+  }
+}
+
 function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
   if(!$lat2) {
     if(empty($lon1['lng']) && empty($lat1['lng'])) {
@@ -21,10 +40,32 @@ function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
 }
 
 function create_campaign($opts) {
+  //
+  // Currently we don't care about radius ... eventually we'll be using
+  // spatial systems anyway so let's be simple.
+  //
+  // Also we eventually need a user system here.
+  //
+  $missing = missing($opts, ['duration', 'asset', 'lat', 'lng', 'start_time', 'end_time']);
+  if($missing) {
+    return doError("Missing parameters: " . implode(', ', $missing));
+  }
+
+  $campaign_id = db_insert(
+    'campaign', [
+      'asset' => $opts['asset'],
+      'duration' => $opts['duration'],
+      'lat' => $opts['lat'],
+      'lng' => $opts['lng'],
+      'start_time' => $opts['start_time'],
+      'end_time' => $opts['end_time']
+    ]
+  );
+  return $campaign_id;
 }
 
 function active_campaigns() {
-  return (getDb())->query('select * from campaigns where end_time < date("now") and start_time > date("now")');
+  return (getDb())->query('select * from campaign where end_time < date("now") and start_time > date("now")');
 }
 
 
