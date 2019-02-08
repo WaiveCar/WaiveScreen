@@ -20,8 +20,7 @@ function setup() {
     'create table if not exists screen(
       id integer primary key autoincrement, 
       uid text not null, 
-      lat integer,
-      lng integer,
+      location point default null,
       text default null, 
       port integer, 
       first_seen datetime, 
@@ -32,6 +31,8 @@ function setup() {
       id integer primary key autoincrement,
       asset text not null,
       duration_seconds integer,
+      center point default null,
+      radius float default null,
       start_time datetime,
       end_time datetime
     )',
@@ -40,9 +41,9 @@ function setup() {
       job_id integer primary key autoincrement,
       campaign_id integer,
       screen_id integer,
-      start_time datetime,
-      end_time datetime,
-      duration_seconds integer,
+      job_start datetime,
+      job_end datetime,
+      goal_seconds integer,
       completion_seconds integer,
       last_update datetime
     )'
