@@ -13,7 +13,7 @@ This is a "statement of work" which does the following:
 
 Request payload:
 
-'''
+```
 {
   id: ... id of screen ...
   lat: current latitude
@@ -26,11 +26,11 @@ Request payload:
     ...
   ]
 }
-'''
+```
 
 Response payload:
 
-'''
+```
 {
   res: true (if success)
   (err: err code if failure)
@@ -46,7 +46,7 @@ Response payload:
     }
   ]
 }
-'''
+```
 
 Notes (Subject to change):
 
