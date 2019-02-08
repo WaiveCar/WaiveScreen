@@ -3,6 +3,7 @@
 // October 2018
 //
 // MPU6050 code borrowed from open source arduino.cc user "Krodal".
+// version 1.1 (12.5.18) updated to account for current sense board options.
 
 
 #include<Wire.h>
@@ -17,6 +18,7 @@ int fanSpeed = 150, backlightValue = 220;
 #define NUMSAMPLES 100
 bool autofan = true;
 bool cpu_on = true;
+bool ide_debug = false;
 int j=0; // used to make sure the fan comes back on.
 int backlight_adjust = 1; // used to lower current draw at low voltage to save the battery
 
@@ -205,10 +207,11 @@ void calibrate_sensors() {
 
 
 void setup() {
-
+  
   int error;
   uint8_t c;
   Serial.begin(115200);
+  if(ide_debug) Serial.println("starting setup");
   // set analog reference aref pin (3v3)
   analogReference(EXTERNAL);
   pinMode(CURRENTPIN, INPUT);
@@ -217,9 +220,10 @@ void setup() {
   pinMode(fanPin, OUTPUT);
   pinMode(backlightPin, OUTPUT);
   pinMode(resetPin, OUTPUT);
-  // set the fanspeed and backlight before teh MPU-6050 setup to avoid black screen during serial connection setups. 
+  // set the fanspeed and backlight before the MPU-6050 setup to avoid black screen during serial connection setups. 
   analogWrite(backlightPin, backlightValue);
   analogWrite(fanPin, fanSpeed);
+  if(ide_debug) Serial.println("S1");
   
   // Initialize the 'Wire' class for the I2C-bus.
   Wire.begin();
@@ -229,25 +233,28 @@ void setup() {
   //    Clock source at internal 8MHz
   //    The device is in sleep mode.
   //
+  if(ide_debug) Serial.println("S2");
   error = MPU6050_read (MPU6050_WHO_AM_I, &c, 1);
   // According to the datasheet, the 'sleep' bit
   // should read a '1'. But I read a '0'.
   // That bit has to be cleared, since the sensor
   // is in sleep mode at power-up. Even if the
   // bit reads '0'.
+  if(ide_debug) Serial.println("S3");
   error = MPU6050_read (MPU6050_PWR_MGMT_2, &c, 1);
 
   // Clear the 'sleep' bit to start the sensor.
   MPU6050_write_reg (MPU6050_PWR_MGMT_1, 0);
-  
+  if(ide_debug) Serial.println("S4");
   //Initialize the angles
   calibrate_sensors();  
   set_last_read_angle_data(millis(), 0, 0, 0, 0, 0, 0);
+  if(ide_debug) Serial.println("finishing setup");
 
 }
 
 void loop() {
-
+  if(ide_debug) Serial.print("four");
   int error;
   accel_t_gyro_union accel_t_gyro;
 
@@ -263,7 +270,7 @@ void loop() {
   timeBuf[2] = (t_now >> 16) & 255;
   timeBuf[3] = (t_now >> 24) & 255;
 
-
+  if(ide_debug) Serial.print("five");
   // Setup to take current and thermistor samples through A2 and A0, respectively
   int currentSamples[NUMSAMPLES];
   int voltageSamples[NUMSAMPLES];
@@ -291,7 +298,7 @@ void loop() {
   currentTransmit =  aveCurrentReading;
   voltageTransmit = aveVoltageReading;
   thermTransmit = aveThermReading;
-
+  if(ide_debug) Serial.print("six");
   float current = 0.0;
   if(aveCurrentReading > 511){    // different current sense chips are in opposite directions with different null offsets. 
     //ACS711EX
@@ -320,12 +327,16 @@ void loop() {
       j = 0;
     }
   } 
-
+  if(ide_debug) Serial.print("seven");
   // use temp to set fanspeed;
   int temp_levels[] = {15, 20, 30, 35, 40};
   int temp_settings[] = {0, 102, 140, 180, 220, 255};
   if (autofan == true) {
-    if (temp_c < temp_levels[0]){
+    if (temp_c < -40){
+      // if thermistor breaks and becomes an open, temp is reported as -44C, in this instance, run fans at half speed to ensure no thermal damage.
+      fanSpeed = temp_settings[3];
+    }
+    else if (temp_c < temp_levels[0]){
       fanSpeed = temp_settings[0];
     } else if (temp_c < temp_levels[4]){
       fanSpeed = ((temp_c - temp_levels[0])/(temp_levels[4] - temp_levels[0]) * (temp_settings[5]-temp_settings[1])) + temp_settings[1];
@@ -337,61 +348,64 @@ void loop() {
   // set the fan and backlight each loop
   analogWrite(backlightPin, backlightValue);
   analogWrite(fanPin, fanSpeed);
+  if(ide_debug) Serial.print("eight");
+  if(!ide_debug) {
+    // Send the data over the serial bus
+    // write header (1B), generic 0xFF 
+    Serial.write(0xFF);
+    // write time
+    Serial.write(timeBuf, 4);
+    // write current reading and thermistor reading to serial (HB, LB)
+    Serial.write(highByte(currentTransmit));
+    Serial.write(lowByte(currentTransmit));
+    Serial.write(highByte(voltageTransmit));
+    Serial.write(lowByte(voltageTransmit));
+    Serial.write(highByte(thermTransmit));
+    Serial.write(lowByte(thermTransmit));
+    //Write Accel data, Gyro data, fanSpeed, and backlightValue to serial
+    Serial.write(highByte(accel_t_gyro.value.x_accel));
+    Serial.write(lowByte(accel_t_gyro.value.x_accel));
+    Serial.write(highByte(accel_t_gyro.value.y_accel));
+    Serial.write(lowByte(accel_t_gyro.value.y_accel));
+    Serial.write(highByte(accel_t_gyro.value.z_accel));
+    Serial.write(lowByte(accel_t_gyro.value.z_accel));
+    Serial.write(highByte(accel_t_gyro.value.x_gyro));
+    Serial.write(lowByte(accel_t_gyro.value.x_gyro));
+    Serial.write(highByte(accel_t_gyro.value.y_gyro));
+    Serial.write(lowByte(accel_t_gyro.value.y_gyro));
+    Serial.write(highByte(accel_t_gyro.value.z_gyro));
+    Serial.write(lowByte(accel_t_gyro.value.z_gyro));
+    Serial.write(fanSpeed);
+    Serial.write(backlightValue);
+  }
 
-  // Send the data over the serial bus
-  // write header (1B), generic 0xFF 
-  Serial.write(0xFF);
-  // write time
-  Serial.write(timeBuf, 4);
-  // write current reading and thermistor reading to serial (HB, LB)
-  Serial.write(highByte(currentTransmit));
-  Serial.write(lowByte(currentTransmit));
-  Serial.write(highByte(voltageTransmit));
-  Serial.write(lowByte(voltageTransmit));
-  Serial.write(highByte(thermTransmit));
-  Serial.write(lowByte(thermTransmit));
-  //Write Accel data, Gyro data, fanSpeed, and backlightValue to serial
-  Serial.write(highByte(accel_t_gyro.value.x_accel));
-  Serial.write(lowByte(accel_t_gyro.value.x_accel));
-  Serial.write(highByte(accel_t_gyro.value.y_accel));
-  Serial.write(lowByte(accel_t_gyro.value.y_accel));
-  Serial.write(highByte(accel_t_gyro.value.z_accel));
-  Serial.write(lowByte(accel_t_gyro.value.z_accel));
-  Serial.write(highByte(accel_t_gyro.value.x_gyro));
-  Serial.write(lowByte(accel_t_gyro.value.x_gyro));
-  Serial.write(highByte(accel_t_gyro.value.y_gyro));
-  Serial.write(lowByte(accel_t_gyro.value.y_gyro));
-  Serial.write(highByte(accel_t_gyro.value.z_gyro));
-  Serial.write(lowByte(accel_t_gyro.value.z_gyro));
-  Serial.write(fanSpeed);
-  Serial.write(backlightValue);
-
-////  Optional switch to serial.print for troubleshooting.
-//  Serial.print(F("Elapsed time in ms: "));
-//  Serial.println(t_now);
-//  Serial.print(F("Current reading, value: "));
-//  Serial.print(aveCurrentReading);
-//  Serial.print(F(", "));
-//  Serial.println(current);
-//  Serial.print(F("Voltage reading, value: "));
-//  Serial.print(voltageTransmit);
-//  Serial.print(F(", "));
-//  Serial.println(voltage);
-//  Serial.print(F("Thermistor reading, temp_c value: "));
-//  Serial.print(thermTransmit);
-//  Serial.print(F(", "));
-//  Serial.println(temp_c);
-//  Serial.print(F("Accel X, Y, Z: "));
-//  Serial.print(accel_t_gyro.value.x_accel);
-//  Serial.print(F(", "));
-//  Serial.print(accel_t_gyro.value.y_accel);
-//  Serial.print(F(", "));
-//  Serial.println(accel_t_gyro.value.z_accel);
-//  Serial.print(F("Fan Speed, Backlight Brightness: "));
-//  Serial.print(fanSpeed);
-//  Serial.print(F(", "));
-//  Serial.println(backlightValue);
-
+  if(ide_debug){
+  ////  Optional switch to serial.print for troubleshooting.
+    Serial.print(F("Elapsed time in ms: "));
+    Serial.println(t_now);
+    Serial.print(F("Current reading, value: "));
+    Serial.print(aveCurrentReading);
+    Serial.print(F(", "));
+    Serial.println(current);
+    Serial.print(F("Voltage reading, value: "));
+    Serial.print(voltageTransmit);
+    Serial.print(F(", "));
+    Serial.println(voltage);
+    Serial.print(F("Thermistor reading, temp_c value: "));
+    Serial.print(thermTransmit);
+    Serial.print(F(", "));
+    Serial.println(temp_c);
+    Serial.print(F("Accel X, Y, Z: "));
+    Serial.print(accel_t_gyro.value.x_accel);
+    Serial.print(F(", "));
+    Serial.print(accel_t_gyro.value.y_accel);
+    Serial.print(F(", "));
+    Serial.println(accel_t_gyro.value.z_accel);
+    Serial.print(F("Fan Speed, Backlight Brightness: "));
+    Serial.print(fanSpeed);
+    Serial.print(F(", "));
+    Serial.println(backlightValue);
+    }
 //  if (current < 1.0){
 //    cpu_on = false;
 //    delay(1000);
@@ -411,11 +425,11 @@ void loop() {
 //  } else {
 //    backlight_adjust = 1;
 //  }
-
+  if(ide_debug) Serial.print("one");
   if (voltage < 13.0 & current < 2.0){
     delay(1000);
   }
-
+  if(ide_debug) Serial.print("two");
   // check if there has been serial signal received (min 2 bytes)
   if(Serial.available() > 1) {
     delay(10);
@@ -457,6 +471,7 @@ void loop() {
   }
   // todo, adjust delay as desired - delay keeps serial port from being swamped.
 //  delay(10);
+  if(ide_debug) Serial.print("three");
 }
 
 // --------------------------------------------------------
