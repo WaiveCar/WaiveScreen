@@ -14,6 +14,10 @@ function getDb() {
   return $_db;
 }
 
+function db_string($what) {
+  return "'$what'";
+}
+
 function setup() {
   $db = getDb();
   $schema = [
@@ -74,11 +78,15 @@ function get_campaign_completion($id) {
 }
 
 function get_job($id) {
-  return (getDb())->querySingle("select * from job where id=$id");
+  return (getDb())->querySingle("select * from job where id=$id", true);
 }
 
 function get_campaign($id) {
-  return (getDb())->querySingle("select * from campaign where id=$id");
+  return (getDb())->querySingle("select * from campaign where id=$id", true);
+}
+
+function get_screen($id) {
+  return (getDb())->querySingle("select * from screen where id=$id", true);
 }
 
 function db_update($table, $id, $kv) {
@@ -113,28 +121,3 @@ function db_insert($table, $kv) {
     return $db->lastInsertRowID();
   }
 }
-
-/*
-function db_incrstats($what) {
-  $db = getDb();
-  $me = me();
-  $id = $me['id'];
-
-  @$db->exec("insert into users(user_id) values($id)");
-  $db->exec("update users set $what = $what + 1, last = current_timestamp where user_id = $id");
-}
-
-function db_get($key) {
-  $db = getDb();
-  $key = $db->escapeString($key);
-  return $db->querySingle("select name from location_cache where latlng='$key'");
-}
-
-function db_set($key, $val) {
-  $db = getDb();
-  $key = $db->escapeString($key);
-  $val = $db->escapeString($val);
-
-  $db->exec("insert into location_cache(latlng, name, created) values('$key', '$val', date('now'))");
-}
- */

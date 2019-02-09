@@ -1,5 +1,6 @@
 <?
 include_once('db.php');
+$PORT_OFFSET = 7000;
 
 function doError($what) {
   return [
@@ -68,6 +69,22 @@ function active_campaigns() {
   return (getDb())->query('select * from campaign where end_time < date("now") and start_time > date("now")');
 }
 
+function create_screen($uid) {
+  global $PORT_OFFSET;
+  // we need to get the next available port number
+  $nextport = intval($db->querySingle('select max(port) from screen')) + 1;
+
+  $screen_id = db_insert(
+    'screen', [
+      'uid' => db_string($uid),
+      'port' => $nextport,
+      'first_seen' => 'current_timestamp',
+      'last_seen' => 'current_timestamp',
+    ]
+  );
+
+  return $nextport + $PORT_OFFSET;
+}
 
 function create_job($campaignId, $screenId) {
   $ttl = get_campaign_remaining($campaignId);
@@ -94,9 +111,10 @@ function update_job($jobId, $completion_seconds) {
 }
 
 function sow($payload) {
-  db_update('screen', $payload['id'], [
+  db_update('screen', db_string($payload['uid']), [
     'lat' => $payload['lat'],
-    'lng' => $payload['lng']
+    'lng' => $payload['lng'],
+    'last_seen' => 'current_timestamp'
   ]);
 
   foreach($payload['work'] as $job) {
@@ -104,12 +122,12 @@ function sow($payload) {
   }
 
   // right now we are being realllly stupid.
-  $nearby_campaigns = array_filter(active_campaigns(), function($campaign) uses ($payload) {
+  $nearby_campaigns = array_filter(active_campaigns(), function($campaign) use ($payload) {
     // under 1.5km
     return distance($campaign, $payload) < 1500;
   });
 
-  $job_list = array_map(function($row) uses ($payload) {
+  $job_list = array_map(function($row) use ($payload) {
     $job = create_job($row['id'], $payload['id']);
 
     return array_merge([
