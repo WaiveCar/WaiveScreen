@@ -86,7 +86,8 @@ function get_campaign($id) {
 }
 
 function get_screen($id) {
-  return (getDb())->querySingle("select * from screen where id=$id", true);
+  $id = db_string($id);
+  return (getDb())->querySingle("select * from screen where uid=$id", true);
 }
 
 function db_update($table, $id, $kv) {

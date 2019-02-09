@@ -2,6 +2,11 @@
 include_once('db.php');
 $PORT_OFFSET = 7000;
 
+function jemit($what) {
+  echo json_encode($what);
+  exit;
+}
+
 function doError($what) {
   return [
     'res' => false,
@@ -38,31 +43,6 @@ function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
   $dist = rad2deg($dist);
   // meters
   return $dist * 60 * 1397.60312636;
-}
-
-function create_campaign($opts) {
-  //
-  // Currently we don't care about radius ... eventually we'll be using
-  // spatial systems anyway so let's be simple.
-  //
-  // Also we eventually need a user system here.
-  //
-  $missing = missing($opts, ['duration', 'asset', 'lat', 'lng', 'start_time', 'end_time']);
-  if($missing) {
-    return doError("Missing parameters: " . implode(', ', $missing));
-  }
-
-  $campaign_id = db_insert(
-    'campaign', [
-      'asset' => $opts['asset'],
-      'duration' => $opts['duration'],
-      'lat' => $opts['lat'],
-      'lng' => $opts['lng'],
-      'start_time' => $opts['start_time'],
-      'end_time' => $opts['end_time']
-    ]
-  );
-  return $campaign_id;
 }
 
 function active_campaigns() {
@@ -110,8 +90,20 @@ function update_job($jobId, $completion_seconds) {
   ]);
 }
 
+// ----
+//
+// end points
+//
+// ----
+
 function sow($payload) {
-  db_update('screen', db_string($payload['uid']), [
+  $uid = $payload['uid'];
+  $screen = get_screen($uid);
+  if(!$screen) {
+    return create_screen($uid);
+  }
+
+  db_update('screen', db_string($uid), [
     'lat' => $payload['lat'],
     'lng' => $payload['lng'],
     'last_seen' => 'current_timestamp'
@@ -141,4 +133,29 @@ function sow($payload) {
     'res' => true,
     'jobs' => $job_list
   ];
+}
+
+function create_campaign($opts) {
+  //
+  // Currently we don't care about radius ... eventually we'll be using
+  // spatial systems anyway so let's be simple.
+  //
+  // Also we eventually need a user system here.
+  //
+  $missing = missing($opts, ['duration', 'asset', 'lat', 'lng', 'start_time', 'end_time']);
+  if($missing) {
+    return doError("Missing parameters: " . implode(', ', $missing));
+  }
+
+  $campaign_id = db_insert(
+    'campaign', [
+      'asset' => $opts['asset'],
+      'duration' => $opts['duration'],
+      'lat' => $opts['lat'],
+      'lng' => $opts['lng'],
+      'start_time' => $opts['start_time'],
+      'end_time' => $opts['end_time']
+    ]
+  );
+  return $campaign_id;
 }
