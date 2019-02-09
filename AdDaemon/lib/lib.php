@@ -46,7 +46,7 @@ function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
 }
 
 function active_campaigns() {
-  return (getDb())->query('select * from campaign where end_time < date("now") and start_time > date("now")');
+  return (getDb())->query('select * from campaign where end_time < current_timestamp and start_time > current_timestamp');
 }
 
 function create_screen($uid) {
@@ -74,8 +74,8 @@ function create_job($campaignId, $screenId) {
     'job', [
       'campaign_id' => $campaignId,
       'screen_id' => $screenId,
-      'job_start' => 'date("now")',
-      'last_update' => 'date("now")',
+      'job_start' => 'current_timestamp',
+      'last_update' => 'current_timestamp',
       'goal_seconds' => $goal_seconds
     ]
   );
@@ -86,7 +86,7 @@ function create_job($campaignId, $screenId) {
 function update_job($jobId, $completion_seconds) {
   return db_update('job', $jobId, [
     'completion_seconds' => $completion_seconds,
-    'job_end' => 'date("now")'
+    'job_end' => 'current_timestamp'
   ]);
 }
 
