@@ -102,6 +102,7 @@ def get_payload():
     fan_speed = ord(arduino.read())
     backlight_value = ord(arduino.read())
 
+    """
     return {
         'ts': time_ms,
         'backlight': backlight_value,
@@ -125,6 +126,26 @@ def get_payload():
             'read': therm_read,
             'resistance': therm_resistance
         },
+        'pitch': pitch,
+        'roll': roll,
+        'yaw': yaw
+    }
+    """
+    return {
+        'ts': time_ms,
+        'backlight': backlight_value,
+        'fan': fan_speed,
+        'temp': temp_c,
+        'current_raw': current_read,
+        'current_normatlized': current,
+        'accel_x':  accel_x,
+        'accel_y': accel_y,
+        'accel:z': accel_z
+        'gyro_x': gyro_x,
+        'gyro_y': gyro_y,
+        'gyro_z': gyro_z
+        'therm_read': therm_read,
+        'therm_resistance': therm_resistance
         'pitch': pitch,
         'roll': roll,
         'yaw': yaw
