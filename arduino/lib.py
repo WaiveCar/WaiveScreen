@@ -140,7 +140,7 @@ def get_payload():
         'current_normatlized': current,
         'accel_x':  accel_x,
         'accel_y': accel_y,
-        'accel:z': accel_z
+        'accel_z': accel_z
         'gyro_x': gyro_x,
         'gyro_y': gyro_y,
         'gyro_z': gyro_z
