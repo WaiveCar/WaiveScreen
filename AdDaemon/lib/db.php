@@ -5,7 +5,7 @@ $_db = false;
 function getDb() {
   global $_db;
   if(!$_db) {
-    $dbPath = "${_SERVER['DOCUMENT_ROOT']}/../db/main.db";
+    $dbPath = "${_SERVER['DOCUMENT_ROOT']}/db/main.db";
     if(!file_exists($dbPath)) {
       touch($dbPath);
     }
@@ -53,9 +53,11 @@ function setup() {
       job_end datetime
     )'
   ];
+  $res = [];
   foreach($schema as $table) {
-    $res = $db->exec($table);
+    $res[] = [$db->exec($table), $table];
   }
+  return $res;
 }
 
 function get_campaign_remaining($id) {
