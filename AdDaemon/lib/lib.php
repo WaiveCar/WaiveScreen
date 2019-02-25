@@ -45,8 +45,11 @@ function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
   return $dist * 60 * 1397.60312636;
 }
 
+function campaigns($clause = '') {
+  return (getDb())->query("select * from campaign $clause");
+}
 function active_campaigns() {
-  return (getDb())->query('select * from campaign where end_time < current_timestamp and start_time > current_timestamp');
+  return campaigns('where end_time < current_timestamp and start_time > current_timestamp');
 }
 
 function create_screen($uid) {
@@ -146,15 +149,16 @@ function create_campaign($opts) {
   if($missing) {
     return doError("Missing parameters: " . implode(', ', $missing));
   }
+  $opts = db_clean($opts);
 
   $campaign_id = db_insert(
     'campaign', [
-      'asset' => $opts['asset'],
+      'asset' => db_string($opts['asset']),
       'duration' => $opts['duration'],
       'lat' => $opts['lat'],
       'lng' => $opts['lng'],
-      'start_time' => $opts['start_time'],
-      'end_time' => $opts['end_time']
+      'start_time' => db_string($opts['start_time']),
+      'end_time' => db_string($opts['end_time'])
     ]
   );
   return $campaign_id;
