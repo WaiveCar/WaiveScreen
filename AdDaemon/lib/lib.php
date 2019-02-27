@@ -46,7 +46,7 @@ function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
 }
 
 function campaigns($clause = '') {
-  return (getDb())->query("select * from campaign $clause");
+  return db_all("select * from campaign $clause");
 }
 function active_campaigns() {
   return campaigns('where end_time < current_timestamp and start_time > current_timestamp');
@@ -134,7 +134,7 @@ function sow($payload) {
   
   return [
     'res' => true,
-    'jobs' => $job_list
+    'data' => $job_list
   ];
 }
 
@@ -161,5 +161,8 @@ function create_campaign($opts) {
       'end_time' => db_string($opts['end_time'])
     ]
   );
-  return $campaign_id;
+  return [
+    'res' => true, 
+    'data' => $campaign_id
+  ];
 }

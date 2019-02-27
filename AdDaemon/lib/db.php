@@ -113,13 +113,22 @@ function db_update($table, $id, $kv) {
   return $db->exec("update $table set $fields where id = $id");
 }
 
-function db_clean($what) {
+function db_clean($kv) {
   $res = [];
   $db = getDb();
   foreach($kv as $k => $v) {
     $res[$db->escapeString($k)] = $db->escapeString($v);
   } 
   return $res;
+}
+
+function db_all($qstr) {
+  $rowList = [];
+  $res = (getDb())->query($qstr);
+  while( $row = $res->fetchArray() ) {
+    $rowList[] = $row;
+  } 
+  return $rowList;
 }
 
 function db_insert($table, $kv) {
