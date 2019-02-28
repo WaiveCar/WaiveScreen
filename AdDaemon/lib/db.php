@@ -55,7 +55,7 @@ function setup() {
   $db = getDb();
   global $SCHEMA;
   $res = [];
-  foreach(array_values($schema) as $table) {
+  foreach(array_values($SCHEMA) as $table) {
     $res[] = [$db->exec($table), $table];
   }
   return $res;
@@ -63,8 +63,17 @@ function setup() {
 
 function truncate() {
   $dbPath = "${_SERVER['DOCUMENT_ROOT']}/db/main.db";
-  unlink($dbPath);
-  return setup();
+  if (!unlink($dbPath)) {
+    return [
+      'res' => false,
+      'data' => "Couldn't delete file $dbPath"
+    ];
+  }
+
+  return [
+    'res' => true,
+    'data' => setup()
+  ];
 }
 
 function get_campaign_remaining($id) {
@@ -95,8 +104,13 @@ function get_campaign($id) {
 }
 
 function get_screen($id) {
-  $id = db_string($id);
-  return (getDb())->querySingle("select * from screen where uid=$id", true);
+  if(is_string($id)) {
+    $key = 'uid';
+    $id = db_string($id);
+  } else {
+    $key = 'id';
+  }
+  return (getDb())->querySingle("select * from screen where $key=$id", true);
 }
 
 function db_update($table, $id, $kv) {

@@ -7,11 +7,22 @@ action=
 
 if [ "$cmd" == "campaign" ]; then
   if [ "$verb" == "create" ]; then
-    POST="duration=90&asset=test.jpg&lat=-118&lng=90&start_time=2019-02-18T08:44:59-08:00&end_time=2019-02-28T08:44:59-08:00"
+    now=`date +%s`
+
+    # 60 day
+    past=`date -d @$(( now - 60 * 24 * 60 * 60 )) -Iminutes`
+    future=`date -d @$(( now + 60 * 24 * 60 * 60 )) -Iminutes`
+
+    POST="duration=90&asset=test.jpg&lat=-118&lng=90&start_time=$past&end_time=$future"
     action="Creating campaigns"
   else
     action="Showing campaigns"
   fi
+elif [ "$cmd" == "reset" ]; then
+  action="Resetting data"
+elif [ "$cmd" == "sow" ]; then
+  id=`uuidgen`
+  POST="uid=$id&lat=-118&lng=90"
 else
   echo Try one of the following arguments
   echo
@@ -19,6 +30,7 @@ else
   echo sow - declare a statement of work
   echo reset - reset the data and play again
   echo
+
   exit
 fi
 

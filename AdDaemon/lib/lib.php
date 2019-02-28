@@ -55,7 +55,7 @@ function active_campaigns() {
 function create_screen($uid) {
   global $PORT_OFFSET;
   // we need to get the next available port number
-  $nextport = intval($db->querySingle('select max(port) from screen')) + 1;
+  $nextport = intval((getDb())->querySingle('select max(port) from screen')) + 1;
 
   $screen_id = db_insert(
     'screen', [
@@ -66,7 +66,7 @@ function create_screen($uid) {
     ]
   );
 
-  return $nextport + $PORT_OFFSET;
+  return get_screen($screen_id);
 }
 
 function create_job($campaignId, $screenId) {
@@ -103,7 +103,7 @@ function sow($payload) {
   $uid = $payload['uid'];
   $screen = get_screen($uid);
   if(!$screen) {
-    return create_screen($uid);
+    $screen = create_screen($uid);
   }
 
   db_update('screen', db_string($uid), [
@@ -112,12 +112,15 @@ function sow($payload) {
     'last_seen' => 'current_timestamp'
   ]);
 
-  foreach($payload['work'] as $job) {
-    update_job($job['id'], $job['done']);
+  if(array_key_exists('work', $payload) && is_array($payload['work'])) {
+    foreach($payload['work'] as $job) {
+      update_job($job['id'], $job['done']);
+    }
   }
 
   // right now we are being realllly stupid.
   $nearby_campaigns = array_filter(active_campaigns(), function($campaign) use ($payload) {
+    var_dump([$campaign, $payload]);
     // under 1.5km
     return distance($campaign, $payload) < 1500;
   });
