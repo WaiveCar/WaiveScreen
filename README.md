@@ -15,13 +15,14 @@ The SCREEN parts:
   * Screen sensor 
     * Records the DoF, temperature, accelerometer, GPS, and video data from the screen and stores it in appropriate ways so that arbitrary timeslices can be reconstituted.  
     * Responsible for making sure it doesn't store too much historical data that it eats up the disk space and is responsible for knowing what historical records it has.
+    * Shares a schema with the Sceen Daemon
   * Power daemon 
     * Makes sure that the screen and various power systems are either off or on depending on a variety of factors. 
     * Knows whether the car is plugged in, the ignition is on, and what strategies to execute based on the power draw, which it talks to the screen sensor to get.
     * It's also responsible for recording these states in a timestamped way so that they can be retrieved later.
   * Screen daemon
-    * Instruments and works with the screen sensor to pass readings over the network.
-    * Works with the Ad daemon: 
+    * Works with the Screen Sensor to pass readings over the network.
+    * Works with the Ad Daemon: 
       * Sends over gps readings from the Screen sensor and retrieves assets to display
       * Talks to the Screen display to display specific assets
       * Gets the duration of time an asset was displayed on the screen and reports back to the Ad daemon
