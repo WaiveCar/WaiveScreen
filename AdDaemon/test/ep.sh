@@ -21,7 +21,10 @@ if [ "$cmd" == "campaign" ]; then
 elif [ "$cmd" == "reset" ]; then
   action="Resetting data"
 elif [ "$cmd" == "sow" ]; then
-  id=`uuidgen`
+  id=$verb
+  if [ -z "$verb" ]; then
+    id=`uuidgen`
+  fi
   POST="uid=$id&lat=-118&lng=90"
 else
   echo Try one of the following arguments

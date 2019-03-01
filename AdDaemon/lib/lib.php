@@ -49,7 +49,7 @@ function campaigns($clause = '') {
   return db_all("select * from campaign $clause");
 }
 function active_campaigns() {
-  return campaigns('where end_time < current_timestamp and start_time > current_timestamp');
+  return campaigns('where end_time > current_timestamp and start_time < current_timestamp');
 }
 
 function create_screen($uid) {
@@ -71,6 +71,7 @@ function create_screen($uid) {
 
 function create_job($campaignId, $screenId) {
   $ttl = get_campaign_remaining($campaignId);
+
   $goal_seconds = min($ttl, 60 * 4);
 
   $job_id = db_insert(
@@ -82,6 +83,7 @@ function create_job($campaignId, $screenId) {
       'goal_seconds' => $goal_seconds
     ]
   );
+  var_dump($job_id);
 
   return get_job($job_id);
 }
@@ -102,6 +104,7 @@ function update_job($jobId, $completion_seconds) {
 function sow($payload) {
   $uid = $payload['uid'];
   $screen = get_screen($uid);
+
   if(!$screen) {
     $screen = create_screen($uid);
   }
@@ -120,19 +123,22 @@ function sow($payload) {
 
   // right now we are being realllly stupid.
   $nearby_campaigns = array_filter(active_campaigns(), function($campaign) use ($payload) {
-    var_dump([$campaign, $payload]);
     // under 1.5km
     return distance($campaign, $payload) < 1500;
   });
 
-  $job_list = array_map(function($row) use ($payload) {
-    $job = create_job($row['id'], $payload['id']);
+  $job_list = array_map(function($row) use ($screen) {
+    $job = create_job($row['id'], $screen['id']);
+    if($job) {
 
-    return array_merge([
-      'jobid' => $job['id'],
-      'campaignid' => $row['id'],
-      'asset' => $row['asset']
-    ], $job);
+      $res = array_merge([
+        'jobid' => $job['id'],
+        'campaignid' => $row['id'],
+        'asset' => $row['asset']
+      ], $job);
+      var_dump($job, $res);
+      return $res;
+    }
   }, $nearby_campaigns);
   
   return [
@@ -157,7 +163,7 @@ function create_campaign($opts) {
   $campaign_id = db_insert(
     'campaign', [
       'asset' => db_string($opts['asset']),
-      'duration' => $opts['duration'],
+      'duration_seconds' => $opts['duration'],
       'lat' => $opts['lat'],
       'lng' => $opts['lng'],
       'start_time' => db_string($opts['start_time']),

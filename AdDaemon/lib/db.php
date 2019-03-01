@@ -16,7 +16,7 @@ $SCHEMA = [
   'campaign' => 'create table if not exists campaign(
     id integer primary key autoincrement,
     asset text not null,
-    duration integer,
+    duration_seconds integer,
     lat float default null,
     lng float default null,
     radius float default null,
@@ -77,12 +77,17 @@ function truncate() {
 }
 
 function get_campaign_remaining($id) {
-  return (getDb())->querySingle("
+  $res = (getDb())->querySingle("
     select 
-      sum(completion_seconds) - duration_seconds        as remaining
-      from campaign join job on campaign_id = campaign.id
+      duration_seconds - sum(completion_seconds) as remaining
+      from campaign left join job on campaign_id = campaign.id
       where campaign.id = $id 
     ");
+
+  if($res === null) {
+    return (getDb())->querySingle("select duration_seconds from campaign where id=$id");
+  }
+  return $res;
 }
 
 function get_campaign_completion($id) {
