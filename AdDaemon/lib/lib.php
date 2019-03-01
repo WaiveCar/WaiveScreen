@@ -83,7 +83,6 @@ function create_job($campaignId, $screenId) {
       'goal_seconds' => $goal_seconds
     ]
   );
-  var_dump($job_id);
 
   return get_job($job_id);
 }

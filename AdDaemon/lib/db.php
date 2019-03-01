@@ -30,6 +30,7 @@ $SCHEMA = [
     screen_id integer,
     goal_seconds integer,
     completion_seconds integer default 0,
+    last_update datetime,
     job_start datetime,
     job_end datetime
   )'
