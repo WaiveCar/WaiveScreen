@@ -135,7 +135,6 @@ function sow($payload) {
         'campaignid' => $row['id'],
         'asset' => $row['asset']
       ], $job);
-      var_dump($job, $res);
       return $res;
     }
   }, $nearby_campaigns);
