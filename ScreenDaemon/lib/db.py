@@ -29,8 +29,47 @@ _SCHEMA = {
     ('value', 'TEXT'),
     ('namespace', 'TEXT'),
     ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+  ],
+  # There's probably a better way to do this, let's do that later.
+  'sensor' : [
+    ('id', 'INTEGER PRIMARY KEY'),
+    ('ts', 'INTEGER default null'),
+    ('backlight', 'FLOAT default null'),
+    ('fan', 'FLOAT default null'),
+    ('temp', 'FLOAT default null'),
+    ('current_raw', 'FLOAT default null'),
+    ('current_normatlized', 'FLOAT default null'),
+    ('accel_x', 'FLOAT default null'),
+    ('accel_y', 'FLOAT default null'),
+    ('accel_z', 'FLOAT default null'),
+    ('gyro_x', 'FLOAT default null'),
+    ('gyro_y', 'FLOAT default null'),
+    ('gyro_z', 'FLOAT default null'),
+    ('therm_read', 'FLOAT default null'),
+    ('therm_resistance', 'FLOAT default null'),
+    ('pitch', 'FLOAT default null'),
+    ('roll', 'FLOAT default null'),
+    ('yaw', 'FLOAT default null'),
+    ('altitude', 'FLOAT default null'),
+    ('latitude', 'FLOAT default null'),
+    ('longitude', 'FLOAT default null'),
+    ('gps_time', 'TIMESTAMP'),
+    ('time', 'TIMESTAMP'),
+    ('raw', 'TEXT')
   ]
 }
+
+def insert(table, data):
+  global _SCHEMA
+  if table not in _SCHEMA:
+    throw "Table not found"
+
+  
+
+    
+
+
+  
 
 # Ok so if column order or type changes, this isn't found ... nor
 # are we doing formal migrations where you can roll back or whatever
