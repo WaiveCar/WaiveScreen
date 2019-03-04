@@ -31,9 +31,35 @@ _SCHEMA = {
     ('namespace', 'TEXT'),
     ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
   ],
+  # The next two tables basically map to the server's version
+  # (see AdDaemon/lib/db.php)
+
+  # It's easier to just send the data over and make a copy on
+  # the screen side then to try to think about reformulating 
+  # things.
+  'campaign': [
+    ('id', 'integer primary key autoincrement'),
+    ('asset', 'text not null'),
+    ('duration_seconds', 'integer'),
+    ('lat', 'float default null'),
+    ('lng', 'float default null'),
+    ('radius', 'float default null'),
+    ('start_time', 'datetime'),
+    ('end_time', 'datetime')
+  ],
+  'job': [
+    ('id', 'integer primary key autoincrement'),
+    ('campaign_id', 'integer'),
+    # screen_id integer, << probably not needed.
+    ('goal_seconds', 'integer'),
+    ('completion_seconds', 'integer default 0'),
+    ('last_update', 'datetime default current_timestamp'),
+    ('job_start',  'datetime'),
+    ('job_end', 'datetime')
+  ],
   # There's probably a better way to do this, let's do that later.
   'sensor' : [
-    ('id', 'INTEGER PRIMARY KEY'),
+    ('id', 'INTEGER PRIMARY KEY autoincrement'),
     ('ts', 'INTEGER default null'),
     ('backlight', 'FLOAT default null'),
     ('fan', 'FLOAT default null'),
@@ -56,7 +82,8 @@ _SCHEMA = {
     ('longitude', 'FLOAT default null'),
     ('gps_time', 'TIMESTAMP'),
     ('time', 'TIMESTAMP'),
-    ('raw', 'TEXT')
+    ('raw', 'TEXT'),
+    ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
   ]
 }
 
@@ -180,7 +207,7 @@ def all(table, field_list='*', sort_by='id'):
 
 
 def schema(table, db=None):
-  existing_schema = run('pragma table_info(%s)' % table, db=db).fetchall()
+  existing_schema = run('pragma table_info({})'.format(table), db=db).fetchall()
   if existing_schema:
     return [str(row[1]) for row in existing_schema]
 
@@ -353,20 +380,6 @@ def run(query, args=None, with_last=False, db=None):
     return (res, last)
 
   return res
-
-def unregister_entry(name, do_all=False):
-  # Deletes a stream by name, contingent on it existing only once 
-
-  res = run('select id from streams where name = ?', (name, )).fetchall()
-
-  if res and (len(res) == 1 or do_all):
-    logging.debug("Removing our reference of %s" % name)
-    res = run('delete from streams where id = %d' % res[0][0])
-
-  else:
-    logging.warn("Requested to remove reference of %s but couldn't find it." % name)
-
-  return True
 
 
 def register_entry(info):
