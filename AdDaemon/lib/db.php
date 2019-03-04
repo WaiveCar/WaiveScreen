@@ -2,6 +2,31 @@
 date_default_timezone_set('UTC');
 
 $SCHEMA = [
+  'user' => 'create table if not exists user(
+    id integer primary key autoincrement, 
+    email text not null,
+    stripe_id text not null,
+    created_at datetime, 
+    last_seen datetime
+  )',
+
+  'charge' => 'create table if not exists charge(
+    id integer primary key autoincrement, 
+    user_id integer,
+    campaign_id integer,
+    amount integer, 
+    charge_id text,
+    created_at datetime, 
+  )',
+
+  'subscription' => 'create table if not exists subscription(
+    id integer primary key autoincrement, 
+    user_id integer,
+    campaign_id integer,
+    amount integer, 
+    created_at datetime, 
+  )',
+
   'screen' => 'create table if not exists screen(
     id integer primary key autoincrement, 
     uid text not null, 
