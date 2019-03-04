@@ -9,10 +9,10 @@ import db
 """
 
 def sensor_store(data):
-    pass
+  return db.insert('sensor', data)
 
 def sensor_last(index = 0):
-    pass
+  return run('select * from sensor order by id desc limit 1').fetchone()
 
 def job_store(data):
     pass

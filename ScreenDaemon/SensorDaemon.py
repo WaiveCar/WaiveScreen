@@ -155,21 +155,21 @@ def get_payload():
     }
 
 if __name__ == '__main__':
-    start = time.time()
-    period = 0.5
-    ix = 0
+  start = time.time()
+  period = 0.5
+  ix = 0
 
-    while True:
+  while True:
 
-        lib.sensor_store({
-            "now": time.time(),
-            "sensor": get_payload(), 
-            "gps": get_gps()
-        })
+    lib.sensor_store({
+      "now": time.time(),
+      "sensor": get_payload(), 
+      "gps": get_gps()
+    })
 
-        ix += 1
-        tts = (start + period * ix) - time.time()
-        if tts > 0:
-            time.sleep(tts)
+    ix += 1
+    tts = (start + period * ix) - time.time()
+    if tts > 0:
+      time.sleep(tts)
 
 

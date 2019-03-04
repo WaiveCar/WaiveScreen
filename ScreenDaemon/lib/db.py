@@ -5,6 +5,7 @@ import sqlite3
 import time
 import os
 import sys
+import json
 from datetime import timedelta
 from threading import Lock
 
@@ -64,11 +65,29 @@ def insert(table, data):
   if table not in _SCHEMA:
     throw "Table not found"
 
-  
+  known_keys = [x[1] for x in _SCHEMA[table]] 
+  insert_keys = data.keys() & known_keys
 
-    
+  # Make sure that the ordinal is maintained.
+  toInsert = [data[key] for key in insert_keys]
 
+  # Throw the full raw data on to the end.
+  insert_keys.append('raw')
+  toInsert.append(json.dumps(data))
 
+  key_string = ','.join(insert_keys)
+
+  value_list = ['?'] * len(insert_keys)
+  value_string = ','.join(value_list)
+
+  qstr = 'insert into {}({}) values({})'.format(table,key_string,value_string)
+  try:
+    res, last = run(qstr, toInsert, with_last = True)
+
+  except:
+    logging.warn("Unable to insert a record {}".format(qstr))
+
+  return last
   
 
 # Ok so if column order or type changes, this isn't found ... nor
