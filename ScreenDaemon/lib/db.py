@@ -65,7 +65,7 @@ _SCHEMA = {
     ('fan', 'FLOAT default null'),
     ('temp', 'FLOAT default null'),
     ('current_raw', 'FLOAT default null'),
-    ('current_normatlized', 'FLOAT default null'),
+    ('current_normalized', 'FLOAT default null'),
     ('accel_x', 'FLOAT default null'),
     ('accel_y', 'FLOAT default null'),
     ('accel_z', 'FLOAT default null'),

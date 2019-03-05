@@ -36,13 +36,13 @@ Response payload:
   (err: err code if failure)
   jobs: [
     { 
+      campaign_id: unique id for the campaign
       asset: string
-      duration: time in seconds assigned to display asset
-      startTime: utc earliest time to display
-      endTime: utc last time to display
+      goal_seconds: time in seconds assigned to display asset
+      job_start: utc earliest time to display
+      job_end: utc last time to display
       geofence: [ lat/lng ... ],
-      jobid: unique id for this specific request
-      campaignid: unique id for the campaign
+      job_id: unique id for this specific request
     }
   ]
 }
