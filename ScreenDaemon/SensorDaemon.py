@@ -140,7 +140,7 @@ def get_payload():
         'fan': fan_speed,
         'temp': temp_c,
         'current_raw': current_read,
-        'current_normatlized': current,
+        'current_normalized': current,
         'accel_x':  accel_x,
         'accel_y': accel_y,
         'accel_z': accel_z
