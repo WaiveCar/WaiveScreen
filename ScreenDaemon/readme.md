@@ -18,3 +18,7 @@ Separating these out into 3 "micro-services" may be the easiest approach using s
 It also makes it so that we don't need to worry about different "event loops" which is what many of these servers want ... they basically want you to use a process/thread system but this shouldn't be necessary.
 
 20190304 - By making the ScreenDisplay exceptionally dumb, 2&3 can be easily merged without a need for any kind of fancy websocket thing that eats the event loop and makes it hard to run OOB. Essentially the ScreenDisplay by constantly nagging what to display next and thus offloading the decision making entirely to the ScreenDaemon, it will act as the meter for the eventloop on the daemon, avoiding all the stupid problems by presumptuous architecting on behalf of the python webserver frameworks.
+
+API:
+
+The api maps the api for the AdDaemon since this is at its dumbest, just a proxy for the daemon itself. To avoid inconsistencies from out of sync duplicates, the documentation has been witheld here. Please refer to the README.md in the AdDaemon for the documentation.

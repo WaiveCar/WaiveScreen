@@ -7,10 +7,13 @@ import lib.lib as lib
 
 app = Flask(__name__)
 
+def sucess(what):
+  return { 'res': true, 'data': what }
+
 def get_location():
   return lib.sensor_last()
 
-@app.route('/next-ad')
+@app.route('/sow')
 def next_ad(work):
   """
   For now we are going to do a stupid pass-through to the remote server
@@ -40,8 +43,11 @@ def next_ad(work):
     except:
       logging.warn("Unable to parse {}".format(data_raw))
 
+  job_list = []
   if data['res']:
     for job in data['jobs']:
+      job_list.append(job)
+      lib.job_store(job)
 
-  
+  return success(job_list)
   # now we ask the ad daemon for jobs given our lat/lng
