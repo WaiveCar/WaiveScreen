@@ -43,6 +43,7 @@ var assetList = [
   "000-red-006.png",
   "000-red-007.png"
 ], dbList = [],
+  dbMap = {},
   log = [],
   startTime = new Date(),
   last = false,
@@ -54,6 +55,26 @@ function image(what) {
   var img = document.createElement('img');
   img.src = "assets/" + what;
   return img;
+}
+
+// LRU cache invalidation should eventually exist.
+function addJob(job) {
+  if(!dbMap[job.campaign_id]) {
+
+    // this acts as the instantiation. 
+    // the merging of the rest of the data
+    // will come below.
+    dbMap[job.campaign_id] = {
+      dom: image(job.asset),
+    }
+
+  }
+
+  dbMap[job.campaign_id] = Object.merge(
+    dbMap[job.campaign_id], job
+  );
+
+  return dbMap[job.campaign_id];
 }
 
 function createDoms() {
@@ -95,6 +116,21 @@ function ws() {
     } catch(ex) {
     }
   };
+}
+
+function post(url, what, cb) {
+  var http = new XMLHttpRequest();
+
+  http.open('POST', 'http://localhost:4096/' + url, true);
+
+  http.setRequestHeader('Content-type', 'application/json');
+
+  http.onreadystatechange = function() {
+    if(http.readyState == 4 && http.status == 200) {
+      cb(http.responseText);
+    }
+  }
+  http.send(JSON.stringify(what));
 }
 
 createDoms();
