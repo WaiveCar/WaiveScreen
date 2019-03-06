@@ -324,9 +324,9 @@ def get(table, id = False):
   _checkForTable(table)
 
   if not id:
-    res = run("select * from ? order by id desc limit 1", table)
+    res = run("select * from ? order by id desc limit 1", (table, ))
   else:
-    res = run("select * from ? where key = ?", table, id)
+    res = run("select * from ? where key = ?", (table, id))
 
   if res:
     return res.fetchone()
@@ -407,27 +407,4 @@ def run(query, args=None, with_last=False, db=None):
 
   return res
 
-
-def register_entry(info):
-  end_unix = info['start_unix'] + timedelta(seconds=info['duration_sec']) 
-
-  res = run('select id from streams where value = ?', (info['value'], )).fetchone()
-
-  # If something exists then we remove it and reinsert ... this is not as effecient
-  # as an upsert with coalesce, but this is done on rare occasions in heavy workloads ...
-  # so we don't really need to be entirely efficient about it.
-  if res:
-    unregister_entry(info['value'], do_all=True)
-
-  last = False
-  try:
-    res, last = run("""insert into streams 
-    (datatype,         value,         start_unix,         end_unix, size) values
-    (   ?,             ?,             ?,                  ?,        ?   ) """, 
-    (info['datatype'], info['value'], info['start_unix'], end_unix, info['size']), with_last=True)
-
-  except:
-    logging.warn("Unable to insert a record with a value {}".format(info['value']))
-
-  return last
 

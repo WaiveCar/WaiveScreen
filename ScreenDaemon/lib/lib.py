@@ -11,11 +11,11 @@ storage_base = '/var/lib/waivescreen/'
 def sensor_store(data):
   return db.insert('sensor', data)
 
-def sensor_last(index = 0):
-  return run('select * from sensor order by id desc limit 1').fetchone()
+def sensor_last(index = False):
+  return db.get('sensor', index)
 
 def campaign_store(data):
-  db.upsert('campaign', data)
+  return db.upsert('campaign', data)
 
 def job_store(data):
   if 'campaign' in data:
