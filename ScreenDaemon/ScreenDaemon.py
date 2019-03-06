@@ -29,7 +29,7 @@ def next_ad(work):
     'id': lib.get_uuid(),
     'lat': sensor['lat'],
     'lng': sensor['lng'],
-    'work': request.form
+    'jobs': request.form
   }
 
   data = urllib.parse.urlencode(payload).encode()

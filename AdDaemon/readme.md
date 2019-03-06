@@ -18,7 +18,7 @@ Request payload:
   id: ... id of screen ...
   lat: current latitude
   lng: current longitude
-  work: [
+  jobs: [
     {
       id: ... unique id as assigned by the adserver ...
       done: percentage done as a float between 0 and 1

@@ -114,8 +114,8 @@ function sow($payload) {
     'last_seen' => 'current_timestamp'
   ]);
 
-  if(array_key_exists('work', $payload) && is_array($payload['work'])) {
-    foreach($payload['work'] as $job) {
+  if(array_key_exists('jobs', $payload) && is_array($payload['jobs'])) {
+    foreach($payload['jobs'] as $job) {
       update_job($job['id'], $job['done']);
     }
   }
