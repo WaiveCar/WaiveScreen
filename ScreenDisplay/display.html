@@ -31,34 +31,33 @@ img {
 <body></body>
 
 <script>
-// a global pointer to the current job object.
-var CURRENT;
-
 var dbMap = {},
-  startTime = new Date(),
-  last = false,
+  // a global pointer to the current job object.
+  _last = false,
   fallback,
   duration = 12;
 
+//
 // The job schema coming in, copied from the python lib/db.py code:
 //
-//  ('id', 'integer primary key autoincrement'),
-//  ('campaign_id', 'integer'),
-//  ('goal', 'integer'),
-//  ('completion_seconds', 'integer default 0'),
-//  ('last_update', 'datetime default current_timestamp'),
-//  ('job_start',  'datetime'),
-//  ('job_end', 'datetime')
+//  'id', 'integer primary key autoincrement'
+//  'campaign_id', 'integer'
+//  'goal', 'integer'
+//  'completion_seconds', 'integer default 0'
+//  'last_update', 'datetime default current_timestamp'
+//  'job_start',  'datetime'
+//  'job_end', 'datetime'
+//
 
 function image(what) {
   var img = document.createElement('img');
   img.onerror = function() {
     this.src = fallback.url;
-    CURRENT.err = 'NOT_FOUND';
+    _last.err = 'NOT_FOUND';
   }
   img.onload = function() {
-    if('err' in CURRENT) {
-      delete CURRENT.err;
+    if('err' in _last) {
+      delete _last.err;
     }
   }
   img.src = what;
@@ -130,8 +129,6 @@ function loop() {
       }
     }
 
-    CURRENT = toShow;
-
     toShow.done += duration;
 
     try {
@@ -148,7 +145,7 @@ function loop() {
       toShow.dom.classList.add('fadeIn');
       document.body.appendChild(toShow.dom);
     }
-    last = toShow;
+    _last = toShow;
   }, duration * 1000);
 }
 
