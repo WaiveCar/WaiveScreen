@@ -15,13 +15,13 @@ Request payload:
 
 ```
 {
-  id: ... id of screen ...
-  lat: current latitude
-  lng: current longitude
+  id: unique id of screen,
+  lat: current latitude,
+  lng: current longitude,
   jobs: [
     {
-      id: ... unique id as assigned by the adserver ...
-      done: percentage done as a float between 0 and 1
+      id: unique id as assigned by the AdServer,
+      done: seconds displayed,
       err: (optional, if an error was encountered)*
     }
     ...
@@ -41,12 +41,12 @@ Response payload:
   (err: err code if failure)
   jobs: [
     { 
-      job_id: unique id for this specific request
-      campaign_id: unique id for the campaign
-      goal_seconds: time in seconds assigned to display asset
+      job_id: unique id for this specific request,
+      campaign_id: unique id for the campaign,
+      goal: time in seconds assigned to display asset,
 
-      job_start: utc earliest time to display
-      job_end: utc last time to display
+      job_start: utc earliest time to display,
+      job_end: utc last time to display,
       // This is the schema for the campaign. Eventually
       // this can be "smart" and figure out how to be 
       // "optimal" but for now it's going to be stupid
@@ -54,8 +54,8 @@ Response payload:
 
       campaign: {
         id: unique id of campaign,
-        asset: http url of the asset to display (probably png/jpg)
-        duration_seconds: duration of the campaign
+        asset: HTTP(s) url of the asset to display (probably png/jpg/mp4),
+        duration_seconds: duration of the campaign,
         lat: latitude,
         lng: longitude,
         radius: meter radius,
@@ -63,16 +63,13 @@ Response payload:
         end_time: of the campaign
       }
     }
+    ...
   ]
 }
 ```
 
 Notes (Subject to change):
 
-The screen doesn't have any "working memory" of previous work after the response comes back. It records timestamps when a 
-particular job was satisfied and then moves on.  Even if it's only say 10% done with the job, it may be given the same campaign
-to "continue" to do the work, but it shouldn't care. The ScreenDisplay is tasked with caching the assets in an LRU and should 
-be fine.
+The screen doesn't have any "working memory" of previous work after the response comes back. It records timestamps when a particular job was satisfied and then moves on.  Even if it's only say 10% done with the job, it may be given the same campaign to "continue" to do the work, but it shouldn't care. The ScreenDisplay is tasked with caching the assets in an LRU and should be fine.
 
-This tries to keep the consistency among the screens easy to deal with so that the workload can be realistically distributed 
-without particular screens going "rogue" and trying to be "efficient".
+This tries to keep the consistency among the screens easy to deal with so that the workload can be realistically distributed without particular screens going "rogue" and trying to be "efficient".
