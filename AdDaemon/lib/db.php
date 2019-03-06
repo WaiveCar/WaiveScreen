@@ -53,7 +53,7 @@ $SCHEMA = [
     id integer primary key autoincrement,
     campaign_id integer,
     screen_id integer,
-    goal_seconds integer,
+    goal integer,
     completion_seconds integer default 0,
     last_update datetime,
     job_start datetime,

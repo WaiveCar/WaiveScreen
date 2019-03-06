@@ -72,7 +72,7 @@ function create_screen($uid) {
 function create_job($campaignId, $screenId) {
   $ttl = get_campaign_remaining($campaignId);
 
-  $goal_seconds = min($ttl, 60 * 4);
+  $goal = min($ttl, 60 * 4);
 
   $job_id = db_insert(
     'job', [
@@ -80,7 +80,7 @@ function create_job($campaignId, $screenId) {
       'screen_id' => $screenId,
       'job_start' => 'current_timestamp',
       'last_update' => 'current_timestamp',
-      'goal_seconds' => $goal_seconds
+      'goal' => $goal
     ]
   );
 
