@@ -27,22 +27,11 @@ img {
   animation-duration: 0.4s;
 }
 </style>
+
 <body></body>
+
 <script>
-var assetList = [
-  "000-azure-005.png",
-  "000-azure-006.png",
-  "000-azure-007.png",
-  "000-green-005.png",
-  "000-green-006.png",
-  "000-green-007.png",
-  "000-purple-005.png",
-  "000-purple-006.png",
-  "000-purple-007.png",
-  "000-red-005.png",
-  "000-red-006.png",
-  "000-red-007.png"
-], dbList = [],
+var dbList = [],
   dbMap = {},
   log = [],
   startTime = new Date(),
@@ -77,47 +66,6 @@ function addJob(job) {
   return dbMap[job.campaign_id];
 }
 
-function createDoms() {
-  fallback = {
-    what: 'fallback.png',
-    dom:  image('fallback.png'),
-    satisfied: 0
-  };
-  assetList.forEach(function(row) {
-    dbList.push({
-      what: row,
-      dom: image(row),
-      commitment: 4,
-      satisfied: 0
-    });
-  });
-}
-
-function ws() {
-  var ws = new WebSocket("ws://127.0.0.1:5678/");
-  ws.onmessage = function (event) {
-    try {
-      var payload = JSON.parse(event.data);
-
-      switch(payload.type) {
-        case 'asset': 
-          assetList = payload;
-          createDoms();
-          break;
-
-        case 'request':
-          ws.send({type: 'log', data: log.slice()});
-          log = [];
-          break;
-
-        default:
-          console.log("Unknown payload", payload);
-      } 
-    } catch(ex) {
-    }
-  };
-}
-
 function post(url, what, cb) {
   var http = new XMLHttpRequest();
 
@@ -133,51 +81,60 @@ function post(url, what, cb) {
   http.send(JSON.stringify(what));
 }
 
-createDoms();
+function loop() {
+  setInterval(function() {
+    // We note something we call "breaks" which designate which asset to show.
+    // This is a composite of what remains - this is two pass, eh, kill me.
+    var total = dbList.reduce(function (a, b) { return a + b.commitment - b.satisfied }, 0);
+    var breakpoint = Math.random() * total;
+    var toShow, 
+      accum = 0, 
+      row, 
+      prev = last;
 
-setInterval(function() {
-  // We note something we call "breaks" which designate which asset to show.
-  // This is a composite of what remains - this is two pass, eh, kill me.
-  var total = dbList.reduce(function (a, b) { return a + b.commitment - b.satisfied }, 0);
-  var breakpoint = Math.random() * total;
-  var toShow, 
-    accum = 0, 
-    row, 
-    prev = last;
+    if(total <= 0 ) {
+      toShow = fallback;
+    } else {
 
-  if(total <= 0 ) {
-    toShow = fallback;
-  } else {
-
-    for(row of dbList) {
-      accum += row.commitment - row.satisfied;
-      if( accum > breakpoint ) {
+      for(row of dbList) {
+        accum += row.commitment - row.satisfied;
+        if( accum > breakpoint ) {
+          toShow = row;
+          break;
+        }
+      }
+      if(!toShow) {
         toShow = row;
-        break;
       }
     }
-    if(!toShow) {
-      toShow = row;
-    }
-  }
 
-  toShow.satisfied += 1;
+    toShow.satisfied += 1;
 
-  try {
+    try {
+      if(prev && (prev.what !== toShow.what)) {
+        prev.dom.classList.add('fadeOut');
+        setTimeout(function() {
+          prev.dom.classList.remove('fadeOut');
+          document.body.removeChild(prev.dom);
+        }, 500);
+      }
+    } catch(ex) { console.log(ex)} 
     if(prev && (prev.what !== toShow.what)) {
-      prev.dom.classList.add('fadeOut');
-      setTimeout(function() {
-        prev.dom.classList.remove('fadeOut');
-        document.body.removeChild(prev.dom);
-      }, 500);
-    }
-  } catch(ex) { console.log(ex)} 
-  if(prev && (prev.what !== toShow.what)) {
-    log.push([new Date(), toShow.what]);
+      log.push([new Date(), toShow.what]);
 
-    toShow.dom.classList.add('fadeIn');
-    document.body.appendChild(toShow.dom);
-  }
-  last = toShow;
-}, 1200);
+      toShow.dom.classList.add('fadeIn');
+      document.body.appendChild(toShow.dom);
+    }
+    last = toShow;
+  }, 1200);
+}
+
+window.onload = function init() {
+  fallback = {
+    what: 'fallback.png',
+    dom:  image('fallback.png'),
+    satisfied: 0
+  };
+  loop();
+}
 </script>
