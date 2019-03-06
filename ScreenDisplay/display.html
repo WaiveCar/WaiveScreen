@@ -42,7 +42,11 @@ var dbList = [],
 
 function image(what) {
   var img = document.createElement('img');
-  img.src = "assets/" + what;
+  img.onerror = function() {
+    this.src = fallback.url;
+  }
+  img.src = what;
+  img.src_ = what;
   return img;
 }
 
@@ -126,7 +130,7 @@ function loop() {
       document.body.appendChild(toShow.dom);
     }
     last = toShow;
-  }, 1200);
+  }, duration * 1000);
 }
 
 window.onload = function init() {
