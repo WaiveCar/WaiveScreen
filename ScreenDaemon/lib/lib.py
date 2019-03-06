@@ -14,11 +14,18 @@ def sensor_store(data):
 def sensor_last(index = 0):
   return run('select * from sensor order by id desc limit 1').fetchone()
 
-def job_store(data):
-  pass
+def campaign_store(data):
+  db.upsert('campaign', data)
 
-def job_get(index = 0):
-  pass
+def job_store(data):
+  if 'campaign' in data:
+    campaign_store(data['campaign'])
+
+  delete data['campaign']
+  return db.upsert('job', data)
+
+def job_get(index = False):
+  return db.get('job', index)
 
 def get_uuid():
   import subprocess
