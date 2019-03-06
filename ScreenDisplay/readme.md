@@ -10,6 +10,10 @@ This model avoids web-sockets, which avoids a "complicated" system where the web
 
 The even easier model is to be super-duper-dumb and only be aware of what's next ... as in have no schedule at all and always nag the server (which is the same computer) for the next thing to display.  Under this model whenever an ad displays we guarantee 1 cycle of display for the cyclic duration (not to be obtuse, but this is up for debate - probably about 15 seconds).  This avoids any need for a web-socket or intelligent two-way communication.
 
+API:
+
+The api here matches the AdDaemon api for sow, refer to it for the information.
+
 ### Future:
 
   A socket connection is kept open to the Screen Daemon which blindly instructs a "screenplay", in this case, a list of assets to display 
