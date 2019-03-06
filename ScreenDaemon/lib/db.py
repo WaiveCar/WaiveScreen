@@ -10,7 +10,6 @@ from datetime import timedelta
 from threading import Lock
 
 g_db_count = 0
-g_params = {}
 g_lock = Lock();
 
 # This is a way to get the column names after grabbing everything
@@ -87,13 +86,18 @@ _SCHEMA = {
   ]
 }
 
-def insert(table, data):
+
+def _checkForTable(what):
   global _SCHEMA
   if table not in _SCHEMA:
-    throw "Table not found"
+    throw "Table {} not found".format(table)
+
+def _insert(table, data):
+  _checkForTable(table)
 
   known_keys = [x[1] for x in _SCHEMA[table]] 
   insert_keys = data.keys() & known_keys
+  shared_keys = insert_keys
 
   # Make sure that the ordinal is maintained.
   toInsert = [data[key] for key in insert_keys]
@@ -107,7 +111,10 @@ def insert(table, data):
   value_list = ['?'] * len(insert_keys)
   value_string = ','.join(value_list)
 
-  qstr = 'insert into {}({}) values({})'.format(table,key_string,value_string)
+  return ['insert into {}({}) values({})'.format(table,key_string,value_string), shared_keys, toInsert]
+  
+def insert(table, data):
+  qstr, key_list, values = insert(table, data)
   try:
     res, last = run(qstr, toInsert, with_last = True)
 
@@ -116,6 +123,18 @@ def insert(table, data):
 
   return last
   
+def upsert(table, data):
+  qstr, key_list, values = insert(table, data)
+  update_list = ["{}=?".format(key) for key in key_list]
+
+  qstr = "{} on conflict(id) do update set {}".format(, ','.join(update_list)
+  try:
+    res, last = run(qstr, values + values, with_last = True)
+
+  except:
+    logging.warn("Unable to upsert a record {}".format(qstr))
+
+  return last
 
 # Ok so if column order or type changes, this isn't found ... nor
 # are we doing formal migrations where you can roll back or whatever
@@ -301,11 +320,18 @@ def set(key, value):
   return value
 
 
-def clear_cache():
-  global g_params
-  g_params = {}
+def get(table, id = False):
+  _checkForTable(table)
 
-def get(key, expiry=0, use_cache=True, default=None):
+  if not id:
+    res = run("select * from ? order by id desc limit 1", table)
+  else:
+    res = run("select * from ? where key = ?", table, id)
+
+  if res:
+    return res.fetchone()
+
+def get_(key, expiry=0, use_cache=True, default=None):
   # Retrieves a value from the database, tentative on the expiry. 
   # If the cache is set to true then it retrieves it from in-memory if available, otherwise
   # it goes out to the db. Other than directly hitting up the g_params parameter which is 

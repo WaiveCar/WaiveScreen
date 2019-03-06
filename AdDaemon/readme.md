@@ -36,13 +36,27 @@ Response payload:
   (err: err code if failure)
   jobs: [
     { 
+      job_id: unique id for this specific request
       campaign_id: unique id for the campaign
-      asset: string
       goal_seconds: time in seconds assigned to display asset
+
       job_start: utc earliest time to display
       job_end: utc last time to display
-      geofence: [ lat/lng ... ],
-      job_id: unique id for this specific request
+      // This is the schema for the campaign. Eventually
+      // this can be "smart" and figure out how to be 
+      // "optimal" but for now it's going to be stupid
+      // and essentially map the database
+
+      campaign: {
+        id: unique id of campaign,
+        asset: http url of the asset to display (probably png/jpg)
+        duration_seconds: duration of the campaign
+        lat: latitude,
+        lng: longitude,
+        radius: meter radius,
+        start_time: of the campaign,
+        end_time: of the campaign
+      }
     }
   ]
 }
