@@ -31,18 +31,35 @@ img {
 <body></body>
 
 <script>
-var dbList = [],
-  dbMap = {},
-  log = [],
+// a global pointer to the current job object.
+var CURRENT;
+
+var dbMap = {},
   startTime = new Date(),
   last = false,
   fallback,
-  duration = 15;
+  duration = 12;
+
+// The job schema coming in, copied from the python lib/db.py code:
+//
+//  ('id', 'integer primary key autoincrement'),
+//  ('campaign_id', 'integer'),
+//  ('goal', 'integer'),
+//  ('completion_seconds', 'integer default 0'),
+//  ('last_update', 'datetime default current_timestamp'),
+//  ('job_start',  'datetime'),
+//  ('job_end', 'datetime')
 
 function image(what) {
   var img = document.createElement('img');
   img.onerror = function() {
     this.src = fallback.url;
+    CURRENT.err = 'NOT_FOUND';
+  }
+  img.onload = function() {
+    if('err' in CURRENT) {
+      delete CURRENT.err;
+    }
   }
   img.src = what;
   img.src_ = what;
@@ -58,8 +75,8 @@ function addJob(job) {
     // will come below.
     dbMap[job.campaign_id] = {
       dom: image(job.asset),
-    }
-
+      done: 0,
+    };
   }
 
   dbMap[job.campaign_id] = Object.merge(
@@ -73,7 +90,6 @@ function post(url, what, cb) {
   var http = new XMLHttpRequest();
 
   http.open('POST', 'http://localhost:4096/' + url, true);
-
   http.setRequestHeader('Content-type', 'application/json');
 
   http.onreadystatechange = function() {
@@ -81,6 +97,7 @@ function post(url, what, cb) {
       cb(http.responseText);
     }
   }
+  
   http.send(JSON.stringify(what));
 }
 
@@ -88,9 +105,9 @@ function loop() {
   setInterval(function() {
     // We note something we call "breaks" which designate which asset to show.
     // This is a composite of what remains - this is two pass, eh, kill me.
-    var total = dbList.reduce(function (a, b) { return a + b.commitment - b.satisfied }, 0);
-    var breakpoint = Math.random() * total;
-    var toShow, 
+    var total = Object.values(dbMap).reduce(function (a, b) { return a + b.goal - b.done }, 0),
+      breakpoint = Math.random() * total,
+      toShow, 
       accum = 0, 
       row, 
       prev = last;
@@ -99,9 +116,11 @@ function loop() {
       toShow = fallback;
     } else {
 
-      for(row of dbList) {
-        accum += row.commitment - row.satisfied;
-        if( accum > breakpoint ) {
+      for(key in dbMap) {
+        row = dbMap[key];
+
+        accum += row.goal - row.done;
+        if(accum > breakpoint) {
           toShow = row;
           break;
         }
@@ -111,7 +130,9 @@ function loop() {
       }
     }
 
-    toShow.satisfied += 1;
+    CURRENT = toShow;
+
+    toShow.done += duration;
 
     try {
       if(prev && (prev.what !== toShow.what)) {
@@ -123,7 +144,6 @@ function loop() {
       }
     } catch(ex) { console.log(ex)} 
     if(prev && (prev.what !== toShow.what)) {
-      log.push([new Date(), toShow.what]);
 
       toShow.dom.classList.add('fadeIn');
       document.body.appendChild(toShow.dom);
@@ -136,7 +156,7 @@ window.onload = function init() {
   fallback = {
     what: 'fallback.png',
     dom:  image('fallback.png'),
-    satisfied: 0
+    done: 0
   };
   loop();
 }
