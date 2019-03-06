@@ -22,11 +22,16 @@ Request payload:
     {
       id: ... unique id as assigned by the adserver ...
       done: percentage done as a float between 0 and 1
+      err: (optional, if an error was encountered)*
     }
     ...
   ]
 }
 ```
+
+Error codes:
+
+  NOT_FOUND - The asset to display wasn't able to be displayed
 
 Response payload:
 
