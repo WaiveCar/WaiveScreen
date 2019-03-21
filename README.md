@@ -6,6 +6,10 @@ This is an MVP for the Waive platform for selling small amounts of short-term ad
 
  
 
+python 3.7+, nodejs, npm is required
+
+ - sudo apt install python3 python3-numpy libfreetype6-dev libpng-dev
+ - pip3 install --upgrade pip setuptools
  - `pip3 install -r requirements.text`
  - `npm install`
  - install sqlite3 if it is not installed
