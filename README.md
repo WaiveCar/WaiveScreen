@@ -4,7 +4,7 @@ This is an MVP for the Waive platform for selling small amounts of short-term ad
 
 #### To get started with development: 
 
- 
+There's a tool inside of the tools directory, tools/debian-setup.sh which should be continually updated to be correct 
 
 python 3.7+, nodejs, npm is required
 
