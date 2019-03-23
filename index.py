@@ -41,14 +41,17 @@ def respond():
         "popularLocations": [
             {
                 "id": 1,
+                "label": "Daytime<br>Santa Monica",
                 "name": "Daytime Santa Monica",
                 "image": "sm-day.jpg",
             }, {
                 "id": 2,
-                "name": "Night Time Hollywood",
+                "label": "Nighttime<br>Hollywood",
+                "name": "Nighttime Hollywood",
                 "image": "hollywood-night.jpg",
             }, {
                 "id": 3,
+                "label": "Morning<br>Traffic",
                 "name": "Morning Traffic",
                 "image": "traffic-morning.jpg",
             }
