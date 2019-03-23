@@ -91,6 +91,7 @@ def get_deals():
         total_seconds = int(price) / price_per_second 
         start = datetime.datetime.now()
         deal = {
+            "amount": price,
             "quotes": [
                 {
                     "days": 1,       
