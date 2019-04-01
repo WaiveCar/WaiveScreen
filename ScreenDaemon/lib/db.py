@@ -326,9 +326,9 @@ def get(table, id = False):
   _checkForTable(table)
 
   if not id:
-    res = run("select * from ? order by id desc limit 1", (table, ))
+    res = run("select * from {} order by id desc limit 1".format(table))
   else:
-    res = run("select * from ? where key = ?", (table, id))
+    res = run("select * from {} where key = ?".format(table), (id, ))
 
   if res:
     return res.fetchone()
@@ -400,6 +400,7 @@ def run(query, args=None, with_last=False, db=None):
       raise Exception("0 rows")
 
   except Exception as exc:
+    print(query, args)
     raise exc
 
   finally:
