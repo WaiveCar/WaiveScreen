@@ -51,3 +51,6 @@ def next_ad(work):
 
   return success(job_list)
   # now we ask the ad daemon for jobs given our lat/lng
+
+if __name__ == '__main__':
+  app.run(port=4096)
