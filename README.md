@@ -38,6 +38,12 @@ The SERVER parts:
     * FUTURE: Permits a user to change the terms of a contract, talking to the Ad daemon.
     * Sends out reports at the end of a contract on whether it's completed or failed. 
 
+
+Flow:
+
+  * ScreenDisplay follows a schedule and asks ScreenDaemon for assets
+  * ScreenDaemon asks AdDaemon for jobs
+
 Things currently not covered:
 
   * Upgrade strategies
