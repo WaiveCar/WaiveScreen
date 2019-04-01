@@ -3,6 +3,12 @@ This is not the readme or overview, this is the communication points between the
 
 1 ScreenDisplay <-> ScreenDaemon
 
+Display -> Daemon
+
+POST /sow
+
+ * For initialization, an empty payload is sufficient.
+
 2 ScreenDaemon <-> AdDaemon
 
 Screen -> Ad
