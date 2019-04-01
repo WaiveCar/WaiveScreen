@@ -10,7 +10,7 @@ from datetime import timedelta
 from threading import Lock
 
 g_db_count = 0
-g_lock = Lock();
+g_lock = Lock()
 
 # This is a way to get the column names after grabbing everything
 # I guess it's also good practice
@@ -89,14 +89,14 @@ _SCHEMA = {
 
 def _checkForTable(what):
   global _SCHEMA
-  if table not in _SCHEMA:
-    throw "Table {} not found".format(table)
+  if what not in _SCHEMA:
+    raise Exception("Table {} not found".format(what))
 
 def _insert(table, data):
   _checkForTable(table)
 
-  known_keys = [x[1] for x in _SCHEMA[table]] 
-  insert_keys = data.keys() & known_keys
+  known_keys = [x[0] for x in _SCHEMA[table]] 
+  insert_keys = list(data.keys() & known_keys)
   shared_keys = insert_keys
 
   # Make sure that the ordinal is maintained.
@@ -114,9 +114,10 @@ def _insert(table, data):
   return ['insert into {}({}) values({})'.format(table,key_string,value_string), shared_keys, toInsert]
   
 def insert(table, data):
-  qstr, key_list, values = insert(table, data)
+  last = False
+  qstr, key_list, values = _insert(table, data)
   try:
-    res, last = run(qstr, toInsert, with_last = True)
+    res, last = run(qstr, values, with_last = True)
 
   except:
     logging.warn("Unable to insert a record {}".format(qstr))
@@ -127,7 +128,8 @@ def upsert(table, data):
   qstr, key_list, values = insert(table, data)
   update_list = ["{}=?".format(key) for key in key_list]
 
-  qstr = "{} on conflict(id) do update set {}".format(, ','.join(update_list)
+  qstr += "on conflict(id) do update set {}".format(','.join(update_list))
+
   try:
     res, last = run(qstr, values + values, with_last = True)
 
@@ -370,6 +372,7 @@ def get_(key, expiry=0, use_cache=True, default=None):
 
 
 def run(query, args=None, with_last=False, db=None):
+  global g_lock
   start = time.time()
   """
   if args is None:

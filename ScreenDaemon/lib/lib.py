@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import db
+from .db import *
 
 storage_base = '/var/lib/waivescreen/'
 """
@@ -21,7 +21,7 @@ def job_store(data):
   if 'campaign' in data:
     campaign_store(data['campaign'])
 
-  delete data['campaign']
+  del data['campaign']
   return db.upsert('job', data)
 
 def job_get(index = False):
@@ -33,7 +33,7 @@ def get_uuid():
 
   fp = storage_base + 'config.ini'
   config = configparser.ConfigParser()
-  if os.path.exists(fp)
+  if os.path.exists(fp):
     config.read(fp)
   
   m = subprocess.run(["/bin/ip","-j","-p","addr","show","enp3s0"], stdout=subprocess.PIPE)

@@ -1,7 +1,7 @@
 <style>
 body {
   margin: 0;
-  background: black; 
+  background: url('fallback.png') cover;
 }
 img { 
   width: 100%;
@@ -56,7 +56,7 @@ function image(what) {
     _last.err = 'NOT_FOUND';
   }
   img.onload = function() {
-    if('err' in _last) {
+    if(_last && 'err' in _last) {
       delete _last.err;
     }
   }
@@ -109,7 +109,7 @@ function loop() {
       toShow, 
       accum = 0, 
       row, 
-      prev = last;
+      prev = _last;
 
     if(total <= 0 ) {
       toShow = fallback;
