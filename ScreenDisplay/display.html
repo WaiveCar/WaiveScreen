@@ -97,7 +97,17 @@ function post(url, what, cb) {
     }
   }
   
-  http.send(JSON.stringify(what));
+  if(what) {
+    http.send(JSON.stringify(what));
+  } else {
+    http.send();
+  }
+}
+
+function sow(payload) {
+  post('sow', payload, function(res) {
+    console.log(res);
+  });
 }
 
 function loop() {
@@ -155,6 +165,7 @@ window.onload = function init() {
     dom:  image('fallback.png'),
     done: 0
   };
+  sow();
   loop();
 }
 </script>
