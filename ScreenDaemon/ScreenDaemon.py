@@ -8,19 +8,22 @@ import lib.lib as lib
 app = Flask(__name__)
 
 def sucess(what):
-  return { 'res': true, 'data': what }
+  resp = flask.Response(json.dumps({ 'res': true, 'data': what }))
+  resp.headers['Access-Control-Allow-Origin'] = '*'
+  return resp
 
 def get_location():
   return lib.sensor_last()
 
 @app.route('/sow')
-def next_ad(work):
+def next_ad(work = False):
   """
   For now we are going to do a stupid pass-through to the remote server
   and then just kinda return stuff. Keeping track of our own things 
   can be considered an optimization or at least a cache here... so those
   rules apply
   """
+
 
   # The first thing we get is the last known location.
   sensor = lib.sensor_last()
