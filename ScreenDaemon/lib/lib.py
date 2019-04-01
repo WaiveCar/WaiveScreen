@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-from .db import *
+from . import db
+import configparser
+import os
 
 storage_base = '/var/lib/waivescreen/'
 """
@@ -12,7 +14,10 @@ def sensor_store(data):
   return db.insert('sensor', data)
 
 def sensor_last(index = False):
-  return db.get('sensor', index)
+  res = db.get('sensor', index)
+  # If we don't have a real sensor value then we just use 2102 pico
+  if not res:
+    return {'lat':34.019860, 'lng':-118.468477}
 
 def campaign_store(data):
   return db.upsert('campaign', data)
@@ -31,6 +36,9 @@ def get_uuid():
   import subprocess
   import json
 
+  # TODO: FIX later
+  return "YEZB0qB2Sk6GHGmY08gusQ"
+  """
   fp = storage_base + 'config.ini'
   config = configparser.ConfigParser()
   if os.path.exists(fp):
@@ -42,4 +50,5 @@ def get_uuid():
   for iface in json:
       if 'address' in iface:
           return iface['address']
+  """
 
