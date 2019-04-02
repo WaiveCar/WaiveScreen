@@ -10,7 +10,7 @@ function jemit($what) {
 function doError($what) {
   return [
     'res' => false,
-    'err' => $what
+    'data' => $what
   ];
 }
 
@@ -101,7 +101,12 @@ function update_job($jobId, $completion_seconds) {
 // ----
 
 function sow($payload) {
-  $uid = $payload['uid'];
+  if(isset($payload['uid'])) {
+    $uid = $payload['uid'];
+  } else {
+    return doError("UID needs to be set before continuing");
+  }
+
   $screen = get_screen($uid);
 
   if(!$screen) {
