@@ -12,13 +12,16 @@ try {
       jemit(create_campaign($_POST));
     }
   }
-  if($func == 'sow') {
+  if($func == 'deal') {
+    jemit(deal());
+  }
+  else if($func == 'sow') {
     jemit(sow($_POST));
   }
-  if($func == 'setup') {
+  else if($func == 'setup') {
     jemit(setup($_POST));
   }
-  if($func == 'reset') {
+  else if($func == 'reset') {
     jemit(truncate());
   }
 } catch(Exception $ex) {
