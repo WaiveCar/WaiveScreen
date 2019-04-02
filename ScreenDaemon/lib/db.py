@@ -40,9 +40,24 @@ _SCHEMA = {
     ('id', 'integer primary key autoincrement'),
     ('asset', 'text not null'),
     ('duration_seconds', 'integer'),
+    ('completed_seconds', 'integer default 0'),
+
+    #
+    # If we are committing to only showing the ad
+    # during a certain time period. For now 
+    # (2019-04-02) we are going to ignore this
+    #
+    ('start_minute', 'integer default null'),
+    ('end_minute', 'integer default null'),
+
+    # At first we are going to just have
+    # 3 mutually exclusive place ids.
+    ('place_id', 'integer default null'),
+
+    ('radius', 'float default null'),
     ('lat', 'float default null'),
     ('lng', 'float default null'),
-    ('radius', 'float default null'),
+
     ('start_time', 'datetime'),
     ('end_time', 'datetime')
   ],
@@ -51,7 +66,7 @@ _SCHEMA = {
     ('campaign_id', 'integer'),
     # screen_id integer, << probably not needed.
     ('goal', 'integer'),
-    ('completion_seconds', 'integer default 0'),
+    ('completed_seconds', 'integer default 0'),
     ('last_update', 'datetime default current_timestamp'),
     ('job_start',  'datetime'),
     ('job_end', 'datetime')
