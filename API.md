@@ -1,7 +1,54 @@
 This is not the readme or overview, this is the communication points between the modules.
 
+## Website -> AdDaemon
+### Deal
 
-1 ScreenDisplay <-> ScreenDaemon
+#### Request
+`GET /deal` - Gets a price deal for a set of parameters
+ * zone=*zone*|(lat=*latitude*|lng=*longitude*|radius=*meters*) - either an area or zone code:
+    * 1 - daytime santa monica
+    * 2 - weekend nights hollywood
+    * 3 - weekday mornings near freeways
+ * id=*session id*
+ * price=*price*|perday=*seconds* price in cents the user wants to pay OR time in seconds the user wants to have per day
+ * start=*date* 8601 UTC start date of the campaign (if empty, means now)
+ * end=*date* 8601 UTC start date of the campaign
+ * oldId=*quote to invalidate* If a user is updating their quote, this is the previous quote id.
+
+#### Response
+```
+{
+   id: *quote id of the offer*
+   zone|lat,lng,radius: *area of the ad*
+   start: *UTC start time*
+   end: *UTC end time*
+   price: *price in cents for the deal*
+   perday: *time in seconds the ad will display per day*
+}
+```
+
+### Capture
+
+#### Request
+`POST /capture` - Uses a payment gateway and id to capture a user paid for a service
+ * id - Quote id to purchase
+ * service - Currently "paypal"
+ * assetId - id of asset
+ * orderId - The unique orderId returned by the gateway
+
+#### Response
+The server independently verifies, based on the order id that the funds have been transferred.
+```
+{
+   result: *success | error*,
+   id: *unique id of the order*,
+   message: *If error, what message to display to the user*,
+   buyer: *personal info of buyer*
+}
+```
+
+
+## ScreenDisplay <-> ScreenDaemon
 
 Display -> Daemon
 
@@ -9,17 +56,17 @@ POST /sow
 
  * For initialization, an empty payload is sufficient.
 
-2 ScreenDaemon <-> AdDaemon
+## ScreenDaemon <-> AdDaemon
 
 Screen -> Ad
 
 POST /sow
 
 This is a "statement of work" which does the following:
-  * Tells the server where the screen is
-  * Tells the server how much of a job has been complete
-  * Updates the most recently seen timestamp for an id
-  * Hands out "jobs" for advertising which are subdivisions of contracts
+ * Tells the server where the screen is
+ * Tells the server how much of a job has been complete
+ * Updates the most recently seen timestamp for an id
+ * Hands out "jobs" for advertising which are subdivisions of contracts
 
 Request payload:
 
@@ -40,11 +87,10 @@ Request payload:
 ```
 
 Error codes:
+ * NOT_FOUND - The asset to display wasn't able to be displayed
 
-  NOT_FOUND - The asset to display wasn't able to be displayed
 
-
-Ad -> Screen
+## Ad -> Screen
 
 Response payload:
 
