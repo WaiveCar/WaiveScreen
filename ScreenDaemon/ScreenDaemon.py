@@ -1,16 +1,23 @@
 #!/usr/bin/python3
 
-from flask import Flask, request
+from flask import Flask, request, Response, jsonify
 import json
 import urllib
 import lib.lib as lib
+import logging
 
 app = Flask(__name__)
 
-def sucess(what):
-  resp = flask.Response(json.dumps({ 'res': true, 'data': what }))
-  resp.headers['Access-Control-Allow-Origin'] = '*'
+def res(what):
+  resp = jsonify(what)
+  resp.headers.add('Access-Control-Allow-Origin', '*')
   return resp
+
+def success(what):
+  return res({ 'res': True, 'data': what })
+
+def failure(what):
+  return res({ 'res': False, 'data': what })
 
 def get_location():
   return lib.sensor_last()
@@ -44,16 +51,21 @@ def next_ad(work = False):
     try:
       data = json.load(data_raw)
     except:
+      data = False
       logging.warn("Unable to parse {}".format(data_raw))
 
-  job_list = []
-  if data['res']:
-    for job in data['jobs']:
-      job_list.append(job)
-      lib.job_store(job)
+  if data:
+    job_list = []
+    if data['res']:
+      for job in data['jobs']:
+        job_list.append(job)
+        lib.job_store(job)
 
-  return success(job_list)
-  # now we ask the ad daemon for jobs given our lat/lng
+    return success(job_list)
+
+  else:
+    return failure("Got nothing back from the ad server")
+    # now we ask the ad daemon for jobs given our lat/lng
 
 if __name__ == '__main__':
   app.run(port=4096)
