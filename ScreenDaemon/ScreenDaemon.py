@@ -55,15 +55,21 @@ def next_ad(work = False):
       logging.warn("Unable to parse {}".format(data_raw))
 
   if data:
-    job_list = []
-    if data['res']:
-      for job in data['jobs']:
-        job_list.append(job)
-        lib.job_store(job)
+    try:
+      job_list = []
+      if data['res']:
+        for job in data['jobs']:
+          job_list.append(job)
+          lib.job_store(job)
 
-      return success(job_list)
-    else:
-      return failure(data['data'])
+        return success(job_list)
+      else:
+        return failure(data['data'])
+
+    except Exception as ex:
+      return failure({
+        'payload': data
+      })
 
 
   else:
