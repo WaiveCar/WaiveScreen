@@ -5,17 +5,19 @@ $SCHEMA = [
   'user' => 'create table if not exists user(
     id integer primary key autoincrement, 
     email text not null,
+    phone text, 
     stripe_id text not null,
     created_at datetime, 
     last_seen datetime
   )',
 
-  'charge' => 'create table if not exists charge(
+  'order' => 'create table if not exists order(
     id integer primary key autoincrement, 
     user_id integer,
     campaign_id integer,
     amount integer, 
     charge_id text,
+    status text,
     created_at datetime, 
   )',
 
@@ -38,13 +40,26 @@ $SCHEMA = [
     last_seen datetime
   )',
 
+  'place' => 'create table if not exists place(
+    id integer primary key autoincrement,
+    name text not null,
+    lat float default null,
+    lng float default null,
+    radius float default null
+  )',
+
   'campaign' => 'create table if not exists campaign(
     id integer primary key autoincrement,
+    order_id integer,
     asset text not null,
     duration_seconds integer,
+    completed_seconds integer default 0,
+    place_id integer default null,
     lat float default null,
     lng float default null,
     radius float default null,
+    start_minute integer default null,
+    end_minute integer default null,
     start_time datetime,
     end_time datetime
   )',
@@ -54,11 +69,12 @@ $SCHEMA = [
     campaign_id integer,
     screen_id integer,
     goal integer,
-    completion_seconds integer default 0,
+    completed_seconds integer default 0,
     last_update datetime,
     job_start datetime,
     job_end datetime
   )'
+
 ];
 $_db = false;
 function getDb() {
