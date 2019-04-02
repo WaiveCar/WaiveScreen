@@ -36,7 +36,7 @@ def next_ad(work = False):
   sensor = lib.sensor_last()
 
   payload = {
-    'id': lib.get_uuid(),
+    'uid': lib.get_uuid(),
     'lat': sensor['lat'],
     'lng': sensor['lng'],
     'jobs': request.form
@@ -46,10 +46,10 @@ def next_ad(work = False):
   req  = urllib.request.Request('http://ads.waivecar.com/sow', data=data) 
 
   with urllib.request.urlopen(req) as response:
-    data_raw = response.read()
+    data_raw = response.read().decode('utf-8')
 
     try:
-      data = json.load(data_raw)
+      data = json.loads(data_raw)
     except:
       data = False
       logging.warn("Unable to parse {}".format(data_raw))
@@ -61,7 +61,10 @@ def next_ad(work = False):
         job_list.append(job)
         lib.job_store(job)
 
-    return success(job_list)
+      return success(job_list)
+    else:
+      return failure(data['data'])
+
 
   else:
     return failure("Got nothing back from the ad server")
