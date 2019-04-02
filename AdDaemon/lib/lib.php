@@ -1,6 +1,8 @@
 <?
 include_once('db.php');
 $PORT_OFFSET = 7000;
+$DAY = 24 * 60 * 60;
+
 
 function jemit($what) {
   echo json_encode($what);
@@ -148,6 +150,29 @@ function sow($payload) {
     'res' => true,
     'data' => $job_list
   ];
+}
+
+function get_available_slots($start_query, $duration) {
+  if(!$start_query) {
+    $start_query = date();
+  }
+  if($duration) {
+    $duration = 7 * $DAY;
+  }
+  $end_query = $start_query + $duration;
+  //
+  // This is more or less a functional ceiling on our commitment for a time period if we are to assume that we can get everything
+  // done by the end of the duration, not the end of the campaign.
+  //
+  $committed_seconds = run("select sum(completed_seconds - duration_seconds) from campaigns where $start_time > $start_query or $end_time < $end_query");
+  $available_seconds = $duration - $committed_seconds;
+
+  // This is really rudimentary
+  return $committed_seconds;
+}
+
+function deal() {
+
 }
 
 function create_campaign($opts) {
