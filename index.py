@@ -98,6 +98,7 @@ def get_deals():
             "quotes": [
                 {
                     "days": 1,       
+                    "title": "Test Drive",
                     "start": start.strftime("%A %B %d %Y"),
                     "end": (start + datetime.timedelta(days=1)).strftime("%A %B %d %Y"),
                     "basePrice": price,
@@ -107,10 +108,12 @@ def get_deals():
                     "perMinutePerDay": price_per_second * 60, 
                     "addedDays": 0,
                     "addedMinutes": 0,
+                    "action": "Try it for $1.00",
                     "color": "light",
                 },
                 {
                     "days": 7,
+                    "title": "Shoestring",
                     "start": start.strftime("%A %B %d %Y"),
                     "end": (start + datetime.timedelta(days=7)).strftime("%A %B %d %Y"),
                     "basePrice": price,
@@ -120,10 +123,12 @@ def get_deals():
                     "perMinutePerDay": price_per_second * 60, 
                     "addedDays": 0,
                     "addedMinutes": 0,
+                    "action": "$9.99/Week",
                     "color": "warning"
                 },
                 {
                     "days": 30,
+                    "title": "Standard",
                     "start": start.strftime("%A %B %d %Y"),
                     "end": (start + datetime.timedelta(days=30)).strftime("%A %B %d %Y"),
                     "basePrice": price,
@@ -133,6 +138,7 @@ def get_deals():
                     "perMinutePerDay": price_per_second * 60, 
                     "addedDays": 0,
                     "addedMinutes": 0,
+                    "action": "$34.99/Week",
                     "color": "secondary" 
                 }
             ]
