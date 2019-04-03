@@ -46,14 +46,14 @@ def respond():
                 "image": "sm-day.jpg",
             }, {
                 "id": 2,
-                "label": "Hollywood",
-                "name": "Hollywood",
-                "image": "hollywood-night.jpg",
-            }, {
-                "id": 3,
                 "label": "Anywhere in LA",
                 "name": "LA",
                 "image": "traffic-morning.jpg",
+            }, {
+                "id": 3,
+                "label": "Hollywood",
+                "name": "Hollywood",
+                "image": "hollywood-night.jpg",
             }
         ]
     }))
