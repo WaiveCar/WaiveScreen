@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel='shortcut icon' type='image/x-icon' href='assets/favicon.png' />
+    <link rel="stylesheet" href="custom.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli:300,400,500,600,700,800,900" media="all">
+    <title>Waive Ads</title>
+  </head>
+  <style>
+.card {
+  cursor: pointer;
+  position: relative;
+  padding: 0.25rem;
+  margin: 0 0.5rem;
+  box-shadow: 2px 2px 1px rgba(120,120,120,0.5);
+}
+.card:first-child {
+  margin-left: 0;
+}
+.card img {
+  opacity: 0.75;
+}
+.pennies {
+  background: url('assets/penny_30.png');
+  height: 30px;
+  width: 180px;
+  display: inline-block;
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+.pay-container {
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: rgba(240,250,240,1);
+}
+#popular-list .card label {
+  color: white;
+  position: absolute;
+  top: 0;
+  left: 0.25rem;
+  padding: 0.5rem 0.75rem 0.5rem 1rem;
+  text-align: left;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin: 1rem 1rem 0 0;
+  min-width: 65%;
+  background:rgba(32,32,48,0.5);
+}
+#option-cards .card-title {
+  font-weight: 700;
+}
+#option-cards .checked .card-header,
+#option-cards .checked .card-footer
+{
+  background: rgba(172,240,172,0.5);
+}
+#option-cards .checked .card-body {
+  color: #060;
+}
+#option-cards .card-body {
+  font-size: 1.25rem;
+  color: black;
+}
+.upload-text p {
+  line-height: 1.3rem;
+  background: rgba(255,255,255,0.2);
+  padding: 0.5rem 0.8rem;
+  border-radius: 10px;
+  display: inline-block;
+}
+.upload-text a {
+  color: rgba(210,210,255);
+  font-weight: 800;
+}
+.card input {
+  display: none;
+}
+.card.checked {
+  transform: scale(1.13);
+  z-index: 100;
+  box-shadow: 0 0 3px 2px rgba(120,150,120,0.5);
+}
+.card.checked img {
+  opacity: 1;
+}
+.card.checked label {
+  background:rgba(32,32,48,0.8);
+}
+.jumbotron {
+  color: white;
+  background-image: url("assets/carjumbo.png");
+  background-size: cover;
+}
+.jumbotron h1 {
+  font-weight: 900;
+  font-size: 3rem;
+  text-shadow: 1px 1px 3px rgba(64,64,64,1);
+}
+.jumbotron h3 {
+  text-transform: uppercase;
+  margin-top: -.5rem;
+  text-shadow: 1px 1px 3px rgba(64,64,64,1);
+}
+.bg-alt {
+  background:rgba(48,32,32,0.8);
+}
+.jumbotron p {
+  background:rgba(32,32,48,0.8);
+  display: inline-block;
+  font-weight: 500;
+  margin-top: 1rem;
+  margin-bottom: 0;
+  margin-left: -.5rem;
+  line-height: 2rem;
+  padding: 1rem;
+}
+#preview-image {
+  width: 100%;
+}
+
+</style>
+  <body>
+    <div class="modal" tabindex="-1" role="dialog" id="warning-modal">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Missing Information</h5>
+            <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="warning-modal-text">Please add the missing information</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary modal-close">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <h1>
+        WaiveScreen Advertising
+      </h1>
+      <h3> Open to the public</h3>
+      <p class="lead">
+        Starting at <b>$1.00</b>
+    </div>
+    <form id="ad-signup" class="bg-info" action=javascript:void> 
+      <div class="container-fluid py-5">
+        <div class="container">
+          <h1 class="title">Place</h1>
+          <h4>Choose where you want to be seen</h4>
+          <div class="card-group mt-4" id="popular-list" />
+          </div>
+          <!--
+          <div class="row justify-content-md-center mt-5">
+            <div class="alert alert-warning text-center" role="alert">
+              Or choose your time, place or car:
+              <hr>
+              <div>
+                <a role="button" class="btn btn-primary" href="/login">Starting at $1</a>
+              </div>
+              <hr>
+              <div class="non-profits">
+                For non-profits, community organizations or similar, please contact us directly about free advertising!
+              </div>
+            </div>
+          </div>
+          -->
+        </div>
+
+      </div>
+      <div class="container-fluid index-background py-5 bg-alt">
+        <div class="container text-info">
+          <h1 class="pt-4 title">Promotion</h1>
+          <h4>Choose what you want to show</h4>
+          <div class="row upload-text">
+            <div class="col-12">
+              <p>
+              Not a designer? Not a problem!<br/>
+              Try <a target="_blank" href="https://canva.com">Canva</a> or <a target="_blank" href="https://crello.com">Crello</a>: free easy-to-use tools for creating attractive designs.<br/> 
+              When done, download your design as a "PNG" to upload it here.
+              </p>
+            </div>
+          </div>
+          <div class="row justify-content-md-center mt-4">
+            <div class="preview-holder">
+              <img id="preview-image" src="#" alt="">
+            </div>
+          </div>
+          <div class="row ">
+            <div class="col-4">
+              <div id="upload-holder" class="mt-5">
+                <label class="btn btn-info" for="image-upload">
+                  Upload Image
+                </label>
+                <input id="image-upload" class="form-control-file" type="file" name="ad-asset" accept="image/*">
+              </div>
+            </div>
+          </div>
+          <div>Best fit: 1920x756</div>
+        </div>
+      </div>
+      
+      <div class="container-fluid bg-info py-5 pricing-options">
+        <div class="container">
+          <h1 class="pt-4 title">Price</h1>
+          <h4>Choose how much you want to pay</h4>
+          <div class="row">
+            <div class="col-md-4 col-sm-6">
+              <div class="input-group text-center input-group-lg">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-lg">$</span>
+                </div>
+                <input placeholder="ex: 100" type="number" id="desired-price" class="form-control">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid bg-white py-5">
+      <div class="container">
+        <h1 class="pt-4 title">Product</h1>
+        <h4>Choose what's right for you.</h4>
+        <div id="options">
+          <!-- Ih3 id="empty-text">Choose a Price and Place to see Available Products</h3> -->
+          <div class="card-group text-center" id="option-cards" />
+            <div onclick="selectLocation(this)" data-price="100" class="card pricing-option mt-2">
+              <div class="card-header">
+                <h2 class="card-title">Test Drive</h2>
+                <h5>Try it for <b>$1.00</b></h5>
+              </div>
+              <div class="card-body">
+                Plays <b>25</b> times for 1 week!<br/>
+              </div>
+              <div class="card-footer text-center">
+                Just 4&#xA2; per play!<br/>
+                <div style=width:120px class='pennies'></div>
+              </div>
+              <input type="radio" name="option" value="testdrive">
+            </div>
+            <div onclick="selectLocation(this)" data-price="999" class="card pricing-option mt-2 checked">
+              <div class="card-header text-center">
+                <h2 class="card-title">Shoestring</h2>
+                <h5>Only <b>$9.99</b>/week</h5>
+              </div>
+              <div class="card-body">
+                Plays <b>300</b> times each week!
+              </div>
+              <div class="card-footer text-center">
+                Just 3&#8531;&#xA2; per play!<br/>
+                <div style=width:100px class='pennies'></div>
+              </div>
+              <input type="radio" name="option" checked value="shoestring">
+            </div>
+            <div onclick="selectLocation(this)" data-price="2999" class="card pricing-option mt-2">
+              <div class="card-header text-center">
+                <h2 class="card-title">Standard</h2>
+                <h5><b>$29.99</b>/week</h5>
+              </div>
+              <div class="card-body">
+                Plays <b>1,050</b> times each week!
+
+              </div>
+              <div class="card-footer text-center">
+                Just 2&#190;&#xA2; per play!<br/>
+                <div style=width:85px class='pennies'></div>
+              </div>
+              <input type="radio" name="option" value="standard">
+            </div>
+          </div>
+        </div>
+        <div class="container-fluid bg-white py-5">
+          <div id="add-ons" />
+        </div>
+        <div class="row justify-content-md-center mt-4">
+          <div class="col-md-4 col-sm-12 pay-container">
+            <h4>Tap below to finish!</h4>
+            <div id="paypal-button-container" class='py-4'></div>
+            <button onclick="window.fakebuy()" id="fakebuy">Fake Buy</button>
+            <p>We'll use your PayPal email address to send you a confirmation and make you an account.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    </form>
+    <center>
+      &copy;2019, Waive. <a href=mailto:support@waivecar.com>Contact</a>
+    </center>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="bootstrap.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://www.paypalobjects.com/api/checkout.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>

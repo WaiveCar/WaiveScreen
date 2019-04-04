@@ -1,2 +1,6 @@
 *.mkv
 ScreenDisplay/assets/*.png
+ad-platform.db
+node_modules
+*.swp
+*.swo

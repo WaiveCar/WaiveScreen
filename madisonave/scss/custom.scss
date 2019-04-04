@@ -1,0 +1,61 @@
+$primary: #168f2f;
+$success: #1FA611;
+$info: #f9f9fa;
+$warning: #109C7C;
+
+@import '../node_modules/bootstrap/scss/bootstrap';
+@import url('https://fonts.googleapis.com/css?family=Muli');
+$font-family-sans-serif: 'Muli', sans serif;
+
+body {
+  font-family: $font-family-sans-serif;
+  line-height: 1.15;
+}
+
+.logo {
+  margin: 1em 0 0 1.5em;
+  height: 2em;
+}
+
+.title {
+  font-weight: 400;
+}
+
+.location-image {
+  width: 100%;
+}
+
+.non-profits {
+  font-size: 0.8em;
+}
+
+/*
+.index-background {
+  height: 23em;
+}
+
+
+.preview-holder {
+  height: 15em;
+}*/
+
+#image-upload {
+  display: none;
+}
+
+#preview-image {
+  height: 100%;
+  visibility: hidden;
+}
+
+#desired-price {
+  margin: 0 auto;
+  width: 2%;
+}
+
+.pricing-options {
+  min-height: 20em;
+}
+#amount, .pricing-options {
+  display: none;
+}
