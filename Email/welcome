@@ -1,0 +1,9 @@
+You're now part of the next wave in advertising!
+<p>
+  Thanks {{ data.payer_info.name }} for joining us.  Here's what's next!
+  <ul>
+    <li> You can view your dashboard of where your ad played and when at <a href=https://ad.waivecar.com/dashboard>https://ad.waivecar.com/dashboard</a> </li>
+    <li> We'll send you a status report via email for your records during and after the campaign is complete. </li>
+    <li> If for any reason we aren't able to show all the content you purchased in our promised time, we'll partially refund your purchase.</li>
+  </ul>
+</p>

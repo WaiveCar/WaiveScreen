@@ -1,0 +1,17 @@
+<div>
+<style>
+  body, * {
+    font-family: 'Roboto', 'Helvetica', 'sans-serif';
+  }}
+  .header {{
+    width: 100%;
+  }}
+  .header img {{
+    width: 100%;
+    height: auto;
+  }}
+  .main {{
+    padding: 20px;
+  }}
+</style>
+<div class="main">
