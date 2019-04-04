@@ -1,17 +1,17 @@
 #!/usr/bin/python3
 
 from flask import Flask, request, Response, jsonify
+from flask_cors import CORS
 import json
 import urllib
 import lib.lib as lib
 import logging
 
 app = Flask(__name__)
+CORS(app)
 
 def res(what):
-  resp = jsonify(what)
-  resp.headers.add('Access-Control-Allow-Origin', '*')
-  return resp
+  return jsonify(what)
 
 def success(what):
   return res({ 'res': True, 'data': what })
