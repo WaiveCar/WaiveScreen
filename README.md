@@ -4,6 +4,19 @@ Some terms:
   * Screen - The thing that sits on top of the car
   * Server - Machine(s) living off in the cloud with Peter Pan, may be distributed with a load balancer
 
+The directory layout:
+
+  * MadisonAve - Named after the advertising metonym Madison Avenue, this is the ad-buyer-facing website for 
+    * Selling ads 
+    * Campaign progress dashboard (in planning as of 2019/04/04)
+  * Linux - The tools, processes, and distribution techniques for maintaining the screens. This contains
+    * Arduino code
+    * Power management
+    * Cronjobs and etc scripts
+  * ScreenDaemon - see below
+  * ScreenDisplay - see below
+  * AdDaemon - see below
+  
 The SCREEN parts:
 
   * Screen display 
