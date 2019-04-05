@@ -30,14 +30,6 @@ DATABASE = os.getcwd() + "/ad-platform.db"
 active_sessions = dict()
 
 
-# This route is used to fetch a cart by session id. It is currently used by the client's confirmation page
-@app.route("/prev_cart")
-def retrieve_cart():
-    old_session_id = request.headers.get("Session-Id")
-    if old_session_id in active_sessions and active_sessions[old_session_id][0]:
-        return jsonify(active_sessions[old_session_id][0])
-    else:
-        return "No Previous Purchase", 400
 
 # This route is used when carts are purchased. The post request is to make the intial purchase row
 # in the table while the put request is for updating the row with the information sent back by paypal
