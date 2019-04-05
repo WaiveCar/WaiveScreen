@@ -55,13 +55,6 @@ function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
   return $dist * 60 * 1397.60312636;
 }
 
-function campaigns($clause = '') {
-  return db_all("select * from campaign $clause");
-}
-function active_campaigns() {
-  return campaigns('where end_time > current_timestamp and start_time < current_timestamp');
-}
-
 function create_screen($uid) {
   global $PORT_OFFSET;
   // we need to get the next available port number
@@ -183,24 +176,38 @@ function get_available_slots($start_query, $duration) {
 function upload_s3($file) {
 	$credentials = new Aws\Credentials\Credentials('AKIAIL6YHEU5IWFSHELQ', 'q7Opcl3BSveH8TU9MR1W27pWuczhy16DqRg3asAd');
 
+  $mime = mime_content_type($file);
+  $ext = array_pop(explode('/',$mime));
+  $name = implode('.', [Uuid::uuid4()->toString(), $ext]);
+
 	$s3 = new Aws\S3\S3Client([
 		'version'     => 'latest',
 		'region'	    => 'us-east-1',
 		'credentials' => $credentials
 	]);
   try {
-    $s3->putObject([
+    $res = $s3->putObject([
       'Bucket' => 'waivecar-prod',
-      'Key'    => Uuid::uuid4()->toString(),
+      'Key'    => $name,
       'Body'   => fopen($file, 'r'),
       'ACL'    => 'public-read',
     ]);
   } catch (Aws\S3\Exception\S3Exception $e) {
     throw new Exception("$file failed to upload");
   }
+  // see https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-s3-2006-03-01.html#putobject
+  var_dump($res['ObjectURL']);
+  return $name;
 }
 
-function create_campaign($opts) {
+
+function campaigns($clause = '') {
+  return db_all("select * from campaign $clause");
+}
+function active_campaigns() {
+  return campaigns('where end_time > current_timestamp and start_time < current_timestamp');
+}
+function campaign_new($opts) {
   //
   // Currently we don't care about radius ... eventually we'll be using
   // spatial systems anyway so let's be simple.
@@ -223,9 +230,24 @@ function create_campaign($opts) {
       'end_time' => db_string($opts['end_time'])
     ]
   );
-  return [
-    'res' => true, 
-    'data' => $campaign_id
-  ];
+
+  return $campaign_id;
+}
+
+// This is the entry point ... I know naming and caching
+// are the hardest things.
+function campaign_crud($data, $file, $user) {
+  $asset = upload_s3($file);
+  $campaign_id = campaign_new($data);
+  $order_id = db_insert('orders', [
+    'user_id' => $user['id'],
+    'campaign_id' => $campaign_id,
+    'amount' => $data['total'], 
+    'charge_id' => $data['charge_id'],
+    'status' => 'completed'
+  ]);
+
+  db_update('campaign', $campaign_id, ['order_id' => $order_id]);
+  return $campaign_id;
 }
 
