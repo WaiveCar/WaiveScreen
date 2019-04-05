@@ -1,9 +1,10 @@
 <?
 include_once('db.php');
-include_oncde('email.php');
+include_once('email.php');
+include_once('user.php');
+
 $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
-
 
 function jemit($what) {
   echo json_encode($what);
