@@ -8,6 +8,12 @@ window.fakebuy = function () {
   console.log($(document.forms[0]).serializeArray());
 }
 
+// this is grabbed from an old splash resources call.
+function sessionGet() {
+  if (response.headers['session-id'] !== sessionId) {
+    sessionStorage.setItem('sessionId', response.headers['session-id']);
+  }
+}
 $(function() {
   function price(amount) {
     return '$' + (parseInt(amount, 10)/100).toFixed(2);
@@ -20,35 +26,39 @@ $(function() {
   // sessionId/quoteId if there is one. The sessionId is not currently used here, but is
   // used by the server and could be used to reload previous inputs by the user. These previous
   // inputs are already cached by the server
-  axios
-    .get('/splash_resources', sessionId && {headers: {'Session-Id': sessionId}})
-    .then(response => {
-      if (response.headers['session-id'] !== sessionId) {
-        sessionStorage.setItem('sessionId', response.headers['session-id']);
-      }
-      state.allLocations = response.data.popularLocations.concat(
-        response.data.cheapLocations,
-      );
-      let parentNode = document.getElementById('popular-list');
-      // The code below generates the html that gives the user options for different
-      // popular locations
-      response.data.popularLocations.forEach((option, i) => {
-        let checked = (i == 1) ? 'checked' : '';
-        let html = parser.parseFromString(
-          `
-      <div onclick="selectLocation(this)" class="card text-center ${checked}">
-        <img class="location-image" src="assets/${option.image}">
-        <label for="${option.name}">${option.label}</label>
-        <input type="radio" name="location" ${checked} value="${option.name}">
-      </div>`,
-          'text/html',
-        ).body.firstChild;
-        parentNode.append(html);
-      });
-    })
-    .catch(err => {
-      console.log('error: ', err);
-    });
+  state.allLocations = [{
+    "id": 1,
+    "label": "Santa Monica",
+    "name": "Santa Monica",
+    "image": "sm-day.jpg",
+  }, {
+    "id": 2,
+    "label": "Anywhere in LA",
+    "name": "LA",
+    "image": "traffic-morning.jpg",
+  }, {
+    "id": 3,
+    "label": "Hollywood",
+    "name": "Hollywood",
+    "image": "hollywood-night.jpg",
+  }];
+
+  let parentNode = document.getElementById('popular-list');
+  // The code below generates the html that gives the user options for different
+  // popular locations
+  response.data.popularLocations.forEach((option, i) => {
+    let checked = (i == 1) ? 'checked' : '';
+    let html = parser.parseFromString(
+      `
+  <div onclick="selectLocation(this)" class="card text-center ${checked}">
+    <img class="location-image" src="assets/${option.image}">
+    <label for="${option.name}">${option.label}</label>
+    <input type="radio" name="location" ${checked} value="${option.name}">
+  </div>`,
+      'text/html',
+    ).body.firstChild;
+    parentNode.append(html);
+  });
 
   // The event handler below handles the user uploading new files
   let uploadInput = document.getElementById('image-upload');
