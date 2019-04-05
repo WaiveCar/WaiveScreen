@@ -1,4 +1,5 @@
 <?
+session_start();
 include('lib.php');
 
 $func = $_REQUEST['func'];
