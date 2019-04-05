@@ -1,62 +1,56 @@
+var dealMap = {
+  testdrive: { price: 100 },
+  shoestring: { price: 999 },
+  standard: { price: 2999 }
+};
+
 function selectLocation(what) {
   $(what).siblings().removeClass('checked');
   $(what).addClass('checked');
   $("input", what).prop('checked', true);
 }
 
-window.fakebuy = function () {
+function fakebuy() {
   console.log($(document.forms[0]).serializeArray());
 }
 
-// this is grabbed from an old splash resources call.
-function sessionGet() {
-  if (response.headers['session-id'] !== sessionId) {
-    sessionStorage.setItem('sessionId', response.headers['session-id']);
-  }
+function price(amount) {
+  return '$' + (parseInt(amount, 10)/100).toFixed(2);
 }
+
 $(function() {
-  function price(amount) {
-    return '$' + (parseInt(amount, 10)/100).toFixed(2);
-  }
-  // This 'state' is used to store anything that is needed within this scope
-  let state = {};
   let parser = new DOMParser();
-  let sessionId = sessionStorage.getItem('sessionId');
-  // This call to the api fetches the locations that are currently popular and sends the
-  // sessionId/quoteId if there is one. The sessionId is not currently used here, but is
-  // used by the server and could be used to reload previous inputs by the user. These previous
-  // inputs are already cached by the server
-  state.allLocations = [{
-    "id": 1,
-    "label": "Santa Monica",
-    "name": "Santa Monica",
-    "image": "sm-day.jpg",
-  }, {
-    "id": 2,
-    "label": "Anywhere in LA",
-    "name": "LA",
-    "image": "traffic-morning.jpg",
-  }, {
-    "id": 3,
-    "label": "Hollywood",
-    "name": "Hollywood",
-    "image": "hollywood-night.jpg",
-  }];
+  // This 'state' is used to store anything that is needed within this scope
+  let state = { 
+    allLocations: [{
+      id: 1,
+      label: "Santa Monica",
+      name: "Santa Monica",
+      image: "sm-day.jpg",
+    }, {
+      id: 2,
+      label: "Anywhere in LA",
+      name: "LA",
+      image: "traffic-morning.jpg",
+    }, {
+      id: 3,
+      label: "Hollywood",
+      name: "Hollywood",
+      image: "hollywood-night.jpg",
+    }]
+  }
 
   let parentNode = document.getElementById('popular-list');
   // The code below generates the html that gives the user options for different
   // popular locations
-  response.data.popularLocations.forEach((option, i) => {
+  state.allLocations.forEach((option, i) => {
     let checked = (i == 1) ? 'checked' : '';
-    let html = parser.parseFromString(
-      `
-  <div onclick="selectLocation(this)" class="card text-center ${checked}">
-    <img class="location-image" src="assets/${option.image}">
-    <label for="${option.name}">${option.label}</label>
-    <input type="radio" name="location" ${checked} value="${option.name}">
-  </div>`,
-      'text/html',
-    ).body.firstChild;
+    let html = parser.parseFromString(`
+      <div onclick="selectLocation(this)" class="card text-center ${checked}">
+        <img class="location-image" src="assets/${option.image}">
+        <label for="${option.name}">${option.label}</label>
+        <input type="radio" name="location" ${checked} value="${option.name}">
+      </div>`, 'text/html').body.firstChild;
     parentNode.append(html);
   });
 
@@ -73,8 +67,7 @@ $(function() {
     reader.readAsDataURL(uploadInput.files[0]);
   });
 
-  paypal.Button.render(
-    {
+  paypal.Button.render({
       env: 'sandbox', // sandbox | production
       // Create a PayPal app: https://developer.paypal.com/developer/applications/create
       client: {
@@ -91,9 +84,14 @@ $(function() {
         // Before the payment is processed by paypal, a user's purchase is sent to the server with 
         // the information that has so far been obtained including the picture.
         let formData = new FormData();
+        $(document.forms[0]).serializeArray().forEach(function(row) {
+          state[row.name] = row.value;
+          formData.append(row.name, row.value);
+        });
+        state.total = dealMap[state.option].price;
+
         formData.append('file', uploadInput.files[0]);
-        formData.append('cart', JSON.stringify(state.selectedCart));
-        formData.append('quoteId', sessionStorage.getItem('sessionId'));
+
         return axios({
           method: 'post',
           url: '/capture',
@@ -104,15 +102,16 @@ $(function() {
             },
           },
         }).then(resp => {
+          if(resp.res) {
+            state.campaign_id = res.data;
+          }
           // Make a call to the REST api to create the payment
           return actions.payment.create({
             payment: {
               transactions: [
                 {
                   amount: {
-                    total: String(
-                      (state.selectedCart.total / 100).toFixed(2),
-                    ),
+                    total: (state.total / 100).toFixed(2),
                     currency: 'USD',
                   },
                 },
@@ -129,20 +128,11 @@ $(function() {
           .execute()
           .then(() => {
             return actions.payment.get().then(order => {
-              // Once the payment is completed, the payment information is fetched and then sent to the server
-              // so that it can be stored in the database for future use
-              let formData = new FormData();
-              formData.append('file', uploadInput.files[0]);
-              formData.append(
-                'cart',
-                JSON.stringify(state.selectedCart),
-              );
-              formData.append('payer', JSON.stringify(order.payer));
-              formData.append('paymentInfo', JSON.stringify(data));
               axios({
                 method: 'put',
                 url: '/capture',
                 data: {
+                  campaignId: state.campaign_id,
                   quoteId: sessionStorage.getItem('sessionId'),
                   payer: JSON.stringify(order.payer),
                   paymentInfo: JSON.stringify(data),
