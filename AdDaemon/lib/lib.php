@@ -69,7 +69,7 @@ function create_screen($uid) {
     ]
   );
 
-  return get_screen($screen_id);
+  return Get::screen($screen_id);
 }
 
 function create_job($campaignId, $screenId) {
@@ -87,7 +87,7 @@ function create_job($campaignId, $screenId) {
     ]
   );
 
-  return get_job($job_id);
+  return Get::job($job_id);
 }
 
 function update_job($jobId, $completion_seconds) {
@@ -110,7 +110,7 @@ function sow($payload) {
     return doError("UID needs to be set before continuing");
   }
 
-  $screen = get_screen($uid);
+  $screen = Get::screen(['uid' => $uid]);
 
   if(!$screen) {
     $screen = create_screen($uid);
@@ -201,3 +201,4 @@ function create_campaign($opts) {
     'data' => $campaign_id
   ];
 }
+
