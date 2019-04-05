@@ -18,10 +18,10 @@ class User {
 
   public static function login($email, $pass) {
     if(! ($user = Get::user(['email' => $email]) ) {
-      throw new Exception("User $email not found");
+      throw new Exception("$email not found");
     }
     if( password_hash($pass) != $user['password'] ) {
-      throw new Exception("User $email password incorrect");
+      throw new Exception("User password incorrect");
     }
     $_SESSION['id'] = $user['id'];
     return true;
