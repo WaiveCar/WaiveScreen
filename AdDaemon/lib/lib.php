@@ -1,5 +1,6 @@
 <?
 include_once('db.php');
+include_oncde('email.php');
 $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
 
@@ -171,9 +172,6 @@ function get_available_slots($start_query, $duration) {
   return $committed_seconds;
 }
 
-function deal() {
-
-}
 
 function create_campaign($opts) {
   //

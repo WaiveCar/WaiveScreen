@@ -12,9 +12,6 @@ try {
       jemit(create_campaign($_POST));
     }
   }
-  if($func == 'deal') {
-    jemit(deal());
-  }
   else if($func == 'sow') {
     jemit(sow($_POST));
   }
