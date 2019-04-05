@@ -1,24 +1,33 @@
 <?php
-
-$EMAILDIR = 'templates/';
+require 'vendor/autoload.php';
+use Mailgun\Mailgun;
 
 function email($user, $name, $vars) {
-  global $EMAILDIR;
+  $DIR = 'templates/';
 
-  $data = file($EMAILDIR . $name);
-  if(!$data) {
+  if(! ($data = file($DIR . $name) ) {
     throw new Exception("Can't find $name");
   }
 
   $subject = array_shift($data);
 
   extract($vars);
+
   ob_start();
   {
-    include($EMAILDIR . '_header');
+    include $DIR . '_header';
     echo implode('\n', $data);
-    include($EMAILDIR . '_footer');
+    include $DIR . '_footer';
   }
-  $output = ob_get_clean();
+  $body = ob_get_clean();
+
+  $mg = Mailgun::create('key-example');
+
+  $mg->messages()->send('waivecar.com', [
+    'from'    => 'ads@waivecar.com',
+    'to'      => $user['email'],
+    'subject' => $subject,
+    'text'    => $body
+  ]);
 }
 
