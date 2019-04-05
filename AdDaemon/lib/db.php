@@ -142,23 +142,27 @@ function get_campaign_completion($id) {
     ");
 }
 
-function get_job($id) {
-  return (getDb())->querySingle("select * from job where id=$id", true);
-}
-
-function get_campaign($id) {
-  return (getDb())->querySingle("select * from campaign where id=$id", true);
-}
-
-function get_screen($id) {
-  if(is_string($id)) {
-    $key = 'uid';
-    $id = db_string($id);
-  } else {
+class Get {
+  public static function __callStatic($name, $argList) {
+    $arg = $argList[0];
     $key = 'id';
+    if(!is_array($arg)) {
+      $arg = ['id' => $arg];
+    }
+
+    $kvargs = [];
+    foreach($arg as $key => $value) {
+      if(is_string($value)) {
+        $value = db_string($value);
+      }
+      $kvargs[] = "$key=$value";
+    }
+    $kvstr = implode(' and ', $kvargs);
+
+    return (getDb())->querySingle("select * from $name where $kvstr", true);
   }
-  return (getDb())->querySingle("select * from screen where $key=$id", true);
-}
+};
+
 
 function db_update($table, $id, $kv) {
   $fields = [];
