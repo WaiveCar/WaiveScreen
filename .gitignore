@@ -4,3 +4,4 @@ ad-platform.db
 node_modules
 *.swp
 *.swo
+vendor
