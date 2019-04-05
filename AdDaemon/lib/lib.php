@@ -1,4 +1,10 @@
 <?
+require 'vendor/autoload.php';
+use Aws\S3\S3Client;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
+
+
 include_once('db.php');
 include_once('email.php');
 include_once('user.php');
@@ -173,6 +179,26 @@ function get_available_slots($start_query, $duration) {
   return $committed_seconds;
 }
 
+
+function upload_s3($file) {
+	$credentials = new Aws\Credentials\Credentials('AKIAIL6YHEU5IWFSHELQ', 'q7Opcl3BSveH8TU9MR1W27pWuczhy16DqRg3asAd');
+
+	$s3 = new Aws\S3\S3Client([
+		'version'     => 'latest',
+		'region'	    => 'us-east-1',
+		'credentials' => $credentials
+	]);
+  try {
+    $s3->putObject([
+      'Bucket' => 'waivecar-prod',
+      'Key'    => Uuid::uuid4()->toString(),
+      'Body'   => fopen($file, 'r'),
+      'ACL'    => 'public-read',
+    ]);
+  } catch (Aws\S3\Exception\S3Exception $e) {
+    throw new Exception("$file failed to upload");
+  }
+}
 
 function create_campaign($opts) {
   //
