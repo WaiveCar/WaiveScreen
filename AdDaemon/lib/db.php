@@ -7,8 +7,8 @@ $SCHEMA = [
     email text not null,
     phone text, 
     stripe_id text not null,
-    created_at datetime, 
-    last_seen datetime
+    created_at datetime default current_timestamp, 
+    last_seen datetime default current_timestamp
   )',
 
   'order' => 'create table if not exists order(
@@ -18,7 +18,7 @@ $SCHEMA = [
     amount integer, 
     charge_id text,
     status text,
-    created_at datetime, 
+    created_at datetime default current_timestamp, 
   )',
 
   'subscription' => 'create table if not exists subscription(
@@ -26,7 +26,7 @@ $SCHEMA = [
     user_id integer,
     campaign_id integer,
     amount integer, 
-    created_at datetime, 
+    created_at datetime default current_timestamp, 
   )',
 
   'screen' => 'create table if not exists screen(
@@ -60,7 +60,7 @@ $SCHEMA = [
     radius float default null,
     start_minute integer default null,
     end_minute integer default null,
-    start_time datetime,
+    start_time datetime default current_timestamp,
     end_time datetime
   )',
 
