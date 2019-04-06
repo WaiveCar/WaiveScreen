@@ -133,7 +133,6 @@ $(function() {
                 url: '/capture',
                 data: {
                   campaignId: state.campaign_id,
-                  quoteId: sessionStorage.getItem('sessionId'),
                   payer: JSON.stringify(order.payer),
                   paymentInfo: JSON.stringify(data),
                 },
