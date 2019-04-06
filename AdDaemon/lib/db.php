@@ -48,6 +48,11 @@ $SCHEMA = [
     radius float default null
   )',
 
+  //
+  // consider: potentially create a second table for "staging" campaigns
+  // that aren't active as opposed to relying on a boolean
+  // in this table below
+  //
   'campaign' => 'create table if not exists campaign(
     id integer primary key autoincrement,
     order_id integer,
@@ -60,6 +65,7 @@ $SCHEMA = [
     radius float default null,
     start_minute integer default null,
     end_minute integer default null,
+    active boolean default false,
     start_time datetime default current_timestamp,
     end_time datetime
   )',
