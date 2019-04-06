@@ -205,7 +205,7 @@ function campaigns($clause = '') {
   return db_all("select * from campaign $clause");
 }
 function active_campaigns() {
-  return campaigns('where end_time > current_timestamp and start_time < current_timestamp');
+  return campaigns('where active=true and end_time > current_timestamp and start_time < current_timestamp');
 }
 function campaign_new($opts) {
   //
@@ -220,8 +220,11 @@ function campaign_new($opts) {
   }
   $opts = db_clean($opts);
 
+  // by default active gets set to false
+  // which means that we don't consider this 
   $campaign_id = db_insert(
     'campaign', [
+      'active' => false,
       'asset' => db_string($opts['asset']),
       'duration_seconds' => $opts['duration'],
       'lat' => $opts['lat'],
@@ -244,7 +247,7 @@ function campaign_crud($data, $file, $user) {
     'campaign_id' => $campaign_id,
     'amount' => $data['total'], 
     'charge_id' => $data['charge_id'],
-    'status' => 'completed'
+    'status' => 'open'
   ]);
 
   db_update('campaign', $campaign_id, ['order_id' => $order_id]);
