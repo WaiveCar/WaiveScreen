@@ -1,5 +1,6 @@
 <?
 include('db.php');
+include('email.php');
 
 class User {
   public static function me() {
@@ -10,7 +11,11 @@ class User {
     if(!empty($data['password'])) {
       $data['password'] = password_hash($data['password']);
     }
-    return db_insert('users', $data);
+    $user_id = db_insert('users', $data);
+    if($user_id) {
+      email('welcome', $user, $data);
+      return $user_id;
+    }
   }
 
   public static function update($user = false, $data = []) {
