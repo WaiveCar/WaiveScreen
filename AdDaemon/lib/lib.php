@@ -262,11 +262,11 @@ function campaign_create($data, $file, $user) {
   return $campaign_id;
 }
 
-// by the time we get here we should already have the asset
+// By the time we get here we should already have the asset
 // and we should have our monies
 function campaign_activate($campaign_id, $data) {
   $payer = $data['payer']['payer_info'];
-  $info = $data['payment_info'];
+  $info = $data['paymentInfo'];
   $campaign = Get::campaign($campaign_id);
 
   $user = Get::user(['email' => $payer['email']]);
@@ -285,6 +285,7 @@ function campaign_activate($campaign_id, $data) {
     // is this different?
     'charge_id' => $info['orderID']
   ]);
+
   db_update('campaign', $campaign_id, [
     'active' => true,
     'user_id' => $user['id']
