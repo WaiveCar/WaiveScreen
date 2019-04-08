@@ -9,8 +9,12 @@ try {
   if($func == 'campaign') {
     if($verb == 'GET') {
       jemit(campaigns());
-    } else {
-      jemit(create_campaign($_POST));
+    } elseif ($verb == 'POST') {
+      var_dump([$_POST, $_FILES]);
+      exit(0);
+      jemit(campaign_create($_POST, $_FILES));
+    } elseif ($verb == 'PUT') {
+      jemit(campaign_activate($_POST['campaignId'], $_POST));
     }
   }
   else if($func == 'sow') {
