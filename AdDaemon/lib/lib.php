@@ -237,20 +237,56 @@ function campaign_new($opts) {
   return $campaign_id;
 }
 
-// This is the entry point ... I know naming and caching
+
+// This is the first entry point ... I know naming and caching
 // are the hardest things.
-function campaign_crud($data, $file, $user) {
+//
+// According to our current flow we may not know the user at the time
+// of creating this
+function campaign_create($data, $file, $user) {
   $asset = upload_s3($file);
   $campaign_id = campaign_new($data);
-  $order_id = db_insert('orders', [
-    'user_id' => $user['id'],
+  $order = [
     'campaign_id' => $campaign_id,
     'amount' => $data['total'], 
     'charge_id' => $data['charge_id'],
     'status' => 'open'
-  ]);
+  ];
+
+  if($user) {
+    $row['user_id'] = $user['id'];
+  }
+  $order_id = db_insert('orders', $order);
 
   db_update('campaign', $campaign_id, ['order_id' => $order_id]);
   return $campaign_id;
 }
 
+// by the time we get here we should already have the asset
+// and we should have our monies
+function campaign_activate($campaign_id, $data) {
+  $payer = $data['payer']['payer_info'];
+  $info = $data['payment_info'];
+  $campaign = Get::campaign($campaign_id);
+
+  $user = Get::user(['email' => $payer['email']]);
+  if(!$user) {
+    $user_id = User::create([
+      'name' => "${payer['first_name']} ${payer['last_name']}",
+      'email' => $payer['email'],
+      'phone' => $payer['phone']
+    ]);
+    $user = Get::user($user_id);
+  }
+
+  $campaign = Get::campaign($campaign_id);
+  db_update('orders', $campaign['order_id'], [
+    'status' => 'completed',
+    // is this different?
+    'charge_id' => $info['orderID']
+  ]);
+  db_update('campaign', $campaign_id, [
+    'active' => true,
+    'user_id' => $user['id']
+  ]);
+}
