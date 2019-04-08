@@ -1,27 +1,10 @@
 var dealMap = {
-  testdrive: { price: 100 },
-  shoestring: { price: 999 },
-  standard: { price: 2999 }
-};
-
-function selectLocation(what) {
-  $(what).siblings().removeClass('checked');
-  $(what).addClass('checked');
-  $("input", what).prop('checked', true);
-}
-
-function fakebuy() {
-  console.log($(document.forms[0]).serializeArray());
-}
-
-function price(amount) {
-  return '$' + (parseInt(amount, 10)/100).toFixed(2);
-}
-
-$(function() {
-  let parser = new DOMParser();
+    testdrive: { price: 100 },
+    shoestring: { price: 999 },
+    standard: { price: 2999 }
+  }, 
   // This 'state' is used to store anything that is needed within this scope
-  let state = { 
+  state = { 
     allLocations: [{
       id: 1,
       label: "Santa Monica",
@@ -38,7 +21,65 @@ $(function() {
       name: "Hollywood",
       image: "hollywood-night.jpg",
     }]
-  }
+  };
+
+function selectLocation(what) {
+  $(what).siblings().removeClass('checked');
+  $(what).addClass('checked');
+  $("input", what).prop('checked', true);
+}
+
+function fakebuy() {
+  console.log($(document.forms[0]).serializeArray());
+}
+
+function price(amount) {
+  return '$' + (parseInt(amount, 10)/100).toFixed(2);
+}
+
+function create_campaign(obj) {
+  // Before the payment is processed by paypal, a user's purchase is sent to the server with 
+  // the information that has so far been obtained including the picture.
+  let formData = new FormData();
+  $(document.forms[0]).serializeArray().forEach(function(row) {
+    state[row.name] = row.value;
+    formData.append(row.name, row.value);
+  });
+  state.total = dealMap[state.option].price;
+
+  formData.append('file', uploadInput.files[0]);
+
+  return axios({
+    method: 'post',
+    url: '/campaign',
+    data: formData,
+    config: {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    },
+  }).then(resp => {
+    if(resp.res) {
+      state.campaign_id = res.data;
+    }
+    if(!obj) {
+      return true;
+    }
+    return obj.payment.create({
+      payment: {
+        transactions: [
+          {
+            amount: {
+              total: (state.total / 100).toFixed(2),
+              currency: 'USD',
+            }
+          }
+        ]
+      }
+    });
+  });
+}
+
+$(function() {
+  let parser = new DOMParser();
 
   let parentNode = document.getElementById('popular-list');
   // The code below generates the html that gives the user options for different
@@ -71,9 +112,7 @@ $(function() {
       env: 'sandbox', // sandbox | production
       // Create a PayPal app: https://developer.paypal.com/developer/applications/create
       client: {
-        sandbox:
-        // Currently, this is a code for my personal paypal account and definitely will need to be changed
-          'ARrHtZndH9dLcfMG3bzxFAAtY6fCZcJ7EZcPzdDZ9Zg5tPznHAN2TTEoQ0rL_ijpDPOdzvPhMnayZf4p',
+        sandbox: 'ARrHtZndH9dLcfMG3bzxFAAtY6fCZcJ7EZcPzdDZ9Zg5tPznHAN2TTEoQ0rL_ijpDPOdzvPhMnayZf4p',
         // A valid key will need to be added below for payment to work in production
         production: '<insert production client id>',
       },
@@ -81,44 +120,8 @@ $(function() {
       commit: true,
       // payment() is called when the button is clicked
       payment: (data, actions) => {
-        // Before the payment is processed by paypal, a user's purchase is sent to the server with 
-        // the information that has so far been obtained including the picture.
-        let formData = new FormData();
-        $(document.forms[0]).serializeArray().forEach(function(row) {
-          state[row.name] = row.value;
-          formData.append(row.name, row.value);
-        });
-        state.total = dealMap[state.option].price;
-
-        formData.append('file', uploadInput.files[0]);
-
-        return axios({
-          method: 'post',
-          url: '/capture',
-          data: formData,
-          config: {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          },
-        }).then(resp => {
-          if(resp.res) {
-            state.campaign_id = res.data;
-          }
-          // Make a call to the REST api to create the payment
-          return actions.payment.create({
-            payment: {
-              transactions: [
-                {
-                  amount: {
-                    total: (state.total / 100).toFixed(2),
-                    currency: 'USD',
-                  },
-                },
-              ],
-            },
-          });
-        });
+        // Make a call to the REST api to create the payment
+        create_campaign(actions);
       },
       // onAuthorize() is called when the buyer approves the payment
       onAuthorize: (data, actions) => {
@@ -130,13 +133,14 @@ $(function() {
             return actions.payment.get().then(order => {
               axios({
                 method: 'put',
-                url: '/capture',
+                url: '/campaign',
                 data: {
                   campaignId: state.campaign_id,
-                  payer: JSON.stringify(order.payer),
-                  paymentInfo: JSON.stringify(data),
+                  payer: order.payer, //JSON.stringify(order.payer),
+                  paymentInfo: data //JSON.stringify(data),
                 },
               }).then(response => {
+                console.log(response);
                 window.location = response.data.location;
               });
             });
