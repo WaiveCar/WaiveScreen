@@ -7,7 +7,9 @@ class User {
   }
 
   public static function create($data) {
-    $data['password'] = password_hash($data['password']);
+    if(!empty($data['password'])) {
+      $data['password'] = password_hash($data['password']);
+    }
     return db_insert('users', $data);
   }
 
