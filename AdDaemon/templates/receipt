@@ -1,0 +1,33 @@
+<?= $amount ?> receipt for your WaiveAd campaign
+<p>
+  Thanks <?= $name ?> for using the most economical advertising solution. Here's your receipt:
+</p>
+<p> Order #<?= $orderId ?>. Date: <?= $created_at ?></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Digital Billboard</td>
+        <td><?= $price ?></td>
+        <td><?= $quantity ?></td>
+        <td align=right><?= $total ?></td>
+      </tr>
+      <tr>
+        <td colspan=4 align=right><b><?= $total ?>
+      </tr>
+    </tbody>
+  </table>
+  <p> Here's what's next!  </p>
+  <ul>
+    <li> You can view your dashboard of where your ads played and when at <a href=https://ad.waivecar.com/dashboard>https://ad.waivecar.com/dashboard</a> </li>
+    <li> We'll send you a status report via email for your records during and after the campaign is complete. </li>
+    <li> If for any reason we aren't able to show all the content you purchased in our promised time, we'll partially refund your purchase.</li>
+  </ul>
+</p>
