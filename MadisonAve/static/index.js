@@ -3,6 +3,7 @@ var dealMap = {
     shoestring: { price: 999 },
     standard: { price: 2999 }
   }, 
+  uploadInput,
   // This 'state' is used to store anything that is needed within this scope
   state = { 
     allLocations: [{
@@ -30,7 +31,7 @@ function selectLocation(what) {
 }
 
 function fakebuy() {
-  console.log($(document.forms[0]).serializeArray());
+  create_campaign();
 }
 
 function price(amount) {
@@ -51,7 +52,7 @@ function create_campaign(obj) {
 
   return axios({
     method: 'post',
-    url: '/campaign',
+    url: '/api/campaign',
     data: formData,
     config: {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -96,7 +97,7 @@ $(function() {
   });
 
   // The event handler below handles the user uploading new files
-  let uploadInput = document.getElementById('image-upload');
+  uploadInput = document.getElementById('image-upload');
   uploadInput.addEventListener('change', () => {
     let reader = new FileReader();
     reader.onload = e => {
@@ -133,7 +134,7 @@ $(function() {
             return actions.payment.get().then(order => {
               axios({
                 method: 'put',
-                url: '/campaign',
+                url: '/api/campaign',
                 data: {
                   campaignId: state.campaign_id,
                   payer: order.payer, //JSON.stringify(order.payer),
