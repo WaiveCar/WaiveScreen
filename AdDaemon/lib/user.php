@@ -1,6 +1,6 @@
 <?
-include('db.php');
-include('email.php');
+include_once('db.php');
+include_once('email.php');
 
 class User {
   public static function me() {
@@ -24,10 +24,10 @@ class User {
   }
 
   public static function login($email, $pass) {
-    if(! ($user = Get::user(['email' => $email]) ) {
+    if(! ($user = Get::user(['email' => $email]) ) ) {
       throw new Exception("$email not found");
     }
-    if( password_hash($pass) != $user['password'] ) {
+    if( password_hash($pass) != $user['password'] )  {
       throw new Exception("User password incorrect");
     }
     $_SESSION['id'] = $user['id'];

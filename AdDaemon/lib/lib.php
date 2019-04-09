@@ -1,5 +1,5 @@
 <?
-require 'vendor/autoload.php';
+require '../vendor/autoload.php';
 use Aws\S3\S3Client;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;

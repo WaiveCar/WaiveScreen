@@ -1,11 +1,11 @@
 <?php
-require 'vendor/autoload.php';
+require '../vendor/autoload.php';
 use Mailgun\Mailgun;
 
 function email($user, $name, $vars) {
   $DIR = 'templates/';
 
-  if(! ($data = file($DIR . $name) ) {
+  if(! ($data = file($DIR . $name) ) ) {
     throw new Exception("Can't find $name");
   }
 
