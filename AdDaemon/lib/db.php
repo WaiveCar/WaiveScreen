@@ -11,14 +11,14 @@ $SCHEMA = [
     last_seen datetime default current_timestamp
   )',
 
-  'order' => 'create table if not exists order(
+  'orders' => 'create table if not exists orders(
     id integer primary key autoincrement, 
     user_id integer,
     campaign_id integer,
     amount integer, 
     charge_id text,
     status text,
-    created_at datetime default current_timestamp, 
+    created_at datetime default current_timestamp
   )',
 
   'subscription' => 'create table if not exists subscription(
@@ -26,7 +26,7 @@ $SCHEMA = [
     user_id integer,
     campaign_id integer,
     amount integer, 
-    created_at datetime default current_timestamp, 
+    created_at datetime default current_timestamp
   )',
 
   'screen' => 'create table if not exists screen(
@@ -104,6 +104,7 @@ function setup() {
   global $SCHEMA;
   $res = [];
   foreach(array_values($SCHEMA) as $table) {
+    $table = preg_replace('/\s+/', ' ', $table);
     $res[] = [$db->exec($table), $table];
   }
   return $res;
@@ -196,7 +197,7 @@ function db_clean($kv) {
 function db_all($qstr) {
   $rowList = [];
   $res = (getDb())->query($qstr);
-  while( $row = $res->fetchArray() ) {
+  while( $row = $res->fetchArray(SQLITE3_ASSOC) ) {
     $rowList[] = $row;
   } 
   return $rowList;
