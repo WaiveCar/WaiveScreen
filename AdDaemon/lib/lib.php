@@ -200,6 +200,11 @@ function get_available_slots($start_query, $duration) {
 function upload_s3($file) {
 	$credentials = new Aws\Credentials\Credentials('AKIAIL6YHEU5IWFSHELQ', 'q7Opcl3BSveH8TU9MR1W27pWuczhy16DqRg3asAd');
 
+  // this means there was an error uploading the file
+  // currently we'll let this routine fail and then hit
+  // the error log
+  if(empty($file['tmp_name'])) {}
+
   $parts = explode('/',$file['type']);
   $ext = array_pop($parts);
   $name = implode('.', [Uuid::uuid4()->toString(), $ext]);
@@ -253,7 +258,7 @@ function campaign_new($opts) {
   }
   $campaign_id = db_insert(
     'campaign', [
-      'active' => false,
+      'active' => true,//false,
       'asset' => db_string($opts['asset']),
       'duration_seconds' => $opts['duration'],
       'lat' => $opts['lat'],
@@ -276,8 +281,8 @@ function campaign_new($opts) {
 function campaign_create($data, $file, $user = false) {
   global $DEALMAP, $PLACEMAP, $DAY;
 
-  //$asset = upload_s3($file);
-  $asset = 'fakename.png';
+  $asset = upload_s3($file);
+  //$asset = 'fakename.png';
   $data['asset'] = $asset;
 
   // get the lat/lng radius of the location into the data.
