@@ -10,9 +10,8 @@ try {
     if($verb == 'GET') {
       jemit(campaigns());
     } elseif ($verb == 'POST') {
-      var_dump([$_POST, $_FILES]);
-      exit(0);
-      jemit(campaign_create($_POST, $_FILES));
+      $assetList = array_values($_FILES);
+      jemit(campaign_create($_POST, $assetList[0]));
     } elseif ($verb == 'PUT') {
       jemit(campaign_activate($_POST['campaignId'], $_POST));
     }

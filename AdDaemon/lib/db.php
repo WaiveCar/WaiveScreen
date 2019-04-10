@@ -210,7 +210,11 @@ function db_insert($table, $kv) {
 
   foreach($kv as $k => $v) {
     $fields[] = $k;
-    $values[] = $v;//db->escapeString($v);
+    if($v === false) {
+      $values[] = 'false';
+    } else {
+      $values[] = $v;//db->escapeString($v);
+    }
   } 
 
   $values = implode(',', $values);

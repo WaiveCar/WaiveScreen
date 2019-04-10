@@ -12,6 +12,30 @@ include_once('user.php');
 $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
 
+// Play time in seconds of one ad.
+$PLAYTIME = 7.5;
+
+$DEALMAP = [
+  'testdrive' => [ 
+    "total" => 100,
+    "duration" => $PLAYTIME * 25
+  ],
+  'shoestring' => [ 
+    "total" => 999,
+    "duration" => $PLAYTIME * 300
+  ],
+  'standard' => [ 
+    "total" => 2999,
+    "duration" => $PLAYTIME * 1050
+  ]
+]; 
+
+$PLACEMAP = [
+  'la' => ['lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000],
+  'hollywood' => ['lat' => 34.093053, 'lng' => -118.343259, 'radius' => 4500],
+  'santamonica' => ['lat' => 34.024353, 'lng' => -118.478620, 'radius' => 3000]
+];
+
 function jemit($what) {
   echo json_encode($what);
   exit;
@@ -176,8 +200,8 @@ function get_available_slots($start_query, $duration) {
 function upload_s3($file) {
 	$credentials = new Aws\Credentials\Credentials('AKIAIL6YHEU5IWFSHELQ', 'q7Opcl3BSveH8TU9MR1W27pWuczhy16DqRg3asAd');
 
-  $mime = mime_content_type($file);
-  $ext = array_pop(explode('/',$mime));
+  $parts = explode('/',$file['type']);
+  $ext = array_pop($parts);
   $name = implode('.', [Uuid::uuid4()->toString(), $ext]);
 
 	$s3 = new Aws\S3\S3Client([
@@ -189,14 +213,13 @@ function upload_s3($file) {
     $res = $s3->putObject([
       'Bucket' => 'waivecar-prod',
       'Key'    => $name,
-      'Body'   => fopen($file, 'r'),
+      'Body'   => fopen($file['tmp_name'], 'r'),
       'ACL'    => 'public-read',
     ]);
   } catch (Aws\S3\Exception\S3Exception $e) {
     throw new Exception("$file failed to upload");
   }
   // see https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-s3-2006-03-01.html#putobject
-  var_dump($res['ObjectURL']);
   return $name;
 }
 
@@ -222,6 +245,12 @@ function campaign_new($opts) {
 
   // by default active gets set to false
   // which means that we don't consider this 
+  if(!is_numeric($opts['start_time'])) {
+    $opts['start_time'] = db_string($opts['start_time']);
+  }
+  if(!is_numeric($opts['end_time'])) {
+    $opts['end_time'] = db_string($opts['end_time']);
+  }
   $campaign_id = db_insert(
     'campaign', [
       'active' => false,
@@ -229,8 +258,9 @@ function campaign_new($opts) {
       'duration_seconds' => $opts['duration'],
       'lat' => $opts['lat'],
       'lng' => $opts['lng'],
-      'start_time' => db_string($opts['start_time']),
-      'end_time' => db_string($opts['end_time'])
+      'radius' => $opts['radius'],
+      'start_time' => $opts['start_time'],
+      'end_time' => $opts['end_time']
     ]
   );
 
@@ -243,15 +273,31 @@ function campaign_new($opts) {
 //
 // According to our current flow we may not know the user at the time
 // of creating this
-function campaign_create($data, $file, $user) {
-  $asset = upload_s3($file);
+function campaign_create($data, $file, $user = false) {
+  global $DEALMAP, $PLACEMAP, $DAY;
+
+  //$asset = upload_s3($file);
+  $asset = 'fakename.png';
+  $data['asset'] = $asset;
+
+  // get the lat/lng radius of the location into the data.
+  $data = array_merge($PLACEMAP[$data['location']], $data);
+  // and the deal/contract
+  $data = array_merge($DEALMAP[$data['option']], $data);
+
+  // currently (2019,10,29) all durations are 1 week.
+  $data['start_time'] = time();
+  $data['end_time'] = time() + $DAY * 7;
   $campaign_id = campaign_new($data);
   $order = [
     'campaign_id' => $campaign_id,
     'amount' => $data['total'], 
-    'charge_id' => $data['charge_id'],
     'status' => 'open'
   ];
+
+  if(!empty($data['charge_id'])) {
+    $order['charge_id'] = $data['charge_id'];
+  }
 
   if($user) {
     $row['user_id'] = $user['id'];
