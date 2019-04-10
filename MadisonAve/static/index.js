@@ -9,17 +9,17 @@ var dealMap = {
     allLocations: [{
       id: 1,
       label: "Santa Monica",
-      name: "Santa Monica",
+      name: "santamonica",
       image: "sm-day.jpg",
     }, {
       id: 2,
       label: "Anywhere in LA",
-      name: "LA",
+      name: "la",
       image: "traffic-morning.jpg",
     }, {
       id: 3,
       label: "Hollywood",
-      name: "Hollywood",
+      name: "hollywood",
       image: "hollywood-night.jpg",
     }]
   };
