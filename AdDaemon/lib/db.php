@@ -108,6 +108,9 @@ function getDb() {
 function db_string($what) {
   return "'$what'";
 }
+function db_date($what) {
+ return "datetime($what,'unixepoch')";
+}
 
 function setup() {
   $db = getDb();
@@ -232,8 +235,14 @@ function db_insert($table, $kv) {
   $fields = implode(',', $fields);
 
   $qstr = "insert into $table($fields) values($values)";
-  if($db->exec($qstr)) {
-    return $db->lastInsertRowID();
-  } 
+
+  try {
+    if($db->exec($qstr)) {
+      return $db->lastInsertRowID();
+    } 
+  } catch(Exception $ex) { 
+    error_log($qstr);
+    error_log($ex);
+  }
   return $qstr;
 }
