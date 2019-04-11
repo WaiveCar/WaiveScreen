@@ -6,6 +6,7 @@ import json
 import urllib
 import lib.lib as lib
 import logging
+import pprint
 
 app = Flask(__name__)
 CORS(app)
@@ -21,6 +22,9 @@ def failure(what):
 
 def get_location():
   return lib.sensor_last()
+
+def url(what):
+  return "{}/{}".format('http://ads.waivecar.com/api' if app.config['ENV'] == 'development' else 'https://ad.waivecar.com/api', what)
 
 @app.route('/sow')
 def next_ad(work = False):
@@ -39,13 +43,12 @@ def next_ad(work = False):
     'uid': lib.get_uuid(),
     'lat': sensor['lat'],
     'lng': sensor['lng'],
-    'jobs': request.form
+    'jobs': request.form.to_dict()
   }
 
   data = urllib.parse.urlencode(payload).encode()
-  req  = urllib.request.Request('http://ads.waivecar.com/sow', data=data) 
 
-  with urllib.request.urlopen(req) as response:
+  with urllib.request.urlopen(url('sow'), data=data) as response:
     data_raw = response.read().decode('utf-8')
 
     try:
