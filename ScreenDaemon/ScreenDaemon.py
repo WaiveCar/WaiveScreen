@@ -7,6 +7,7 @@ import urllib
 import lib.lib as lib
 import logging
 import pprint
+import traceback
 
 app = Flask(__name__)
 CORS(app)
@@ -61,7 +62,7 @@ def next_ad(work = False):
     try:
       job_list = []
       if data['res']:
-        for job in data['jobs']:
+        for job in data['data']:
           job_list.append(job)
           lib.job_store(job)
 
@@ -70,6 +71,7 @@ def next_ad(work = False):
         return failure(data['data'])
 
     except Exception as ex:
+      pprint.pprint([ex, traceback.format_exc()])
       return failure({
         'payload': data
       })
