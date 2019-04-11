@@ -35,7 +35,7 @@ var dbMap = {},
   // a global pointer to the current job object.
   _last = false,
   fallback,
-  duration = 12;
+  duration = 2;
 
 //
 // The job schema coming in, copied from the python lib/db.py code:
@@ -49,21 +49,28 @@ var dbMap = {},
 //  'job_end', 'datetime'
 //
 
-function image(what) {
+function image(what, nobase) {
   var img = document.createElement('img');
   img.onerror = function() {
-    this.src = fallback.url;
-    _last.err = 'NOT_FOUND';
+    if(fallback.url) {
+      this.src = fallback.url;
+      _last.err = 'NOT_FOUND';
+    }
   }
   img.onload = function() {
     if(_last && 'err' in _last) {
       delete _last.err;
     }
   }
-  img.src = what;
+  if(nobase) {
+    img.src = what;
+  } else {
+    img.src = image.base + what;
+  }
   img.src_ = what;
   return img;
 }
+image.base = 'http://waivecar-prod.s3.amazonaws.com/';
 
 // LRU cache invalidation should eventually exist.
 function addJob(job) {
@@ -78,7 +85,7 @@ function addJob(job) {
     };
   }
 
-  dbMap[job.campaign_id] = Object.merge(
+  dbMap[job.campaign_id] = Object.assign(
     dbMap[job.campaign_id], job
   );
 
@@ -93,7 +100,7 @@ function post(url, what, cb) {
 
   http.onreadystatechange = function() {
     if(http.readyState == 4 && http.status == 200) {
-      cb(http.responseText);
+      cb(JSON.parse(http.responseText));
     }
   }
   
@@ -106,7 +113,11 @@ function post(url, what, cb) {
 
 function sow(payload) {
   post('sow', payload, function(res) {
-    console.log(res);
+    if(res.res) {
+      res.data.forEach(function(row) {
+        addJob(row);
+      })
+    }
   });
 }
 
@@ -121,6 +132,7 @@ function loop() {
       row, 
       prev = _last;
 
+    console.log(total);
     if(total <= 0 ) {
       toShow = fallback;
     } else {
@@ -155,6 +167,10 @@ function loop() {
       toShow.dom.classList.add('fadeIn');
       document.body.appendChild(toShow.dom);
     }
+    if(!prev) {
+      toShow.dom.classList.add('fadeIn');
+      document.body.appendChild(toShow.dom);
+    }
     _last = toShow;
   }, duration * 1000);
 }
@@ -162,7 +178,7 @@ function loop() {
 window.onload = function init() {
   fallback = {
     what: 'fallback.png',
-    dom:  image('fallback.png'),
+    dom:  image('fallback.png', true),
     done: 0
   };
   sow();
