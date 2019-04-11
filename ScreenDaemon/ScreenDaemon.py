@@ -27,7 +27,7 @@ def get_location():
 def url(what):
   return "{}/{}".format('http://ads.waivecar.com/api' if app.config['ENV'] == 'development' else 'https://ad.waivecar.com/api', what)
 
-@app.route('/sow')
+@app.route('/sow', methods=['GET', 'POST'])
 def next_ad(work = False):
   """
   For now we are going to do a stupid pass-through to the remote server

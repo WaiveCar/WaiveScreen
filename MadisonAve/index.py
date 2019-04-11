@@ -37,6 +37,7 @@ active_sessions = dict()
 def handle_cart():
     if request.method == "POST":
         try:
+            return 'Advertising Successfully Reserved', 200
             if "file" not in request.files:
                 return abort(400)
             # In the future, the availability of the amount of time in the cart that is being sent will 
