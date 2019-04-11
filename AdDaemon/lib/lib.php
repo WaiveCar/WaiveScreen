@@ -98,6 +98,7 @@ function create_screen($uid) {
 
 function create_job($campaignId, $screenId) {
   $ttl = get_campaign_remaining($campaignId);
+  $campaign = Get::campaign($campaignId);
 
   $goal = min($ttl, 60 * 4);
 
@@ -106,6 +107,7 @@ function create_job($campaignId, $screenId) {
       'campaign_id' => $campaignId,
       'screen_id' => $screenId,
       'job_start' => 'current_timestamp',
+      'job_end' => db_string($campaign['end_time']),
       'last_update' => 'current_timestamp',
       'goal' => $goal
     ]
@@ -240,8 +242,8 @@ function campaigns($clause = '') {
 }
 function active_campaigns() {
   return campaigns('where active=true and 
-    datetime(end_time, "unixepoch") > current_timestamp and 
-    datetime(start_time, "unixepoch") < current_timestamp');
+    end_time > current_timestamp and 
+    start_time < current_timestamp');
 }
 function campaign_new($opts) {
   //
@@ -258,11 +260,10 @@ function campaign_new($opts) {
 
   // by default active gets set to false
   // which means that we don't consider this 
-  if(!is_numeric($opts['start_time'])) {
-    $opts['start_time'] = db_string($opts['start_time']);
-  }
-  if(!is_numeric($opts['end_time'])) {
-    $opts['end_time'] = db_string($opts['end_time']);
+  foreach(["start_time", "end_time"] as $key) {
+    if(is_numeric($opts[$key])) {
+      $opts[$key] = db_date($opts[$key]);
+    }
   }
   $campaign_id = db_insert(
     'campaign', [
@@ -299,8 +300,9 @@ function campaign_create($data, $file, $user = false) {
   $data = array_merge($DEALMAP[$data['option']], $data);
 
   // currently (2019,10,29) all durations are 1 week.
-  $data['start_time'] = time();
+  $data['start_time'] =  time();
   $data['end_time'] = time() + $DAY * 7;
+
   $campaign_id = campaign_new($data);
   $order = [
     'campaign_id' => $campaign_id,
