@@ -25,8 +25,8 @@ def campaign_store(data):
 def job_store(data):
   if 'campaign' in data:
     campaign_store(data['campaign'])
+    del data['campaign']
 
-  del data['campaign']
   return db.upsert('job', data)
 
 def job_get(index = False):
