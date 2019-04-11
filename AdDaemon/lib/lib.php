@@ -140,11 +140,13 @@ function sow($payload) {
     $screen = create_screen($uid);
   }
 
-  db_update('screen', db_string($uid), [
-    'lat' => $payload['lat'],
-    'lng' => $payload['lng'],
-    'last_seen' => 'current_timestamp'
-  ]);
+  $data = ['last_seen' => 'current_timestamp'];
+  if(isset($payload['lat'])) {
+    $data['lat'] = $payload['lat'];
+    $data['lng'] = $payload['lng'];
+  }
+
+  db_update('screen', db_string($uid), $data);
 
   if(array_key_exists('jobs', $payload) && is_array($payload['jobs'])) {
     foreach($payload['jobs'] as $job) {
@@ -154,8 +156,12 @@ function sow($payload) {
 
   // right now we are being realllly stupid.
   $nearby_campaigns = array_filter(active_campaigns(), function($campaign) use ($payload) {
-    // under 1.5km
-    return distance($campaign, $payload) < 1500;
+    if(isset($payload['lat'])) {
+      // under 1.5km
+      return distance($campaign, $payload) < $campaign['radius'];
+    } 
+    // essentially this is for debugging
+    return true;
   });
 
   $job_list = array_map(function($row) use ($screen) {
@@ -163,8 +169,8 @@ function sow($payload) {
     if($job) {
 
       $res = array_merge([
-        'jobid' => $job['id'],
-        'campaignid' => $row['id'],
+        'job_id' => $job['id'],
+        'campaign_id' => $row['id'],
         'asset' => $row['asset']
       ], $job);
       return $res;
@@ -233,7 +239,9 @@ function campaigns($clause = '') {
   return db_all("select * from campaign $clause");
 }
 function active_campaigns() {
-  return campaigns('where active=true and end_time > current_timestamp and start_time < current_timestamp');
+  return campaigns('where active=true and 
+    datetime(end_time, "unixepoch") > current_timestamp and 
+    datetime(start_time, "unixepoch") < current_timestamp');
 }
 function campaign_new($opts) {
   //
