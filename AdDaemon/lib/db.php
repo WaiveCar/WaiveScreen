@@ -138,7 +138,7 @@ function truncate() {
 function get_campaign_remaining($id) {
   $res = (getDb())->querySingle("
     select 
-      duration_seconds - sum(completion_seconds) as remaining
+      duration_seconds - sum(campaign.completed_seconds) as remaining
       from campaign left join job on campaign_id = campaign.id
       where campaign.id = $id 
     ");
