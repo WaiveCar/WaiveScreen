@@ -133,25 +133,25 @@ def insert(table, data):
   qstr, key_list, values = _insert(table, data)
   try:
     res, last = run(qstr, values, with_last = True)
+    return last
 
   except:
     logging.warn("Unable to insert a record {}".format(qstr))
 
-  return last
   
 def upsert(table, data):
-  qstr, key_list, values = insert(table, data)
+  qstr, key_list, values = _insert(table, data)
   update_list = ["{}=?".format(key) for key in key_list]
 
   qstr += "on conflict(id) do update set {}".format(','.join(update_list))
 
   try:
     res, last = run(qstr, values + values, with_last = True)
+    return last
 
   except:
     logging.warn("Unable to upsert a record {}".format(qstr))
 
-  return last
 
 # Ok so if column order or type changes, this isn't found ... nor
 # are we doing formal migrations where you can roll back or whatever
