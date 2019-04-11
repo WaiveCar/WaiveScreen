@@ -81,7 +81,7 @@ function addJob(job) {
     // will come below.
     dbMap[job.campaign_id] = {
       dom: image(job.asset),
-      done: 0,
+      completed_seconds: 0,
     };
   }
 
@@ -125,7 +125,7 @@ function loop() {
   setInterval(function() {
     // We note something we call "breaks" which designate which asset to show.
     // This is a composite of what remains - this is two pass, eh, kill me.
-    var total = Object.values(dbMap).reduce(function (a, b) { return a + b.goal - b.done }, 0),
+    var total = Object.values(dbMap).reduce(function (a, b) { return a + b.goal - b.completed_seconds }, 0),
       breakpoint = Math.random() * total,
       toShow, 
       accum = 0, 
@@ -140,7 +140,7 @@ function loop() {
       for(key in dbMap) {
         row = dbMap[key];
 
-        accum += row.goal - row.done;
+        accum += row.goal - row.completed_seconds;
         if(accum > breakpoint) {
           toShow = row;
           break;
@@ -151,23 +151,25 @@ function loop() {
       }
     }
 
-    toShow.done += duration;
+    toShow.completed_seconds += duration;
 
-    try {
-      if(prev && (prev.what !== toShow.what)) {
-        prev.dom.classList.add('fadeOut');
-        setTimeout(function() {
-          prev.dom.classList.remove('fadeOut');
-          document.body.removeChild(prev.dom);
-        }, 500);
+    if(prev) {
+      try {
+        if(prev.what !== toShow.what) {
+          prev.dom.classList.add('fadeOut');
+          setTimeout(function() {
+            prev.dom.classList.remove('fadeOut');
+            document.body.removeChild(prev.dom);
+          }, 500);
+        }
+      } catch(ex) { console.log(ex)} 
+      if(prev.what !== toShow.what) {
+
+        toShow.dom.classList.add('fadeIn');
+        document.body.appendChild(toShow.dom);
       }
-    } catch(ex) { console.log(ex)} 
-    if(prev && (prev.what !== toShow.what)) {
-
-      toShow.dom.classList.add('fadeIn');
-      document.body.appendChild(toShow.dom);
-    }
-    if(!prev) {
+      sow({id: toShow.id, completed_seconds: toShow.completed_seconds});
+    } else {
       toShow.dom.classList.add('fadeIn');
       document.body.appendChild(toShow.dom);
     }
@@ -179,7 +181,7 @@ window.onload = function init() {
   fallback = {
     what: 'fallback.png',
     dom:  image('fallback.png', true),
-    done: 0
+    completed_seconds: 0
   };
   sow();
   loop();
