@@ -52,6 +52,12 @@ The SERVER parts:
     * Sends out reports at the end of a contract on whether it's completed or failed. 
 
 
+The DASHBOARD part (not done/not started):
+  * Shows what ads had played where
+  * Upgrade paths
+  * Billing cycles
+  * History
+  
 Flow:
 
   * ScreenDisplay follows a schedule and asks ScreenDaemon for assets
