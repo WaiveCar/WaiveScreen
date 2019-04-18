@@ -17,7 +17,8 @@ try {
     }
   }
   else if($func == 'sow') {
-    jemit(sow($_POST));
+    $payload = json_decode(file_get_contents('php://input'), true);
+    jemit(sow($payload));
   }
   else if($func == 'setup') {
     jemit(setup($_POST));
