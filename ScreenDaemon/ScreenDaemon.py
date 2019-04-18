@@ -4,6 +4,7 @@ from flask import Flask, request, Response, jsonify
 from flask_cors import CORS
 import json
 import urllib
+import requests
 import lib.lib as lib
 import logging
 import pprint
@@ -24,7 +25,7 @@ def failure(what):
 def get_location():
   return lib.sensor_last()
 
-def url(what):
+def urlify(what):
   return "{}/{}".format('http://ads.waivecar.com/api' if app.config['ENV'] == 'development' else 'https://ad.waivecar.com/api', what)
 
 @app.route('/sow', methods=['GET', 'POST'])
@@ -40,17 +41,19 @@ def next_ad(work = False):
   # The first thing we get is the last known location.
   sensor = lib.sensor_last()
 
+  jobList = request.get_json()
+  if type(jobList) is not list:
+    jobList = [ jobList ]
+
   payload = {
     'uid': lib.get_uuid(),
     'lat': sensor['lat'],
     'lng': sensor['lng'],
-    'jobs': request.get_json()
+    'jobs': jobList
   }
 
-  data = urllib.parse.urlencode(payload).encode()
-
-  with urllib.request.urlopen(url('sow'), data=data) as response:
-    data_raw = response.read().decode('utf-8')
+  with requests.post(urlify('sow'), verify=False, json=payload) as response:
+    data_raw = response.text
 
     try:
       data = json.loads(data_raw)
@@ -64,7 +67,7 @@ def next_ad(work = False):
       if data['res']:
         for job in data['data']:
           job_list.append(job)
-          lib.job_store(job)
+          # lib.job_store(job)
 
         return success(job_list)
       else:
