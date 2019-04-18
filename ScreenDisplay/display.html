@@ -130,7 +130,17 @@ function loop() {
   setInterval(function() {
     // We note something we call "breaks" which designate which asset to show.
     // This is a composite of what remains - this is two pass, eh, kill me.
-    var total = Object.values(dbMap).reduce(function (a, b) { return a + b.goal - b.completed_seconds }, 0),
+    //
+    // Also this heavily favors new jobs or pinpoint jobs in a linear distribution
+    // which may be the "right" thing to do but it makes the product look a little 
+    // bad.
+    // 
+    // We could sqrt() the game which would make the linear slant not look so crazy
+    // but that's not the point ... the point is to change if we can.
+    //
+    // so what we do is "downweight" the previous by some compounding constant, like 0.70
+    //
+    var total = Object.values(dbMap).reduce(function (a, b) { return a + (b.downweight || 1) * (b.goal - b.completed_seconds) }, 0),
       breakpoint = Math.random() * total,
       toShow, 
       accum = 0, 
@@ -144,7 +154,7 @@ function loop() {
       for(key in dbMap) {
         row = dbMap[key];
 
-        accum += row.goal - row.completed_seconds;
+        accum += (row.downweight || 1) * (row.goal - row.completed_seconds);
         if(accum > breakpoint) {
           toShow = row;
           break;
@@ -155,12 +165,15 @@ function loop() {
       }
     }
 
-    //console.log(toShow.asset, toShow.what, prev.what);
     toShow.completed_seconds += duration;
+    console.log(breakpoint, total, toShow.id, toShow.goal, toShow.completed_seconds, toShow.downweight);
 
     if(prev) {
       try {
         if(prev.what !== toShow.what) {
+          // we reset the downweight -- it can come back
+          prev.downweight = 1;
+
           prev.dom.classList.add('fadeOut');
           setTimeout(function() {
             prev.dom.classList.remove('fadeOut');
@@ -178,6 +191,15 @@ function loop() {
       toShow.dom.classList.add('fadeIn');
       document.body.appendChild(toShow.dom);
     }
+    // regardless of what happened above we downweight 
+    // our current by our constant.
+    if(isNaN(toShow.downweight)) {
+      console.log("broken");
+      toShow.downweight = 1;
+    }
+
+    toShow.downweight *= 0.8;
+
     _last = toShow;
   }, duration * 1000);
 }
