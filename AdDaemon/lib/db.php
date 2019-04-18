@@ -172,10 +172,15 @@ class Get {
 
     $kvargs = [];
     foreach($arg as $key => $value) {
-      if(is_string($value)) {
-        $value = db_string($value);
+      // this means a raw string was passed
+      if(is_integer($key)) {
+        $kvargs[] = $value;
+      } else {
+        if(is_string($value)) {
+          $value = db_string($value);
+        }
+        $kvargs[] = "$key=$value";
       }
-      $kvargs[] = "$key=$value";
     }
     $kvstr = implode(' and ', $kvargs);
 
