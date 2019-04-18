@@ -36,6 +36,36 @@ $PLACEMAP = [
   'santamonica' => ['lat' => 34.024353, 'lng' => -118.478620, 'radius' => 3000]
 ];
 
+function aget($source, $keyList, $default = null) {
+  if(!is_array($keyList)) {
+    $keyStr = $keyList;
+    $keyList = explode('.', $keyStr);
+
+    $orList = explode('|', $keyStr);
+    if(count($orList) > 1) {
+
+      $res = null;
+      foreach($orList as $key) {
+        // this resolves to the FIRST valid value
+        if($res === null) {
+          $res = aget($source, $key);
+        }
+      }
+      return ($res === null) ? $default : $res;
+    }   
+  }
+  $key = array_shift($keyList);
+
+  if($source && isset($source[$key])) {
+    if(count($keyList) > 0) {
+      return aget($source[$key], $keyList);
+    } 
+    return $source[$key];
+  }
+
+  return $default;
+}
+
 function jemit($what) {
   echo json_encode($what);
   exit;
@@ -96,6 +126,14 @@ function create_screen($uid) {
   return Get::screen($screen_id);
 }
 
+function find_unfinished_job($campaignId, $screenId) {
+  return Get::job([
+    'campaign_id' => $campaignId,
+    'screen_id' => $screenId,
+    'completed_seconds < goal'
+  ]);
+}
+
 function create_job($campaignId, $screenId) {
   $ttl = get_campaign_remaining($campaignId);
   $campaign = Get::campaign($campaignId);
@@ -116,9 +154,9 @@ function create_job($campaignId, $screenId) {
   return Get::job($job_id);
 }
 
-function update_job($jobId, $completion_seconds) {
+function update_job($jobId, $completed_seconds) {
   return db_update('job', $jobId, [
-    'completion_seconds' => $completion_seconds,
+    'completed_seconds' => $completed_seconds,
     'job_end' => 'current_timestamp'
   ]);
 }
@@ -150,9 +188,11 @@ function sow($payload) {
 
   db_update('screen', db_string($uid), $data);
 
-  if(array_key_exists('jobs', $payload) && is_array($payload['jobs'])) {
-    foreach($payload['jobs'] as $job) {
-      update_job($job['id'], $job['done']);
+	$jobList = aget($payload, 'jobs');
+  if($jobList) {
+      error_log(json_encode($payload));
+    foreach($jobList as $job) {
+      update_job($job['id'], $job['completed_seconds']);
     }
   }
 
@@ -166,14 +206,19 @@ function sow($payload) {
     return true;
   });
 
-  $job_list = array_map(function($row) use ($screen) {
-    $job = create_job($row['id'], $screen['id']);
+  // so if we have existing outstanding jobs with the
+  // screen id and campaign then we can just re-use them.
+  $job_list = array_map(function($campaign) use ($screen) {
+    $job = find_unfinished_job($campaign['id'], $screen['id']);
+    if(!$job) {
+      $job = create_job($campaign['id'], $screen['id']);
+    }
     if($job) {
 
       $res = array_merge([
         'job_id' => $job['id'],
-        'campaign_id' => $row['id'],
-        'asset' => $row['asset']
+        'campaign_id' => $campaign['id'],
+        'asset' => $campaign['asset']
       ], $job);
       return $res;
     }
