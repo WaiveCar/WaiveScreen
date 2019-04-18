@@ -28,7 +28,9 @@ img {
 }
 </style>
 
-<body></body>
+<body>
+  <div id=dbg></div>
+</body>
 
 <script>
 var dbMap = {},
@@ -80,6 +82,9 @@ function addJob(job) {
     // the merging of the rest of the data
     // will come below.
     dbMap[job.campaign_id] = {
+      // this is used for comparison to know
+      // when we should be flipping the image
+      what: job.asset,
       dom: image(job.asset),
       completed_seconds: 0,
     };
@@ -132,7 +137,6 @@ function loop() {
       row, 
       prev = _last;
 
-    console.log(total);
     if(total <= 0 ) {
       toShow = fallback;
     } else {
@@ -151,6 +155,7 @@ function loop() {
       }
     }
 
+    //console.log(toShow.asset, toShow.what, prev.what);
     toShow.completed_seconds += duration;
 
     if(prev) {
