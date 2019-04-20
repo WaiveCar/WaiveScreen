@@ -67,7 +67,7 @@ def next_ad(work = False):
       if data['res']:
         for job in data['data']:
           job_list.append(job)
-          # lib.job_store(job)
+          lib.job_store(job)
 
         return success(job_list)
       else:
