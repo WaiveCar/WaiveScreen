@@ -1,0 +1,2000 @@
+vimdiff .config .config.copy 
+cp .config.copy .config
+sudo apt install kernel-package
+sudo dpkg --configure -a
+sudo reboot
+cd linux-4.17.17/
+tmux
+make -j5 bindeb-pkg
+ls ../
+cd ..
+ls -ltr
+sudo su
+cd /sys/class/
+ls
+ls backlight/
+sudo su
+cd /sys
+ls
+find . | grep -i gpio
+find . | grep -i gpio | less
+find . | grep -i gpio | grep device
+find . | grep -i gpio | grep 'device$'
+find . | grep -i gpio | grep 'device$' | xargs cat
+find . | grep -i gpio | grep 'device$' | xargs ls
+sudo su
+firefox speedtest.net&
+ping yahoo.com
+ifconfig -a
+sudo su
+firefox&
+apt search 6to4
+apt search ipv6 ipv4
+apt search ipv6 tunneling
+qmicli -d /dev/cdc-wdm0 -p    --wds-get-current-settings
+sudo su
+cd code/libqmi/
+ls
+cd docs/
+ls
+cd man/
+ls
+cd ..
+make
+sudo make install
+find . -name qmi-cli
+find . -name qmicli
+man qmicli
+cd /usr/local/share/man/man1/
+ls -ltr
+cd ~/code/libqmi/docs/
+ls
+find .
+ls -ltr
+cd man/
+ls -ltr
+cd ..
+cd re
+cd reference/
+ls
+ls -ltr
+cd libqmi-glib/
+ls
+ls -ltr
+cd ..
+git pull
+sudo su
+xinit&
+sudo xinit
+df
+cat local 
+sudo su
+sudo su
+qmicli -d /dev/cdc-wdm0 -p    --wds-get-current-settings
+sudo su
+cd code/libqmi/
+ls
+grep -ir ipv4
+grep -ir ipv4 | less
+vim src/libqmi-glib/generated/qmi-wds.c
+sudo su
+hid-query -e
+cat notes 
+sudo xinit&]
+firefox&
+cat /etc/apt/sources.list
+apt search modemmanger
+apt search modemmanager
+sudo apt purge modemmanager
+cd ModemManager/
+ls -ltr
+./autogen.sh 
+cd ../libmbim/
+ls
+./autogen.sh 
+make -j5
+apt search libmbim
+dpkg -l | grep libmbim
+sudo apt purge libmbim-glib4 libmbim-glib-dev libmbim-utils
+sudo halt
+cd code
+ls
+git clone https://gitlab.freedesktop.org/mobile-broadband/ModemManager
+git clone https://gitlab.freedesktop.org/mobile-broadband/libmbim
+ls -ltr
+tmux
+sudo su
+firefox&
+ldd /usr/local/bin/qmicli 
+which mmcli
+ldd `which mmcli`
+readelf -d  /usr/local/lib/libmm-glib.so.0 
+ldconfig -v | grep mm
+readelf -a -W  /usr/local/lib/libmm-glib.so.0 
+readelf -a -W  /usr/local/lib/libmm-glib.so.0  | less
+readelf -d  /usr/local/lib/libmm-glib.so.0 
+which mmcli
+ldd /usr/local/bin/mmcli
+cd ..
+ls
+cd
+cd code/
+ls
+cd libqmi/
+./autogen.sh 
+git describe 
+git status
+git tag --l
+git tag -l
+git checkout 1.20.2
+git pull
+ping yahoo.com
+sudo su
+git pull
+git checkout master 
+git pull
+git log
+git describe
+./autogen.sh 
+make -j5
+sudo xinit&
+cd code/libqmi/
+sudo make install
+sudo updatedb
+uname -r
+uname -ra
+ls -ltr
+cd linux-4.17.17/
+ls
+less .config
+lsmod
+lsmod | grep qmi
+modinfo qmi_wwan
+lsmo
+lsmod
+lsmod | grep qm
+modinfo cdc_wdm
+modinfo qmi_wwan
+sudo su
+sudo su
+cd code/
+ls -ltr
+cd libmbim/
+ls
+./auto
+./autogen.sh 
+make
+make -j5
+sudo make install
+cd ..
+ls
+cd ModemManager/
+ls
+cd ../libmbim/
+git tag -l
+git checkout 1.16.2
+./autogen
+./autogen.sh 
+cd ../ModemManager/
+ls
+./autogen.sh 
+git tag -l
+git checkout 1.8.0
+tmux
+scite notes 
+sudo su
+locate qmi | less
+locate qmi | grep -v code | less
+sudo reboot
+apt search firmware
+apt search firmware binary
+sudo apt install firmware-atheros
+ls
+cd code
+ls -ltr
+cd ModemManager/
+git describe 
+git log
+git describe
+sudo su
+scite notes&
+ps ax | grep Modem
+ps ax | grep -i modem
+firefox&
+iwconfig
+ifconfig -a
+ip addr show
+sudo pkill dhclient
+sudo su
+df
+sudo apt clean
+df
+sudo dhclient enp3s0
+man mmcli
+man qmicli
+cd code/libqmi/
+ls
+make man
+ls
+cd docs/
+ls
+cd man/
+ls
+make
+man qmicli
+less qmicli.1 
+ls -ltr
+make celan
+make clean
+make
+ls
+cd ..
+ls
+cd reference/
+ls
+cd ..
+ls
+cd ..
+./configure --help
+find . -name \*.html
+sudo apt install gtk-doc
+apt search gtk doc
+apt search gtk doc | grep gtk | grep doc
+sudo apt install gtk-doc-tools libgtk2.0-doc
+./autogen.sh 
+./configure
+./configure --help
+./configure --enable-gtk-doc 
+make && sudo make install
+grep -ir 'wds-get-ip'
+grep -ir 'wds-get-'
+grep -ir -- '--wds-get-'
+df
+du -sk * | sort -n
+rm The\ Hardest\ Mandelbrot\ Zoom\ Ever\ In\ 2014\,10\^198\ \ -\ New\ record\ -\ 350\ 000\ 000\ iterations-zXTpASSd9xE.mp4 
+rm attempt.mp4 
+df
+rm -r linux-source-4.9
+sudo su
+pgrep modem
+pgrep Modem
+man lsof
+lsof /dev/cdc-wdm0 
+lsof
+lsof  /home/chris/.mozilla/firefox/2ypzx8b8.default/cookies.sqlite
+lsof /dev/cdc-wdm0 
+sudo lsof /dev/cdc-wdm0 
+cd linux-4.17.17/
+ls
+find . | grep qmi
+cd ./drivers/soc/qcom/
+grep raw-ip qmi*
+grep raw_ip qmi*
+grep raw_ip *
+cd ..
+grep -r raw_ip *
+cd ..
+grep -r raw_ip *
+sudo wireshark&
+dpkg -l
+lsusb -v
+sudo lsusb -v | less
+cd
+less .config/
+cd linux-4.17.17/
+ls
+less .config
+ls -al
+ls -altr
+vim .config
+cd code
+ls -ltr
+cd libqmi/
+ls
+find . | grep man
+less ./docs/man/qmicli.1
+find . -name \*.html
+find . | grep html
+grep -ir family
+grep -ir family | less
+grep -ir family | grep address
+grep -ir family | grep address | grep set
+grep -ir family | grep address 
+grep -ir family | grep wds | grep set
+grep -ir -- 'wds-set-ip-family'
+grep -ir -- '--wds-set-ip-family'
+less src/qmicli/qmicli-completion 
+code/libqmi/
+cd code/libqmi/
+less chris@debian:~$ code/libqmi/
+bash: code/libqmi/: Is a directory
+chris@debian:~$ cd code/libqmi/
+chris@debian:~/code/libqmi$ less 
+less src/qmicli/qmicli-
+less src/qmicli/qmicli-completion 
+ip addr show
+sudo dhclient -4 -v wwp0s29u1u1u4i4
+sudo pkill dhclient
+ps ax | grep dh
+sudo su
+sudo su
+sudo qmi-network --help
+sudo su
+sudo su
+qmicli -d /dev/cdc-wdm0 --wda-get-data-format
+sudo su
+whoami
+sudo usermod -a -G wireshark chris
+cd linux-4.17.17/
+ls
+find . | grep usbmon
+less .config
+grep -i 'USB' .config | grep MON
+vim .config
+tmux
+ls -ltr
+sudo dpkg -i linux-image-4.17.17-dbg_4.17.17-2_amd64.deb
+sudo reboot
+sudo su
+sudo u
+sudo su
+ls -ltr
+cd linux-4.17.17/
+sudo su
+cd linux-4.
+cd linux-4.17.17/
+ls
+cd /etc
+ls -ltr
+sudo su
+cd
+cd linux-4.17.17/
+less .config
+vim .config
+tmux
+make dep-pkg
+make deb-pkg
+cat ~/.bash_history | grep make
+make -j5 bindeb-pkg
+cd
+ls -ltr
+sudo dpkg -i linux*-3_amd*
+ls l-tr
+ls -ltr
+rm *-dbg_*deb
+sudo dpkg -i linux*-3_amd*deb
+df
+du -kh
+ls -lstr
+sudo update-grub
+sudo reboot
+iwconfig
+lsmod
+lsmod | grep wlan
+lsusb
+ip addr show
+lsmod
+lsmod | less
+dmesg | less
+sudo su
+cd
+ls
+iwconfig
+hciconfig 
+hcitool scan
+sudo su
+make menuconfig
+ifconfig -a
+iw
+lsmod
+cd /lib/modules/
+ls
+uname -ar
+ls -ltr
+cd 4.17.17/
+ls
+find . | grep ath
+cd ..
+find . | grep ath
+uname -ar
+ls
+cd
+ls -ltr
+cd linux-4.17.17/
+lsmod
+sudo xinit&
+sudo wireshark&
+sudo su
+ls -ltr
+cd ..
+ls -ltr
+rm *-1_amd64.deb
+rm *-2_amd64.deb
+ls -ltr
+rm -r linux-4.9.110/
+sudo rm -r linux-4.9.110/
+sudo rm linux-4.17.17_4.17.17.orig.tar.gz
+ls -ltr
+rm  linux-4.17.17_4.17.17-2_amd64.buildinfo
+rm linux-4.17.17_4.17.17-1_amd64.buildinfo
+rm linux-4.17.17_4.17.17-1_amd64.changes
+cd linux-4.17.17/
+find . | grep ath3k
+vim .config
+ls -ltr
+cd
+ls -ltr
+cd linux-4.17.17/
+make -j5 modules
+make -j5 bindeb-pkg
+cd ..
+ls -ltr
+rm *dbg_*
+ls
+ls -ltr
+sudo dpkg -i linux-headers-4.17.17_4.17.17-4_*
+sudo updte-grub
+sudo update-grub
+cd /lib/mod
+cd /lib/modules/
+ls
+ls -ltr
+find . | grep ath3k
+hciconfig 
+find . | grep usbmon
+sudo modprobe usbmon
+ls
+sudo wireshark
+sudo reboot
+df
+sudo redshift 
+sudo su
+sudo dhclient enp3s0
+locate qt-dev
+locate qt dev
+apt search qt-dev
+apt search qt dev
+apt search libqt dev
+sudo apt install libqt4-dev
+cd linux
+cd linux-4.17.17/
+make xconfig
+make menuconfig
+make xconfig
+sudo reboot
+df
+cd
+du -sk .[a-zA-Z]*
+cd .cache/
+du -skh *
+du -sk * | sort -n
+rm -fr mozilla/
+vf
+cd
+ls -ltr
+rm linux-headers-4.17.17_4.17.17-3_amd64.deb
+rm output.mkv 
+df
+du -sk * | sort -n
+rm -fr go
+cd code
+ls
+cd libmbim/
+make clean
+cd ../ModemManager/
+make clean
+cd ../libqmi/
+make clean
+cdcd ..
+ls
+cd ..
+du -sk *
+cd
+sudo su
+cd /raid
+sudo su
+cd
+ls -ltr
+du -skh linux*
+cd /usr/lib/
+sudo su
+sudo apt clean
+sudo apt autoremove
+sudo apt purge wodim  sphinx-common
+sudo apt purge libreoffice\*
+sudo apt purge  openjdk-8-jre-headless:amd64   libqt4-\*
+sudo apt autoremove
+sudo apt purge gimp\*
+sudo apt purge libqt5\*
+sudo apt purge  sane-utils  
+sudo apt autoremov
+sudo apt autoremove
+sudo apt purge speech-dispatcher    sphinx-rtd-theme-common  sound-theme-freedesktop mysql-common mplayer
+sudo apt purge cracklib-runtime  aspell  
+sudo apt autoremove
+ls -ltr
+cd ..
+ls -ltr
+cd /lib/mod
+cd /lib/modules/
+ls
+sudo rm -r 4.9.110/
+df
+du -skh
+vf
+cd /var/
+ls -ltr
+sudo apt clean
+dpkg -l
+dpkg -l | grep ^rc
+dpkg -l | grep ^rc | xargs sudo apt purge
+dpkg -l | grep ^rc | awk ' { print $2 } ' xargs sudo apt purge
+dpkg -l | grep ^rc | awk ' { print $2 } ' | xargs sudo apt purge
+y
+dpkg -l | grep ^rc | awk ' { print $2 } ' | xargs sudo apt -y purge
+ls
+dpkg -l
+sudo purge   xserver-xorg-video-nouveau   xserver-xorg-video-radeon
+sudo apt purge   xserver-xorg-video-nouveau   xserver-xorg-video-radeon
+sudo apt purge   tracker  tracker-extract  telepathy-mission-control-5  transmission-gtk 
+apt clean
+sudo apt clean
+sudo apt purge   xbrlapi  xdg-user-dirs-gtk  telepathy-mission-control-5  tracker-gui  
+sudo apt purge   python-twisted    python3-cupshelpers policykit-1-gnome   mpv
+sudo apt purge   libmagickcore\*
+sudo apt purge libgcj-common  libgnome2-common
+sudo apt purge libcups2:amd64    libcupsfilters1:amd64 
+sudo apt autoremove
+sudo apt iamerican imagemagick
+sudo apt purge iamerican imagemagick
+sudo apt clean
+sudo apt purge ffmpeg firefox-esr
+sudo apt clean
+sudo apt autoremove
+sudo apt purge libbluray2:amd64 libcdio-cdda2:amd64
+apt purge libportaudio2 libopencv-core3.2  libmpg123-0   libgoa-1.0-common libgphoto2-6 libgphoto2-l10n libgphoto2-port12
+sudo apt purge libportaudio2 libopencv-core3.2  libmpg123-0   libgoa-1.0-common libgphoto2-6 libgphoto2-l10n libgphoto2-port12
+sudo apt purge  libopenal-data libopenal1 libparted-fs-resize0 libpgm-5.2-0 libplist3 libpostproc55 libraw1394-11 librubberband2 libsdl2-2.0-0 libserd-0-0 libsmbclient libsndio7.0 libsodium23 libsord-0-0 libsratom-0-0 libssh-gcrypt-4 libswscale5   libtalloc2 libtbb2 libtevent0 libudisks2-0 libusbmuxd4 libvolume-key1 libvorbisfile3 libwbclient0 libzmq5
+apt purge powertop pulseaudio pulseaudio-utils
+sudo apt purge powertop pulseaudio pulseaudio-utils
+sudo apt purge libmp3lame0:amd64 
+sudo apt purge  libsndfile1 libsoxr0 libspeex1 libspeexdsp1 libswresample3 libtdb1 libtheora0 libtwolame0 libva-drm2 libva-x11-2 libva2
+iwconfig
+hciconfig
+lsmod
+lsmod | sort > lsmod.4.7
+less lsmod.4.7 
+cd /boot/
+ls
+uname -ar
+cp config-4.17.0-3-amd64 ~
+cd
+vimdiff config-4.17.0-3-amd64 linux-4.17.17/.config
+tmux
+make
+make deb-pkg
+make -j5 deb-pkg
+make -j5 bindeb-pkg
+df
+make -j5 bindeb-pkg
+fg
+cd ..
+sudo mv linux-4.17.17 /raid/kernel
+make -j5 bindeb-pkg
+pwd
+cd linux-4.17.17/
+make -j5 bindeb-pkg
+fg
+la
+ls
+du -sk *
+make -j5 bindeb-pkg
+sudo halt
+cd linux-4.17.17/
+find . |grep ath3
+less drivers/bluetooth/ath3k.c 
+cat .config
+vimdiff .config ../config-4.17.0-3-amd64 
+ls
+vim .config
+cp .config .config.new
+vim .config.new 
+htop
+ls -ltr
+cd
+ls -ltr
+rm *.jpeg
+rm linux*xz
+ls
+df
+ls -ltr
+ls -al
+cd /var
+sudo apt clean
+df
+ls
+du -sk *
+sudo s
+sudo su
+sudo su
+cd
+du -sk * | sort -n
+df
+cd /
+sudo su
+df
+ssh 172.16.10.13
+du -sk * | sort -n
+cd
+du -sk * | sort -n
+ls png
+rm -r png
+ls -al
+ls .cache/
+rm -r .cache/
+rm -r .mozilla .xscreensaver 
+ls
+ls -ltr
+df
+ls =;tr
+cd 
+ls -ltr
+cd uptime/
+ls
+cat *
+cd /
+ls -ltr
+cd tmp
+ls
+cd
+ls -ltr
+sudo su
+cd /lib/mod
+cd /lib/modules/
+ls
+ls -ltr
+cd ..
+ls
+sudo su
+cd
+ls l-tr
+du -sk * | sort 0n
+du -sk * | sort -n
+rm comparison*
+ls
+ls -ltr
+rm  linux-headers-4.17.17_4.17.17-4_amd64.deb  linux-image-4.17.17_4.17.17-4_amd64.deb
+ls
+du -sk * 
+rm -r TEMPered/
+sudo rm -r TEMPered/
+cd tools/
+ls
+cd ..
+rm -r tools/
+sudo rm -r tools/
+ls
+du -sk .*
+du -sk .[a-zA-Z]*
+ls .config/
+rm -fr .config/
+sudo su
+cd /usb
+ls -ltr
+cd linux-4.17.17/
+sudo su
+ping yahoo.com
+make -j5 bindeb-pkg
+cd
+ls -ltr
+sudo dpkg -i  linux-image-4.17.17_4.17.17-6_amd64.deb  linux-libc-dev_4.17.17-6_amd64.deb linux-headers-4.17.17_4.17.17-6_amd64.deb
+sudo halt
+sudo su
+cd /usb/linux-4.17.17/
+tmux
+iwconfig
+sudo su
+sudo xinit&
+xset dpms force suspend
+sudo su
+sudo su
+cd /raid/demo-videos/
+ls
+mpv LG\ ULTRA\ HD\ \(4K\ resolution\)\ Landscape\ demo-rKrGDVuIzxA.mp4 
+sudo apt install mpv
+mpv LG\ ULTRA\ HD\ \(4K\ resolution\)\ Landscape\ demo-rKrGDVuIzxA.mp4 
+sudo halt
+xsetroot -bg white
+xsetroot -bg rgb:f/f/f
+man xsetroot
+xsetroot -bg fff
+xsetroot -mod 10 10
+sudo xinit&
+xsetroot -mod 4 4
+xsetroot -mod 15 15
+xsetroot -mod 15 16
+xsetroot -mod 16 16
+xsetroot -mod 16 3
+xsetroot -mod 4 3
+xsetroot -mod 4 7
+sudo halt
+df
+sudo shutdown -r now
+df
+sudo apt install firefox
+sudo apt install firefox-esr
+sudo halt
+ls
+ls -ltr
+rm *dbg*
+ls -ltr
+df
+sudo su
+df
+sudo su
+cd code
+ls
+git clone https://gitlab.freedesktop.org/NetworkManager/NetworkManager.git
+sudo apt install chromium
+sudo su
+ls -ltr
+cd code
+ls
+cd libqmi/
+ls
+grep -r - '-get-'
+grep -r - '-get-' *
+grep -r -- '-get-' *
+grep -r -- '-get-' * | grep config
+grep -r -- '-get-' * | grep ipv
+grep -r -- '-get-' * | grep ip
+grep -r -- '-get-' * | grep net
+grep -r -- 'get-' * | grep net
+grep -r -- 'get-' * | grep con
+cd src/qmicli/
+ls
+grep \{ *.c
+grep \{\  *.c
+grep \{\ \" *.c
+grep -l \{\ \" *.c
+grep -L \{\ \" *.c
+grep -h \{\ \" *.c
+grep -h \{\ \" *.c | sort
+df
+iwconfig
+sudo dhclient enp3s0
+ping yahoo.com
+sudo apt install firefox-esr
+ls -ltr
+firefox&
+sudo apt update
+sudo apt upgrade
+ls -lrt
+df
+sudo su
+cd /usb/
+ls
+cd linux-4.17.17/
+ls
+ls -ltr
+find . | grep qmi
+df
+sudo xinit&
+cd code
+git clone https://gitlab.gnome.org/GNOME/network-manager-applet.git
+cd network-manager-applet/
+ls
+cd ../NetworkManager/
+ls
+sudo mmcli -m 0 --simple-connect="apn=internet"
+sudo mmcli -m 0 --list-bearers
+sudo mmcli -b 0
+mmcli -b 0
+mmcli -b 0 | grep -A 4 IPv4
+scite&
+man mmcli
+man qmi-network 
+qmi-network --help
+qmi-network /dev/cdc-wdm1 status
+sudo qmi-network /dev/cdc-wdm1 status
+iwconfig
+ifconfig -a
+sudo dhclient wwp0s29u1u1u4i4
+iwconfig
+ifconfig -a
+sudo ifconfig wwp0s29u1u1u4i4 26.27.221.170
+sudo route add default gw 26.27.221.169
+sudo ifconfig -a
+sudo ip addr del 26.27.221.170  dev wwp0s29u1u1u4i4
+ip addr show
+sudo ip addr add 26.27.221.170/30 dev wwp0s29u1u1u4i4
+sudo ip route add 26.27.221.169/0 dev wwp0s29u1u1u4i4
+sudo ip route add 26.27.221.169  dev wwp0s29u1u1u4i4
+route -n
+sudo ip route del 26.27.221.169  dev wwp0s29u1u1u4i4
+sudo ip route replace default via 26.27.221.169 dev wwp0s29u1u1u4i4
+ping yahoo.com
+cat /etc/resolv.conf 
+ping yahoo.com
+cd code
+ls -ltr
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1 org.freedesktop.DBus.Introspectable.Introspect
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.DBus.Introspectable.Introspect
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.ModemManager1.get
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.ModemManager1.geta
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.ModemManager1.Bearer.0.get
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.ModemManager1.Bearer.0.get string:0 string:Ip4Config
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.ModemManager1.Bearer.get string:0 string:Ip4Config
+dbus-monitor 
+dbus-send --session             --dest=org.freedesktop.DBus   --type=method_call            --print-reply                 /org/freedesktop/DBus         org.freedesktop.DBus.ListNames
+dbus-send --system             --dest=org.freedesktop.DBus   --type=method_call            --print-reply                 /org/freedesktop/DBus         org.freedesktop.DBus.ListNames
+dbus-monitor 
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.DBus.Properties.Get string:Ip4Config
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.DBus.Properties.Get
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.DBus.Properties.Introspect
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.DBus.Introspectable.Introspect
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.DBus.Properties.Get
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.DBus..Get
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.DBus.Get
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.DBus.Get string:Ip4Config
+dbus-send --system --dest=org.freedesktop.ModemManager1 --print-reply --type=method_call /org/freedesktop/ModemManager1/Bearer/0 org.freedesktop.DBus.Get string:0 string:Ip4Config
+mmcli -b 0
+mmcli -b 0 | grep -A 4 IPv4
+mmcli -b 0 | grep -A 4 IPv4| awk -F ': ' { print $2 | '
+mmcli -b 0 | grep -A 4 IPv4| awk -F ': ' { print $2 } '
+mmcli -b 0 | grep -A 4 IPv4| awk -F ':' ' { print $2 } '
+mmcli -b 0 | grep -A 4 IPv4| awk -F '\|' ' { print $2 } '
+mmcli -b 0 | grep -A 4 IPv4| awk -F '\|' ' { print $2 } ' | sed s'/: /='
+mmcli -b 0 | grep -A 4 IPv4| awk -F '\|' ' { print $2 } ' | sed s'/: /=/'
+mmcli -b 0 | grep -A 3 IPv4| awk -F '\|' ' { print $2 } ' | sed s'/: /=/'
+mmcli -b 0 | grep -A 3 IPv4| awk -F '|' ' { print $2 } ' | sed s'/: /=/'
+mmcli -b 0 | grep -A 3 IPv4| awk -F '|' ' { print $2 } ' | sed s'/: /=/' | tr ' ' ''
+mmcli -b 0 | grep -A 3 IPv4| awk -F '|' ' { print $2 } ' | sed s'/: /=/' | sed -E s'/\s+//'
+mmcli -b 0 | grep -A 3 IPv4| awk -F '|' ' { print $2 } ' | sed s'/: /=/' | sed -E s'/\s+//' | tr '\n' ';'
+apt show networkmanager
+sudo su
+sudo apt install network-manager-applet
+sudo apt update
+apt search network-manager-applet
+sudo su
+apt search network-manager-applet
+apt search network-manager-gnome
+sudo apt install network-manager-gnome
+dpkg -l network-manager-gnome
+dpkg -L network-manager-gnome
+dpkg -L network-manager-gnome | grep bin
+sudo nm-applet 
+sudo nm-connection-editor 
+vim manual-set-ipv4.sh
+scite manual-set-ipv4.sh
+ip addr show
+ip addr show | grep wwp
+ip addr show | grep wwp | head
+ip addr show | grep wwp | head -1
+ip addr show | grep wwp | head -1 | awk -F ':' ' { print $2 } '
+ls -ltr
+chmod +X manual-set-ipv4.sh 
+ls -ltr
+chmod +x manual-set-ipv4.sh 
+ls
+cat manual-set-ipv4.sh 
+vim manual-set-ipv4.sh 
+./manual-set-ipv4.sh 
+vim manual-set-ipv4.sh 
+scp manual-set-ipv4.sh chris@9ol.es:
+vim manual-set-ipv4.sh 
+scp manual-set-ipv4.sh chris@9ol.es:
+sudo reboot
+man ip
+sudo su
+ls -ltr
+sudo su
+scp manual-set-ipv4.sh chris@9ol.es:
+firefox&
+ip addr show
+sudo shutdown -r now
+wpd
+pwd
+cd code/libmbim/
+./autogen.sh 
+make -j4
+d code/
+ls
+cd code/
+ls
+cd libqmi/
+./autogen.sh 
+make -j3
+sudo vim /etc/fstab 
+tmux
+htop
+cd code/NetworkManager/
+ls
+./autogen.sh 
+git pull
+git status
+apt search intltoo
+sudo apt install intltool
+./autogen.sh 
+cd ../ModemManager/
+ls
+./autogen.sh 
+make -j4
+sudo reboot
+sudo su
+df
+df -h
+sudo xinit&
+route -n
+ip addr show
+ls
+cat interfaces
+ls
+sudo su
+sudo ip route replace default via 26.27.221.169 dev wwp0s29u1u1u4i4
+ping  26.27.221.169
+sudo mmcli -m 0 --simple-connect="apn=internet"
+sudo su
+sudo xinit&
+qmi-network /dev/cdc-wdm1 start
+sudo qmi-network /dev/cdc-wdm1 start
+sudo mmcli -m 0 --simple-connect="apn=internet"
+ls -ltr
+sudo su
+cat manual-set-ipv4.sh 
+sudo su
+ls -ltr
+./manual-set-ipv4.sh 
+ip addr show
+ping yahoo.com
+firefox
+bg
+ping yahoo.com
+sudo reboot
+ifconfig -a
+route -n
+ls -ltr
+./manual-set-ipv4.sh 
+ping yahoo.com
+route -n
+ping  22.6.237.157
+ping 8.8.8.8
+sudo u
+sudo su
+ping yahoo.com
+firefox&
+sudo mmcli -m 0 --location-get-gps-raw
+sudo mmcli -m 0 --location-enable-gps-raw
+sudo mmcli -m 0 --location-status
+sudo mmcli -m 0 --list-modems
+sudo mmcli --list-modems
+sudo mmcli -m 0 --messaging-list-sms
+mmcli -m 0 --messaging-create-sms="text='Hello world',number='+16572101337'
+mmcli -m 0 --messaging-create-sms="text='Hello world',number='+16572101337'"
+sudo mmcli -m 0 --messaging-create-sms="text='Hello world',number='+16572101337'"
+mmcli -m 0 --location-status
+xdpyinfo 
+cd Downloads/
+ls -ltr
+evince SSH4471-datasheet.pdf 
+cd code/
+ls
+git clone https://github.com/WaiveCar/WaiveScreen.git
+cd WaiveScreen/
+ls
+mkdir linux
+cd linux/
+ls
+cat *
+ls -ltr
+ls ~/
+ls ~/*.sh
+cp ~/manual-set-ipv4.sh .
+ls
+git add *.sh
+git status
+df
+ls /usb/root
+sudo su
+git add * .xinitrc 
+git status
+git comit
+git commit
+git config --global user.name "Chris McKenzie"
+git commit
+git push
+bc -l
+df
+sudo su
+ssh 9ol.~es
+ssh 9ol.es
+sudo xinit&
+ls -ltr
+cat manual-set-ipv4.sh 
+df
+git
+df -h
+sudo apt purge firefox-esr
+sudo apt upgrade
+df
+df -h
+chromium &
+chromium --help
+df
+sudo apt autoremove
+mmcli -b 0
+cd Downloads/
+ls -ltr
+sudo apt install evince
+iwcondif
+iwconfig
+ifconfig -a
+sudo shutdown -r now
+sudo su
+minicom -D /dev/ttyUSB2
+sudo minicom -D /dev/ttyUSB2
+ls
+chromium &
+ifconfig -a
+sudo su
+xsetroot -mod 16 3
+mmcli -b 0
+mmcli --help
+mmcli --help-location
+htop
+cd code
+ls
+cd libmbim/
+git branch -rl
+git remote -v
+cd ..
+ls -ltr
+cd libqmi/
+git remote -v
+cd ../ModemManager/
+git status
+git remote -v
+dpkg -S autpoint
+dpkg -S autopoint
+df
+ls -ltr
+cd code/libqmi/
+git pull
+tmux
+cd code/
+grep -ir 3gpp.lac.ci *
+cd ModemManager/libmm-glib/
+git status
+mmcli --help-location
+mmcli -b 0
+sudo mmcli -m 0 --location-get-gps-raw
+mmcli -m 0 --location-status
+df
+df -h
+mmcli -m 0 --location-status
+which mmcli
+gdb /usr/local/bin/mmcli
+sudo apt install gdp
+sudo apt install gdb
+gdb /usr/local/bin/mmcli
+ls
+cd sou
+ls
+find . -name mmcli
+cd code/ModemManager/
+git status
+ls
+./autogen.sh 
+cd ./libmm-glib/
+git pull
+git branch -rl
+gitstatus
+git status
+./autg
+./autog
+ls
+ls -ltr
+make
+make -j5
+cd ../../libmbim/
+ls
+git pull
+git checkout master 
+git pull
+git log
+./autogen.sh 
+make -j5
+sudo make install
+cd ../ModemManager/
+ls
+./autogen.sh 
+make -j5
+sudo make install
+sudo mmcli -m 0 --location-get-gps-raw
+mmcli -m 0 --location-status
+which mmcli
+gdb /usr/local/bin/mmcli
+gdb -tui /usr/local/bin/mmcli
+sudo su
+htop
+mmcli -m 0 --location-status
+sudo mmcli -m 0 --location-get-gps-raw
+mmcli -m 0 --location-status
+mmcli -m 0
+mmcli -m 0  --location-enable-gps-raw
+mmcli -m 0 --location-status
+mmcli -m 0 --location-enable-gps-nmea
+mmcli -m 0 --location-status
+mmcli -m 0 --location-get
+mmcli -m 0 --location-status
+mmcli -m 0 --location-get
+locate ModemManager
+dpkg -S ModemManager
+sudo apt purge modemmanager
+ls
+pwd
+tmux
+ls
+cd
+ls -ltr
+cd code/ModemManager/
+ls
+sudo make install
+sudo updatedb
+s
+dbus-send --session             --dest=org.freedesktop.DBus   --type=method_call            --print-reply                 /org/freedesktop/DBus         org.freedesktop.DBus.ListNames
+ps ax 
+ps axf
+lsof -p 527
+sudo lsof -p 527
+sudo lsof -p 527 |& less
+sudo su
+locate ModemManager | grep bin
+sudo reboot
+cat config.log 
+systemctl 
+mmcli -m 0 --location-get
+cd code/ModemManager/
+ls
+./configure  --help
+./configure  --help|& less
+./configure 
+tmux
+locate ModemManager.service
+systemctl list-units
+systemctl list-units --all
+locate ModemManager.service
+less /lib/systemd/system/ModemManager.service
+locate ModemManager.conf
+locate ModemManager1.conf
+ls /usr/local/etc/
+ls /usr/local/etc/dbus-1/
+ls /usr/local/etc/dbus-1/system.d/
+cat /usr/local/etc/dbus-1/system.d/org.freedesktop.ModemManager1.conf 
+cp /usr/local/etc/dbus-1/system.d/org.freedesktop.ModemManager1.conf /etc/dbus-1/system.d/
+sudo cp /usr/local/etc/dbus-1/system.d/org.freedesktop.ModemManager1.conf /etc/dbus-1/system.d/
+locate dbus-org.freedesktop.ModemManager
+locate ModemManager1
+locate ModemManager1 | grep -v chris
+locate ModemManager | grep -v chris
+locate ModemManager | grep -v chris | grep ser
+diff /lib/systemd/system/ModemManager.service /usr/local/share/dbus-1/system-services/org.freedesktop.ModemManager1.service
+ls -ltr  /lib/systemd/system/ModemManager.service/usr/local/share/dbus-1/system-services/org.freedesktop.ModemManager1.service
+ls -ltr /usr/local/share/dbus-1/system-services/org.freedesktop.ModemManager1.service   /lib/systemd/system/ModemManager.service
+md5sum /lib/systemd/system/ModemManager.service
+cat /usr/local/share/dbus-1/system-services/org.freedesktop.ModemManager1.service
+./configure |& tee configure
+./configure 
+ls
+./configure 
+less configure
+./auto
+./autogen.sh 
+./configure --help
+./configure --with-systemd-suspend-resume=yes --with-systemd-journal=yes --with-dbus-sys-dir=/etc/dbus-1/system.d
+apt search libsystemd
+sudo apt install libsystemd-dev
+./configure --with-systemd-suspend-resume=yes --with-systemd-journal=yes --with-dbus-sys-dir=/etc/dbus-1/system.d
+./configure --prefix=/user --with-systemd-suspend-resume=yes --with-systemd-journal=yes --with-dbus-sys-dir=/etc/dbus-1/system.d
+./configure --prefix=/usr --with-systemd-suspend-resume=yes --with-systemd-journal=yes --with-dbus-sys-dir=/etc/dbus-1/system.d
+make -j5
+sudo make install
+less Makefile
+sudo reboot
+ls res*
+locat resolv | grep conf
+locate resolv | grep conf
+ps ax | grep Modem
+systemctl 
+./pforward 
+cd /etc
+sudo su
+tmux
+sudo su
+cd
+ls
+locate ModemManager.service
+cat /lib/systemd/system/ModemManager.service
+systemctl --type=service
+systemctl --alll
+systemctl --all
+cd /etc/systemd/system/multi-user.target.wants/
+locate ModemManager.service
+sudo cp /lib/systemd/system/ModemManager.service .
+ls /etc/systemd/system
+locate dbus-org.freedesktop.ModemManager1.service
+ls /etc/dbus-1/system.d/
+cat org.freedesktop.ModemManager1.conf
+cat /etc/dbus-1/system.d/org.freedesktop.ModemManager1.conf
+ls -ltr
+sudo mv ModemManager.service ..
+ln -s ModemManager1.service ../ModemManager.service
+ln -s /lib/systemd/system/ModemManager.service ModemManager1.service
+sudo ln -s /lib/systemd/system/ModemManager.service ModemManager1.service
+ls -ltr
+cd ..
+ls -ltr
+systemctl list-unit-files
+systemctl ModemManager.service enable
+systemctl enable ModemManager.service
+sudo systemctl enable ModemManager.service
+systemctl list-unit-files
+ps ax | grep Mode
+sudo systemctl start ModemManager.service
+ps ax | grep Modem
+sudo mmcli -m 0 --location-get-gps-raw
+sudo mmcli -m 0
+mmcli -m 0 --location-get
+mmcli -m 0 --location-status
+mmcli -m 0  --location-enable-gps-raw
+mmcli -m 0  --location-enable-gps-nmea
+mmcli -m 0 --location-status
+mmcli -m 0 --location-get
+cd
+l s-ltr
+ls -ltr
+ls -ltr *.sh
+vim manual-set-ipv4.sh 
+sudo reboot
+ls -ltr *.sh
+cat manual-set-ipv4.sh 
+vim manual-set-ipv4.sh 
+./manual-set-ipv4.sh 
+cat /etc/resolv
+cat /etc/resolv.conf 
+ping yahoo.com
+ifconfig -a
+watch -d -n 0.2 "mmcli -m 0 --location-get"
+mmcli -m 0 --location-get-gps-raw
+grep -ir location-get-gps-raw
+pwd
+cd code/ModemManager/
+pwd
+grep -ir location-get-gps-raw
+vim cli/mmcli-modem-location.c 
+mmcli -m 0 --location-get
+cd code/
+ls
+cd ModemManager/
+ls
+grep -ir 'location-get'
+dbus-monitor 
+dbus-monitor  --help
+dbus-monitor  --monitor
+dbus-monitor  --system
+dbus-monitor  --system |& tee monitor
+less monitor 
+dbus-monitor  --system
+grep mm_modem_location_full
+grep -r mm_modem_location_full *
+grep -r mm_modem_location_get *
+grep -r mm_modem_location_get_full *
+vim libmm-glib/mm-modem-location.
+vim libmm-glib/mm-modem-location.c 
+./pforward 
+tmux
+cd code/ModemManager/
+grep -ir modem_location_call
+grep -ir modem_location_call | grep dbus
+grep -ir modem_location_call | grep dbus | less
+sudo xint&
+sudo xinit&
+DISPLAY=:0 xterm
+twm&
+xset +fp rehash
+dpkg -l | grep xorg | grep font
+apt search xorg font
+apt search xorg font | less
+twm&
+apt search iso8859
+apt search iso8859 | less
+apt search xfonts
+sudo apt reinstall xfonts-100dp
+sudo apt install xfonts-100dpi
+sudo su
+cd
+twm&
+apt search intlfonts
+apt search intl font
+sudo apt remove twm
+sudo apt install twm
+ifconfig -a
+ping yahoo.com
+sudo su
+apt search notion
+sudo apt install notion
+git clone git@github.com:kristopolous/crappy-notion.git
+git clone https://github.com/kristopolous/crappy-notion.git
+cd crappy-notion/
+ls
+less README.md 
+mkdir .notion
+cd ..
+cd crappy-notion/
+rm -r .notion/
+cd ..
+mv crappy-notion .notion
+ls -ltr
+pkil mwm
+pkill mwm
+cd
+notion&
+vim .xinitrc 
+sudo su
+sudo apt install twm
+twm&
+sudo apt install mwm
+mwm&
+chromium &
+date
+echo 1537058806 | wc -c
+bc -l
+echo '1537059996 34.01986 -118.4680' | wc -c
+v4l2-ctl 
+v4l2-ctl
+v4l2-ctl --all
+date
+v4l2-ctl --all
+v4l2-ctl 
+v4l2-ctl -l
+v4l2-ctl -a
+v4l2-ctl --all
+v4l2-ctl --list-formats
+v4l2-ctl --list-formats -d /dev/video3
+v4l2-ctl --list-formats -d /dev/video2
+v4l2-ctl --list-formats -d /dev/video0
+v4l2-ctl --list-formats -d /dev/video1
+sudo apt install guvcview
+guvcview 
+sudo guvcview 
+sudo su
+cd screen/
+./manual-set-ipv4.sh 
+bpython3
+bpython3
+d-feet &
+echo  -118.4681024 | wc -c
+date +s
+bpython3
+bc -l
+sudo su
+usermod -G -a chris dialout
+usermod -a -G dialout chris
+sudo usermod -a -G dialout chris
+ssh localhost
+sudo su
+sudo xinit&
+ip maddress
+ip addr
+ip addr enp3s0
+ip addr help
+cd /etc/udev/rules.d/
+ls
+sudo u
+sudo su
+sudo apt update
+sudo apt upgrade
+ip
+ip link
+ip addr show enp3s0
+ip addr show enp3s0 -p
+ip -p addr show enp3s0 
+ip -k addr show enp3s0 
+ip -j addr show enp3s0 
+ip -jp addr show enp3s0 
+ip -jP addr show enp3s0 
+ip -j =P addr show enp3s0 
+ip -j -p addr show enp3s0 
+ifconfig -a
+ls
+git clone https://github.com/WaiveCar/WaiveScreen.git
+ls
+ls -tlr
+cd WaiveScreen/
+ls
+cp ../screen/location-grab.py ../screen/manual-set-ipv4.sh ../screen/45-arduino.rules linux/
+cd linux/
+ls
+git status
+git add 45-arduino.rules location-grab.py 
+git diff
+git commit -am "ipv6 nameservers gps support and udev rules for the nano"
+git push
+cd screen
+ls
+vim location-grab.py
+which python3
+ls -tr
+cd screen/
+ls
+chmod +x location-grab.py 
+./location-grab.py 
+date
+./location-grab.py 
+vim location-grab.py 
+./location-grab.py 
+bc =;
+bc -l
+dmesg
+sudo su
+ssh 172.16.10.1
+sudo reboot
+cd /dev/
+ls
+sudo su
+echo -n \x50
+echo -n '\x50'
+echo -ne '\x50'
+echo -ne '\x50\x50' > ttyACM0 
+echo -ne '\x30\x30' > ttyACM0 
+echo -ne '\x10\x10' > ttyACM0 
+echo -ne '\x90\x10' > ttyACM0 
+echo -ne '\x90\xA0' > ttyACM0 
+echo -ne '\xA0\xA0' > ttyACM0 
+echo -ne '\xA0\xC0' > ttyACM0 
+cd WaiveScreen/
+ls
+cd linux/
+ls
+vim ping.py
+vim ping.py
+which ip
+uptime
+ls
+df 
+df -h
+cd screen/l
+cd screen/
+ls
+./location-grab.py 
+sudo su
+./manual-set-ipv4.sh 
+sudo su
+ls -ltr
+cd WaiveScreen/
+ls -ltr
+ls
+ip -j -p addr show enp3s0 
+sudo xinit&
+chromium &
+ls -ltr
+cd WaiveScreen/
+ls -ltr
+d linuxx
+cd linux
+ls -ltr
+chmod +x ping.py 
+./ping.py 
+git add ping.py 
+git commit ping.py 
+git push
+uuid 
+curl ifconfig.me
+bc -l
+ls
+./pforward 
+vim pforward 
+./pforward 
+minicom --help
+cd WaiveScreen/
+l
+ls
+cd linux/
+ls
+tmux
+bpython3
+stty
+sudo su
+sudo su
+cd WaiveScreen/
+ls
+cd linux
+ls
+vim ping.py
+lsusb
+lksmod
+lsmod
+lsmod | grep seri
+sudo su
+env python3
+which env
+cd /etc/udev/
+ls
+cd rules.d/
+ls
+cat 45-arduino.rules 
+lsusb
+sudo su
+sudo apt purge twm
+sudo apt purge twm mwm
+date +%Y%M%d
+date +%Y%m%d
+ls /etc/logrotate.d/
+man logrotate
+cd /etc/logrotate.d/
+ls
+ls -ltr
+cat *
+ls -ltr
+cp rsyslog ~/WaiveScreen/linux/
+bpython3
+cd
+sudo xinit&
+git pull
+cd arduino/
+vim basicarduinoread.py 
+bpython3
+dpkg -l
+df
+df -h
+vim requirements.txt
+sudo su
+echo -ne '\xA0\xC0' > ttyACM0 
+rm ttyACM0 
+cd /dev
+echo -ne '\xA0\xC0' > ttyACM0 
+ssh chris@static-real.waivecar.com
+ssh chris@static-real.waivecar.com -p
+cpufreq-info -L
+cpufreq-info -l
+cpufreq-info 
+ping yahoo.com
+ifconfig -a
+./basicarduinoread.py 
+vim basicarduinoread.py 
+pip
+apt search python3-pip
+sudo apt install python3-pip
+rehash
+pip3 install serial
+git add requirements.txt 
+./basicarduinoread.py 
+pip instal pyserial
+pip3 instal pyserial
+pip3 install pyserial
+./basicarduinoread.py 
+vim requirements.txt 
+sudo su
+ls
+cd ../linux/
+ls
+bpython3
+ls
+vim basicarduinoread.py 
+apt search setserial
+sudo apt install setserial
+sudo su
+sudo powertop
+sudo apt install powertop
+ping yahoo.com
+sudo su
+sudo apt install powertop
+ip addr show
+sudo dhclient enp3s0
+ping yahoo.com
+sudo reboot
+git status
+git commit -am "updates for linux"
+git push
+git pul
+git pull
+git push
+ls
+cd ..
+ls
+cd linux/
+ls
+cat slideshow.sh 
+cat .xinitrc 
+grep ntpdate *
+vim network-setup.sh 
+ls
+vim ping.py 
+ls
+mv rsyslog screen.log
+vim screen.log 
+ls
+vim README.md
+ls
+git add screen.log 
+git status
+git add README.md 
+git commit -am "adding a readme and a logrotate ruleset"
+git push
+ls
+ls -ltr
+chromium &
+pwd
+cd WaiveScreen/
+ls
+cd arduino/
+sl
+ls
+vim basicarduinoread.py 
+chmod +x basicarduinoread.py 
+./basicarduinoread.py 
+vim basicarduinoread.py 
+./basicarduinoread.py 
+vim basicarduinoread.py 
+tmux
+sudo cpufreq-set -u 1332800 -c 0
+sudo cpufreq-set -u 1332800 -c 1
+sudo cpufreq-set -u 1332800 -c 2
+sudo cpufreq-set -u 1332800 -c 3
+man cpufreq-info 
+man cpufreq-set
+sudo su
+locate ModemManager.service
+locate ModemManager.service | xargs cat
+locate ModemManager.service | xargs cat | les
+locate ModemManager.service | xargs cat | less
+locate ModemManager.service | xargs head
+locate ModemManager.service | xargs head | less
+cd
+ping yahoo.com
+ip addr show
+sudo dhclient enp3s0
+ping yahoo.com
+ls -ltr
+cd WaiveScreen/
+ls
+git pull
+cp /tmp/layout .
+vim README.md 
+cd linux/
+vim README.md 
+git status
+rm ../layout 
+git commit README.md 
+git push
+cat .xinitrc 
+setxkbmap -option ctrl:nocaps  
+xmodmap ~/.Xmodmap
+xrdb -merge ~/.Xresources
+curl localhost:41772
+curl 127.0.0.1:41772
+netstat -anlp
+netstat -anlp | less
+cd  /home/chris/.cortex/log/
+ls
+cat player.json.2018-10-04_17 
+ls l-tr
+ls -ltr
+tail -f cortex-update.log 
+htop
+cd /opt/cortex/player/current
+ls
+ldd CortexPlayer 
+apt search libgconf
+sudo apt install libgconf-2-4
+ldd CortexPlayer 
+ldd CortexPlayer | les
+./CortexPlayer 
+bg
+jobs -l
+./CortexPlayer --help
+ls
+lsof
+lsof | grep Cort
+htop
+chromium &
+sudo ./cortex-install.sh 
+sudo ./cortex-install.sh -i -u chris
+ssh 9ol.es
+d-feet &
+cd
+cd .cortex/
+ls
+cat flags 
+cd storage/
+ls
+ls -ltr
+cat storage.json 
+cat storage.json  | python -json.tool
+cat storage.json  | python -mjson.tool
+cat storage.json  | python -mjson.tool | less
+cd ..
+ls
+cd cache/
+ls
+cd com.vistarmedia.apps.web-page/
+ls
+ls -al
+cd ../data_cache/
+ls
+cd ..
+ls
+cd ..
+ls -al
+find . | less
+less ./install-repo/com.vistarmedia.apps.web-page/1.3.0/bundle.js
+find . | less
+cd ./cache/com.cortexpowered.apps.cortex-content-app-1
+ls
+ls -ltr
+file *
+cat index.json 
+cat index.json  | python -mjson.tool
+cat index.json  | python -mjson.tool | less
+cd
+cd .cache/
+ls
+cd cortex-player/
+ls
+cd Default/
+ls
+ls -al
+cd ..
+cd chromium/
+ls
+cd Default/
+ls
+find .
+ls -ltr
+sudo pkill cortex
+pgrep cortex
+pgrep -i cortex
+kill `pgrep -i cortex`
+cd /var/log
+ls -ltr
+lsof
+lsof | grep log
+ls /opt/cortex/player/current
+file /opt/cortex/player/current/CortexPlayer 
+ldd /opt/cortex/player/current/CortexPlayer 
+ldd /opt/cortex/player/current/CortexPlayer  | less
+/opt/cortex/player/current/CortexPlayer  
+cd
+sudo xinit&
+sudo pkill x
+cd .cortex/
+ls -ltr
+cd log/
+ls -ltr
+tail -f player.json.2018-10-04_17 
+d-feet &
+sudo pkill exe
+man uvccaptuer
+man uvccapture
+htop
+apt search mjpeg
+mv arduino.py lib.py
+lsmod | grep spe
+lsmod | grep pc
+sudo rmmod pcspkr
+cd ../linux/
+ls
+vim location-grab.py 
+sudo su
+ping yahoo.com
+cd code/WaiveScreen/
+git pul
+git pull
+cd linux/
+ls
+cat cortex-install.sh 
+tmux
+cd
+sudo xinit&
+cd WaiveScreen/linux/
+l
+ls
+git pull
+htop
+kahoot
+daedpool
+sudo pkill cortex
+sudo pkill python
+uvcdynctrl --help
+uvcdynctrl -c
+apt search uvc
+sudo apt install uvccapture
+uvccapture --help
+apt search v4l
+dpkg -L v4l-conf
+dpkg -l v4l-conf
+dpkg -L v4l-utils
+chromium &
+sudo apt install v4l-conf
+dpkg -L v4l-conf
+v4l-info
+sudo apt install mjpegtools
+dpkg -L mjpeg-tools
+dpkg -L mjpegtools
+man mp2enc
+man lav2avi
+man mplex
+mpv /dev/video0
+dd if=/dev/video0 of=/tmp/capture
+mpv /dev/video1
+mpv /dev/video2
+ffmpeg -f v4l2 -input_format mjpeg -i /dev/video0 -c:v copy output.mkv
+ls -ltr
+du -h output.mkv 
+mpv output.mkv 
+ffmpeg -f v4l2 -input_format yuyv422 -i /dev/video0 -c:v libx264 -vf format=yuv420p output.mp4
+ls -ltr
+rm output.mkv output.mp4 
+ffmpeg -f v4l2 -input_format yuyv422 -i /dev/video0 -c:v libx264 -crf 27 -preset veryfast -c:a null output.mp4
+ls -ltr
+mpv output.mp4 
+ffmpeg -f v4l2 -input_format yuyv422 -i /dev/video0 -c:v libx264 -crf 27 -preset veryfast -c:a null output.mp4
+ls -ltr
+mpv output.mp4 
+ffmpeg -f v4l2 -input_format yuyv422 -i /dev/video0 -c:v libx264 -crf 27 -preset veryfast -c:a null output.mp4
+v4l-ct
+v4l-ctl
+v4l2-c
+v4l2-ctl 
+v4l2-ctl -l
+v4l2-ctl
+v4l2-ctl -L
+v4l-info 
+guvcview 
+sudo guvcview 
+ps ax | grep jack
+ps ax | grep pul
+guvcview --help
+guvcview -a none
+bpython3
+cd ../linux/
+ls
+./location-grab.py 
+vim location-grab.py 
+ls -ltr
+mpv output.mp4 
+ls
+cd WaiveScreen/
+ls
+git pull
+ls
+cd arduino/
+ls
+ls -ltr
+cat basicarduinoread.py 
+cp basicarduinoread.py arduino.py
+vim arduino.py 
+tmux
+ls
+vim arduino.py 
+vim lib.py 
+git status
+git add lib.py 
+git commit lib.py 
+git push
+git stgatus
+git status
+cd ../linux/
+ls 
+git diff
+git commit -am "updating the location lib"
+git push
+chromium &
+mmcli -m 0 --location-get
+mmcli -m 1 --location-get
+cd code/WaiveScreen/
+ls
+cd linux
+ls
+cat manual-set-ipv4.sh 
+sudo mmcli -m 1  --location-enable-gps-raw --location-enable-gps-nmea
+mmcli -m 1 --location-get
+sudo reboot
+d-feet 
+cd WaiveScreen/
+cd linux/
+ls
+cat manual-set-ipv4.sh 
+sudo mmcli -m 0 --location-enable-gps-raw --location-enable-gps-nmea
+iwconfig
+ifconfig -a
+sudo mmcli -m 0 --location-enable-gps-raw --location-enable-gps-nmea
+ps ax | grep Mod
+ls
+cat location-grab.py 
+sudo mmcli -m 1 --location-enable-gps-raw --location-enable-gps-nmea
+ls
+vim location-grab.py 
+./location-grab.py 
+vim location-grab.py 
+date
+sudo xinit&
+cd code/WaiveScreen/
+ls
+cd server/
+ls
+cd ..
+cd arduino/
+ls
+ls -tlr
+cd ../
+find . | grep lib
+cd ..
+find . | grep lib
+cd ../WaiveScreen/
+ls
+cd linux/
+ls
+cd ../server/
+ls -ltr
+cd ../arduino/
+ls -ltr
+cd ../arduino/
+ls
+cd ../linux/
+ls
+./location-grab.py 
+vim location-grab.py 
+ls
+./manual-set-ipv4.sh 
+./location-grab.py 
+vim location-grab.py 
+tmux
+XSET DPMS FORCE STANDBY
+sudo acpitool -s
+sudo acpitool -S
+dmesg
+sudo systemctl suspend
+sudo dmes
+sudo dmesg
+sudo systemctl suspend
+d-feet 
+sudo acpi_listen 
+sudo acpi_listen  --help
+xset dpms force off; sudo acpitool -s
+acpitool --help
+sudo acpitool -s
+vim location-grab.py 
+git status
+git commit -am "dbus iface sniffing"
+git push
+ python
+python3
+pm-suspend-hybrid
+systemctl suspend
+systemctl pm-suspend-hybrid
+python3
+sudo xinit&
+ip addr show
+ping 172.16.10.1
+sudo su
+xset dpms force off; sudo acpitool -s
+sudo acpitool -s
+cd /proc/acpi/
+ls -ltr
+cat wakeup 
+lspci
+cat wakeup 
+sudo reboot
+while [ 0 ]; do date; sleep 1; done
+sudo acpitool -s
+cd /var/log/
+ls -ltr
+man logind.conf
+cat /proc/acpi/ev
+sudo su
+links google.com
+sudo acpitool -s
+cd /etc/acpi/events/
+ls
+sudo su
