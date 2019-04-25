@@ -22,7 +22,8 @@ git
 isc-dhcp-client
 x11-xserver-utils
 chromium
-
+imagemagick
+ffmpeg
 
 PACKAGES install NONFREE
 # you may want these non-free kernel drivers
