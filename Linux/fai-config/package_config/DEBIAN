@@ -17,7 +17,7 @@ unattended-upgrades
 xorg xserver-xorg-video-all xserver-xorg-input-all
 fonts-freefont-ttf
 xterm
-modem-manager
+modemmanager
 git
 isc-dhcp-client
 x11-xserver-utils
