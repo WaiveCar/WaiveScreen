@@ -10,7 +10,7 @@ You'll need to manually copy
   * ModemManager/data/org.freedesktop.ModemManager1.service to /etc/systemd/system/dbus-org.freedesktop.ModemManager1.service
 
 
-Here's the SystemD layoud
+Here's the SystemD layout
 
 
 ```
