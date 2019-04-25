@@ -22,3 +22,12 @@ Custom compile (maybe)
   cdc_wdm
 
 There needs to be a test script to see if the sim card is active.
+
+FAI notes
+
+  I really fucking hate this thing but it appears to be the best 
+  solution for our needs. The documentation is ambiguous atrocious
+  and terrible.  I have nothing good to say about it but it appears
+  to be able to get the job done.  Here's the mirror command I used
+
+  fai-mirror -v -cDEBIAN,DEMO,FAIBASE /srv/debian
