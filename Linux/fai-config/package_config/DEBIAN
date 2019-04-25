@@ -24,6 +24,8 @@ x11-xserver-utils
 chromium
 imagemagick
 ffmpeg
+redshift
+unclutter
 
 PACKAGES install NONFREE
 # you may want these non-free kernel drivers
