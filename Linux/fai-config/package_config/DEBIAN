@@ -26,6 +26,11 @@ imagemagick
 ffmpeg
 redshift
 unclutter
+tmux
+# to do a softupdate during testing
+fai-client
+nfs-common
+
 
 PACKAGES install NONFREE
 # you may want these non-free kernel drivers
