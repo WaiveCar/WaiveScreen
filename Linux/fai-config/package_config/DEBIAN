@@ -20,13 +20,15 @@ xterm
 modemmanager
 isc-dhcp-client
 x11-xserver-utils
-chromium
+chromium chromium-sandbox
 imagemagick
 ffmpeg
 redshift
 unclutter
 tmux
+twm
 sudo
+locate
 vim
 
 python3-pip
