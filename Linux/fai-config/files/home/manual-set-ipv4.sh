@@ -10,6 +10,11 @@ sudo mmcli -m 0 \
 sudo mmcli -m 0 --simple-connect="apn=internet"
 wwan=`ip addr show | grep wwp | head -1 | awk -F ':' ' { print $2 } '`
 
+if [ -z "$wwan" ]; then
+  echo "Modem Not Found!!"
+  exit -1
+fi
+
 # get ipv6
 sudo dhclient $wwan
 
