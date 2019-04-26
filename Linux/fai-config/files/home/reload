@@ -1,2 +1,4 @@
 #!/bin/bash
-sudo /usr/sbin/fai -v -s nfs://172.16.10.1/srv/fai/config softupdate
+sudo /usr/sbin/fai -v -s nfs://172.16.10.1/srv/fai/config softupdate | tee /tmp/output
+logpath=`tail -1 /tmp/output | awk ' { print $NF } '`
+sudo cat $logpath/shell.log

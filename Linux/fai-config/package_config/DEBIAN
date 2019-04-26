@@ -18,7 +18,6 @@ xorg xserver-xorg-video-all xserver-xorg-input-all
 fonts-freefont-ttf
 xterm
 modemmanager
-git
 isc-dhcp-client
 x11-xserver-utils
 chromium
@@ -29,6 +28,9 @@ unclutter
 tmux
 sudo
 vim
+
+python3-pip
+git
 
 # to do a softupdate during testing
 fai-client
