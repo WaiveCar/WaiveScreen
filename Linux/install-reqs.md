@@ -31,3 +31,13 @@ FAI notes
   to be able to get the job done.  Here's the mirror command I used
 
   fai-mirror -v -cDEBIAN,DEMO,FAIBASE /srv/debian
+
+  * Additional scripts have to have 0777 permissions and be owned by root
+
+  * Softupdates are done from the client
+
+  * The client has to have fai and nfs-common on it in order to do a softupdate
+
+  * The PWD the scripts are run from is /var/lib/fai/config/scripts
+
+  * The shell output goes into an obscurely documented file called shell.log
