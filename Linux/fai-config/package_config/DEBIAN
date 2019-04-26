@@ -27,9 +27,14 @@ ffmpeg
 redshift
 unclutter
 tmux
+sudo
+vim
 # to do a softupdate during testing
 fai-client
 nfs-common
+
+# needed for modem stuff
+policykit-1
 
 
 PACKAGES install NONFREE
