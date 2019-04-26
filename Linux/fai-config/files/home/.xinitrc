@@ -7,8 +7,9 @@ xrandr --output HDMI-2 --mode "1920x675_60.00"
 #xrandr --output HDMI-2 --above HDMI-1
 #xrandr --output HDMI-2 --reflect xy
 xhost +
+su -c "DISPLAY=:0 xterm" - demo 
 xset dpms 0 0 0
-unclutter&
+unclutter -idle 1 -root  &
 redshift&
-sudo -u chris notion&
+#sudo -u chris notion&
 sleep 10000000
