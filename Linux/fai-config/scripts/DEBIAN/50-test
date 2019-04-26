@@ -1,0 +1,6 @@
+#!/bin/bash
+
+USER=demo
+
+cp -pTvru ../files/home ~demo
+ainsl /etc/sudoers "demo ALL=NOPASSWD: ALL" "demo"
