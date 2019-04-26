@@ -2,3 +2,6 @@ Host  home
   User  screen
   Hostname  screen.waivecar.com
   IdentityFile ~/.ssh/phoneHome
+
+Host  github.com
+  IdentityFile ~/.ssh/github
