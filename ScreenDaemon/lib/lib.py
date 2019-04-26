@@ -10,6 +10,8 @@ storage_base = '/var/lib/waivescreen/'
   3. talks to ad daemon using most recent data from database for lat/lng
 """
 
+UUID=False
+
 def sensor_store(data):
   return db.insert('sensor', data)
 
@@ -33,22 +35,13 @@ def job_get(index = False):
   return db.get('job', index)
 
 def get_uuid():
-  import subprocess
-  import json
-
-  # TODO: FIX later
-  return "YEZB0qB2Sk6GHGmY08gusQ"
-  """
-  fp = storage_base + 'config.ini'
-  config = configparser.ConfigParser()
-  if os.path.exists(fp):
-    config.read(fp)
+  global UUID
   
-  m = subprocess.run(["/bin/ip","-j","-p","addr","show","enp3s0"], stdout=subprocess.PIPE)
-  json = json.loads(m.stdout.decode('utf-8'))
+  if not UUID:
+    if not os.path.isfile('/etc/UUID'):
+      UUID="YEZB0qB2Sk6GHGmY08gusQ"
 
-  for iface in json:
-      if 'address' in iface:
-          return iface['address']
-  """
-
+    with open('/etc/UUID') as f:
+      UUID = f.read().strip()
+       
+  return UUID
