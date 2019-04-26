@@ -20,6 +20,9 @@ try {
     $payload = json_decode(file_get_contents('php://input'), true);
     jemit(sow($payload));
   }
+  else if($func == 'ping') {
+    jemit(ping($_REQUEST));
+  }
   else if($func == 'setup') {
     jemit(setup($_POST));
   }

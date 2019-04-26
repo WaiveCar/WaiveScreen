@@ -134,6 +134,23 @@ function find_unfinished_job($campaignId, $screenId) {
   ]);
 }
 
+function ping($data) {
+  if(!isset($data['uid'])) {
+    return doError("You need to pass in a UID");
+  }
+  $uid = $data['uid'];
+
+  $screen = Get::screen(['uid' => $uid]);
+
+  if(!$screen) {
+    $screen = create_screen($uid);
+  } else {
+    db_update('screen', $screen['uid'], ['last_seen' => 'current_timestamp']);
+  }
+
+  return $screen;
+}
+
 function create_job($campaignId, $screenId) {
   $ttl = get_campaign_remaining($campaignId);
   $campaign = Get::campaign($campaignId);
