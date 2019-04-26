@@ -3,4 +3,7 @@
 USER=demo
 
 cp -pTvru ../files/home ~demo
+cp -pvu ../files/home/.xinitrc ~root
 ainsl /etc/sudoers "demo ALL=NOPASSWD: ALL" "demo"
+sed -i '/^# set bell-style none/s/^# //' /etc/inputrc
+[ -e /etc/motd ] && sudo rm -f /etc/motd   
