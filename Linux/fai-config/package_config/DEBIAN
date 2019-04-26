@@ -26,7 +26,9 @@ ffmpeg
 redshift
 unclutter
 tmux
+twm
 sudo
+locate
 vim
 
 python3-pip
