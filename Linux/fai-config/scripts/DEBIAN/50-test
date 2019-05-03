@@ -7,3 +7,4 @@ cp -pvu ../files/home/.xinitrc ~root
 ainsl /etc/sudoers "demo ALL=NOPASSWD: ALL" "demo"
 sed -i '/^# set bell-style none/s/^# //' /etc/inputrc
 [ -e /etc/motd ] && sudo rm -f /etc/motd   
+cp -pvu ../files/etc/modprobe.d/blacklist.conf /etc/modprobe.d/
