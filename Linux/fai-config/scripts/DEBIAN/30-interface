@@ -92,12 +92,12 @@ case "$FAI_ACTION" in
         iface_stanza lo loopback > $target/etc/network/interfaces.d/lo
 
         if [ -n "$NIC1" -a ! -f $target/etc/NetworkManager/NetworkManager.conf ]; then
-            iface_stanza $NIC1 $METHOD > $target/etc/network/interfaces.d/$NIC1
+            # iface_stanza $NIC1 $METHOD > $target/etc/network/interfaces.d/$NIC1
         fi
     else
         (
             iface_stanza lo loopback
-            iface_stanza $NIC1 $METHOD
+            # iface_stanza $NIC1 $METHOD
         ) > $target/etc/network/interfaces
     fi
 
@@ -114,5 +114,8 @@ esac
 # different subnet than during the installation
 fcopy -iM /etc/resolv.conf
 fcopy -iM /etc/network/interfaces /etc/networks
+
+# we don't want to fucking block on not having a fucking network.
+rm -f /etc/network/interfaces.d/enp*
 
 exit $error
