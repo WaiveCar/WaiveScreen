@@ -1,5 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 
 export HOME=/root
-XINITRC=/root/.xinitrc /usr/bin/xinit
-/home/demo/manual-set-ipv4.sh
+export PATH=$PATH:/bin:/usr/bin:/sbin:/usr/sbin
+XINITRC=/root/.xinitrc /usr/bin/xinit &
