@@ -20,7 +20,7 @@
 -- modifier to some of the F-key bindings.
 
 defwinprop{
-    class = "Google-chrome",
+    class = "Chromium",
     fullscreen = true,
 }
 defbindings("WScreen", {
