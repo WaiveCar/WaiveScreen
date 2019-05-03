@@ -18,6 +18,7 @@ fi
 
 # disable os-prober because of #788062
 ainsl /etc/default/grub 'GRUB_DISABLE_OS_PROBER=true'
+ainsl /etc/default/grub "GRUB_DEFAULT_TIMEOUT=0" GRUB_DEFAULT_TIMEOUT
 
 # skip the rest, if not an initial installation
 if [ $FAI_ACTION != "install" ]; then
