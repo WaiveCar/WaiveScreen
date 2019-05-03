@@ -8,7 +8,7 @@ xrandr --output HDMI-2 --mode "1920x675_60.00"
 #xrandr --output HDMI-2 --reflect xy
 
 xhost +
-su -c "DISPLAY=:0 xterm" - demo 
+su -c "DISPLAY=:0 notion" - demo 
 su -c "DISPLAY=:0 chromium --app=file:///home/demo/WaiveScreen/ScreenDisplay/display.html"
 xset dpms 0 0 0
 
