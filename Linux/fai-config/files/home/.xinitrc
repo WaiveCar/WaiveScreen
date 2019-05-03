@@ -11,6 +11,9 @@ xhost +
 xset dpms 0 0 0
 unclutter -idle 1 -root &
 redshift & 
+# I REALLY FUCKING WISH THIS WOULD WORK IN THE RC.LOCAL BUT
+# IT DOES NOT ... AUGHHHHGHGHGH
+/home/demo/manual-set-ipv4.sh > /tmp/output &
 su -c "/home/demo/start-x-stuff.sh $DISPLAY" - demo 
 
 sleep 10000000
