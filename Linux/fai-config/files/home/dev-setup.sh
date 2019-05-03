@@ -1,2 +1,2 @@
 #!/bin/bash
-dhclient enp3s0
+/usr/sbin/dhclient enp3s0 &
