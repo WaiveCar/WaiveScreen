@@ -1,5 +1,5 @@
 #!/bin/bash
 sudo /usr/sbin/fai -v -s nfs://172.16.10.1/srv/fai/config softupdate | tee /tmp/installout
-logpath=`tail -100 /tmp/installout | grep 'found in log files. See' | awk ' { print $NF } '`
+logpath=`tail -100 /tmp/installout | grep 'Log files are saved' | awk ' { print $NF } '`
 sudo cat $logpath/shell.log
 
