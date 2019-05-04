@@ -20,10 +20,10 @@ fi
 ainsl /etc/default/grub 'GRUB_DISABLE_OS_PROBER=true'
 
 # No menu
-ainsl /etc/default/grub "GRUB_TIMEOUT=0" GRUB_TIMEOUT
+sed -i s'/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /etc/default/grub
 
 # Low resolution console saves a fraction of a second.
-ainsl /etc/default/grub "GRUB_TERMINAL=console" 
+ainsl /etc/default/grub "^GRUB_TERMINAL=console"
 
 # skip the rest, if not an initial installation
 if [ $FAI_ACTION != "install" ]; then
