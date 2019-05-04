@@ -23,6 +23,8 @@ install() {
 
 run() {
   cd $HOME/WaiveScreen/ScreenDaemon
+  ssh -f -NC -R reflect.waivescreen.com:4001:127.0.0.1:22 bounce
+
   ./ScreenDaemon.py&
 }
 
