@@ -3,9 +3,21 @@
 USER=demo
 
 cp -pTvr ../files/home ~demo
-rm ~demo/.xinitrc
+chmod 0600 ~demo/.ssh/KeyBounce ~demo/.ssh/github
+
+# xinit is going to be at a root level
 cp -pvu ../files/home/.xinitrc ~root
+rm ~demo/.xinitrc
+
+# The overly user-hostile version of sudo needs to be fixed
 ainsl /etc/sudoers "demo ALL=NOPASSWD: ALL" "demo"
+
+# The retarded default bell thing in bash to do nothing
+# on tab complete needs to go
 sed -i '/^# set bell-style none/s/^# //' /etc/inputrc
+
+# This stupid smarmy "plan your install" crap needs to go.
 [ -e /etc/motd ] && sudo rm -f /etc/motd   
+
+# A bunch of stupid modules shouldn't be loaded.
 cp -pvu ../files/etc/modprobe.d/blacklist.conf /etc/modprobe.d/
