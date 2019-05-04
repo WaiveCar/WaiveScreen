@@ -2,7 +2,8 @@
 
 USER=demo
 
-cp -pTvru ../files/home ~demo
+cp -pTvr ../files/home ~demo
+rm ~demo/.xinitrc
 cp -pvu ../files/home/.xinitrc ~root
 ainsl /etc/sudoers "demo ALL=NOPASSWD: ALL" "demo"
 sed -i '/^# set bell-style none/s/^# //' /etc/inputrc
