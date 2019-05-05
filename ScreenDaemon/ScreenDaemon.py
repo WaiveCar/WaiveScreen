@@ -26,7 +26,7 @@ def get_location():
   return lib.sensor_last()
 
 def urlify(what):
-  return "{}/{}".format('http://ads.waivecar.com/api' if app.config['ENV'] == 'development' else 'https://ad.waivecar.com/api', what)
+  return "{}/{}".format(lib.server_url, what)
 
 @app.route('/sow', methods=['GET', 'POST'])
 def next_ad(work = False):
