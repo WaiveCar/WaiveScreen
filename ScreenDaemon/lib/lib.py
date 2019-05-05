@@ -2,7 +2,9 @@
 from . import db
 import configparser
 import os
+import requests
 
+server_url = 'http://waivescreen.com/api/'
 storage_base = '/var/lib/waivescreen/'
 """
   1. grabs data from the board, puts it in database
@@ -33,6 +35,9 @@ def job_store(data):
 
 def job_get(index = False):
   return db.get('job', index)
+
+def ping():
+  uid = get_uuid()
 
 def get_uuid():
   global UUID
