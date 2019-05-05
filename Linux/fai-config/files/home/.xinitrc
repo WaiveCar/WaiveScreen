@@ -13,6 +13,7 @@ xhost +
 # Prevent the screen from turning off
 xset dpms 0 0 0
 xset -dpms
+xset s off
 
 # Hide the mouse cursor
 unclutter -idle 1 -root &
