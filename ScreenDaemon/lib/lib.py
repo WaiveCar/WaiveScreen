@@ -17,7 +17,7 @@ def sensor_store(data):
 
 def sensor_last(index = False):
   res = db.get('sensor', index)
-  # If we don't have a real sensor value then we just use 2102 pico
+  # If we don't have a real sensor value then we just use 2102 pico in samo
   if not res:
     return {'lat':34.019860, 'lng':-118.468477}
 
@@ -39,7 +39,7 @@ def get_uuid():
   
   if not UUID:
     if not os.path.isfile('/etc/UUID'):
-      UUID="YEZB0qB2Sk6GHGmY08gusQ"
+      UUID="NONAME"
 
     with open('/etc/UUID') as f:
       UUID = f.read().strip()
