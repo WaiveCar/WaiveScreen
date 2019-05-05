@@ -21,6 +21,10 @@ install() {
   pip3 install -r requirements.txt 
 }
 
+ping() {
+  curl "http://www.waivescreen.com/api/ping?uid=`cat /etc/UUID`"
+}
+
 run() {
   cd $HOME/WaiveScreen/ScreenDaemon
   ssh -f -NC -R reflect.waivescreen.com:4001:127.0.0.1:22 bounce
@@ -32,4 +36,5 @@ run() {
 # install
 
 uuid
+ping
 run
