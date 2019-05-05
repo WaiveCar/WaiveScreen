@@ -113,6 +113,10 @@ function create_screen($uid) {
   global $PORT_OFFSET;
   // we need to get the next available port number
   $nextport = intval((getDb())->querySingle('select max(port) from screen')) + 1;
+  if($nextport < $PORT_OFFSET) {
+    // gotta start from somewhere.
+    $nextport = $PORT_OFFSET;
+  }
 
   $screen_id = db_insert(
     'screen', [
