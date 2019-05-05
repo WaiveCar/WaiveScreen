@@ -4,8 +4,10 @@ import configparser
 import os
 import requests
 
-server_url = 'http://waivescreen.com/api/'
+# Eventually we can change this but right now nothing is live
+server_url = 'http://waivescreen.com/api/' if app.config['ENV'] == 'development' else 'http://waivescreen.com/api/'
 storage_base = '/var/lib/waivescreen/'
+
 """
   1. grabs data from the board, puts it in database
   2. serves things to screen display, getting it from the database
