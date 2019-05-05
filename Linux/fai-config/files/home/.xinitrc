@@ -14,6 +14,7 @@ xhost +
 xset dpms 0 0 0
 xset -dpms
 xset s off
+xset dpms force on
 
 # Hide the mouse cursor
 unclutter -idle 1 -root &
