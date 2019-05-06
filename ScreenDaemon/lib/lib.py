@@ -5,7 +5,11 @@ import os
 import requests
 
 # Eventually we can change this but right now nothing is live
-server_url = 'http://waivescreen.com/api/' if app.config['ENV'] == 'development' else 'http://waivescreen.com/api/'
+server_url = 'http://waivescreen.com/api/'
+# We aren't always calling from something with flask
+if 'app' in dir():
+  server_url = 'http://waivescreen.com/api/' if app.config['ENV'] == 'development' else 'http://waivescreen.com/api/'
+
 storage_base = '/var/lib/waivescreen/'
 
 """
@@ -40,6 +44,7 @@ def job_get(index = False):
 
 def ping():
   uid = get_uuid()
+  print(uid)
 
 def get_uuid():
   global UUID
@@ -47,8 +52,8 @@ def get_uuid():
   if not UUID:
     if not os.path.isfile('/etc/UUID'):
       UUID="NONAME"
-
-    with open('/etc/UUID') as f:
-      UUID = f.read().strip()
+    else:
+      with open('/etc/UUID') as f:
+        UUID = f.read().strip()
        
   return UUID
