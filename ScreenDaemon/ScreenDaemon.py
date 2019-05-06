@@ -25,9 +25,6 @@ def failure(what):
 def get_location():
   return lib.sensor_last()
 
-def urlify(what):
-  return "{}/{}".format(lib.server_url, what)
-
 @app.route('/sow', methods=['GET', 'POST'])
 def next_ad(work = False):
   """
@@ -52,7 +49,7 @@ def next_ad(work = False):
     'jobs': jobList
   }
 
-  with requests.post(urlify('sow'), verify=False, json=payload) as response:
+  with requests.post(lib.urlify('sow'), verify=False, json=payload) as response:
     data_raw = response.text
 
     try:

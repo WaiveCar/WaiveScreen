@@ -4,11 +4,15 @@ import configparser
 import os
 import requests
 
+VERSION = os.popen("/usr/bin/git describe").read().strip()
+UUID = False
+
 # Eventually we can change this but right now nothing is live
-server_url = 'http://waivescreen.com/api/'
+SERVER_URL = 'http://waivescreen.com/api/'
+
 # We aren't always calling from something with flask
 if 'app' in dir():
-  server_url = 'http://waivescreen.com/api/' if app.config['ENV'] == 'development' else 'http://waivescreen.com/api/'
+  SERVER_URL = 'http://waivescreen.com/api/' if app.config['ENV'] == 'development' else 'http://waivescreen.com/api/'
 
 storage_base = '/var/lib/waivescreen/'
 
@@ -18,7 +22,9 @@ storage_base = '/var/lib/waivescreen/'
   3. talks to ad daemon using most recent data from database for lat/lng
 """
 
-UUID=False
+
+def urlify(what):
+  return "{}/{}".format(SERVER_URL, what)
 
 def sensor_store(data):
   return db.insert('sensor', data)
@@ -43,8 +49,13 @@ def job_get(index = False):
   return db.get('job', index)
 
 def ping():
-  uid = get_uuid()
-  print(uid)
+  payload = {
+    'uid': get_uuid(),
+    'version': VERSION,
+  }
+  with requests.post(urlify('ping'), verify=False, json=payload) as response:
+    data_raw = response.text
+    print(data_raw)
 
 def get_uuid():
   global UUID
