@@ -37,6 +37,7 @@ $SCHEMA = [
     'version'     => 'text',
     'pings'       => 'integer default 0',
     'port'        => 'integer', 
+    'active'      => 'boolean default true',
     'first_seen'  => 'datetime', 
     'last_seen'   => 'datetime'
   ],
