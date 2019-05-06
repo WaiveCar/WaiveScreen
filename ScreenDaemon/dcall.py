@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import lib
+import lib.lib as lib
 import sys
 
-eval("lib." + sys.argv[1])()
+eval("lib." + sys.argv[1] + "()")
