@@ -109,7 +109,7 @@ function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
   return $dist * 60 * 1397.60312636;
 }
 
-function create_screen($uid) {
+function create_screen($uid, $data = []) {
   global $PORT_OFFSET;
   // we need to get the next available port number
   $nextport = intval((getDb())->querySingle('select max(port) from screen')) + 1;
@@ -118,14 +118,14 @@ function create_screen($uid) {
     $nextport = $PORT_OFFSET;
   }
 
-  $screen_id = db_insert(
-    'screen', [
-      'uid' => db_string($uid),
-      'port' => $nextport,
-      'first_seen' => 'current_timestamp',
-      'last_seen' => 'current_timestamp',
-    ]
-  );
+  $data = array_merge($data, [
+    'uid' => db_string($uid),
+    'port' => $nextport,
+    'first_seen' => 'current_timestamp',
+    'last_seen' => 'current_timestamp'
+  ]);
+
+  $screen_id = db_insert($data);
 
   return Get::screen($screen_id);
 }
@@ -142,14 +142,20 @@ function ping($data) {
   if(!isset($data['uid'])) {
     return doError("You need to pass in a UID");
   }
+
   $uid = $data['uid'];
+  $version = aget($data, 'version');
 
   $screen = Get::screen(['uid' => $uid]);
 
   if(!$screen) {
-    $screen = create_screen($uid);
+    $screen = create_screen($uid, ['version' => $version]);
   } else {
-    db_update('screen', $screen['uid'], ['last_seen' => 'current_timestamp']);
+    db_update('screen', $screen['uid'], [
+      'pings'     => intval($screen['pings']) + 1,
+      'version'   => $version,
+      'last_seen' => 'current_timestamp'
+    ]);
   }
 
   return $screen;

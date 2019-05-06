@@ -35,6 +35,7 @@ $SCHEMA = [
     'lat'         => 'float default null',
     'lng'         => 'float default null',
     'version'     => 'text',
+    'pings'       => 'integer default 0',
     'port'        => 'integer', 
     'first_seen'  => 'datetime', 
     'last_seen'   => 'datetime'
