@@ -205,12 +205,17 @@ function db_update($table, $id, $kv) {
   $db = db_connect();
 
   foreach($kv as $k => $v) {
-    $fields[] = "$k=".$db->escapeString($v);
+    $fields[] = "$k=$v";
   } 
 
   $fields = implode(',', $fields);
+  if(!is_integer($id)) {
+    $id = db_string($id);
+  }
 
-  return $db->exec("update $table set $fields where id = $id");
+  $qstr = "update $table set $fields where id = $id";
+  # error_log($qstr);
+  return $db->exec($qstr);
 }
 
 function db_clean($kv) {
@@ -268,6 +273,7 @@ function db_insert($table, $kv) {
   $fields = implode(',', $fields);
 
   $qstr = "insert into $table($fields) values($values)";
+  # error_log($qstr);
 
   try {
     if($db->exec($qstr)) {

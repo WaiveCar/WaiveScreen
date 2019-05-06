@@ -112,7 +112,7 @@ function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
 function create_screen($uid, $data = []) {
   global $PORT_OFFSET;
   // we need to get the next available port number
-  $nextport = intval((getDb())->querySingle('select max(port) from screen')) + 1;
+  $nextport = intval((db_connect())->querySingle('select max(port) from screen')) + 1;
   if($nextport < $PORT_OFFSET) {
     // gotta start from somewhere.
     $nextport = $PORT_OFFSET;
@@ -125,7 +125,7 @@ function create_screen($uid, $data = []) {
     'last_seen' => 'current_timestamp'
   ]);
 
-  $screen_id = db_insert($data);
+  $screen_id = db_insert('screen', $data);
 
   return Get::screen($screen_id);
 }
@@ -144,14 +144,14 @@ function ping($data) {
   }
 
   $uid = $data['uid'];
-  $version = aget($data, 'version');
+  $version = db_string(aget($data, 'version'));
 
   $screen = Get::screen(['uid' => $uid]);
 
   if(!$screen) {
     $screen = create_screen($uid, ['version' => $version]);
   } else {
-    db_update('screen', $screen['uid'], [
+    db_update('screen', $screen['id'], [
       'pings'     => intval($screen['pings']) + 1,
       'version'   => $version,
       'last_seen' => 'current_timestamp'
@@ -195,7 +195,7 @@ function update_job($jobId, $completed_seconds) {
 // ----
 
 function screens() {
-  return db_all('select * from screens');
+  return db_all('select * from screen');
 }
 
 function sow($payload) {
@@ -213,8 +213,8 @@ function sow($payload) {
 
   $data = ['last_seen' => 'current_timestamp'];
   if(isset($payload['lat'])) {
-    $data['lat'] = $payload['lat'];
-    $data['lng'] = $payload['lng'];
+    $data['lat'] = floatval($payload['lat']);
+    $data['lng'] = floatval($payload['lng']);
   }
 
   db_update('screen', db_string($uid), $data);
