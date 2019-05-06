@@ -4,7 +4,8 @@ include('lib.php');
 
 $func = $_REQUEST['func'];
 $verb = $_SERVER['REQUEST_METHOD'];
-$json_payload = @json_decode(file_get_contents('php://input'), true);
+$input_raw = file_get_contents('php://input');
+$json_payload = @json_decode($input_raw, true);
 
 $all = $_REQUEST;
 if($json_payload) {
