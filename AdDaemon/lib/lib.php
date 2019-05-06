@@ -195,7 +195,7 @@ function update_job($jobId, $completed_seconds) {
 // ----
 
 function screens() {
-  return db_all('select * from screens');
+  return db_all('select * from screen');
 }
 
 function sow($payload) {
