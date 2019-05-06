@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 
-include_once('lib.php');
+include_once('db.php');
 
 foreach($SCHEMA as $table_name => $table_schema) {
   $existing_column_name_list = get_column_list($table_name);

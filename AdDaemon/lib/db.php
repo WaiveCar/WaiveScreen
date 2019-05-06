@@ -64,7 +64,7 @@ $SCHEMA = [
   // If they are empty', then it means that it's 24 hours a day
   //
   'campaign' => [
-    'id' =>       => 'integer primary key autoincrement',
+    'id'          => 'integer primary key autoincrement',
     'order_id'    => 'integer',
     'asset'       => 'text not null',
     'duration_seconds' => 'integer',
@@ -93,7 +93,7 @@ $SCHEMA = [
 
 ];
 $_db = false;
-function getDb() {
+function db_connect() {
   global $_db;
   if(!$_db) {
     $dbPath = "${_SERVER['DOCUMENT_ROOT']}/db/main.db";
@@ -111,9 +111,17 @@ function db_string($what) {
 function db_date($what) {
  return "datetime($what,'unixepoch')";
 }
+function get_column_list($table_name) {
+  $db = db_connect();
+  $res = $db->query("pragma table_info( $table_name )");
+
+  return array_map(function($row) { 
+    return $row['name'];
+  }, db_all($res));
+}
 
 function setup() {
-  $db = getDb();
+  $db = db_connect();
   global $SCHEMA;
   $res = [];
   foreach(array_values($SCHEMA) as $table) {
@@ -139,7 +147,7 @@ function truncate() {
 }
 
 function get_campaign_remaining($id) {
-  $res = (getDb())->querySingle("
+  $res = (db_connect())->querySingle("
     select 
       duration_seconds - sum(campaign.completed_seconds) as remaining
       from campaign left join job on campaign_id = campaign.id
@@ -147,13 +155,13 @@ function get_campaign_remaining($id) {
     ");
 
   if($res === null) {
-    return (getDb())->querySingle("select duration_seconds from campaign where id=$id");
+    return (db_connect())->querySingle("select duration_seconds from campaign where id=$id");
   }
   return $res;
 }
 
 function get_campaign_completion($id) {
-  return (getDb())->querySingle("
+  return (db_connect())->querySingle("
     select 
       sum(completion_seconds) / duration_seconds        as shown, 
       end_time - date('now') / (end_time - start_time)  as lapsed
@@ -184,7 +192,7 @@ class Get {
     }
     $kvstr = implode(' and ', $kvargs);
 
-    return (getDb())->querySingle("select * from $name where $kvstr", true);
+    return (db_connect())->querySingle("select * from $name where $kvstr", true);
   }
 };
 
@@ -192,7 +200,7 @@ class Get {
 function db_update($table, $id, $kv) {
   $fields = [];
 
-  $db = getDb();
+  $db = db_connect();
 
   foreach($kv as $k => $v) {
     $fields[] = "$k=".$db->escapeString($v);
@@ -205,7 +213,7 @@ function db_update($table, $id, $kv) {
 
 function db_clean($kv) {
   $res = [];
-  $db = getDb();
+  $db = db_connect();
   foreach($kv as $k => $v) {
     $res[$db->escapeString($k)] = $db->escapeString($v);
   } 
@@ -214,7 +222,7 @@ function db_clean($kv) {
 
 function db_all($qstr) {
   $rowList = [];
-  $res = (getDb())->query($qstr);
+  $res = (db_connect())->query($qstr);
   while( $row = $res->fetchArray(SQLITE3_ASSOC) ) {
     $rowList[] = $row;
   } 
@@ -225,7 +233,7 @@ function db_insert($table, $kv) {
   $fields = [];
   $values = [];
 
-  $db = getDb();
+  $db = db_connect();
 
   foreach($kv as $k => $v) {
     $fields[] = $k;
