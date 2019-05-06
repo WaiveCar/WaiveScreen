@@ -96,7 +96,7 @@ $_db = false;
 function db_connect() {
   global $_db;
   if(!$_db) {
-    $dbPath = "${_SERVER['DOCUMENT_ROOT']}/db/main.db";
+    $dbPath = __DIR__ . "/../../db/main.db";
     if(!file_exists($dbPath)) {
       touch($dbPath);
     }
@@ -220,9 +220,27 @@ function db_clean($kv) {
   return $res;
 }
 
+function sql_kv($hash, $operator = '=', $quotes = "'", $intList = []) {
+  $ret = [];
+  foreach($hash as $key => $value) {
+    if ( is_string($value) ) {
+      if(in_array($key, $intList)) {
+        $ret[] = "$key $operator $value";
+      } else {
+        $ret[] = "$key $operator $quotes$value$quotes";
+      }
+    }
+  } 
+  return $ret;
+}
+
 function db_all($qstr) {
   $rowList = [];
-  $res = (db_connect())->query($qstr);
+  if(!is_string($qstr)) {
+    $res = $qstr;
+  } else {
+    $res = (db_connect())->query($qstr);
+  }
   while( $row = $res->fetchArray(SQLITE3_ASSOC) ) {
     $rowList[] = $row;
   } 
