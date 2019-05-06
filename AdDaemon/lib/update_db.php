@@ -1,9 +1,9 @@
 #!/usr/bin/php
 <?php
 
-include_once(__DIR__ . '/../common.php');
+include_once('lib.php');
 
-foreach($schema as $table_name => $table_schema) {
+foreach($SCHEMA as $table_name => $table_schema) {
   $existing_column_name_list = get_column_list($table_name);
 
   // This means we need to create the table
