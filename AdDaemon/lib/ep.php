@@ -23,6 +23,9 @@ try {
       jemit(campaign_activate($_POST['campaignId'], $_POST));
     }
   }
+  else if($func == 'screens') {
+    jemit(screens($all));
+  } 
   else if($func == 'sow') {
     jemit(sow($all));
   }

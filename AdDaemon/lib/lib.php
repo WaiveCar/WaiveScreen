@@ -194,6 +194,10 @@ function update_job($jobId, $completed_seconds) {
 //
 // ----
 
+function screens() {
+  return db_all('select * from screens');
+}
+
 function sow($payload) {
   if(isset($payload['uid'])) {
     $uid = $payload['uid'];
