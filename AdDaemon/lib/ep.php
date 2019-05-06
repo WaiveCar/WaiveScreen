@@ -37,6 +37,11 @@ try {
   }
   else if($func == 'reset') {
     jemit(truncate());
+  } else {
+    jemit([
+      'res' => false,
+      'data' => "$func not found"
+    ]);
   }
 } catch(Exception $ex) {
   jemit([
