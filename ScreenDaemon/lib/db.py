@@ -11,6 +11,7 @@ from threading import Lock
 
 g_db_count = 0
 g_lock = Lock()
+g_params = {}
 
 # This is a way to get the column names after grabbing everything
 # I guess it's also good practice
@@ -310,7 +311,44 @@ def incr(key, value=1):
       pass
 
 
-def set(key, value):
+def kv_get(key, expiry=0, use_cache=True, default=None):
+  # Retrieves a value from the database, tentative on the expiry. 
+  # If the cache is set to true then it retrieves it from in-memory if available, otherwise
+  # it goes out to the db. Other than directly hitting up the g_params parameter which is 
+  # used internally, there is no way to invalidate the cache.
+  global g_params
+
+  # only use the cache if the expiry is not set.
+  if use_cache and key in g_params and expiry == 0:
+    if default and type(default) is int: 
+      g_params[key] = int(g_params[key])
+
+    return g_params[key]
+
+  if expiry > 0:
+    # If we let things expire, we first sweep for it
+    res = run("select value, created_at from kv where key = '%s' and created_at >= datetime(current_timestamp, '-%d second')" % (key, expiry)).fetchone()
+  else:
+    res = run('select value, created_at from kv where key = ?', (key, )).fetchone()
+
+  if res:
+    if default and type(default) is int: 
+      res = list(res)
+      res[0] = int(res[0])
+
+    g_params[key] = res[0]
+    return res[0]
+
+  else:
+    # It's ok if this doesn't exist. SQLite likes to throw an error here
+    try:
+      run("delete from kv where key = '%s' and created_at < datetime(current_timestamp, '-%d second')" % (key, expiry))
+    except Exception as inst:
+      pass
+
+  return default
+
+def kv_set(key, value):
   # Sets (or replaces) a given key to a specific value.  
   # Returns the value that was sent.
   global g_params
@@ -347,43 +385,6 @@ def get(table, id = False):
 
   if res:
     return res.fetchone()
-
-def get_(key, expiry=0, use_cache=True, default=None):
-  # Retrieves a value from the database, tentative on the expiry. 
-  # If the cache is set to true then it retrieves it from in-memory if available, otherwise
-  # it goes out to the db. Other than directly hitting up the g_params parameter which is 
-  # used internally, there is no way to invalidate the cache.
-  global g_params
-
-  # only use the cache if the expiry is not set.
-  if use_cache and key in g_params and expiry == 0:
-    if default and type(default) is int: 
-      g_params[key] = int(g_params[key])
-
-    return g_params[key]
-
-  if expiry > 0:
-    # If we let things expire, we first sweep for it
-    res = run("select value, created_at from kv where key = '%s' and created_at >= datetime(current_timestamp, '-%d second')" % (key, expiry)).fetchone()
-  else:
-    res = run('select value, created_at from kv where key = ?', (key, )).fetchone()
-
-  if res:
-    if default and type(default) is int: 
-      res = list(res)
-      res[0] = int(res[0])
-
-    g_params[key] = res[0]
-    return res[0]
-
-  else:
-    # It's ok if this doesn't exist. SQLite likes to throw an error here
-    try:
-      run("delete from kv where key = '%s' and created_at < datetime(current_timestamp, '-%d second')" % (key, expiry))
-    except Exception as inst:
-      pass
-
-  return default
 
 
 def run(query, args=None, with_last=False, db=None):
