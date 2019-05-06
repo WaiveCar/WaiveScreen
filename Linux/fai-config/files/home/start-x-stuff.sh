@@ -1,4 +1,10 @@
-#!/bin/sh
+#!/bin/bash
+
+{
+  cd $HOME/WaiveScreeen/ScreenDaemon/
+  ./dcall emit_startup | sh
+  ./run-daemon.sh &
+}
 
 count=`pgrep start-x-stuff | wc -l`
 if [ "$count" -gt "2" ]; then
