@@ -53,6 +53,7 @@ def ping():
     'uid': get_uuid(),
     'version': VERSION,
   }
+
   with requests.post(urlify('ping'), verify=False, json=payload) as response:
     data_raw = response.text
     print(data_raw)
