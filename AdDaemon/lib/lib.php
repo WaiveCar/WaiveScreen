@@ -221,9 +221,10 @@ function sow($payload) {
 
 	$jobList = aget($payload, 'jobs');
   if($jobList) {
-      error_log(json_encode($payload));
     foreach($jobList as $job) {
-      update_job($job['id'], $job['completed_seconds']);
+      if(!empty($job['id'])) {
+        update_job($job['id'], $job['completed_seconds']);
+      }
     }
   }
 
@@ -317,9 +318,7 @@ function campaigns($clause = '') {
   return db_all("select * from campaign $clause");
 }
 function active_campaigns() {
-  return campaigns('where active=true and 
-    end_time > current_timestamp and 
-    start_time < current_timestamp');
+  return campaigns('where active=1 and end_time > current_timestamp and start_time < current_timestamp');
 }
 function campaign_new($opts) {
   //

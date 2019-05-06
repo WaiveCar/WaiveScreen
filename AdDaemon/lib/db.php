@@ -108,11 +108,32 @@ function db_connect() {
 }
 
 function db_string($what) {
-  return "'$what'";
+  if (strpos($what, "'") === false) {
+    return "'$what'";
+  }
+  return $what;
 }
 function db_date($what) {
  return "datetime($what,'unixepoch')";
 }
+function _query($qstr, $func='exec') {
+  $db = db_connect();
+  try {
+    if($func === 'querySingle') {
+      $res = $db->$func($qstr, true);
+    } else {
+      $res = $db->$func($qstr);
+    }
+    if($res) {
+      return $res;
+    } else {
+      error_log("Failed Query:" . $qstr);
+    }
+  } catch(Exception $ex) { 
+    error_log($qstr);
+  }
+}
+
 function get_column_list($table_name) {
   $db = db_connect();
   $res = $db->query("pragma table_info( $table_name )");
@@ -194,7 +215,8 @@ class Get {
     }
     $kvstr = implode(' and ', $kvargs);
 
-    return (db_connect())->querySingle("select * from $name where $kvstr", true);
+    $qstr = "select * from $name where $kvstr";
+    return _query($qstr, 'querySingle');
   }
 };
 
@@ -202,20 +224,19 @@ class Get {
 function db_update($table, $id, $kv) {
   $fields = [];
 
-  $db = db_connect();
-
   foreach($kv as $k => $v) {
     $fields[] = "$k=$v";
   } 
 
   $fields = implode(',', $fields);
+  /*
   if(!is_integer($id)) {
     $id = db_string($id);
   }
+   */
 
   $qstr = "update $table set $fields where id = $id";
-  # error_log($qstr);
-  return $db->exec($qstr);
+  return _query($qstr);
 }
 
 function db_clean($kv) {
@@ -246,11 +267,16 @@ function db_all($qstr) {
   if(!is_string($qstr)) {
     $res = $qstr;
   } else {
-    $res = (db_connect())->query($qstr);
+    $res = _query($qstr);
+    if(is_bool($res)) {
+      return [];
+    }
   }
-  while( $row = $res->fetchArray(SQLITE3_ASSOC) ) {
-    $rowList[] = $row;
-  } 
+  if($res) {
+    while( $row = $res->fetchArray(SQLITE3_ASSOC) ) {
+      $rowList[] = $row;
+    } 
+  }
   return $rowList;
 }
 
@@ -273,15 +299,9 @@ function db_insert($table, $kv) {
   $fields = implode(',', $fields);
 
   $qstr = "insert into $table($fields) values($values)";
-  # error_log($qstr);
 
-  try {
-    if($db->exec($qstr)) {
-      return $db->lastInsertRowID();
-    } 
-  } catch(Exception $ex) { 
-    error_log($qstr);
-    error_log($ex);
+  if(_query($qstr)) {
+    return $db->lastInsertRowID();
   }
   return $qstr;
 }
