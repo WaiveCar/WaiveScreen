@@ -4,6 +4,12 @@ include('lib.php');
 
 $func = $_REQUEST['func'];
 $verb = $_SERVER['REQUEST_METHOD'];
+$json_payload = @json_decode(file_get_contents('php://input'), true);
+
+$all = $_REQUEST;
+if($json_payload) {
+  $all = array_merge($all, $json_payload);
+} 
 
 try {
   if($func == 'campaign') {
@@ -17,11 +23,10 @@ try {
     }
   }
   else if($func == 'sow') {
-    $payload = json_decode(file_get_contents('php://input'), true);
-    jemit(sow($payload));
+    jemit(sow($all));
   }
   else if($func == 'ping') {
-    jemit(ping($_REQUEST));
+    jemit(ping($all));
   }
   else if($func == 'setup') {
     jemit(setup($_POST));
