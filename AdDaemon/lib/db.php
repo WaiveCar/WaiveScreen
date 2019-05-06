@@ -2,51 +2,51 @@
 date_default_timezone_set('UTC');
 
 $SCHEMA = [
-  'user' => 'create table if not exists user(
-    id integer primary key autoincrement, 
-    email text not null,
-    phone text, 
-    stripe_id text not null,
-    created_at datetime default current_timestamp, 
-    last_seen datetime default current_timestamp
-  )',
+  'user' => [
+    'id'          => 'integer primary key autoincrement', 
+    'email'       => 'text not null',
+    'phone'       => 'text', 
+    'stripe_id'   => 'text not null',
+    'created_at'  => 'datetime default current_timestamp', 
+    'last_seen'   => 'datetime default current_timestamp'
+  ],
 
-  'orders' => 'create table if not exists orders(
-    id integer primary key autoincrement, 
-    user_id integer,
-    campaign_id integer,
-    amount integer, 
-    charge_id text,
-    status text,
-    created_at datetime default current_timestamp
-  )',
+  'orders' => [
+    'id'          => 'integer primary key autoincrement', 
+    'user_id'     => 'integer',
+    'campaign_id' => 'integer',
+    'amount'      => 'integer', 
+    'charge_id'   => 'text',
+    'status'      => 'text',
+    'created_at'  => 'datetime default current_timestamp'
+  ],
 
-  'subscription' => 'create table if not exists subscription(
-    id integer primary key autoincrement, 
-    user_id integer,
-    campaign_id integer,
-    amount integer, 
-    created_at datetime default current_timestamp
-  )',
+  'subscription' => [
+    'id'          => 'integer primary key autoincrement', 
+    'user_id'     => 'integer',
+    'campaign_id' => 'integer',
+    'amount'      => 'integer', 
+    'created_at'  => 'datetime default current_timestamp'
+  ],
 
-  'screen' => 'create table if not exists screen(
-    id integer primary key autoincrement, 
-    uid text not null, 
-    lat float default null,
-    lng float default null,
-    text default null, 
-    port integer, 
-    first_seen datetime, 
-    last_seen datetime
-  )',
+  'screen' => [
+    'id'          => 'integer primary key autoincrement', 
+    'uid'         => 'text not null', 
+    'lat'         => 'float default null',
+    'lng'         => 'float default null',
+    'version'     => 'text',
+    'port'        => 'integer', 
+    'first_seen'  => 'datetime', 
+    'last_seen'   => 'datetime'
+  ],
 
-  'place' => 'create table if not exists place(
-    id integer primary key autoincrement,
-    name text not null,
-    lat float default null,
-    lng float default null,
-    radius float default null
-  )',
+  'place' => [
+    'id'     => 'integer primary key autoincrement',
+    'name'   => 'text not null',
+    'lat'    => 'float default null',
+    'lng'    => 'float default null',
+    'radius' => 'float default null'
+  ],
 
   //
   // consider: potentially create a second table for "staging" campaigns
@@ -61,35 +61,35 @@ $SCHEMA = [
   // these and can bleed over in either direction if it 
   // gets to that.
   // 
-  // If they are empty, then it means that it's 24 hours a day
+  // If they are empty', then it means that it's 24 hours a day
   //
-  'campaign' => 'create table if not exists campaign(
-    id integer primary key autoincrement,
-    order_id integer,
-    asset text not null,
-    duration_seconds integer,
-    completed_seconds integer default 0,
-    place_id integer default null,
-    lat float default null,
-    lng float default null,
-    radius float default null,
-    start_minute integer default null,
-    end_minute integer default null,
-    active boolean default false,
-    start_time datetime default current_timestamp,
-    end_time datetime
-  )',
+  'campaign' => [
+    'id' =>       => 'integer primary key autoincrement',
+    'order_id'    => 'integer',
+    'asset'       => 'text not null',
+    'duration_seconds' => 'integer',
+    'completed_seconds' => 'integer default 0',
+    'place_id'    => 'integer default null',
+    'lat'         => 'float default null',
+    'lng'         => 'float default null',
+    'radius'      => 'float default null',
+    'start_minute'=> 'integer default null',
+    'end_minute'  => 'integer default null',
+    'active'      => 'boolean default false',
+    'start_time'  => 'datetime default current_timestamp',
+    'end_time'    => 'datetime'
+  ],
 
-  'job' => 'create table if not exists job(
-    id integer primary key autoincrement,
-    campaign_id integer,
-    screen_id integer,
-    goal integer,
-    completed_seconds integer default 0,
-    last_update datetime,
-    job_start datetime,
-    job_end datetime
-  )'
+  'job' => [
+    'id'          => 'integer primary key autoincrement',
+    'campaign_id' => 'integer',
+    'screen_id'   => 'integer',
+    'goal'        => 'integer',
+    'completed_seconds' => 'integer default 0',
+    'last_update' => 'datetime',
+    'job_start'   => 'datetime',
+    'job_end'     => 'datetime'
+  ]
 
 ];
 $_db = false;
