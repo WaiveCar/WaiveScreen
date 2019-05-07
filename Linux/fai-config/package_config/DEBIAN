@@ -31,8 +31,11 @@ notion
 sudo
 locate
 vim
+
+# power management suite
 powertop
 acpitool
+ethtool
 
 python3-pip
 git
