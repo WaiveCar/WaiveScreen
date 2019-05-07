@@ -3,3 +3,4 @@
 export HOME=/root
 export PATH=$PATH:/bin:/usr/bin:/sbin:/usr/sbin
 XINITRC=/root/.xinitrc /usr/bin/xinit &
+powertop --auto-tune 

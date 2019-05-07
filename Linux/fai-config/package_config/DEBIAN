@@ -32,6 +32,7 @@ sudo
 locate
 vim
 powertop
+acpitool
 
 python3-pip
 git
