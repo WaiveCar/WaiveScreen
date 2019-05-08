@@ -1,9 +1,4 @@
-
-Here's some set up guides
-
- * 45-arduino.rules - udev rules, go in /etc/udev/rules.d
- * screen.log - logrotate rules, go in /etc/logrotate.d
- * dot_ssh - ssh key and config rules to connect to the screen server
+This things uses FAI and will eventually be on a USB stick. The fai-config is where the screen install magic lives.
 
 You'll need to manually copy 
   * ModemManager/data/org.freedesktop.ModemManager1.conf to /etc/dbus-1/system.d/org.freedesktop.ModemManager1.conf manually
