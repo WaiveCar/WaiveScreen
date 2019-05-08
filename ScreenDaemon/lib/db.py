@@ -262,7 +262,7 @@ def connect(db_file=None):
   global g_db_count
 
   if not db_file:
-    db_file = 'config.db'
+    db_file = '/var/db/config.db'
 
   #
   # We need to have one instance per thread, as this is what
