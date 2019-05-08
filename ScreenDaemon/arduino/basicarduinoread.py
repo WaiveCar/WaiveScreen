@@ -24,8 +24,11 @@ for _ in range(10):
     therm_read = (ord(arduino.read()) << 8) + (ord(arduino.read()))
     therm_resistance = (1023.0/therm_read - 1) * 100000
     temp_c = therm_resistance/100000
-    temp_c = math.log(temp_c)/3950 + (1/(25 + 273.13))
-    temp_c = 1/temp_c - 273.15
+    try:
+        temp_c = math.log(temp_c)/3950 + (1/(25 + 273.13))
+        temp_c = 1/temp_c - 273.15
+    except:
+        temp_c = 0
     # 2 bytes each for accel x, y, z, and gyro x, y, and z
     accel_x = (ord(arduino.read()) << 8) + (ord(arduino.read()))
     accel_x = -1*(0xFFFF - accel_x) if accel_x > 0x8000 else accel_x
