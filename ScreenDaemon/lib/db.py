@@ -260,9 +260,10 @@ def connect(db_file=None):
   # the database connection throughout the execution of the script.
   # Returns the database instance.
   global g_db_count
+  default_db = '/var/db/config.db'
 
   if not db_file:
-    db_file = '/var/db/config.db'
+    db_file = default_db
 
   #
   # We need to have one instance per thread, as this is what
@@ -283,7 +284,7 @@ def connect(db_file=None):
     'c': conn.cursor()
   })
 
-  if db_file == 'config.db' and g_db_count == 0: 
+  if db_file == default_db and g_db_count == 0: 
 
     for table, schema in list(_SCHEMA.items()):
       dfn = ','.join(["%s %s" % (key, klass) for key, klass in schema])
@@ -339,12 +340,14 @@ def kv_get(key, expiry=0, use_cache=True, default=None):
     g_params[key] = res[0]
     return res[0]
 
+  """
   else:
     # It's ok if this doesn't exist. SQLite likes to throw an error here
     try:
       run("delete from kv where key = '%s' and created_at < datetime(current_timestamp, '-%d second')" % (key, expiry))
     except Exception as inst:
       pass
+  """
 
   return default
 

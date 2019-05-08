@@ -83,5 +83,6 @@ def next_ad(work = False):
     # now we ask the ad daemon for jobs given our lat/lng
 
 if __name__ == '__main__':
+  # db.upgrade()
   db.incr('runcount')
   app.run(port=4096)
