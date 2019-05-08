@@ -33,4 +33,4 @@ power() {
   #ethtool -s enp3s0 wol d
 }
 
-power
+#power
