@@ -267,7 +267,7 @@ function db_all($qstr) {
   if(!is_string($qstr)) {
     $res = $qstr;
   } else {
-    $res = _query($qstr);
+    $res = _query($qstr, 'query');
     if(is_bool($res)) {
       return [];
     }

@@ -228,11 +228,12 @@ function sow($payload) {
     }
   }
 
+  $active = active_campaigns();
   // right now we are being realllly stupid.
-  $nearby_campaigns = array_filter(active_campaigns(), function($campaign) use ($payload) {
+  $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
     if(isset($payload['lat'])) {
       // under 1.5km
-      return distance($campaign, $payload) < $campaign['radius'];
+      return distance($campaign, $payload) < ($campaign['radius'] * 100);
     } 
     // essentially this is for debugging
     return true;
