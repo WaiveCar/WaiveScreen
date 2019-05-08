@@ -1,0 +1,15 @@
+{
+  "name": "monitor",
+  "version": "1.0.0",
+  "main": "test.js",
+  "dependencies": {
+    "tplink-smarthome-api": "^0.22.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
