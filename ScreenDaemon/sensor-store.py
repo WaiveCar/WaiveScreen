@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import lib.lib as lib
 import arduino.lib as arduino
+import sys
 
 import dbus
 import time
@@ -12,24 +13,27 @@ old_lat = False
 old_lng = False
 
 foundModem = False
-modem = 0
+modem_ix = 0
 def next_iface():
-  global modem
-  print("Trying modem {}".format(modem))
-  proxy = bus.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/Modem/{}'.format(modem))
+  global modem_ix
+  print(modem_ix)
+  proxy = bus.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/Modem/{}'.format(modem_ix))
   iface = {
     'location': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Location'),
     'time': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Time')
   }
-  modem += 1 
+  modem_ix += 1 
+  if modem_ix > 10:
+      sys.exit(-1)
+
   return iface
 
 iface = next_iface()
 
 while not foundModem:
   try: 
-    location = iface['location'].GetLocation()
-    location = iface['time'].GetNetworkTime()
+    iface['location'].GetLocation()
+    #location = iface['time'].GetNetworkTime()
     foundModem = True
 
   except Exception as inst:
@@ -37,10 +41,21 @@ while not foundModem:
     iface = next_iface()
 
 
-arduion.setup()
+arduino.setup()
 while True:
-  sensor = arduino.get_sensors()
-  location = iface['location'].GetLocation()
+  print("hi")
+  sensor = arduino.arduino_read()
+  modem = iface['location'].GetLocation()
+  pprint.pprint(modem)
+  
+  try:
+      location = {
+        'lat': "{:.5f}".format(modem[2]['latitude']),
+        'lng': "{:.5f}".format(modem[2]['longitude'])
+      }
+  except:
+      location = {}
+
   pprint.pprint([sensor, location])
   time.sleep(5)
 
