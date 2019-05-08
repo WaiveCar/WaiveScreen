@@ -4,6 +4,7 @@ import time
 import math
 import struct
 import pandas as pd
+import pprint
 import sys
 import os
 
@@ -24,7 +25,8 @@ def get_arduino():
 def setup():
   global first_read, arduino
   arduino = get_arduino()
-  first_read = arduino_read(arduino)
+  first_read = arduino_read()
+  pprint.pprint(first_read)
 
 def main():
   setup()
@@ -43,14 +45,14 @@ def get_sensors():
     log_name = '{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
                                                               now.tm_hour, now.tm_min, now.tm_sec)
     arduino.reset_input_buffer()
-    received_dict = arduino_read(arduino)
+    received_dict = arduino_read()
     moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
                                           last_smooth={'x': 0.0, 'y': 0.0, 'z': 0.0})
     voltage = received_dict['Voltage']
     i = 0
     voltage_timeout = 0
     while voltage > 12.5 or moving or voltage_timeout < 150:
-        received_dict = arduino_read(arduino)
+        received_dict = arduino_read()
         if received_dict != -1:
             # df.loc[i] = received_dict
             i += 1
@@ -67,6 +69,8 @@ def get_sensors():
     # uncomment the below line to save the log to a folder called logs
     #df.to_csv("logs//{}.csv".format(log_name), index=False)
 
+    return received_dict
+    """
     current = received_dict['Current']
     if voltage < 12.5 and current > 1:
         # low_power_mode will hold and record until voltage goes above 13.5V
@@ -74,8 +78,7 @@ def get_sensors():
         # the below line will wake up the dpms if it's a linux machine
         if sys.platform == "linux" or sys.platform == "linux2":
             os.system("xset -display :0 dpms force on")
-
-    return received_dict
+    """
 
 
 def set_fan_speed(arduino, value):
@@ -113,15 +116,16 @@ def send_sleep_signal():
         os.system("rundll32.exe powrprof.dll,SetSuspendState sleep")
 
 
-def arduino_read(arduino):
-    arduino = arduino
+def arduino_read():
     try:
         arduino.in_waiting
     except 'SerialException':
+        print("trying")
         arduino.close()
         arduino.open()
     while arduino.in_waiting < 25:
         pass
+
     # first byte is the header, must be 0xff
     header = ord(arduino.read())
     while header != 0xff:
@@ -156,12 +160,15 @@ def arduino_read(arduino):
     except ZeroDivisionError:
         # if we can't read the temperature, assume it's high for safety
         therm_resistance = 0
+
     temp_c = therm_resistance / 100000
     try:
         temp_c = math.log(temp_c) / 3950 + (1 / (25 + 273.13))
+        temp_c = 1 / temp_c - 273.15
+
     except ValueError:
-        return -1
-    temp_c = 1 / temp_c - 273.15
+        temp_c = 0
+
     # 2 bytes each for accel x, y, z, and gyro x, y, z.  Note values are signed int so must rectify
     accel_x = (ord(arduino.read()) << 8) + (ord(arduino.read()))
     accel_x = -1 * (0xFFFF - accel_x) if accel_x > 0x8000 else accel_x
@@ -207,7 +214,7 @@ def low_power_mode(arduino, backlight_resume_value):
                                                                       now.tm_hour, now.tm_min, now.tm_sec)
     i = 0
     df = pd.DataFrame(columns=['Time', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
-    received_dict = arduino_read(arduino)
+    received_dict = arduino_read()
     df.loc[i] = {
         'Time': received_dict['Time'],
         'Current': received_dict['Current'],
@@ -222,7 +229,7 @@ def low_power_mode(arduino, backlight_resume_value):
     while received_dict['Voltage'] < 13.5 or \
             (received_dict['Voltage'] > 13.5 and -1500 < received_dict['Accel_z'] - z_init < 1500):
         i += 1
-        received_dict = arduino_read(arduino)
+        received_dict = arduino_read()
         df.loc[i] = {
             'Time': received_dict['Time'],
             'Current': received_dict['Current'],
@@ -243,8 +250,9 @@ def low_power_mode(arduino, backlight_resume_value):
 def get_move_status(first_read, last_read, last_smooth):
     alpha = 0.01
     move_threshold = 250
-    move_magnitude = {'x': math.fabs(last_read['Accel_x']-first_read['Accel_x']),
-                      'y': math.fabs(last_read['Accel_y']-first_read['Accel_y']),
+    
+    move_magnitude = {'x': math.fabs(last_read['Accel_x'] - first_read['Accel_x']),
+                      'y': math.fabs(last_read['Accel_y'] - first_read['Accel_y']),
                       'z': math.fabs(last_read['Accel_z'] - first_read['Accel_z'])}
     smooth_move = {
         'x': min(move_magnitude['x']*alpha + last_smooth['x']*(1-alpha), 600),

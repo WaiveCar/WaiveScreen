@@ -3,6 +3,7 @@ from . import db
 import configparser
 import os
 import requests
+import json
 
 VERSION = os.popen("/usr/bin/git describe").read().strip()
 UUID = False
@@ -30,7 +31,7 @@ def sensor_store(data):
   return db.insert('sensor', data)
 
 def sensor_last(index = False):
-  res = db.get('sensor', index)
+  res = db.kv_get('sensor', index)
   # If we don't have a real sensor value then we just use 2102 pico in samo
   if not res:
     return {'lat':34.019860, 'lng':-118.468477}
@@ -46,7 +47,15 @@ def job_store(data):
   return db.upsert('job', data)
 
 def job_get(index = False):
-  return db.get('job', index)
+  return db.kv_get('job', index)
+
+def emit_startup():
+  # Contact the server, get the port if needed
+  ping()
+  port = db.kv_get('port')
+  print("ssh -f -NC -R bounce:{}:127.0.0.1:22 bounce".format(port))
+
+
 
 def ping():
   payload = {
@@ -56,7 +65,14 @@ def ping():
 
   with requests.post(urlify('ping'), verify=False, json=payload) as response:
     data_raw = response.text
-    print(data_raw)
+    try:
+      data = json.loads(data_raw)
+    except:
+      data = False
+      logging.warn("Unable to parse {}".format(data_raw))
+
+    if data:
+      db.kv_set('port', data['port'])
 
 def get_uuid():
   global UUID
