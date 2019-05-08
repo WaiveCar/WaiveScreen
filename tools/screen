@@ -10,5 +10,8 @@ reload() {
 case $1 in
   git) git ;;
   reload) reload ;;
-  *) echo "git reload"
+  on) on.js ;;
+  off) off.js ;;
+  restart|reboot|pcycle) pcycle ;;
+  *) echo "git reload off on restart"
 esac
