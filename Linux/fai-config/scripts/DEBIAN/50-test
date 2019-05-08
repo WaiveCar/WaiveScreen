@@ -3,15 +3,15 @@
 CP="cp -pvu"
 USER=demo
 
-cp -pTr ../files/home ~demo
-chmod 0600 ~demo/.ssh/KeyBounce ~demo/.ssh/github
+cp -pTr ../files/home ~$USER
+chmod 0600 ~USER/.ssh/KeyBounce ~$USER/.ssh/github
 
 # xinit is going to be at a root level
 $CP ../files/home/.xinitrc ~root
-rm ~demo/.xinitrc
+rm ~$USER/.xinitrc
 
 # The overly user-hostile version of sudo needs to be fixed
-ainsl /etc/sudoers "demo ALL=NOPASSWD: ALL" "demo"
+ainsl /etc/sudoers "$USER ALL=NOPASSWD: ALL" "$USER"
 
 # The retarded default bell thing in bash to do nothing
 # on tab complete needs to go
@@ -39,6 +39,9 @@ cpfile /etc/udev/rules.d/45-arduino.rules
 #sed -i '/swap/d' /etc/fstab
 
 # apt purge -y rpcbind
+
+# Gives the user perms for arduino
+usermod -G dialout -a $USER
 
 # Optimize the screen for power
 powertop --auto-tune --debug
