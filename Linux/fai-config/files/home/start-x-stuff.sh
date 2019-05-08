@@ -1,21 +1,45 @@
 #!/bin/bash
-
-{
-  cd $HOME/WaiveScreeen/ScreenDaemon/
-  ./dcall emit_startup | sh
-  ./run-daemon.sh &
-}
+USER=demo
 
 count=`pgrep start-x-stuff | wc -l`
 if [ "$count" -gt "2" ]; then
   exit -1
 fi
 
+ssh_hole() {
+  cd ~$USER/WaiveScreeen/ScreenDaemon/
+  ./dcall emit_startup | sh
+  ./run-daemon.sh &
+}
+
+get_online() {
+  sudo ~$USER/manual-set-ipv4.sh
+}
+
+dev_setup() {
+  ~$USER/dev-setup.sh
+}
+
+show_ad() {
+  /usr/bin/chromium --app=file://~$USER/WaiveScreen/ScreenDisplay/display.html
+}
+
 export DISPLAY=$1
 /usr/bin/notion &
-[ -e ~demo/screen-splash.png ] && /usr/bin/display -window root ~demo/screen-splash.png
+
+[ -e ~$USER/screen-splash.png ] && /usr/bin/display -window root ~$USER/screen-splash.png
+
+# After this is displaying now we can do blocking things
+show_ad
+
+# Like getting online and opening up our ssh hole
+get_online
+ssh_hole
+
+# TODO: comment out b4 prod
+dev_setup
+
 while [ 0 ]; do
-  /usr/bin/chromium --app=file:///home/demo/WaiveScreen/ScreenDisplay/display.html
 
   count=`pgrep chromium | wc -l`
   while [ "$count" -ne "0" ]; do
@@ -26,4 +50,6 @@ while [ 0 ]; do
   if [ "$count" -eq "0" ]; then
     exit
   fi
+
+  show_ad
 done
