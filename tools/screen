@@ -7,11 +7,24 @@ reload() {
   ssh screen "./reload"
 }
 
-case $1 in
-  git) git ;;
-  reload) reload ;;
-  on) on.js ;;
-  off) off.js ;;
-  restart|reboot|pcycle) pcycle ;;
-  *) echo "git reload off on restart"
-esac
+restart() {
+  ssh screen "sudo reboot"
+  for i in `seq 1 4`; do
+    sleep 1
+    echo -n "$i... "
+  done
+  pcycle
+}
+
+for i in $*; do
+  case $1 in
+    git) git ;;
+    reload) reload ;;
+    on) on.js ;;
+    off) off.js ;;
+    restart|reboot|pcycle) restart ;;
+    *) echo "git reload off on restart"
+  esac
+
+  shift
+done
