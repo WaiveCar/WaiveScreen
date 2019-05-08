@@ -1,5 +1,6 @@
 #!/bin/bash
 USER=demo
+DEST=/home/demo
 
 count=`pgrep start-x-stuff | wc -l`
 if [ "$count" -gt "2" ]; then
@@ -7,21 +8,21 @@ if [ "$count" -gt "2" ]; then
 fi
 
 ssh_hole() {
-  cd ~$USER/WaiveScreeen/ScreenDaemon/
+  cd $DEST/WaiveScreeen/ScreenDaemon/
   ./dcall emit_startup | sh
   ./run-daemon.sh &
 }
 
 get_online() {
-  sudo ~$USER/manual-set-ipv4.sh
+  sudo $DEST/manual-set-ipv4.sh
 }
 
 dev_setup() {
-  ~$USER/dev-setup.sh
+  $DEST/dev-setup.sh
 }
 
 show_ad() {
-  /usr/bin/chromium --app=file://~$USER/WaiveScreen/ScreenDisplay/display.html
+  /usr/bin/chromium --app=file://$DEST/WaiveScreen/ScreenDisplay/display.html
 }
 
 export DISPLAY=$1
