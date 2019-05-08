@@ -4,6 +4,8 @@ export HOME=/root
 export PATH=$PATH:/bin:/usr/bin:/sbin:/usr/sbin
 XINITRC=/root/.xinitrc /usr/bin/xinit &
 
+sleep 30
+
 echo 'min_power' > '/sys/class/scsi_host/host0/link_power_management_policy'
 echo '1500'      > '/proc/sys/vm/dirty_writeback_centisecs'
 echo '0'         > '/proc/sys/kernel/nmi_watchdog'
@@ -26,4 +28,4 @@ echo 'auto'   > '/sys/bus/pci/devices/0000:00:14.0/power/control'
 echo 'auto'   > '/sys/bus/usb/devices/1-3/power/control'
 echo 'auto'   > '/sys/bus/usb/devices/1-1.4/power/control'
 echo 'auto'   > '/sys/bus/usb/devices/1-4.4/power/control'
-ethtool -s enp3s0 wol d
+#ethtool -s enp3s0 wol d
