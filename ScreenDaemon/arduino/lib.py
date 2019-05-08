@@ -7,6 +7,7 @@ import pandas as pd
 import pprint
 import sys
 import os
+import atexit
 
 arduino = False
 first_read = False
@@ -28,19 +29,14 @@ def setup():
   first_read = arduino_read()
   pprint.pprint(first_read)
 
-def main():
-  setup()
-  #  last_reading = nominal_operation()
-
-  # arduino.close()
-
-
+@atexit.register
+def close():
+  arduino.close()
+  
 def get_sensors():
-    # df = pd.DataFrame(columns=['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y',
-    #                        'Gyro_z', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
     # first_read = first_read
     df = pd.DataFrame(columns=['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y',
-                               'Gyro_z', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
+                               'Gyro_z', 'Current', 'Voltage', 'Temp', 'Fan', 'Backlight'])
     now = time.localtime()
     log_name = '{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
                                                               now.tm_hour, now.tm_min, now.tm_sec)
@@ -191,14 +187,14 @@ def arduino_read():
         'Time': time_ms,
         'Current': current,
         'Voltage': v_in,
-        'Temp_C': temp_c,
+        'Temp': temp_c,
         'Accel_x': accel_x,
         'Accel_y': accel_y,
         'Accel_z': accel_z,
         'Gyro_x': gyro_x,
         'Gyro_y': gyro_y,
         'Gyro_z': gyro_z,
-        'FanSpeed': fan_speed,
+        'Fan': fan_speed,
         'Backlight': backlight_value
     }
     return received_dict
@@ -213,14 +209,14 @@ def low_power_mode(arduino, backlight_resume_value):
     log_name = 'lowpower{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
                                                                       now.tm_hour, now.tm_min, now.tm_sec)
     i = 0
-    df = pd.DataFrame(columns=['Time', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
+    df = pd.DataFrame(columns=['Time', 'Current', 'Voltage', 'Temp', 'Fan', 'Backlight'])
     received_dict = arduino_read()
     df.loc[i] = {
         'Time': received_dict['Time'],
         'Current': received_dict['Current'],
         'Voltage': received_dict['Voltage'],
-        'Temp_C': received_dict['Temp_C'],
-        'FanSpeed': received_dict['FanSpeed'],
+        'Temp': received_dict['Temp'],
+        'Fan': received_dict['Fan'],
         'Backlight': received_dict['Backlight']
     }
     # todo: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
@@ -234,16 +230,12 @@ def low_power_mode(arduino, backlight_resume_value):
             'Time': received_dict['Time'],
             'Current': received_dict['Current'],
             'Voltage': received_dict['Voltage'],
-            'Temp_C': received_dict['Temp_C'],
-            'FanSpeed': received_dict['FanSpeed'],
+            'Temp': received_dict['Temp'],
+            'Fan': received_dict['Fan'],
             'Backlight': received_dict['Backlight']
         }
     set_backlight(arduino, stored_backlight_value)
     now = time.localtime()
-    log_name += '-{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
-                                                                now.tm_hour, now.tm_min, now.tm_sec)
-    # uncomment the below line to save the log to a folder called logs
-    df.to_csv("logs//{}.csv".format(log_name), index=False)
     return received_dict
 
 
@@ -267,7 +259,7 @@ def get_move_status(first_read, last_read, last_smooth):
 
 
 if __name__ == '__main__':
-    main()
+    setup()
 
 
 """

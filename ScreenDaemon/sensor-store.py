@@ -42,6 +42,7 @@ arduino.setup()
 while True:
   sensor = arduino.arduino_read()
   modem = iface['location'].GetLocation()
+  nettime = iface['time'].GetNetworkTime()
   
   try:
       location = {
@@ -51,8 +52,8 @@ while True:
   except:
       location = {}
 
-  alldata = location.update(sensor)
-  pprint.pprint(alldata)
+  all = {**location, **sensor, 'time': nettime } 
+  pprint.pprint(all)
   time.sleep(5)
 
   """

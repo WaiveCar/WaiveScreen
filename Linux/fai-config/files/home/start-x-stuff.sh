@@ -2,18 +2,21 @@
 USER=demo
 DEST=/home/demo
 
-count=`pgrep start-x-stuff | wc -l`
-if [ "$count" -gt "2" ]; then
-  exit -1
-fi
+unique() {
+  count=`pgrep start-x-stuff | wc -l`
+  if [ "$count" -gt "2" ]; then
+    exit -1
+  fi
+}
 
 ssh_hole() {
-  cd $DEST/WaiveScreeen/ScreenDaemon/
+  cd $DEST/WaiveScreen/ScreenDaemon/
   ./dcall emit_startup | sh
   ./run-daemon.sh &
 }
 
 get_online() {
+  sleep 15
   sudo $DEST/manual-set-ipv4.sh
 }
 
@@ -25,6 +28,7 @@ show_ad() {
   /usr/bin/chromium --app=file://$DEST/WaiveScreen/ScreenDisplay/display.html
 }
 
+unique
 export DISPLAY=$1
 /usr/bin/notion &
 
