@@ -1,0 +1,23 @@
+#!/usr/bin/node
+const { Client } = require('tplink-smarthome-api');
+
+const client = new Client();
+
+client.on('plug-new', function (plug) {
+  console.log("off");
+  plug.setPowerState(false);
+  setTimeout(function(){
+    console.log("on");
+    plug.setPowerState(true);
+    setTimeout(function(){
+      console.log("exit");
+      process.exit();
+    }, 6000);
+  }, 6000);
+});
+
+client.startDiscovery().on('device-new', (device) => {
+  device.setPowerState(true);
+});
+
+
