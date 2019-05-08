@@ -3,8 +3,6 @@
 set -x
 export PATH=$PATH:/usr/bin/
 
-sleep 5
-
 mmcli -m 0 -e
 
 mmcli -m 0 \
