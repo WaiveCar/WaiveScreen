@@ -1,24 +1,3 @@
---
--- Notion core configuration file
---
-
-
--- 
--- Bindings. This includes global bindings and bindings common to
--- screens and all types of frames only. See modules' configuration 
--- files for other bindings.
---
-
-
--- WScreen context bindings
---
--- The bindings in this context are available all the time.
---
--- The variable META should contain a string of the form 'Mod1+'
--- where Mod1 maybe replaced with the modifier you want to use for most
--- of the bindings. Similarly ALTMETA may be redefined to add a 
--- modifier to some of the F-key bindings.
-
 defwinprop{
     class = "Chromium",
     fullscreen = true,
@@ -27,14 +6,6 @@ defbindings("WScreen", {
     bdoc("Switch to n:th object (workspace, full screen client window) "..
          "within current screen."),
     kpress(META.."1", "WScreen.switch_nth(_, 0)"),
---    kpress(META.."2", "WScreen.switch_nth(_, 1)"),
---    kpress(META.."3", "WScreen.switch_nth(_, 2)"),
---    kpress(META.."4", "WScreen.switch_nth(_, 3)"),
---    kpress(META.."5", "WScreen.switch_nth(_, 4)"),
---    kpress(META.."6", "WScreen.switch_nth(_, 5)"),
---    kpress(META.."7", "WScreen.switch_nth(_, 6)"),
---    kpress(META.."8", "WScreen.switch_nth(_, 7)"),
-    kpress(META.."9", "WScreen.switch_nth(_, 8)"),
     kpress(META.."0", "WScreen.switch_nth(_, 9)"),
     
     bdoc("Switch to next/previous object within current screen."),
@@ -144,10 +115,6 @@ defbindings("WGroupCW", {
 })
 
 
--- WMPlex context bindings
---
--- These bindings work in frames and on screens. The innermost of such
--- contexts/objects always gets to handle the key press. 
 
 defbindings("WMPlex", {
     bdoc("Close current object."),
@@ -161,34 +128,10 @@ defbindings("WMPlex.toplevel", {
     kpress(META.."T", "WRegion.set_tagged(_sub, 'toggle')", "_sub:non-nil"),
     kpress(OTHERMETA.."T", "WRegion.set_tagged(_sub, 'toggle')", "_sub:non-nil"),
 
-    bdoc("Query for manual page to be displayed."),
-    kpress(ALTMETA.."F1", "mod_query.query_man(_, ':man')"),
-
-    bdoc("Show the Notion manual page."),
-    kpress(META.."F1", "ioncore.exec_on(_, ':man notion')"),
 
     bdoc("Run a terminal emulator."),
-    kpress(ALTMETA.."F2", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white')"),
-    kpress(META.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white')"),
-    kpress(OTHERMETA.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white')"),
+    kpress(OTHERMETA.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white -fa \"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*\" -fs 20 ')"),
     
-    bdoc("Query for command line to execute."),
-    kpress(ALTMETA.."4", "mod_query.query_exec(_)"),
-
-    bdoc("Query for Lua code to execute."),
-    kpress(ALTMETA.."3", "mod_query.query_lua(_)"),
-
-    bdoc("Query for host to connect to with SSH."),
-    kpress(ALTMETA.."4", "mod_query.query_ssh(_, ':ssh')"),
-
-    bdoc("Query for file to edit."),
-    kpress(ALTMETA.."5", 
-           "mod_query.query_editfile(_, 'run-mailcap --action=edit')"),
-
-    bdoc("Query for file to view."),
-    kpress(ALTMETA.."6", 
-           "mod_query.query_runfile(_, 'run-mailcap --action=view')"),
-
     bdoc("Query for workspace to go to or create a new one."),
     kpress(ALTMETA.."9", "mod_query.query_workspace(_)"),
     
