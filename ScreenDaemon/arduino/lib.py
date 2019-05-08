@@ -7,31 +7,33 @@ import pandas as pd
 import sys
 import os
 
-
 arduino = False
-def get_arduino():
-    global arduino
-    if not arduino:
-        if sys.platform == "linux" or sys.platform == "linux2":
-            comPort = '/dev/ttyACM0'
-        else:
-            comPort = 'COM6'
+first_read = False
 
-        arduino = serial.Serial(comPort, 9600, timeout=0.1)
-    return arduino
+def get_arduino():
+  global arduino
+  if not arduino:
+    if sys.platform == "linux" or sys.platform == "linux2":
+      comPort = '/dev/ttyACM0'
+    else:
+      comPort = 'COM6'
+
+    arduino = serial.Serial(comPort, 9600, timeout=0.1)
+  return arduino
+
+def setup():
+  global first_read, arduino
+  arduino = get_arduino()
+  first_read = arduino_read(arduino)
 
 def main():
-    arduino = get_arduino()
+  setup()
+  #  last_reading = nominal_operation()
 
-    first_read = arduino_read(arduino)
-    while(1):
-        last_reading = nominal_operation(arduino=arduino, first_read=first_read)
-
-    # arduino.close()
+  # arduino.close()
 
 
-def nominal_operation(arduino, first_read):
-    arduino = arduino
+def get_sensors():
     # df = pd.DataFrame(columns=['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y',
     #                        'Gyro_z', 'Current', 'Voltage', 'Temp_C', 'FanSpeed', 'Backlight'])
     # first_read = first_read
@@ -63,7 +65,7 @@ def nominal_operation(arduino, first_read):
     log_name += '-{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
                                                                 now.tm_hour, now.tm_min, now.tm_sec)
     # uncomment the below line to save the log to a folder called logs
-    df.to_csv("logs//{}.csv".format(log_name), index=False)
+    #df.to_csv("logs//{}.csv".format(log_name), index=False)
 
     current = received_dict['Current']
     if voltage < 12.5 and current > 1:
@@ -76,7 +78,7 @@ def nominal_operation(arduino, first_read):
     return received_dict
 
 
-def set_fanspeed(arduino, value):
+def set_fan_speed(arduino, value):
     fan_speed = value
     if fan_speed > 255:
         fan_speed = 255
