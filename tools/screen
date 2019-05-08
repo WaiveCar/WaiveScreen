@@ -9,9 +9,9 @@ reload() {
 
 restart() {
   ssh screen "sudo reboot"
-  for i in `seq 1 4`; do
+  for i in `seq 3 -1 1`; do
     sleep 1
-    echo -n "$i... "
+    echo -n "$i..."
   done
   pcycle
 }
@@ -22,6 +22,7 @@ for i in $*; do
     reload) reload ;;
     on) on.js ;;
     off) off.js ;;
+    force) pcycle ;;
     restart|reboot|pcycle) restart ;;
     *) echo "git reload off on restart"
   esac
