@@ -9,14 +9,11 @@ import pprint
 
 bus = dbus.SystemBus()
 
-old_lat = False
-old_lng = False
-
 foundModem = False
 modem_ix = 0
+
 def next_iface():
   global modem_ix
-  print(modem_ix)
   proxy = bus.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/Modem/{}'.format(modem_ix))
   iface = {
     'location': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Location'),
@@ -43,10 +40,8 @@ while not foundModem:
 
 arduino.setup()
 while True:
-  print("hi")
   sensor = arduino.arduino_read()
   modem = iface['location'].GetLocation()
-  pprint.pprint(modem)
   
   try:
       location = {
@@ -56,7 +51,8 @@ while True:
   except:
       location = {}
 
-  pprint.pprint([sensor, location])
+  alldata = location.update(sensor)
+  pprint.pprint(alldata)
   time.sleep(5)
 
   """
