@@ -11,7 +11,7 @@ import os
 arduino = False
 def get_arduino():
     global arduino
-    if !arduino:
+    if not arduino:
         if sys.platform == "linux" or sys.platform == "linux2":
             comPort = '/dev/ttyACM0'
         else:
