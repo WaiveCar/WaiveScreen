@@ -1,12 +1,13 @@
 #!/bin/bash
 
+CP="cp -pvu"
 USER=demo
 
-cp -pTvr ../files/home ~demo
+cp -pTr ../files/home ~demo
 chmod 0600 ~demo/.ssh/KeyBounce ~demo/.ssh/github
 
 # xinit is going to be at a root level
-cp -pvu ../files/home/.xinitrc ~root
+$CP ../files/home/.xinitrc ~root
 rm ~demo/.xinitrc
 
 # The overly user-hostile version of sudo needs to be fixed
@@ -19,10 +20,24 @@ sed -i '/^# set bell-style none/s/^# //' /etc/inputrc
 # This stupid smarmy "plan your install" crap needs to go.
 [ -e /etc/motd ] && sudo rm -f /etc/motd   
 
-# A bunch of stupid modules shouldn't be loaded.
-cp -pvu ../files/etc/modprobe.d/blacklist.conf /etc/modprobe.d/
+cpfile() {
 
-sed -i '/swap/d' /etc/fstab
+  if [ ! -e "../files"$1 ]; then
+    echo "FAILURE! CANNOT FIND $1"
+  else
+    echo "Copying $1"
+  fi
+
+  $CP "../files"$1 $1
+}
+
+# A bunch of stupid modules shouldn't be loaded.
+cpfile /etc/modprobe.d/blacklist.conf
+cpfile /etc/udev/rules.d/45-arduino.rules
+
+# Swap may be needed for ACPI
+#sed -i '/swap/d' /etc/fstab
+
 # apt purge -y rpcbind
 
 # Optimize the screen for power
