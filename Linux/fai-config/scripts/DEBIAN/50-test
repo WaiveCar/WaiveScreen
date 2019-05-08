@@ -36,6 +36,9 @@ cpfile /etc/modprobe.d/blacklist.conf
 cpfile /etc/udev/rules.d/45-arduino.rules
 cpfile /etc/logrotate.d/screen.log
 
+mkdir -p /var/log/screen
+chmod 0777 /var/log/screen
+
 # Swap may be needed for ACPI
 #sed -i '/swap/d' /etc/fstab
 
