@@ -5,7 +5,7 @@ USER=demo
 DEST=/home/$USER
 
 cp -pvuTr ../files/home $DEST
-chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github
+chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
 
 # xinit is going to be at a root level
 $CP ../files/home/.xinitrc ~root
@@ -37,8 +37,10 @@ cpfile /etc/modprobe.d/blacklist.conf
 cpfile /etc/udev/rules.d/45-arduino.rules
 cpfile /etc/logrotate.d/screen.log
 
-mkdir -p /var/log/screen
-chmod 0777 /var/log/screen
+for path in /var/log/screen /var/db/; do
+  mkdir -p $path
+  chmod 0777 $path
+done
 
 # Swap may be needed for ACPI
 #sed -i '/swap/d' /etc/fstab
