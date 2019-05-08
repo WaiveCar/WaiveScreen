@@ -36,6 +36,7 @@ show_ad
 # Like getting online and opening up our ssh hole
 get_online
 ssh_hole
+$DEST/ping-and-update
 
 # TODO: comment out b4 prod
 dev_setup
