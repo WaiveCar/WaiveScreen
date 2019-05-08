@@ -31,7 +31,7 @@ export DISPLAY=$1
 [ -e ~$USER/screen-splash.png ] && /usr/bin/display -window root ~$USER/screen-splash.png
 
 # After this is displaying now we can do blocking things
-show_ad
+show_ad &
 
 # Like getting online and opening up our ssh hole
 get_online
