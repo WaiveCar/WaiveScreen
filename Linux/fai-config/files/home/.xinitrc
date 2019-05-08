@@ -1,8 +1,11 @@
-xrandr --newmode "1920x675_60.00"  104.25  1920 2008 2200 2480  675 678 688 702 -hsync +vsync
-xrandr --addmode HDMI-1 "1920x675_60.00"
-xrandr --addmode HDMI-2 "1920x675_60.00"
-xrandr --output HDMI-1 --mode "1920x675_60.00"
-xrandr --output HDMI-2 --mode "1920x675_60.00"
+resize() {
+  xrandr --newmode "1920x675_60.00"  104.25  1920 2008 2200 2480  675 678 688 702 -hsync +vsync
+  xrandr --addmode HDMI-1 "1920x675_60.00"
+  xrandr --addmode HDMI-2 "1920x675_60.00"
+  xrandr --output HDMI-1 --mode "1920x675_60.00"
+  xrandr --output HDMI-2 --mode "1920x675_60.00"
+}
+#resize
 
 # This makes it into a massive screen.
 #xrandr --output HDMI-2 --above HDMI-1
