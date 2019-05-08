@@ -2,13 +2,14 @@
 
 CP="cp -pvu"
 USER=demo
+DEST=/home/$USER
 
-cp -pTr ../files/home ~$USER
-chmod 0600 ~USER/.ssh/KeyBounce ~$USER/.ssh/github
+cp -pvuTr ../files/home $DEST
+chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github
 
 # xinit is going to be at a root level
 $CP ../files/home/.xinitrc ~root
-rm ~$USER/.xinitrc
+rm $DEST/.xinitrc
 
 # The overly user-hostile version of sudo needs to be fixed
 ainsl /etc/sudoers "$USER ALL=NOPASSWD: ALL" "$USER"
