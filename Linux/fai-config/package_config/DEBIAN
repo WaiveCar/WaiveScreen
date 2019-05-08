@@ -45,6 +45,9 @@ fai-client
 nfs-common
 gpg
 
+# def stuff
+sshfs
+
 # needed for modem stuff
 policykit-1
 
