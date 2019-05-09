@@ -51,4 +51,5 @@ done
 usermod -G dialout -a $USER
 
 # Optimize the screen for power
-powertop --auto-tune --debug
+#powertop --auto-tune --debug
+$DEST/dcall uuid
