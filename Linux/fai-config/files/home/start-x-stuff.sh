@@ -28,22 +28,27 @@ show_ad() {
   /usr/bin/chromium --app=file://$DEST/WaiveScreen/ScreenDisplay/display.html
 }
 
-unique
 export DISPLAY=$1
 /usr/bin/notion &
 
 [ -e ~$USER/screen-splash.png ] && /usr/bin/display -window root ~$USER/screen-splash.png
 
+#
+# Everything above is stuff we can run every time we start X
+# Everything below should be stuff that we only need to run once
+#
 # After this is displaying now we can do blocking things
+
+unique
 show_ad &
+# TODO: comment out b4 prod
+dev_setup
 
 # Like getting online and opening up our ssh hole
-get_online
+#get_online
 ssh_hole
 $DEST/ping-and-update
 
-# TODO: comment out b4 prod
-dev_setup
 
 while [ 0 ]; do
 
