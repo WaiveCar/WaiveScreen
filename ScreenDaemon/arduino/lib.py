@@ -16,11 +16,12 @@ def get_arduino():
   global arduino
   if not arduino:
     if sys.platform == "linux" or sys.platform == "linux2":
-      comPort = '/dev/ttyACM0'
+      com_port = '/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0'
+      # com_port = '/dev/ttyACM0'
     else:
-      comPort = 'COM6'
+      com_port = 'COM6'
 
-    arduino = serial.Serial(comPort, 9600, timeout=0.1)
+    arduino = serial.Serial(com_port, 115200, timeout=0.1)
   return arduino
 
 def setup():
@@ -31,7 +32,8 @@ def setup():
 
 @atexit.register
 def close():
-  arduino.close()
+  if arduino:
+    arduino.close()
   
 def get_sensors():
     # first_read = first_read
@@ -184,7 +186,7 @@ def arduino_read():
     fan_speed = ord(arduino.read())
     backlight_value = ord(arduino.read())
     received_dict = {
-        'Time': time_ms,
+        'ArduinoTime': time_ms,
         'Current': current,
         'Voltage': v_in,
         'Temp': temp_c,
