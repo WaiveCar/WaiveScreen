@@ -56,7 +56,7 @@ screen_daemon() {
 }
 
 sensor_daemon() {
-  $BASE/ScreenDaemon/SensorStore.py
+  $SUDO $BASE/ScreenDaemon/SensorStore.py
 }
 
 git() {
