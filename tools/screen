@@ -24,7 +24,13 @@ for i in $*; do
     off) off.js ;;
     force) pcycle ;;
     restart|reboot|pcycle) restart ;;
-    *) echo "git reload off on restart"
+    *) 
+      echo "Error: $1\nValid: git reload off on restart"
+      if [ $# -gt "1" ]; then
+        echo "Exit: Found unknown command. Ending parsing"
+      fi
+      exit
+      ;;
   esac
 
   shift
