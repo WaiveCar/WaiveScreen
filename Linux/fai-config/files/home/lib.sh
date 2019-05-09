@@ -1,7 +1,16 @@
 #!/bin/bash
 
-set -x
-export PATH=$PATH:/usr/bin/
+export PATH=/usr/bin/:/usr/sbin/:$PATH
+export WHO=demo
+export DEST=/home/$WHO
+export BASE=$DEST/WaiveScreen
+
+[[ $USER = 'root' ]] && SUDO= || SUDO=/usr/sbin/sudo
+
+help() {
+  # just show the local fuctions
+  declare -F | sed s/'declare -f//g' | sort
+}
 
 modem_enable() {
   mmcli -m 0 -e
@@ -38,3 +47,52 @@ modem_connect() {
 ENDL
 }
 
+ssh_hole() {
+  $BASE/ScreenDaemon/dcall emit_startup | /bin/sh
+}
+
+screen_daemon() {
+  FLASK_ENV=development $BASE/ScreenDaemon/ScreenDaemon.py
+}
+
+sensor_daemon() {
+  $BASE/ScreenDaemon/SensorStore.py
+}
+
+git() {
+  if [ -e $DEST/WaiveScreen ]; then
+    cd $DEST/WaiveScreen
+    git pull
+  else  
+    cd $DEST
+    git clone git@github.com:WaiveCar/WaiveScreen.git
+    ainsl $DEST/.bashrc 'PATH=$PATH:$HOME/.local/bin' 'HOME/.local/bin'
+  fi
+}
+
+uuid() {
+  UUID=/etc/UUID
+  if [ ! -e $UUID ] ; then
+    $SUDO dmidecode -t 4 | grep ID | sed -E s'/ID://;s/\s//g' | $SUDO tee $UUID
+  fi
+}
+
+dev_setup() {
+  #
+  # note! this usually runs as normal user
+  #
+  $SUDO dhclient enp3s0 
+  [ -e $DEST/WaiveScreen.nfs ] || mkdir $DEST/WaiveScreen.nfs
+
+  /usr/bin/sshfs dev:/home/chris/code/WaiveScreen $DEST/WaiveScreen.nfs -C -o allow_root
+}
+
+
+install() {
+  cd $BASE/ScreenDaemon
+  $SUDO pip3 install -r requirements.txt 
+}
+
+show_ad() {
+  /usr/bin/chromium --app=file://$BASE/ScreenDisplay/display.html
+}

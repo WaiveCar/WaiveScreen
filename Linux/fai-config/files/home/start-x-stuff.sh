@@ -1,6 +1,5 @@
 #!/bin/bash
-USER=demo
-DEST=/home/demo
+. lib.sh
 
 unique() {
   count=`pgrep start-x-stuff | wc -l`
@@ -9,29 +8,15 @@ unique() {
   fi
 }
 
-ssh_hole() {
-  cd $DEST/WaiveScreen/ScreenDaemon/
-  ./dcall emit_startup | sh
-  ./run-daemon.sh &
-}
-
 get_online() {
   sleep 15
   sudo $DEST/manual-set-ipv4.sh
 }
 
-dev_setup() {
-  $DEST/dev-setup.sh
-}
-
-show_ad() {
-  /usr/bin/chromium --app=file://$DEST/WaiveScreen/ScreenDisplay/display.html
-}
-
 export DISPLAY=$1
 /usr/bin/notion &
 
-[ -e ~$USER/screen-splash.png ] && /usr/bin/display -window root ~$USER/screen-splash.png
+[ -e $DEST/screen-splash.png ] && /usr/bin/display -window root $DEST/screen-splash.png
 
 #
 # Everything above is stuff we can run every time we start X
@@ -47,6 +32,7 @@ dev_setup
 # Like getting online and opening up our ssh hole
 #get_online
 ssh_hole
+screen_daemon
 $DEST/ping-and-update
 
 
