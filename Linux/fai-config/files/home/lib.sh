@@ -14,16 +14,16 @@ help() {
 }
 
 modem_enable() {
-  mmcli -m 0 -e
+  $SUDO mmcli -m 0 -e
 
-  mmcli -m 0 \
+  $SUDO mmcli -m 0 \
     --location-enable-gps-raw \
     --location-enable-gps-nmea \
     --location-set-enable-signal
 }
 
 modem_connect() {
-  mmcli -m 0 --simple-connect="apn=internet"
+  $SUDO mmcli -m 0 --simple-connect="apn=internet"
   wwan=`ip addr show | grep wwp | head -1 | awk -F ':' ' { print $2 } '`
 
   if [ -z "$wwan" ]; then
@@ -32,15 +32,15 @@ modem_connect() {
   fi
 
   # get ipv6
-  dhclient $wwan &
+  $SUDO dhclient $wwan &
 
   # Show the config | find ipv4 | drop the LHS | replace the colons with equals | drop the whitespace | put everything on one line
   eval `mmcli -b 0 | grep -A 3 IPv4| awk -F '|' ' { print $2 } ' | sed s'/: /=/' | sed -E s'/\s+//' | tr '\n' ';'`
 
-  ip addr add $address/$prefix  dev $wwan
-  ip route add default via $gateway dev $wwan
+  $SUDO ip addr add $address/$prefix  dev $wwan
+  $SUDO ip route add default via $gateway dev $wwan
 
-  cat << ENDL | tee /etc/resolv.conf
+  cat << ENDL | $SUDO tee /etc/resolv.conf
   nameserver 8.8.8.8
   nameserver 4.2.2.1
   nameserver 2001:4860:4860::8888 
@@ -79,7 +79,7 @@ uuid() {
 }
 
 sync_scripts() {
-  rsync --exclude=.xinitrc -aqzvr $DEV/Linux/fai-config/files/home/ $DEST
+  rsync --exclude=.xinitrc -aqzr $DEV/Linux/fai-config/files/home/ $DEST
 }
 
 dev_setup() {

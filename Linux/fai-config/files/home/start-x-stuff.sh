@@ -31,10 +31,9 @@ dev_setup
 
 # Like getting online and opening up our ssh hole
 #get_online
+modem_enable
 ssh_hole
 screen_daemon
-$DEST/ping-and-update
-
 
 while [ 0 ]; do
 
