@@ -2,11 +2,11 @@
 
 export WHO=demo
 export DEST=/home/$WHO
-export PATH=/usr/bin/:/usr/sbin/:$PATH:$DEST
+export PATH=/usr/bin:/usr/sbin:$PATH:$DEST
 export BASE=$DEST/WaiveScreen
 export DEV=$BASE.nfs
 
-[[ $USER = 'root' ]] && SUDO= || SUDO=/usr/sbin/sudo
+[[ $USER = 'root' ]] && SUDO= || SUDO=/usr/bin/sudo
 
 help() {
   # just show the local fuctions
@@ -80,6 +80,7 @@ uuid() {
 
 sync_scripts() {
   rsync --exclude=.xinitrc -aqzr $DEV/Linux/fai-config/files/home/ $DEST
+  chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
 }
 
 dev_setup() {
@@ -89,7 +90,7 @@ dev_setup() {
   $SUDO dhclient enp3s0 
   [ -e $DEV ] || mkdir $DEV
 
-  /usr/bin/sshfs dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
+  sshfs dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
 }
 
 
@@ -99,7 +100,7 @@ install() {
 }
 
 show_ad() {
-  /usr/bin/chromium --app=file://$BASE/ScreenDisplay/display.html
+  chromium --app=file://$BASE/ScreenDisplay/display.html
 }
 
 nop() { 
