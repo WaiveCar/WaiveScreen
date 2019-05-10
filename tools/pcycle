@@ -12,8 +12,8 @@ client.on('plug-new', function (plug) {
     setTimeout(function(){
       console.log("exit");
       process.exit();
-    }, 6000);
-  }, 6000);
+    }, 4500);
+  }, 4500);
 });
 
 client.startDiscovery().on('device-new', (device) => {
