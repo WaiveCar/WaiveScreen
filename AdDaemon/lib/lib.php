@@ -272,6 +272,7 @@ function sow($payload) {
     }
   }, $nearby_campaigns);
   
+  // error_log(json_encode($job_list));
   return [
     'res' => true,
     'data' => $job_list
@@ -361,7 +362,7 @@ function campaign_new($opts) {
   }
   $campaign_id = db_insert(
     'campaign', [
-      'active' => true,//false,
+      'active' => 1,//false,
       'asset' => db_string($opts['asset']),
       'duration_seconds' => $opts['duration'],
       'lat' => $opts['lat'],
