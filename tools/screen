@@ -8,7 +8,7 @@ reload() {
 }
 
 restart() {
-  ssh screen "sudo reboot"
+  ssh screen "sudo reboot"&
   for i in `seq 3 -1 1`; do
     sleep 1
     echo -n "$i..."
@@ -23,7 +23,7 @@ for i in $*; do
     on) on.js ;;
     off) off.js ;;
     force) pcycle ;;
-    restart|reboot|pcycle) restart ;;
+    restart|reboot|reset|pcycle) restart ;;
     *) 
       echo "Error: $1\nValid: git reload off on restart"
       if [ $# -gt "1" ]; then
