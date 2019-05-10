@@ -54,5 +54,5 @@ usermod -G dialout -a $USER
 #powertop --auto-tune --debug
 
 # Make sure the paths from the lib are shared to the shell
-ainsl $DEST/.bashrc 'source $HOME/dcall nop'
+ainsl $DEST/.bashrc 'source $HOME/dcall nop' 'dcall nop'
 $DEST/dcall uuid
