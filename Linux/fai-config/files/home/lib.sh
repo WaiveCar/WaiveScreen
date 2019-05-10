@@ -1,9 +1,10 @@
 #!/bin/bash
 
-export PATH=/usr/bin/:/usr/sbin/:$PATH
 export WHO=demo
 export DEST=/home/$WHO
+export PATH=/usr/bin/:/usr/sbin/:$PATH:$DEST
 export BASE=$DEST/WaiveScreen
+export DEV=$BASE.nfs
 
 [[ $USER = 'root' ]] && SUDO= || SUDO=/usr/sbin/sudo
 
@@ -77,14 +78,18 @@ uuid() {
   fi
 }
 
+sync_scripts() {
+  rsync --exclude=.xinitrc -aqzvr $DEV/Linux/fai-config/files/home/ $DEST
+}
+
 dev_setup() {
   #
   # note! this usually runs as normal user
   #
   $SUDO dhclient enp3s0 
-  [ -e $DEST/WaiveScreen.nfs ] || mkdir $DEST/WaiveScreen.nfs
+  [ -e $DEV ] || mkdir $DEV
 
-  /usr/bin/sshfs dev:/home/chris/code/WaiveScreen $DEST/WaiveScreen.nfs -C -o allow_root
+  /usr/bin/sshfs dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
 }
 
 
@@ -95,4 +100,8 @@ install() {
 
 show_ad() {
   /usr/bin/chromium --app=file://$BASE/ScreenDisplay/display.html
+}
+
+nop() { 
+  true
 }
