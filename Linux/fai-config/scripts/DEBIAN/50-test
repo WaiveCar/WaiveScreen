@@ -52,4 +52,7 @@ usermod -G dialout -a $USER
 
 # Optimize the screen for power
 #powertop --auto-tune --debug
+
+# Make sure the paths from the lib are shared to the shell
+ainsl $DEST/.bashrc 'source $HOME/dcall nop'
 $DEST/dcall uuid
