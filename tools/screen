@@ -9,10 +9,12 @@ reload() {
 
 restart() {
   ssh screen "sudo reboot"&
+  sshpid=$!
   for i in `seq 3 -1 1`; do
     sleep 1
     echo -n "$i..."
   done
+  kill $sshpid
   pcycle
 }
 
