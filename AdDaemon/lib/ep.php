@@ -29,6 +29,9 @@ try {
   else if($func == 'sow') {
     jemit(sow($all));
   }
+  else if($func == 'jobs') {
+    jemit(jobs());
+  }
   else if($func == 'ping') {
     jemit(ping($all));
   }

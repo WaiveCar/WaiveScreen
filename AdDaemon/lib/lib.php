@@ -314,6 +314,9 @@ function upload_s3($file) {
   return $name;
 }
 
+function jobs() {
+  return db_all("select * from job");
+}
 
 function campaigns($clause = '') {
   return db_all("select * from campaign $clause");
