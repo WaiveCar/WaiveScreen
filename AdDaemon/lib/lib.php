@@ -337,7 +337,7 @@ function campaigns($clause = '') {
   return db_all("select * from campaign $clause");
 }
 function active_campaigns() {
-  return campaigns('where active=1 and end_time > current_timestamp and start_time < current_timestamp');
+  return campaigns('where active=1 and end_time > current_timestamp and start_time < current_timestamp and completed_seconds < duration_seconds');
 }
 function campaign_new($opts) {
   //
