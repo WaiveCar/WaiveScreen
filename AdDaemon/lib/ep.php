@@ -29,6 +29,9 @@ try {
   else if($func == 'sow') {
     jemit(sow($all));
   }
+  else if(array_search($func, ['jobs', 'campaigns', 'screens']) !== false) {
+    jemit(show(rtrim($func, 's')));
+  }
   else if($func == 'ping') {
     jemit(ping($all));
   }

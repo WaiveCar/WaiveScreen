@@ -198,6 +198,10 @@ function screens() {
   return db_all('select * from screen');
 }
 
+function update_campaign_completed($id) {
+  _query("update campaign set completed_seconds=(select sum(completed_seconds) from job where campaign_id=$id) where id=$id");
+}
+  
 function sow($payload) {
   if(isset($payload['uid'])) {
     $uid = $payload['uid'];
@@ -220,12 +224,23 @@ function sow($payload) {
   db_update('screen', db_string($uid), $data);
 
 	$jobList = aget($payload, 'jobs');
+  $campaignsToUpdateList = [];
   if($jobList) {
     foreach($jobList as $job) {
       if(!empty($job['id'])) {
         update_job($job['id'], $job['completed_seconds']);
+        if(!isset($job['campaign_id'])) {
+          $job = Get::job($id);
+        }
+        $campaignsToUpdateList[] = $job['campaign_id'];
       }
     }
+  }
+
+  // Make sure we update our grand totals on a per campaign basis when it comes in.
+  $uniqueCampaignList = array_unique($campaignsToUpdateList);
+  foreach($uniqueCampaignList as $campaign) {
+    update_campaign_completed($campaign);
   }
 
   $active = active_campaigns();
@@ -314,6 +329,9 @@ function upload_s3($file) {
   return $name;
 }
 
+function show($what) {
+  return db_all("select * from $what");
+}
 
 function campaigns($clause = '') {
   return db_all("select * from campaign $clause");
