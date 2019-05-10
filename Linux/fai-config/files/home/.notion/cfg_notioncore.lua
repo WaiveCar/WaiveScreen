@@ -21,22 +21,12 @@ defbindings("WScreen", {
     submap(META.."K", {
         bdoc("Go to first region demanding attention or previously active one."),
         kpress("K", "mod_menu.grabmenu(_, _sub, 'focuslist')"),
-        -- Alternative without (cyclable) menu
-        --kpress("K", "ioncore.goto_activity() or ioncore.goto_previous()"),
-
-        --bdoc("Go to previous active object."),
-        --kpress("K", "ioncore.goto_previous()"),
-        
-        --bdoc("Go to first object on activity/urgency list."),
-        --kpress("I", "ioncore.goto_activity()"),
         
         bdoc("Clear all tags."),
         kpress("T", "ioncore.tagged_clear()"),
     }),
 
     bdoc("Go to n:th screen on multihead setup."),
-    kpress(META.."Shift+1", "ioncore.goto_nth_screen(0)"),
-    kpress(META.."Shift+2", "ioncore.goto_nth_screen(1)"),
     
     bdoc("Go to next/previous screen on multihead setup."),
     kpress(META.."Shift+comma", "ioncore.goto_prev_screen()"),
@@ -130,7 +120,7 @@ defbindings("WMPlex.toplevel", {
 
 
     bdoc("Run a terminal emulator."),
-    kpress(OTHERMETA.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white -fa \"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*\" -fs 20 ')"),
+    kpress(OTHERMETA.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white -fa \"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*\" -fs 16 ')"),
     
     bdoc("Query for workspace to go to or create a new one."),
     kpress(ALTMETA.."9", "mod_query.query_workspace(_)"),
