@@ -272,6 +272,7 @@ function sow($payload) {
     }
   }, $nearby_campaigns);
   
+  // error_log(json_encode($job_list));
   return [
     'res' => true,
     'data' => $job_list
@@ -337,7 +338,7 @@ function campaigns($clause = '') {
   return db_all("select * from campaign $clause");
 }
 function active_campaigns() {
-  return campaigns('where active=1 and end_time > current_timestamp and start_time < current_timestamp');
+  return campaigns('where active=1 and end_time > current_timestamp and start_time < current_timestamp and completed_seconds < duration_seconds');
 }
 function campaign_new($opts) {
   //
@@ -361,7 +362,7 @@ function campaign_new($opts) {
   }
   $campaign_id = db_insert(
     'campaign', [
-      'active' => true,//false,
+      'active' => 1,//false,
       'asset' => db_string($opts['asset']),
       'duration_seconds' => $opts['duration'],
       'lat' => $opts['lat'],
