@@ -41,7 +41,6 @@ for($ix = 0; $ix < count($campaignList); $ix++){
     <div class='row'>
     <? foreach($campaignList as $campaign) { 
       $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
-      var_dump($campaign);
 ?>
       <div class="card" style="width: 18rem;">
         <img src="http://waivecar-prod.s3.amazonaws.com/<?= $campaign['asset'] ?>" class="card-img-top">
@@ -49,7 +48,11 @@ for($ix = 0; $ix < count($campaignList); $ix++){
           <div class="progress">
             <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
           </div>
-          <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a>
+          <p><?= $campaign['completed_seconds'] ?>/<?= $campaign['duration_seconds'] ?>s complete<br/>
+          <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a><br/>
+          Radius: <?= $campaign['radius'] ?>m</p>
+
+
   
           <h5 class="card-title">Card title</h5>
           <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
