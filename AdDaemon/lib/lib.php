@@ -230,7 +230,7 @@ function sow($payload) {
       if(!empty($job['id'])) {
         update_job($job['id'], $job['completed_seconds']);
         if(!isset($job['campaign_id'])) {
-          $job = Get::job($id);
+          $job = Get::job($job['id']);
         }
         $campaignsToUpdateList[] = $job['campaign_id'];
       }
