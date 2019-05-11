@@ -1,8 +1,28 @@
 <?
+include('../lib/lib.php');
+
 function get($ep) {
   return json_decode(file_get_contents("http://www.waivescreen.com/api/$ep"), true);
 }
+function get_addressList($list) {
+  $url="http://basic.waivecar.com/location.php?multi=" . urlencode(json_encode($list));
+  return curldo($url);
+}
+
+function get_address($obj) {
+  $url="http://basic.waivecar.com/location.php?latitude=${obj['lat']}&longitude=${obj['lng']}";
+  return curldo($url, ['raw' => true]);
+}
+
 $campaignList = get('campaigns');
+$addrList = get_addressList(array_map(function($row) { 
+  return [$row['lat'],$row['lng']]; 
+}, $campaignList));
+
+for($ix = 0; $ix < count($campaignList); $ix++){
+  $campaignList[$ix]['addr'] = $addrList[$ix];
+}
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -29,6 +49,8 @@ $campaignList = get('campaigns');
           <div class="progress">
             <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
           </div>
+          <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a>
+  
           <h5 class="card-title">Card title</h5>
           <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
           <a href="#" class="btn btn-primary">Go somewhere</a>
