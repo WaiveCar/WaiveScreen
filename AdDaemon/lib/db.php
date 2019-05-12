@@ -202,7 +202,11 @@ class Get {
     $arg = $argList[0];
     $key = 'id';
     if(!is_array($arg)) {
-      $arg = ['id' => $arg];
+      if((is_string($arg) || is_numeric($arg)) && !empty($arg)) {
+        $arg = ['id' => $arg];
+      } else {
+        return null;
+      }
     }
 
     $kvargs = [];
