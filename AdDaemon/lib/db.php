@@ -38,6 +38,10 @@ $SCHEMA = [
     'pings'       => 'integer default 0',
     'port'        => 'integer', 
     'active'      => 'boolean default true',
+    # If the device goes offline this will tell us
+    # what it is that dissappeared so we can check
+    'imei'        => 'text',
+    'phone'       => 'text',
     'first_seen'  => 'datetime', 
     'last_seen'   => 'datetime'
   ],
