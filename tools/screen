@@ -5,10 +5,16 @@ git() {
 
 reload() {
   pkill osd_cat
-  {
-    echo "Sync: "`cat /tmp/last-sync`
-    echo " Now: `date +%X`"
-  } | osd_cat -c white -o 10 -d 30 -f lucidasanstypewriter-bold-18 -o 2 -u black &
+
+  echo "Sync: "$(( $( date +%s ) - $( cat /tmp/last-sync ) )) \
+    | osd_cat \
+      -c white \
+      -S darkgray \
+      -s 2 \
+      -o 10 \
+      -d 30 \
+      -f lucidasanstypewriter-bold-24 &
+
   ssh screen "./reload"
 }
 
