@@ -6,12 +6,23 @@ export PATH=/usr/bin:/usr/sbin:$PATH:$DEST
 export BASE=$DEST/WaiveScreen
 export DEV=$BASE.nfs
 export VID=$DEST/capture
+export EV=/tmp/event
+
+if [ ! -d $EV ]; then 
+  mkdir -p $EV 
+  chmod 0777 $EV
+fi
 
 [[ $USER = 'root' ]] && SUDO= || SUDO=/usr/bin/sudo
 
 help() {
   # just show the local fuctions
   declare -F | sed s/'declare -f//g' | sort
+}
+
+set_event() {
+  touch $EV/$1
+  echo `date +%R:%S` $1
 }
 
 modem_enable() {
@@ -47,6 +58,7 @@ modem_connect() {
   nameserver 2001:4860:4860::8888 
   nameserver 2001:4860:4860::8844
 ENDL
+  set_event net
 }
 
 ssh_hole() {
@@ -61,15 +73,20 @@ sensor_daemon() {
   $SUDO $BASE/ScreenDaemon/SensorStore.py
 }
 
-git() {
-  if [ -e $DEST/WaiveScreen ]; then
-    cd $DEST/WaiveScreen
-    git pull
-  else  
-    cd $DEST
-    git clone git@github.com:WaiveCar/WaiveScreen.git
-    ainsl $DEST/.bashrc 'PATH=$PATH:$HOME/.local/bin' 'HOME/.local/bin'
-  fi
+git_waivescreen() {
+  {
+    # Make sure we're online
+    wait_for $EV/net
+
+    if [ -e $DEST/WaiveScreen ]; then
+      cd $DEST/WaiveScreen
+      git pull
+    else  
+      cd $DEST
+      git clone git@github.com:WaiveCar/WaiveScreen.git
+      ainsl $DEST/.bashrc 'PATH=$PATH:$HOME/.local/bin' 'HOME/.local/bin'
+    fi
+  } &
 }
 
 uuid() {
@@ -84,6 +101,18 @@ sync_scripts() {
   chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
 }
 
+wait_for() {
+  if [ ! -e "$1" ]; then
+    until [ -e "$1" ]; do
+      echo `date +%R:%S` WAIT $1
+      sleep 0.5
+    done
+    # Give it a little bit after the file exists to
+    # avoid unforseen race conditions
+    sleep 0.05
+  fi
+}
+
 dev_setup() {
   #
   # note! this usually runs as normal user
@@ -92,6 +121,7 @@ dev_setup() {
   [ -e $DEV ] || mkdir $DEV
 
   sshfs dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
+  set_event net
 }
 
 
@@ -101,6 +131,12 @@ install() {
 }
 
 show_ad() {
+  if [ ! -e $BASE ]; then
+    git_waivescreen
+    wait_for $BASE
+  fi
+
+  set_event chromium
   chromium --app=file://$BASE/ScreenDisplay/display.html
 }
 
