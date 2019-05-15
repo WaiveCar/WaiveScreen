@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export WHO=demo
+export WHO=adorno
 export DEST=/home/$WHO
 export PATH=/usr/bin:/usr/sbin:$PATH:$DEST
 export BASE=$DEST/WaiveScreen
