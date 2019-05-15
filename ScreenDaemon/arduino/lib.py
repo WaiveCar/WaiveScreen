@@ -74,8 +74,7 @@ def get_sensors():
         # low_power_mode will hold and record until voltage goes above 13.5V
         received_dict = low_power_mode(arduino, received_dict['Backlight'])
         # the below line will wake up the dpms if it's a linux machine
-        if sys.platform == "linux" or sys.platform == "linux2":
-            os.system("xset -display :0 dpms force on")
+        os.system("xset -display :0 dpms force on")
     """
 
 
@@ -104,14 +103,8 @@ def send_wakeup_signal(arduino):
 
 
 def send_sleep_signal():
-    if sys.platform == "linux" or sys.platform == "linux2":
-        os.system("xset -display :0 dpms force suspend")
-        """
-        if sys.platform == "linux" or sys.platform == "linux2":
-            os.system("sudo acpitool -s")
-        """
-    else:
-        os.system("rundll32.exe powrprof.dll,SetSuspendState sleep")
+    # os.system("xset -display :0 dpms force suspend")
+    # os.system("/usr/bin/sudo /usr/bin/acpitool -s")
 
 
 def arduino_read():
@@ -208,8 +201,7 @@ def low_power_mode(arduino, backlight_resume_value):
     set_backlight(arduino, 0)
     send_sleep_signal()
     now = time.localtime()
-    log_name = 'lowpower{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
-                                                                      now.tm_hour, now.tm_min, now.tm_sec)
+    log_name = 'lowpower{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
     i = 0
     df = pd.DataFrame(columns=['Time', 'Current', 'Voltage', 'Temp', 'Fan', 'Backlight'])
     received_dict = arduino_read()
