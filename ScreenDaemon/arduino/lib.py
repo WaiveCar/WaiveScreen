@@ -37,11 +37,11 @@ def close():
   
 def get_sensors():
     # first_read = first_read
-    df = pd.DataFrame(columns=['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y',
-                               'Gyro_z', 'Current', 'Voltage', 'Temp', 'Fan', 'Backlight'])
-    now = time.localtime()
-    log_name = '{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
-                                                              now.tm_hour, now.tm_min, now.tm_sec)
+    #df = pd.DataFrame(columns=['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y',
+    #                           'Gyro_z', 'Current', 'Voltage', 'Temp', 'Fan', 'Backlight'])
+    #now = time.localtime()
+    #log_name = '{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
+    #                                                          now.tm_hour, now.tm_min, now.tm_sec)
     arduino.reset_input_buffer()
     received_dict = arduino_read()
     moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
@@ -61,9 +61,9 @@ def get_sensors():
                 voltage_timeout = 0
             moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
                                                   last_smooth=last_smooth)
-    now = time.localtime()
-    log_name += '-{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
-                                                                now.tm_hour, now.tm_min, now.tm_sec)
+    #now = time.localtime()
+    #log_name += '-{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
+    #                                                            now.tm_hour, now.tm_min, now.tm_sec)
     # uncomment the below line to save the log to a folder called logs
     #df.to_csv("logs//{}.csv".format(log_name), index=False)
 
@@ -91,9 +91,7 @@ def set_fan_auto(arduino):
 
 
 def set_backlight(arduino, value):
-    backlight = value
-    if backlight > 255:
-        backlight = 255
+    backlight = min(value, 255)
     arduino.write('\x10'.encode())
     arduino.write(struct.pack('!B', backlight))
 
