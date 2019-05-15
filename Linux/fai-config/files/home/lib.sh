@@ -5,6 +5,7 @@ export DEST=/home/$WHO
 export PATH=/usr/bin:/usr/sbin:$PATH:$DEST
 export BASE=$DEST/WaiveScreen
 export DEV=$BASE.nfs
+export VID=$DEST/capture
 
 [[ $USER = 'root' ]] && SUDO= || SUDO=/usr/bin/sudo
 
