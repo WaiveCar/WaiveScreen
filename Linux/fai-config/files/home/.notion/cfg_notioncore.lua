@@ -107,31 +107,14 @@ defbindings("WGroupCW", {
 
 
 defbindings("WMPlex", {
-    bdoc("Close current object."),
-    kpress_wait(META.."C", "WRegion.rqclose_propagate(_, _sub)"),
     kpress_wait(OTHERMETA.."C", "WRegion.rqclose_propagate(_, _sub)"),
 })
 
 -- Frames for transient windows ignore this bindmap
 defbindings("WMPlex.toplevel", {
-    bdoc("Toggle tag of current object."),
-    kpress(META.."T", "WRegion.set_tagged(_sub, 'toggle')", "_sub:non-nil"),
     kpress(OTHERMETA.."T", "WRegion.set_tagged(_sub, 'toggle')", "_sub:non-nil"),
-
-
-    bdoc("Run a terminal emulator."),
     kpress(OTHERMETA.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white -fa \"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*\" -fs 16 ')"),
-    
-    bdoc("Query for workspace to go to or create a new one."),
-    kpress(ALTMETA.."9", "mod_query.query_workspace(_)"),
-    
-    bdoc("Query for a client window to go to."),
-    kpress(META.."G", "mod_query.query_gotoclient(_)"),
     kpress(OTHERMETA.."slash", "mod_query.query_gotoclient(_)"),
-    
-    bdoc("Display context menu."),
-    --kpress(META.."M", "mod_menu.menu(_, _sub, 'ctxmenu')"),
-    kpress(META.."M", "mod_query.query_menu(_, _sub, 'ctxmenu', 'Context menu:')"),
     kpress(OTHERMETA.."Delete",        "ioncore.restart()"),
     
     submap(META.."K", {
@@ -151,8 +134,6 @@ defbindings("WMPlex.toplevel", {
 -- frame bindings are found in some modules' configuration files.
 
 defbindings("WFrame", {
-    kpress(META.."H", "WFrame.maximize_horiz(_)"),
-    kpress(META.."V", "WFrame.maximize_vert(_)"),
     kpress(META.."2", "realmaximize(_)"),
     kpress(OTHERMETA.."2", "realmaximize(_)"),
     
@@ -184,13 +165,9 @@ defbindings("WFrame", {
 
 defbindings("WFrame.toplevel", {
     bdoc("Query for a client window to attach."),
-    kpress(META.."A", "mod_query.query_attachclient(_)"),
     kpress(OTHERMETA.."A", "mod_query.query_attachclient(_)"),
-    kpress(META.."1", "WFrame.switch_prev(_)"),
     kpress(OTHERMETA.."1", "WFrame.switch_prev(_)"),
-    kpress(META.."W", "WFrame.switch_prev(_)"),
     kpress(OTHERMETA.."W", "WFrame.switch_prev(_)"),
-    kpress(META.."E", "WFrame.switch_next(_)"),
     kpress(OTHERMETA.."E", "WFrame.switch_next(_)"),
     
     kpress(META.."V", "WFrame.maximize_vert(_)"),
@@ -273,16 +250,6 @@ defbindings("WMoveresMode", {
     kpress("B",     "WMoveresMode.resize(_, 0, 1, 0, 0)"),
     kpress("P",     "WMoveresMode.resize(_, 0, 0, 1, 0)"),
     kpress("N",     "WMoveresMode.resize(_, 0, 0, 0, 1)"),
-    
-    bdoc("Shrink in specified direction."),
-    kpress("Shift+Left",  "WMoveresMode.resize(_,-1, 0, 0, 0)"),
-    kpress("Shift+Right", "WMoveresMode.resize(_, 0,-1, 0, 0)"),
-    kpress("Shift+Up",    "WMoveresMode.resize(_, 0, 0,-1, 0)"),
-    kpress("Shift+Down",  "WMoveresMode.resize(_, 0, 0, 0,-1)"),
-    kpress("Shift+F",     "WMoveresMode.resize(_,-1, 0, 0, 0)"),
-    kpress("Shift+B",     "WMoveresMode.resize(_, 0,-1, 0, 0)"),
-    kpress("Shift+P",     "WMoveresMode.resize(_, 0, 0,-1, 0)"),
-    kpress("Shift+N",     "WMoveresMode.resize(_, 0, 0, 0,-1)"),
     
     bdoc("Move in specified direction."),
     kpress(META.."Left",  "WMoveresMode.move(_,-1, 0)"),
