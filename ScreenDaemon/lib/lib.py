@@ -29,6 +29,7 @@ storage_base = '/var/lib/waivescreen/'
 modem_iface = False
 modem_ix = 0
 modem_max = 10
+modem_info = {}
 def get_modem(try_again=False):
   global modem_iface, modem_ix
   
@@ -72,16 +73,20 @@ def get_modem(try_again=False):
 
 
 def get_modem_info():
-  modem = get_modem()
-  if not modem:
-    return {}
+  global modem_info
 
-  props = modem['device'].GetAll('org.freedesktop.ModemManager1.Modem')
+  if not modem_info:
+    modem = get_modem()
 
-  return {
-   'number': props['OwnNumbers'][0],
-   'imei': props['EquipmentIdentifier']
-  }
+    if modem:
+      props = modem['device'].GetAll('org.freedesktop.ModemManager1.Modem')
+
+      modem_info = {
+       'phone': props['OwnNumbers'][0],
+       'imei': props['EquipmentIdentifier']
+      }
+
+  return modem_info
 
   
 def urlify(what):
@@ -121,6 +126,7 @@ def ping():
   payload = {
     'uid': get_uuid(),
     'version': VERSION,
+    **get_modem_info
   }
 
   with requests.post(urlify('ping'), verify=False, json=payload) as response:
