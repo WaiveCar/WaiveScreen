@@ -50,6 +50,8 @@ done
 # Gives the user perms for arduino
 usermod -G dialout -a $USER
 
+chsh -s /bin/bash $USER
+
 # Optimize the screen for power
 #powertop --auto-tune --debug
 
