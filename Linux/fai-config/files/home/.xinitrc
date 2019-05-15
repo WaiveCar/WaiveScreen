@@ -4,15 +4,18 @@ resize() {
   xrandr --addmode HDMI-2 "1920x675_60.00"
   xrandr --output HDMI-1 --mode "1920x675_60.00"
   xrandr --output HDMI-2 --mode "1920x675_60.00"
+
   xrandr --output HDMI-1 --same-as HDMI-2
 }
+
+onebigscreen() {
+  xrandr --output HDMI-2 --above HDMI-1
+  xrandr --output HDMI-2 --reflect xy
+}
+
 #resize
 
 WHO=adorno
-
-# This makes it into a massive screen.
-#xrandr --output HDMI-2 --above HDMI-1
-#xrandr --output HDMI-2 --reflect xy
 
 xhost +
 
@@ -27,9 +30,6 @@ unclutter -idle 1 -root &
 
 # Blueshift through geocode
 redshift & 
-# I REALLY FUCKING WISH THIS WOULD WORK IN THE RC.LOCAL BUT
-# IT DOES NOT ... AUGHHHHGHGHGH
-/home/$WHO/manual-set-ipv4.sh > /tmp/output &
 su -c "/home/$WHO/start-x-stuff.sh $DISPLAY" - $WHO
 
 sleep 10000000
