@@ -120,7 +120,7 @@ dev_setup() {
   $SUDO dhclient enp3s0 
   [ -e $DEV ] || mkdir $DEV
 
-  sshfs dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
+  sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO) dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
   set_event net
 }
 
