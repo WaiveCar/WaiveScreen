@@ -35,6 +35,8 @@ modem_enable
 ssh_hole
 screen_daemon
 
+wait_for chromium
+
 while [ 0 ]; do
 
   count=`pgrep chromium | wc -l`
