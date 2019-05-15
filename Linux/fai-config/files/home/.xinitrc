@@ -8,6 +8,8 @@ resize() {
 }
 #resize
 
+WHO=adorno
+
 # This makes it into a massive screen.
 #xrandr --output HDMI-2 --above HDMI-1
 #xrandr --output HDMI-2 --reflect xy
@@ -27,7 +29,7 @@ unclutter -idle 1 -root &
 redshift & 
 # I REALLY FUCKING WISH THIS WOULD WORK IN THE RC.LOCAL BUT
 # IT DOES NOT ... AUGHHHHGHGHGH
-/home/demo/manual-set-ipv4.sh > /tmp/output &
-su -c "/home/demo/start-x-stuff.sh $DISPLAY" - demo 
+/home/$WHO/manual-set-ipv4.sh > /tmp/output &
+su -c "/home/$WHO/start-x-stuff.sh $DISPLAY" - $WHO
 
 sleep 10000000
