@@ -4,7 +4,7 @@ CP="cp -pvu"
 USER=adorno
 DEST=/home/$USER
 
-cp -pvuTr ../files/home $DEST
+cp -vuTr --preserve=mode,timestamps ../files/home $DEST
 chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
 
 # xinit is going to be at a root level
