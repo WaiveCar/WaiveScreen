@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 import lib.lib as lib
 import sys
+import json
 
 if len(sys.argv) > 1:
-    eval("lib." + sys.argv[1] + "()")
+    res = eval("lib." + sys.argv[1] + "()")
+    print(json.dumps(res))
 else:
     print("I need an argument")
     [print(" {}".format(x)) for x in sorted(list(set(dir(lib)) - set(dir())))]
