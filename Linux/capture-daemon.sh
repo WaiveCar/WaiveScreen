@@ -1,16 +1,17 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $DIR/env.sh
-mkdir -p $DIRPID $DIRCAPTURE
+mkdir -p $VID
 [ $ENV == "TEST" ] && set -x
 
 pkill -9 ffmpeg
 duration=600
 while [ 0 ] ; do
-  echo -e $$ > $DIRPID/capture.pid
+  echo -e $$ > /tmp/capture.pid
   now=`date +%Y%m%d%H%M%S`
   for i in `seq 0 2 8`; do
-    fname=$DIRCAPTURE/camera-$now-$i.mkv
+    fname=$VID/camera-$now-$i.mkv
+
     if [ $ENV == "TEST" ]; then
       touch $fname
     else
