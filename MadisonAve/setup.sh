@@ -6,4 +6,3 @@ pip3 install --upgrade pip setuptools
 sudo pip3 install -r requirements.txt
 sudo npm -g install sass
 npm install
-sqlite3 ad-platform.db < create-tables.sql
