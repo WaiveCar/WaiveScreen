@@ -4,9 +4,12 @@ import configparser
 import os
 import requests
 import json
+import dbus
+from pprint import pprint
 
 VERSION = os.popen("/usr/bin/git describe").read().strip()
 UUID = False
+BUS = dbus.SystemBus()
 
 # Eventually we can change this but right now nothing is live
 SERVER_URL = 'http://www.waivescreen.com/api/'
@@ -23,7 +26,64 @@ storage_base = '/var/lib/waivescreen/'
   3. talks to ad daemon using most recent data from database for lat/lng
 """
 
+modem_iface = False
+modem_ix = 0
+modem_max = 10
+def get_modem(try_again=False):
+  global modem_iface, modem_ix
+  
+  # If we've found it previously than don't
+  # worry looking.
+  if modem_iface:
+    return modem_iface
 
+  # If we really tried to find it and couldn't
+  if modem_ix == modem_max:
+    # we have an option to run through things
+    # again if someone tries to manually enable
+    # the modem.
+    if try_again:
+      modem_ix = 0
+
+    else:
+      return False
+
+  
+  # Try modem_max eps to find a modem.
+  for i in range(modem_ix, modem_max):
+    try: 
+      proxy = BUS.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/Modem/{}'.format(i))
+      modem_iface = {
+        'proxy': proxy,
+        'device': dbus.Interface(proxy, dbus_interface='org.freedesktop.DBus.Properties'),
+        'location': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Location'),
+        'time': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Time')
+      }
+      modem_iface['location'].GetLocation()
+  
+      # if we get here then we know that our modem works
+      break
+  
+    except Exception as exc:
+      print(exc)
+      pass
+
+  return modem_iface
+
+
+def get_modem_info():
+  modem = get_modem()
+  if not modem:
+    return {}
+
+  props = modem['device'].GetAll('org.freedesktop.ModemManager1.Modem')
+
+  return {
+   'number': props['OwnNumbers'][0],
+   'imei': props['EquipmentIdentifier']
+  }
+
+  
 def urlify(what):
   return "{}/{}".format(SERVER_URL, what)
 
