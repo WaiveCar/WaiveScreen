@@ -7,8 +7,14 @@ reload() {
   ssh screen "./reload"
 }
 
-restart() {
-  ssh screen "sudo reboot"&
+# This was a version of restart before we
+# got power management working, which
+# we do by setting the following up in bios
+#
+# Advanced ▷ LPSS & SCC Configuration ▷ OS Selection ▷ Android
+#
+oldrestart() {
+  restart
   sshpid=$!
   for i in `seq 3 -1 1`; do
     sleep 1
@@ -16,6 +22,10 @@ restart() {
   done
   kill $sshpid
   pcycle
+}
+
+restart() {
+  ssh screen "sudo reboot"&
 }
 
 for i in $*; do
