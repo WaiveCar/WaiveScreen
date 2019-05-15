@@ -31,17 +31,25 @@ $SCHEMA = [
 
   'screen' => [
     'id'          => 'integer primary key autoincrement', 
+
+    # A uid self-reported by the screen (as of the writing
+    # of this comment, using dmidecode to get the CPU ID)
     'uid'         => 'text not null', 
+
+    # A human readable name
+    'name'        => 'text',
+
+    # If the device goes offline this will tell us
+    # what it is that dissappeared so we can check
+    'imei'        => 'text',
+    'phone'       => 'text',
+
     'lat'         => 'float default null',
     'lng'         => 'float default null',
     'version'     => 'text',
     'pings'       => 'integer default 0',
     'port'        => 'integer', 
     'active'      => 'boolean default true',
-    # If the device goes offline this will tell us
-    # what it is that dissappeared so we can check
-    'imei'        => 'text',
-    'phone'       => 'text',
     'first_seen'  => 'datetime', 
     'last_seen'   => 'datetime'
   ],
