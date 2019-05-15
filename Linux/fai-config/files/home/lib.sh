@@ -7,6 +7,14 @@ export BASE=$DEST/WaiveScreen
 export DEV=$BASE.nfs
 export VID=$DEST/capture
 export EV=/tmp/event
+#
+# Valid values are "production" and "development"
+#
+# These are used for things like flask so you really
+# shouldn't be lazy and shorten them unless you want
+# to somehow accomodate for that fact.
+#
+export ENV=`cat $DEST/.env`
 
 if [ ! -d $EV ]; then 
   mkdir -p $EV 
@@ -66,7 +74,7 @@ ssh_hole() {
 }
 
 screen_daemon() {
-  FLASK_ENV=development $BASE/ScreenDaemon/ScreenDaemon.py
+  FLASK_ENV=$ENV $BASE/ScreenDaemon/ScreenDaemon.py
 }
 
 sensor_daemon() {
@@ -117,10 +125,12 @@ dev_setup() {
   #
   # note! this usually runs as normal user
   #
+  echo 'development' > $DEST/.env
   $SUDO dhclient enp3s0 
   [ -e $DEV ] || mkdir $DEV
 
   sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO) dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
+  export BASE=$DEST/WaiveScreen.nfs
   set_event net
 }
 
