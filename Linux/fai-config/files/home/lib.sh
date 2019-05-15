@@ -4,7 +4,7 @@ export WHO=adorno
 export DEST=/home/$WHO
 export PATH=/usr/bin:/usr/sbin:$PATH:$DEST
 export BASE=$DEST/WaiveScreen
-export DEV=$BASE.nfs
+export DEV=$BASE.sshfs
 export VID=$DEST/capture
 export EV=/tmp/event
 #
@@ -130,7 +130,7 @@ dev_setup() {
   [ -e $DEV ] || mkdir $DEV
 
   sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO) dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
-  export BASE=$DEST/WaiveScreen.nfs
+  export BASE=$DEV
   set_event net
 }
 
