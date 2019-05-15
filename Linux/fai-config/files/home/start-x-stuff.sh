@@ -8,11 +8,6 @@ unique() {
   fi
 }
 
-get_online() {
-  sleep 15
-  sudo $DEST/manual-set-ipv4.sh
-}
-
 export DISPLAY=$1
 /usr/bin/notion &
 
@@ -26,16 +21,18 @@ export DISPLAY=$1
 
 unique
 show_ad &
+
 # TODO: comment out b4 prod
 dev_setup
 
-# Like getting online and opening up our ssh hole
-#get_online
+# Get online and open up our ssh hole
 modem_enable
+
+# modem_connect
 ssh_hole
 screen_daemon
 
-wait_for chromium
+wait_for $EV/chromium
 
 while [ 0 ]; do
 
