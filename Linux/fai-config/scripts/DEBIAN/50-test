@@ -7,6 +7,9 @@ DEST=/home/$USER
 cp -vuTr --preserve=mode,timestamps ../files/home $DEST
 chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
 
+# Allow any user to create a logfile.
+chmod 0777 /var/log
+
 # xinit is going to be at a root level
 $CP ../files/home/.xinitrc ~root
 rm $DEST/.xinitrc
