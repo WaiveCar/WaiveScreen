@@ -21,6 +21,7 @@ if [ ! -d $EV ]; then
   chmod 0777 $EV
 fi
 
+[[ $ENV = 'development' ]] && export BASE=$DEV
 [[ $USER = 'root' ]] && SUDO= || SUDO=/usr/bin/sudo
 
 help() {
@@ -29,17 +30,27 @@ help() {
 }
 
 set_event() {
-  touch $EV/$1
+  pid=${2:-!}
+  echo $pid > $EV/$1
   echo `date +%R:%S` $1
 }
 
 modem_enable() {
-  $SUDO mmcli -m 0 -e
+  for i in $( seq 1 5 ); do
+    $SUDO mmcli -m 0 -e
 
-  $SUDO mmcli -m 0 \
-    --location-enable-gps-raw \
-    --location-enable-gps-nmea \
-    --location-set-enable-signal
+    if [ ! $? ]; then 
+      echo 'trying again'
+      sleep 1
+      continue
+    fi
+
+    $SUDO mmcli -m 0 \
+      --location-enable-gps-raw \
+      --location-enable-gps-nmea \
+      --location-set-enable-signal
+    break
+  done
 }
 
 modem_connect() {
@@ -55,9 +66,9 @@ modem_connect() {
   $SUDO dhclient $wwan &
 
   # Show the config | find ipv4 | drop the LHS | replace the colons with equals | drop the whitespace | put everything on one line
-  eval `mmcli -b 0 | grep -A 3 IPv4| awk -F '|' ' { print $2 } ' | sed s'/: /=/' | sed -E s'/\s+//' | tr '\n' ';'`
+  eval `mmcli -b 0 | grep -A 3 IPv4 | awk -F '|' ' { print $2 } ' | sed s'/: /=/' | sed -E s'/\s+//' | tr '\n' ';'`
 
-  $SUDO ip addr add $address/$prefix  dev $wwan
+  $SUDO ip addr add $address/$prefix dev $wwan
   $SUDO ip route add default via $gateway dev $wwan
 
   cat << ENDL | $SUDO tee /etc/resolv.conf
@@ -66,25 +77,27 @@ modem_connect() {
   nameserver 2001:4860:4860::8888 
   nameserver 2001:4860:4860::8844
 ENDL
-  set_event net
+  set_event net ''
 }
 
 ssh_hole() {
-  $BASE/ScreenDaemon/dcall emit_startup | /bin/sh
+  $SUDO $BASE/ScreenDaemon/dcall emit_startup | /bin/sh
 }
 
 screen_daemon() {
   FLASK_ENV=$ENV $BASE/ScreenDaemon/ScreenDaemon.py
+  set_event screen_daemon
 }
 
 sensor_daemon() {
   $SUDO $BASE/ScreenDaemon/SensorStore.py
+  set_event sensor_daemon
 }
 
 git_waivescreen() {
   {
     # Make sure we're online
-    wait_for $EV/net
+    wait_for net
 
     if [ -e $DEST/WaiveScreen ]; then
       cd $DEST/WaiveScreen
@@ -110,11 +123,14 @@ sync_scripts() {
 }
 
 wait_for() {
-  if [ ! -e "$1" ]; then
-    until [ -e "$1" ]; do
+  path=${2:-$EV}/$1
+
+  if [ ! -e "$path" ]; then
+    until [ -e "$path" ]; do
       echo `date +%R:%S` WAIT $1
       sleep 0.5
     done
+
     # Give it a little bit after the file exists to
     # avoid unforseen race conditions
     sleep 0.05
@@ -125,13 +141,13 @@ dev_setup() {
   #
   # note! this usually runs as normal user
   #
-  echo 'development' > $DEST/.env
+  echo development > $DEST/.env
   $SUDO dhclient enp3s0 
   [ -e $DEV ] || mkdir $DEV
 
   sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO) dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
   export BASE=$DEV
-  set_event net
+  set_event net ''
 }
 
 
@@ -141,26 +157,45 @@ install() {
 }
 
 show_ad() {
+  export DISPLAY=${DISPLAY:-:0}
+  [[ $ENV = 'development' ]] && wait_for net
+
   if [ ! -e $BASE ]; then
     git_waivescreen
-    wait_for $BASE
+    wait_for $BASE ''
   fi
 
+  chromium --app=file://$BASE/ScreenDisplay/display.html &
   set_event chromium
-  chromium --app=file://$BASE/ScreenDisplay/display.html
 }
 
 loop_ad() {
-  while true; do
+  {
+    while pgrep Xorg; do
 
-    while pgrep chromium; do
-      sleep 5
+      while pgrep chromium; do
+        sleep 5
+      done
+
+      show_ad
     done
+  } > /dev/null
+}
 
-    pgrep Xorg || exit
-
-    show_ad
+down() {
+  cd $EV
+  for pidfile in $( ls ); do
+    echo $pidfile
+    [ -s "$pidfile" ] && kill $( cat $pidfile )
+    rm $pidfile > /dev/null
   done
+}
+
+xrestart() {
+  {
+    $SUDO pkill Xorg
+    $SUDO xinit
+  } &
 }
 
 nop() { 
