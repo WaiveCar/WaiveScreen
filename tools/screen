@@ -1,6 +1,16 @@
-#!/bin/sh
+#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 git() {
   ssh screen "cd WaiveScreen;git pull"
+}
+
+list() {
+  curl -s waivescreen.com/api/screens | python -mjson.tool
+}
+
+connect() {
+  ssh -i $DIR/../Linux/keys/ScreenAccess adorno@waivescreen.com -p 7000
 }
 
 reload() {
@@ -52,6 +62,8 @@ restart() {
 for i in $*; do
   case $1 in
     git) git ;;
+    list) list ;;
+    connect) connect $1 ;;
     sync|reload) reload ;;
     on) on.js ;;
     off) off.js ;;
