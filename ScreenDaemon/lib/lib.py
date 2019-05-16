@@ -16,11 +16,11 @@ UUID = False
 BUS = dbus.SystemBus()
 
 # Eventually we can change this but right now nothing is live
-SERVER_URL = 'http://www.waivescreen.com/api/'
+SERVER_URL = 'http://waivescreen.com/api/'
 
 # We aren't always calling from something with flask
 if 'app' in dir() and app.config['ENV'] == 'development':
-  SERVER_URL = 'http://www.waivescreen.com/api/' 
+  SERVER_URL = 'http://waivescreen.com/api/' 
 
 storage_base = '/var/lib/waivescreen/'
 
