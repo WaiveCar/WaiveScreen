@@ -206,6 +206,10 @@ function get_campaign_completion($id) {
 }
 
 class Get {
+  public static function doquery($qstr) {
+    return _query($qstr, 'querySingle');
+  }
+
   public static function __callStatic($name, $argList) {
     $arg = $argList[0];
     $key = 'id';
@@ -232,7 +236,13 @@ class Get {
     $kvstr = implode(' and ', $kvargs);
 
     $qstr = "select * from $name where $kvstr";
-    return _query($qstr, 'querySingle');
+    return static::doquery($qstr);
+  }
+};
+
+class Many extends Get {
+  public static function doquery($qstr) {
+    return db_all($qstr);
   }
 };
 

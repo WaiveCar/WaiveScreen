@@ -131,7 +131,7 @@ function create_screen($uid, $data = []) {
 }
 
 function find_unfinished_job($campaignId, $screenId) {
-  return Get::job([
+  return Many::job([
     'campaign_id' => $campaignId,
     'screen_id' => $screenId,
     'completed_seconds < goal'
@@ -139,6 +139,7 @@ function find_unfinished_job($campaignId, $screenId) {
 }
 
 function ping($data) {
+  error_log(json_encode($data));
   if(!isset($data['uid'])) {
     return doError("You need to pass in a UID");
   }
