@@ -3,7 +3,10 @@ body {
   margin: 0;
   background: #000;
 }
-img { 
+video {
+  object-fit: fill;
+}
+video,img { 
   width: 100%;
   height: 100%;
   position: absolute;
@@ -51,7 +54,23 @@ var dbMap = {},
 //  'job_end', 'datetime'
 //
 
+function video(what, nobase) {
+  var vid = document.createElement('video');
+  var src = document.createElement('source');
+  vid.setAttribute('preload', 'auto');
+  vid.setAttribute('loop', 'true');
+  vid.appendChild(src);
+  src.src = what;
+  return vid; 
+}
+  
 function image(what, nobase) {
+  var ext = what.split('.').pop();
+
+  if(['mp4','ogv','mpeg','webm','flv','avi'].includes(ext.toLowerCase()) ) {
+    return video(what, nobase);
+  }
+
   var img = document.createElement('img');
   img.onerror = function() {
     if(fallback.url) {
@@ -126,6 +145,18 @@ function sow(payload) {
   });
 }
 
+function prepare(dom) {
+  // test if it's a video
+  window.d = dom;
+  if (dom.pause) {
+    dom.currentTime = 0;
+    dom.play();
+  } else {
+    console.log('hi');
+  }
+}
+
+
 function loop() {
   setInterval(function() {
     // We note something we call "breaks" which designate which asset to show.
@@ -171,10 +202,12 @@ function loop() {
     if(prev) {
       try {
         if(prev.what !== toShow.what) {
+          console.log("trying to fadeout");
           // we reset the downweight -- it can come back
           prev.downweight = 1;
 
           prev.dom.classList.add('fadeOut');
+          toShow.dom.play();
           setTimeout(function() {
             prev.dom.classList.remove('fadeOut');
             document.body.removeChild(prev.dom);
@@ -189,6 +222,7 @@ function loop() {
       sow({id: toShow.id, completed_seconds: toShow.completed_seconds});
     } else {
       toShow.dom.classList.add('fadeIn');
+      prepare(toShow.dom);
       document.body.appendChild(toShow.dom);
     }
     // regardless of what happened above we downweight 
@@ -205,12 +239,32 @@ function loop() {
 }
 
 window.onload = function init() {
+  var v = video('output001.mp4');
+  document.body.appendChild(v);
+  v.play();
+  self.v = v;
+  /*
   fallback = {
     what: 'fallback.png',
     dom:  image('fallback.png', true),
     completed_seconds: 0
   };
   sow();
+  loop();
+  */
+  let ix = 0;
+  let list = 'out001.mp4 out002.mp4 out003.mp4 out004.mp4 out005.mp4 out006.mp4 out007.mp4 out008.mp4 out009.mp4 out010.mp4 out011.mp4 out012.mp4 out.mp4 output000.mp4 output001.mp4 output002.mp4 output003.mp4 output004.mp4';
+  for(let v of list.split(' ')) {
+
+    dbMap[ix++] = {
+      // this is used for comparison to know
+      // when we should be flipping the image
+      what: ix,
+      dom: image(v),
+      completed_seconds: 0,
+      goal: 180,
+    };
+  }
   loop();
 }
 </script>
