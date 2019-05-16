@@ -9,7 +9,7 @@ notion &
 [ -e $DEST/screen-splash.png ] && display -window root $DEST/screen-splash.png
 
 # Everything above is stuff we can run every time we start X
-(( $( pgrep start-x-stuff ) > 2 )) && exit -1
+(( $( pgrep start-x-stuff | wc -l ) > 2 )) && exit -1
 
 # Everything below should be stuff that we only need to run once
 loop_ad &
@@ -22,5 +22,8 @@ dev_setup
 # TODO: put this in
 # modem_connect
 
-ssh_hole
-screen_daemon
+set_event xstartup $$
+
+wait_for net
+  ssh_hole
+  screen_daemon
