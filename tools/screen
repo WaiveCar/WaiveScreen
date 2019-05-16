@@ -4,6 +4,14 @@ git() {
 }
 
 reload() {
+  LOCK=/tmp/sync-screen
+  if [ -e $LOCK ] ; then
+    echo "Woops, not running with $LOCK existing ($( stat -c %y $LOCK )). Are you already running this?"
+    exit -1
+  fi
+
+  touch $LOCK
+
   pkill osd_cat
 
   echo "Sync: "$(( $( date +%s ) - $( cat /tmp/last-sync ) )) \
@@ -16,6 +24,8 @@ reload() {
       -f lucidasanstypewriter-bold-24 &
 
   ssh screen "./reload"
+
+  rm $LOCK
 }
 
 # This was a version of restart before we
@@ -42,7 +52,7 @@ restart() {
 for i in $*; do
   case $1 in
     git) git ;;
-    reload) reload ;;
+    sync|reload) reload ;;
     on) on.js ;;
     off) off.js ;;
     force) pcycle ;;
