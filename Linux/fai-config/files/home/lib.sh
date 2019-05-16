@@ -150,6 +150,19 @@ show_ad() {
   chromium --app=file://$BASE/ScreenDisplay/display.html
 }
 
+loop_ad() {
+  while true; do
+
+    while pgrep chromium; do
+      sleep 5
+    done
+
+    pgrep Xorg || exit
+
+    show_ad
+  done
+}
+
 nop() { 
   true
 }
