@@ -131,31 +131,36 @@ function create_screen($uid, $data = []) {
 }
 
 function find_unfinished_job($campaignId, $screenId) {
-  return Get::job([
+  $res = Many::job([
     'campaign_id' => $campaignId,
     'screen_id' => $screenId,
     'completed_seconds < goal'
   ]);
+  //error_log(json_encode([$campaignId,$screenId, $res]));
+  return $res;
 }
 
 function ping($data) {
+  error_log(json_encode($data));
   if(!isset($data['uid'])) {
     return doError("You need to pass in a UID");
   }
 
   $uid = $data['uid'];
-  $version = db_string(aget($data, 'version'));
 
   $screen = Get::screen(['uid' => $uid]);
+  $obj = [ 'last_seen' => 'current_timestamp' ];
+  foreach(['imei','version','phone'] as $key) {
+    if(isset($data[$key])) {
+      $obj[$key] = db_string(aget($data, $key));
+    }
+  }
 
   if(!$screen) {
-    $screen = create_screen($uid, ['version' => $version]);
+    $screen = create_screen($uid, $obj);
   } else {
-    db_update('screen', $screen['id'], [
-      'pings'     => intval($screen['pings']) + 1,
-      'version'   => $version,
-      'last_seen' => 'current_timestamp'
-    ]);
+    $obj['pings'] = intval($screen['pings']) + 1;
+    db_update('screen', $screen['id'], $obj);
   }
 
   return $screen;
@@ -163,6 +168,9 @@ function ping($data) {
 
 function create_job($campaignId, $screenId) {
   $ttl = get_campaign_remaining($campaignId);
+  if($ttl < 0) {
+    return false;
+  }
   $campaign = Get::campaign($campaignId);
 
   $goal = min($ttl, 60 * 4);
@@ -230,7 +238,9 @@ function sow($payload) {
       if(!empty($job['id'])) {
         update_job($job['id'], $job['completed_seconds']);
         if(!isset($job['campaign_id'])) {
+          error_log(json_encode([]));
           $job = Get::job($job['id']);
+          error_log(json_encode($job));
         }
         $campaignsToUpdateList[] = $job['campaign_id'];
       }
@@ -262,13 +272,15 @@ function sow($payload) {
       $job = create_job($campaign['id'], $screen['id']);
     }
     if($job) {
+      if(isset($job['id'])) {
 
-      $res = array_merge([
-        'job_id' => $job['id'],
-        'campaign_id' => $campaign['id'],
-        'asset' => $campaign['asset']
-      ], $job);
-      return $res;
+        $res = array_merge([
+          'job_id' => $job['id'],
+          'campaign_id' => $campaign['id'],
+          'asset' => $campaign['asset']
+        ], $job);
+        return $res;
+      }
     }
   }, $nearby_campaigns);
   

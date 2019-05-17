@@ -2,7 +2,7 @@
 include('../lib/lib.php');
 
 function get($ep) {
-  return json_decode(file_get_contents("http://www.waivescreen.com/api/$ep"), true);
+  return json_decode(file_get_contents("http://waivescreen.com/api/$ep"), true);
 }
 function get_addressList($list) {
   $url="http://basic.waivecar.com/location.php?multi=" . urlencode(json_encode($list));

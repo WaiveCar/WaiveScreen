@@ -1,11 +1,21 @@
 #!/bin/bash
 
 CP="cp -pvu"
-USER=demo
+USER=adorno
 DEST=/home/$USER
 
-cp -pvuTr ../files/home $DEST
+[ -e $DEST/.env ] && cp -p $DEST/.env $DEST/.env-saveme
+cp -vuTr --preserve=mode,timestamps ../files/home $DEST
 chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
+[ -e $DEST/.env-saveme ] && mv $DEST/.env-saveme $DEST/.env
+
+# Allow any user to create a logfile.
+chmod 0777 /var/log
+
+# This shouldn't be necessary, but permissions seem to
+# want to just snap back after the above thing is done.
+touch /var/log/screendaemon.log
+chown $USER.$USER /var/log/screendaemon.log
 
 # xinit is going to be at a root level
 $CP ../files/home/.xinitrc ~root
@@ -49,6 +59,8 @@ done
 
 # Gives the user perms for arduino
 usermod -G dialout -a $USER
+
+chsh -s /bin/bash $USER
 
 # Optimize the screen for power
 #powertop --auto-tune --debug

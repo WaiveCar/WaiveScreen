@@ -1,3 +1,0 @@
-ENV=TEST
-DIRPID=/tmp/pid
-DIRCAPTURE=$HOME/capture

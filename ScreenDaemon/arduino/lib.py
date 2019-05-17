@@ -35,48 +35,32 @@ def close():
   if arduino:
     arduino.close()
   
-def get_sensors():
-    # first_read = first_read
-    df = pd.DataFrame(columns=['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y',
-                               'Gyro_z', 'Current', 'Voltage', 'Temp', 'Fan', 'Backlight'])
-    now = time.localtime()
-    log_name = '{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
-                                                              now.tm_hour, now.tm_min, now.tm_sec)
-    arduino.reset_input_buffer()
-    received_dict = arduino_read()
-    moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
-                                          last_smooth={'x': 0.0, 'y': 0.0, 'z': 0.0})
-    voltage = received_dict['Voltage']
-    i = 0
-    voltage_timeout = 0
-    while voltage > 12.5 or moving or voltage_timeout < 150:
-        received_dict = arduino_read()
-        if received_dict != -1:
-            # df.loc[i] = received_dict
-            i += 1
-            voltage = received_dict['Voltage']
-            if voltage < 12.5:
-                voltage_timeout += 1
-            else:
-                voltage_timeout = 0
-            moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
-                                                  last_smooth=last_smooth)
-    now = time.localtime()
-    log_name += '-{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
-                                                                now.tm_hour, now.tm_min, now.tm_sec)
-    # uncomment the below line to save the log to a folder called logs
-    #df.to_csv("logs//{}.csv".format(log_name), index=False)
+def power_management():
+  setup()
 
-    return received_dict
-    """
+  arduino.reset_input_buffer()
+  received_dict = arduino_read()
+  moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
+                                        last_smooth={'x': 0.0, 'y': 0.0, 'z': 0.0})
+  voltage = received_dict['Voltage']
+  voltage_timeout = 0
+  while voltage > 12.5 or moving or voltage_timeout < 150:
+    received_dict = arduino_read()
+    if received_dict != -1:
+      voltage = received_dict['Voltage']
+      if voltage < 12.5:
+          voltage_timeout += 1
+      else:
+          voltage_timeout = 0
+      moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
+                                            last_smooth=last_smooth)
     current = received_dict['Current']
     if voltage < 12.5 and current > 1:
-        # low_power_mode will hold and record until voltage goes above 13.5V
-        received_dict = low_power_mode(arduino, received_dict['Backlight'])
-        # the below line will wake up the dpms if it's a linux machine
-        if sys.platform == "linux" or sys.platform == "linux2":
-            os.system("xset -display :0 dpms force on")
-    """
+      # low_power_mode will hold and record until voltage goes above 13.5V
+
+      received_dict = low_power_mode(arduino, received_dict['Backlight'])
+      # the below line will wake up the dpms if it's a linux machine
+      os.system("xset -display :0 dpms force on")
 
 
 def set_fan_speed(arduino, value):
@@ -92,26 +76,13 @@ def set_fan_auto(arduino):
 
 
 def set_backlight(arduino, value):
-    backlight = value
-    if backlight > 255:
-        backlight = 255
+    backlight = min(value, 255)
     arduino.write('\x10'.encode())
     arduino.write(struct.pack('!B', backlight))
 
 
 def send_wakeup_signal(arduino):
     arduino.write(b'\x11\xff')
-
-
-def send_sleep_signal():
-    if sys.platform == "linux" or sys.platform == "linux2":
-        os.system("xset -display :0 dpms force suspend")
-        """
-        if sys.platform == "linux" or sys.platform == "linux2":
-            os.system("sudo acpitool -s")
-        """
-    else:
-        os.system("rundll32.exe powrprof.dll,SetSuspendState sleep")
 
 
 def arduino_read():
@@ -207,20 +178,15 @@ def low_power_mode(arduino, backlight_resume_value):
     stored_backlight_value = backlight_resume_value
     set_backlight(arduino, 0)
     send_sleep_signal()
-    now = time.localtime()
-    log_name = 'lowpower{}.{:02d}.{:02d}.{:02d}.{:02d}.{:02d}'.format(now.tm_year, now.tm_mon, now.tm_mday,
-                                                                      now.tm_hour, now.tm_min, now.tm_sec)
+
+    os.system("xset -display :0 dpms force suspend")
+
+    # This shuts things down.
+    os.system("/usr/bin/sudo /usr/bin/acpitool -s")
+
     i = 0
-    df = pd.DataFrame(columns=['Time', 'Current', 'Voltage', 'Temp', 'Fan', 'Backlight'])
     received_dict = arduino_read()
-    df.loc[i] = {
-        'Time': received_dict['Time'],
-        'Current': received_dict['Current'],
-        'Voltage': received_dict['Voltage'],
-        'Temp': received_dict['Temp'],
-        'Fan': received_dict['Fan'],
-        'Backlight': received_dict['Backlight']
-    }
+
     # todo: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
     # triggered by either the door closing or the car starting to move.
     z_init = received_dict['Accel_z']

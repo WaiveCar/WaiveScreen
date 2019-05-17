@@ -1,16 +1,21 @@
 This things uses FAI and will eventually be on a USB stick. The fai-config is where the screen install magic lives.
 
-You'll need to manually copy 
-  * ModemManager/data/org.freedesktop.ModemManager1.conf to /etc/dbus-1/system.d/org.freedesktop.ModemManager1.conf manually
-  * ModemManager/data/org.freedesktop.ModemManager1.service to /etc/systemd/system/dbus-org.freedesktop.ModemManager1.service
 
+FAI notes
 
-Here's the SystemD layout
+  I really fucking hate this thing but it appears to be the best 
+  solution for our needs. The documentation is ambiguous atrocious
+  and terrible.  I have nothing good to say about it but it appears
+  to be able to get the job done.  Here's the mirror command I used
 
+  fai-mirror -v -cDEBIAN,DEMO,FAIBASE /srv/debian
 
-```
--rw-r--r-- 1 root root 416 Sep 14 17:01 ./system/ModemManager.service
-lrwxrwxrwx 1 root root  40 Sep 14 17:05 ./system/multi-user.target.wants/ModemManager1.service -> /lib/systemd/system/ModemManager.service
-lrwxrwxrwx 1 root root  40 Sep 14 17:07 ./system/multi-user.target.wants/ModemManager.service -> /etc/systemd/system/ModemManager.service
-lrwxrwxrwx 1 root root  40 Sep 14 17:07 ./system/dbus-org.freedesktop.ModemManager1.service -> /etc/systemd/system/ModemManager.service
-```
+  * Additional scripts have to have 0777 permissions and be owned by root
+
+  * Softupdates are done from the client
+
+  * The client has to have fai and nfs-common on it in order to do a softupdate
+
+  * The PWD the scripts are run from is /var/lib/fai/config/scripts
+
+  * The shell output goes into an obscurely documented file called shell.log

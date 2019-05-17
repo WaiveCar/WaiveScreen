@@ -5,18 +5,22 @@ import os
 import requests
 import json
 import dbus
+import time
 from pprint import pprint
 
+# This is needed for the git describe to succeed
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 VERSION = os.popen("/usr/bin/git describe").read().strip()
+
 UUID = False
 BUS = dbus.SystemBus()
 
 # Eventually we can change this but right now nothing is live
-SERVER_URL = 'http://www.waivescreen.com/api/'
+SERVER_URL = 'http://waivescreen.com/api/'
 
 # We aren't always calling from something with flask
 if 'app' in dir() and app.config['ENV'] == 'development':
-  SERVER_URL = 'http://www.waivescreen.com/api/' 
+  SERVER_URL = 'http://waivescreen.com/api/' 
 
 storage_base = '/var/lib/waivescreen/'
 
@@ -52,20 +56,23 @@ def get_modem(try_again=False):
   
   # Try modem_max eps to find a modem.
   for i in range(modem_ix, modem_max):
+    ix = i % 2
     try: 
-      proxy = BUS.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/Modem/{}'.format(i))
+      proxy = BUS.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/Modem/{}'.format(ix))
       modem_iface = {
         'proxy': proxy,
+        'modem': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem'),
         'device': dbus.Interface(proxy, dbus_interface='org.freedesktop.DBus.Properties'),
         'location': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Location'),
         'time': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Time')
       }
-      modem_iface['location'].GetLocation()
+      modem_iface['modem'].Enable(True)
   
       # if we get here then we know that our modem works
       break
   
     except Exception as exc:
+      time.sleep(1)
       print(exc)
       pass
 
@@ -126,7 +133,7 @@ def ping():
   payload = {
     'uid': get_uuid(),
     'version': VERSION,
-    **get_modem_info
+    **get_modem_info()
   }
 
   with requests.post(urlify('ping'), verify=False, json=payload) as response:
