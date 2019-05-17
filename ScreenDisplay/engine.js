@@ -1,9 +1,11 @@
-var dbMap = {},
-  // a global pointer to the current job object.
+var 
+  _dbMap = {},
   _last = false,
   _fallback,
   _base = 'http://waivecar-prod.s3.amazonaws.com/',
   _downweight = 0.7,
+  _nop = new Function(),
+  _isNetUp = true,
   _duration = 7.5;
 
 //
@@ -18,77 +20,132 @@ var dbMap = {},
 //  'job_end', 'datetime'
 //
 
-function video(what, nobase) {
+function assetError(obj, e) {
+  // TODO we need to report an improperly loading
+  // asset to our servers somehow so we can remedy
+  // the situation.
+  obj.active = false;
+  console.log("Making " + obj.url + " inactive");
+}
+
+function video(obj) {
   var vid = document.createElement('video');
   var src = document.createElement('source');
+
   vid.setAttribute('preload', 'auto');
   vid.setAttribute('loop', 'true');
   vid.appendChild(src);
-  src.src = what;
-  return vid; 
+
+  src.src = obj.url;
+  obj.dom = vid;
+
+  obj.run = function() {
+    vid.currentTime = 0;
+    vid.play();
+  }
+
+  vid.ondurationchange = function(e) {
+    // This will only come if things are playable.
+    obj.duration = obj.duration || e.target.duration;
+    obj.active = true;
+  }
+
+  // notice this is on the src object and not the vid
+  // containers.
+  src.onerror = function(e) {
+    assetError(obj, e);
+  }
+
+  return obj;
 }
   
-function image(what, nobase) {
-  var ext = what.split('.').pop();
+// All the things returned from this have 2 properties
+// 
+//  run() - for videos it resets the time and starts the video
+//  duration - how long the asset should be displayed.
+//
+function makeAsset(obj) {
+  obj.downweight = obj.downweight || 1;
+  obj.completed_seconds = obj.completed_seconds || 0;
+  obj.what = obj.what || obj.url;
 
-  if(['mp4','ogv','mpeg','webm','flv','avi'].includes(ext.toLowerCase()) ) {
-    return video(what, nobase);
-  }
+  //
+  // We don't want to manually set this.
+  // obj.goal
+  //
 
-  var img = document.createElement('img');
-  img.onerror = function() {
-    if(_fallback.url) {
-      this.src = _fallback.url;
-      _last.err = 'NOT_FOUND';
-    }
-  }
-  img.onload = function() {
-    if(_last && 'err' in _last) {
-      delete _last.err;
-    }
-  }
-  if(nobase) {
-    img.src = what;
+  var ext = obj.url.split('.').pop();
+  if(['mp4','ogv','mpeg','webm','flv','3gp','avi'].includes(ext.toLowerCase()) ) {
+    obj = video(obj);
   } else {
-    img.src = _base + what;
+
+    var img = document.createElement('img');
+
+    obj.active = true;
+    obj.duration = obj.duration || _duration;
+    obj.run = _nop;
+    obj.dom = img;
+
+    img.onerror = function(e) {
+      assetError(obj, e);
+    }
+    img.onload = function() {
+      obj.active = true;
+    }
+    img.src = obj.url;
   }
-  img.src_ = what;
-  return img;
+    
+  return obj;
 }
 
 // LRU cache invalidation should eventually exist.
 function addJob(job) {
-  if(!dbMap[job.campaign_id]) {
+  if(!_dbMap[job.campaign_id]) {
 
     // this acts as the instantiation. 
     // the merging of the rest of the data
     // will come below.
-    dbMap[job.campaign_id] = {
-      // this is used for comparison to know
-      // when we should be flipping the image
-      what: job.asset,
-      dom: image(job.asset),
-      completed_seconds: 0,
-    };
+    _dbMap[job.campaign_id] = makeAsset({ url: job.asset });
   }
 
-  dbMap[job.campaign_id] = Object.assign(
-    dbMap[job.campaign_id], job
+  _dbMap[job.campaign_id] = Object.assign(
+    _dbMap[job.campaign_id], job
   );
 
-  return dbMap[job.campaign_id];
+  return _dbMap[job.campaign_id];
 }
 
+// TODO: A circular buffer to try and navigate poor network
+// conditions.
 function post(url, what, cb) {
+  post.ix = (post.ix + 1) % post.size;
+
+  if(post.lock) {
+    console.log("Not posting, locked on " + post.lock);
+    return false;
+  }
+  // Try to avoid a barrage of requests
+  post.lock = post.ix;
+
   var http = new XMLHttpRequest();
 
   http.open('POST', 'http://localhost:4096/' + url, true);
   http.setRequestHeader('Content-type', 'application/json');
 
   http.onreadystatechange = function() {
-    if(http.readyState == 4 && http.status == 200) {
-      cb(JSON.parse(http.responseText));
+    if(http.readyState == 4) {
+      post.lock = false;
+      if( http.status == 200) {
+        _isNetUp = true;
+        cb(JSON.parse(http.responseText));
+      }
     }
+  }
+
+  http.onabort = http.onerror = http.ontimeout = http.onloadend = function(){
+    // ehhh ... maybe we just can't contact things?
+    _isNetUp = false;
+    post.lock = false;
   }
   
   if(what) {
@@ -97,6 +154,8 @@ function post(url, what, cb) {
     http.send();
   }
 }
+post.size = 5000;
+post.ix = 0;
 
 function sow(payload) {
   post('sow', payload, function(res) {
@@ -108,16 +167,7 @@ function sow(payload) {
   });
 }
 
-function prepare(dom) {
-  // test if it's a video
-  if (dom.pause) {
-    dom.currentTime = 0;
-    dom.play();
-  }
-}
-
-
-function nextad() {
+function nextAd() {
   // We note something we call "breaks" which designate which asset to show.
   // This is a composite of what remains - this is two pass, eh, kill me.
   //
@@ -144,29 +194,23 @@ function nextad() {
   // In this model, a fair dice would show ad 2 80% of the time.
   //
   var 
+    activeList = Object.values(_dbMap).filter(row => row.active),
+
     // Here's the range of numbers, calculated by looking at all the remaining things we have to satisfy
-    range = Object.values(dbMap).reduce(function (a, b) { return a + b.downweight * (b.goal - b.completed_seconds) }, 0),
+    range = activeList.reduce( (a,b) => a + b.downweight * (b.goal - b.completed_seconds), 0),
 
     // We do this "dice roll" to see 
     breakpoint = Math.random() * range,
-    current, 
-
-    // This is different from our global _duration. In the case of videos we 
-    // default to the duration of the video.
-    duration,
-    prev = _last;
+    current;
 
   // If there's nothing we have to show then we fallback to our default asset
   if( range <= 0 ) {
     console.log("Range < 0, using fallback");
     current = _fallback;
   } else {
-    let 
-      row,
-      accum = 0;
+    let accum = 0;
 
-    for(key in dbMap) {
-      row = dbMap[key];
+    for(let row of activeList) {
 
       accum += row.downweight * (row.goal - row.completed_seconds);
       if(accum > breakpoint) {
@@ -179,60 +223,46 @@ function nextad() {
     }
   }
 
-  current.completed_seconds += _duration;
+  // 
+  // By this time we know what we plan on showing.
+  //
+  current.completed_seconds += current.duration;
+  current.downweight *= _downweight;
 
-  if(prev) {
-    if(prev.what !== current.what) {
+  if(!_last || _last.what != current.what) {
+    if(_last) {
       // we reset the downweight -- it can come back
-      prev.downweight = 1;
+      _last.downweight = 1;
+      _last.dom.classList.add('fadeOut');
 
-      prev.dom.classList.add('fadeOut');
-      current.dom.classList.add('fadeIn');
-
-      prepare(current.dom);
+      // This is NEEDED because by the time 
+      // we come back around, _last will be 
+      // redefined.
+      let prev = _last;
       setTimeout(function() {
         prev.dom.classList.remove('fadeOut');
         document.body.removeChild(prev.dom);
       }, 500);
-
-      document.body.appendChild(current.dom);
     }
-    sow({id: current.id, completed_seconds: current.completed_seconds});
-  } else {
+
     current.dom.classList.add('fadeIn');
-    prepare(current.dom);
+    current.run();
     document.body.appendChild(current.dom);
+
+    // This is a problem because we are stating they are completed prior
+    // to them actually running - this is more about what we "plan" to do
+    sow({id: current.id, completed_seconds: current.completed_seconds});
   }
 
-  current.downweight *= _downweight;
-
   _last = current;
+  setTimeout(nextAd, current.duration * 1000);
 }
 
 window.onload = function init() {
-  /*
-  _fallback = {
-    what: 'fallback.png',
-    dom:  image('fallback.png', true),
-    completed_seconds: 0
-  };
-  sow();
-  loop();
-  */
-  let ix = 0;
-  let list = 'out001.mp4 out002.mp4 out003.mp4 out004.mp4 out005.mp4 out006.mp4 out007.mp4 out008.mp4 out009.mp4 out010.mp4 out011.mp4 out012.mp4 out.mp4 output000.mp4 output001.mp4 output002.mp4 output003.mp4 output004.mp4';
+  _fallback = makeAsset({ url: 'fallback.png', duration: 0.1 });
+  let list = 'out001.mp4 out002.mp4 out003.mp4 out004.mp4 out005.mp4 out006.mp4 out007.mp4 out008.mp4 out009.mp4 out010.mp4 out011.mp4 out012.mp4 output000.mp4 output001.mp4 output002.mp4 output003.mp4 output004.mp4';
   for(let v of list.split(' ')) {
-
-    dbMap[ix++] = {
-      // this is used for comparison to know
-      // when we should be flipping the image
-      what: ix,
-      dom: image(v),
-      downweight: 1,
-      completed_seconds: 0,
-      goal: 180,
-    };
+    _dbMap[v] = makeAsset({ url: v, goal: 180 });
   }
-  nextad();
-  //setInterval(nextad, _duration * 1000);
+  nextAd();
 }
