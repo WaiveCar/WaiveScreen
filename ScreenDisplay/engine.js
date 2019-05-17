@@ -207,6 +207,17 @@ function nextAd() {
   if( range <= 0 ) {
     console.log("Range < 0, using fallback");
     current = _fallback;
+    if(activeList.length == 0) {
+      // If we just haven't loaded the assets then
+      // we can cut the duration down
+      current.duration = 0.1;
+    } else {
+      // Otherwise we have satisfied everything and
+      // maybe just can't contact the server ... push
+      // this out to some significant number
+      current.duration = 20;
+    }
+
   } else {
     let accum = 0;
 
