@@ -42,11 +42,6 @@ defctxmenu("WTiling", "Tiling", {
     menuentry("Destroy frame", 
               "WTiling.unsplit_at(_, _sub)"),
 
-    menuentry("Split vertically", 
-              "WTiling.split_at(_, _sub, 'bottom', true)"),
-    menuentry("Split horizontally", 
-              "WTiling.split_at(_, _sub, 'right', true)"),
-    
     menuentry("Flip", "WTiling.flip_at(_, _sub)"),
     menuentry("Transpose", "WTiling.transpose_at(_, _sub)"),
     

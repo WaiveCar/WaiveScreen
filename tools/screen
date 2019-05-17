@@ -1,14 +1,51 @@
-#!/bin/sh
+#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 git() {
   ssh screen "cd WaiveScreen;git pull"
 }
 
-reload() {
-  ssh screen "./reload"
+list() {
+  curl -s waivescreen.com/api/screens | python -mjson.tool
 }
 
-restart() {
-  ssh screen "sudo reboot"&
+connect() {
+  ssh -i $DIR/../Linux/keys/ScreenAccess adorno@waivescreen.com -p 7000
+}
+
+reload() {
+  LOCK=/tmp/sync-screen
+  if [ -e $LOCK ] ; then
+    echo "Woops, not running with $LOCK existing ($( stat -c %y $LOCK )). Are you already running this?"
+    exit -1
+  fi
+
+  touch $LOCK
+
+  pkill osd_cat
+
+  echo "Sync: "$(( $( date +%s ) - $( cat /tmp/last-sync ) )) \
+    | osd_cat \
+      -c white \
+      -S darkgray \
+      -s 2 \
+      -o 10 \
+      -d 30 \
+      -f lucidasanstypewriter-bold-24 &
+
+  ssh screen "./reload"
+
+  rm $LOCK
+}
+
+# This was a version of restart before we
+# got power management working, which
+# we do by setting the following up in bios
+#
+# Advanced ▷ LPSS & SCC Configuration ▷ OS Selection ▷ Android
+#
+oldrestart() {
+  restart
   sshpid=$!
   for i in `seq 3 -1 1`; do
     sleep 1
@@ -18,10 +55,16 @@ restart() {
   pcycle
 }
 
+restart() {
+  ssh screen "sudo reboot"&
+}
+
 for i in $*; do
   case $1 in
     git) git ;;
-    reload) reload ;;
+    list) list ;;
+    connect) connect $1 ;;
+    sync|reload) reload ;;
     on) on.js ;;
     off) off.js ;;
     force) pcycle ;;

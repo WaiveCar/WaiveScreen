@@ -8,8 +8,13 @@ UTC=yes
 TIMEZONE=America/Los_Angeles
 
 # the hash of the root password for the new installed linux system
-# pw is "fai"
-ROOTPW='$1$kBnWcO.E$djxB128U7dMkrltJHPf6d1'
+# pw is "waivelet"
+#
+# This is made by 
+# 
+#  openssl passwd -1 -salt $RANDOM  waivelet
+#
+ROOTPW='$1$15569$GUk859A5nd.cODs6WAdJR0'
 
 # errors in tasks greater than this value will cause the installation to stop
 STOP_ON_ERROR=700
@@ -18,5 +23,5 @@ STOP_ON_ERROR=700
 MAXPACKAGES=800
 
 # a user account will be created
-username=demo
-USERPW='$1$kBnWcO.E$djxB128U7dMkrltJHPf6d1'
+username=adorno
+USERPW='$1$25289$Dcnt3cKbubWxa8BYZyrQt1'

@@ -151,7 +151,7 @@ def upsert(table, data):
     return last
 
   except:
-    logging.warn("Unable to upsert a record {}".format(qstr))
+    logging.warn("Unable to upsert a record {}".format(','.join([str(x) for x in values])))
 
 
 # Ok so if column order or type changes, this isn't found ... nor
@@ -419,7 +419,7 @@ def run(query, args=None, with_last=False, db=None):
       raise Exception("0 rows")
 
   except Exception as exc:
-    print(query, args)
+    logging.info(query)
     raise exc
 
   finally:

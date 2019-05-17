@@ -1,216 +1,44 @@
-<style>
-body {
-  margin: 0;
-  background: #000;
-}
-img { 
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-@keyframes fadeOut {
-  0% {opacity: 1;}
-  100% {opacity: 0;} 
-} 
-@keyframes fadeIn {
-  0% {opacity: 0;}
-  100% {opacity: 1;} 
-} 
-.fadeOut {
-  animation-name: fadeOut;
-  animation-duration: 0.4s;
-}
-.fadeIn {
-  animation-name: fadeIn;
-  animation-duration: 0.4s;
-}
-</style>
-
-<body>
-  <div id=dbg></div>
-</body>
-
-<script>
-var dbMap = {},
-  // a global pointer to the current job object.
-  _last = false,
-  fallback,
-  duration = 2;
-
-//
-// The job schema coming in, copied from the python lib/db.py code:
-//
-//  'id', 'integer primary key autoincrement'
-//  'campaign_id', 'integer'
-//  'goal', 'integer'
-//  'completion_seconds', 'integer default 0'
-//  'last_update', 'datetime default current_timestamp'
-//  'job_start',  'datetime'
-//  'job_end', 'datetime'
-//
-
-function image(what, nobase) {
-  var img = document.createElement('img');
-  img.onerror = function() {
-    if(fallback.url) {
-      this.src = fallback.url;
-      _last.err = 'NOT_FOUND';
+<!doctype html5>
+<html>
+  <head>
+    <title>WaiveScreen</title>
+    <style>
+    body {
+      margin: 0;
+      background: #000;
     }
-  }
-  img.onload = function() {
-    if(_last && 'err' in _last) {
-      delete _last.err;
+    video {
+      object-fit: fill;
     }
-  }
-  if(nobase) {
-    img.src = what;
-  } else {
-    img.src = image.base + what;
-  }
-  img.src_ = what;
-  return img;
-}
-image.base = 'http://waivecar-prod.s3.amazonaws.com/';
-
-// LRU cache invalidation should eventually exist.
-function addJob(job) {
-  if(!dbMap[job.campaign_id]) {
-
-    // this acts as the instantiation. 
-    // the merging of the rest of the data
-    // will come below.
-    dbMap[job.campaign_id] = {
-      // this is used for comparison to know
-      // when we should be flipping the image
-      what: job.asset,
-      dom: image(job.asset),
-      completed_seconds: 0,
-    };
-  }
-
-  dbMap[job.campaign_id] = Object.assign(
-    dbMap[job.campaign_id], job
-  );
-
-  return dbMap[job.campaign_id];
-}
-
-function post(url, what, cb) {
-  var http = new XMLHttpRequest();
-
-  http.open('POST', 'http://localhost:4096/' + url, true);
-  http.setRequestHeader('Content-type', 'application/json');
-
-  http.onreadystatechange = function() {
-    if(http.readyState == 4 && http.status == 200) {
-      cb(JSON.parse(http.responseText));
+    video,img { 
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
-  }
-  
-  if(what) {
-    http.send(JSON.stringify(what));
-  } else {
-    http.send();
-  }
-}
-
-function sow(payload) {
-  post('sow', payload, function(res) {
-    if(res.res) {
-      res.data.forEach(function(row) {
-        addJob(row);
-      })
+    @keyframes fadeOut {
+      0% {opacity: 1;}
+      100% {opacity: 0;} 
+    } 
+    @keyframes fadeIn {
+      0% {opacity: 0;}
+      100% {opacity: 1;} 
+    } 
+    .fadeOut {
+      animation-name: fadeOut;
+      animation-duration: 0.4s;
     }
-  });
-}
-
-function loop() {
-  setInterval(function() {
-    // We note something we call "breaks" which designate which asset to show.
-    // This is a composite of what remains - this is two pass, eh, kill me.
-    //
-    // Also this heavily favors new jobs or pinpoint jobs in a linear distribution
-    // which may be the "right" thing to do but it makes the product look a little 
-    // bad.
-    // 
-    // We could sqrt() the game which would make the linear slant not look so crazy
-    // but that's not the point ... the point is to change if we can.
-    //
-    // so what we do is "downweight" the previous by some compounding constant, like 0.70
-    //
-    var total = Object.values(dbMap).reduce(function (a, b) { return a + (b.downweight || 1) * (b.goal - b.completed_seconds) }, 0),
-      breakpoint = Math.random() * total,
-      toShow, 
-      accum = 0, 
-      row, 
-      prev = _last;
-
-    if(total <= 0 ) {
-      toShow = fallback;
-    } else {
-
-      for(key in dbMap) {
-        row = dbMap[key];
-
-        accum += (row.downweight || 1) * (row.goal - row.completed_seconds);
-        if(accum > breakpoint) {
-          toShow = row;
-          break;
-        }
-      }
-      if(!toShow) {
-        toShow = row;
-      }
+    .fadeIn {
+      animation-name: fadeIn;
+      animation-duration: 0.4s;
     }
+    </style>
+  </head>
 
-    toShow.completed_seconds += duration;
-    console.log(breakpoint, total, toShow.id, toShow.goal, toShow.completed_seconds, toShow.downweight);
+  <body>
+    <div id=dbg></div>
+  </body>
 
-    if(prev) {
-      try {
-        if(prev.what !== toShow.what) {
-          // we reset the downweight -- it can come back
-          prev.downweight = 1;
-
-          prev.dom.classList.add('fadeOut');
-          setTimeout(function() {
-            prev.dom.classList.remove('fadeOut');
-            document.body.removeChild(prev.dom);
-          }, 500);
-        }
-      } catch(ex) { console.log(ex)} 
-      if(prev.what !== toShow.what) {
-
-        toShow.dom.classList.add('fadeIn');
-        document.body.appendChild(toShow.dom);
-      }
-      sow({id: toShow.id, completed_seconds: toShow.completed_seconds});
-    } else {
-      toShow.dom.classList.add('fadeIn');
-      document.body.appendChild(toShow.dom);
-    }
-    // regardless of what happened above we downweight 
-    // our current by our constant.
-    if(isNaN(toShow.downweight)) {
-      console.log("broken");
-      toShow.downweight = 1;
-    }
-
-    toShow.downweight *= 0.8;
-
-    _last = toShow;
-  }, duration * 1000);
-}
-
-window.onload = function init() {
-  fallback = {
-    what: 'fallback.png',
-    dom:  image('fallback.png', true),
-    completed_seconds: 0
-  };
-  sow();
-  loop();
-}
-</script>
+  <script src="engine.js"></script>
+</html>
