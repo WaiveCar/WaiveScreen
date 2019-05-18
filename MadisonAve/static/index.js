@@ -3,6 +3,7 @@ var dealMap = {
     shoestring: { price: 999 },
     standard: { price: 2999 }
   }, 
+  fileList = [],
   uploadInput,
   // This 'state' is used to store anything that is needed within this scope
   state = { 
@@ -57,7 +58,7 @@ function create_campaign(obj) {
     config: {
       headers: { 'Content-Type': 'multipart/form-data' },
     },
-  }).then(resp => {
+  }).then(function(resp) {
     if(resp.res) {
       state.campaign_id = res.data;
     }
@@ -79,13 +80,16 @@ function create_campaign(obj) {
   });
 }
 
+function renderPreview() {
+}
+
 $(function() {
   let parser = new DOMParser();
 
   let parentNode = document.getElementById('popular-list');
   // The code below generates the html that gives the user options for different
   // popular locations
-  state.allLocations.forEach((option, i) => {
+  state.allLocations.forEach(function(option, i) {
     let checked = (i == 1) ? 'checked' : '';
     let html = parser.parseFromString(`
       <div onclick="selectLocation(this)" class="card text-center ${checked}">
@@ -98,15 +102,25 @@ $(function() {
 
   // The event handler below handles the user uploading new files
   uploadInput = document.getElementById('image-upload');
-  uploadInput.addEventListener('change', () => {
-    let reader = new FileReader();
-    reader.onload = e => {
-      let previewImage = document.getElementById('preview-image');
-      previewImage.src = e.target.result;
-      previewImage.style.visibility = 'visible';
-      $("#upload-holder label").html("Change Image");
-    };
-    reader.readAsDataURL(uploadInput.files[0]);
+  uploadInput.addEventListener('change', function() {
+    var container = $(".preview-holder");
+    container.empty();
+
+    Array.prototype.slice.call(uploadInput.files).forEach(function(file) {
+
+      let reader = new FileReader();
+
+      reader.onload = function(e) {
+        console.log('load', e.target);
+        var img = document.createElement('img');
+        img.src = e.target.result;
+        container.append(img);
+      };
+      console.log('ar', file);
+      reader.readAsDataURL(file);
+    });
+
+    $("#upload-holder label").html("Change Image");
   });
 
   paypal.Button.render({
