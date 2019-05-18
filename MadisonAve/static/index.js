@@ -3,6 +3,7 @@ var dealMap = {
     shoestring: { price: 999 },
     standard: { price: 2999 }
   }, 
+  duration = 0,
   fileList = [],
   uploadInput,
   // This 'state' is used to store anything that is needed within this scope
@@ -80,6 +81,20 @@ function create_campaign(obj) {
   });
 }
 
+function addtime(n) {
+  if(n === false) {
+    duration = 0;
+    $("#runtime").hide();
+  } else {
+    duration += n;
+    if(duration == 0) {
+      $("#runtime").hide();
+    } else {
+      $("#runtime").html("Runtime: " + duration + " sec").show();
+    }
+  }
+}
+
 $(function() {
   let parser = new DOMParser();
 
@@ -111,6 +126,7 @@ $(function() {
     var container = $(".preview-holder");
     container.empty();
 
+    addtime(false);
     Array.prototype.slice.call(uploadInput.files).forEach(function(file) {
 
       let reader = new FileReader();
@@ -129,6 +145,7 @@ $(function() {
           asset.onload = function() {
             resize(asset, asset.width, asset.height);
             container.append(row);
+            addtime( 7.5 );
           }
 
           asset.src = e.target.result;
@@ -148,6 +165,7 @@ $(function() {
             asset.play();
             resize(asset, asset.videoWidth, asset.videoHeight);
             container.append(row);
+            addtime( e.target.duration );
           }
         }
 
