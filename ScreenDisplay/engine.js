@@ -8,18 +8,6 @@ var
   _isNetUp = true,
   _duration = 7.5;
 
-//
-// The job schema coming in, copied from the python lib/db.py code:
-//
-//  'id', 'integer primary key autoincrement'
-//  'campaign_id', 'integer'
-//  'goal', 'integer'
-//  'completion_seconds', 'integer default 0'
-//  'last_update', 'datetime default current_timestamp'
-//  'job_start',  'datetime'
-//  'job_end', 'datetime'
-//
-
 function assetError(obj, e) {
   // TODO we need to report an improperly loading
   // asset to our servers somehow so we can remedy
