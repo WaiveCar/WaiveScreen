@@ -80,9 +80,6 @@ function create_campaign(obj) {
   });
 }
 
-function renderPreview() {
-}
-
 $(function() {
   let parser = new DOMParser();
 
@@ -100,6 +97,14 @@ $(function() {
     parentNode.append(html);
   });
 
+  function resize(asset, width, height) {
+    if( height * (1920/756) > width) {
+      asset.style.height = '100%';
+    } else {
+      asset.style.width = '100%';
+    }
+  }
+
   // The event handler below handles the user uploading new files
   uploadInput = document.getElementById('image-upload');
   uploadInput.addEventListener('change', function() {
@@ -111,16 +116,47 @@ $(function() {
       let reader = new FileReader();
 
       reader.onload = function(e) {
-        console.log('load', e.target);
-        var img = document.createElement('img');
-        img.src = e.target.result;
-        container.append(img);
+        var asset;
+
+        let row = $(
+          ['<div class="screen">',
+             '<img src="assets/screen-black.png" class="bg">',
+             '<div class="asset-container"></div>',
+          '</div>'].join(''));
+
+        if(file.type.split('/')[0] === 'image') {
+          asset = document.createElement('img');
+          asset.onload = function() {
+            resize(asset, asset.width, asset.height);
+            container.append(row);
+          }
+
+          asset.src = e.target.result;
+          asset.className = 'asset';
+        } else {
+          asset = document.createElement('video');
+          var src = document.createElement('source');
+
+          asset.setAttribute('preload', 'auto');
+          asset.setAttribute('loop', 'true');
+          asset.appendChild(src);
+
+          src.src = e.target.result;
+
+          asset.ondurationchange = function(e) {
+            asset.currentTime = 0;
+            asset.play();
+            resize(asset, asset.videoWidth, asset.videoHeight);
+            container.append(row);
+          }
+        }
+
+        $(".asset-container", row).append(asset);
       };
-      console.log('ar', file);
       reader.readAsDataURL(file);
     });
 
-    $("#upload-holder label").html("Change Image");
+    $("#upload-holder label").html("Change Assets");
   });
 
   paypal.Button.render({
