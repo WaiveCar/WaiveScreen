@@ -182,7 +182,7 @@ var Engine = function(opts){
           obj.active = true;
           asset.active = true;
         }
-        img.src = obj.url;
+        img.src = url;
 
         asset.active = true;
         // TODO: per asset custom duration 
@@ -204,12 +204,15 @@ var Engine = function(opts){
       // this acts as the instantiation. 
       // the merging of the rest of the data
       // will come below.
+      console.log(job.asset);
       _res.db[job.campaign_id] = makeJob({ url: job.asset });
     }
 
+    /*
     _res.db[job.campaign_id] = merge(
       _res.db[job.campaign_id], job
     );
+    */
 
     return _res.db[job.campaign_id];
   }
@@ -399,6 +402,7 @@ var Engine = function(opts){
       // Here's the range of numbers, calculated by looking at all the remaining things we have to satisfy
       range = activeList.reduce( (a,b) => a + b.downweight * (b.goal - b.completed_seconds), 0),
 
+      row, accum = 0,
       // We do this "dice roll" to see 
       breakpoint = Math.random() * range;
 
@@ -406,21 +410,21 @@ var Engine = function(opts){
     if( range <= 0 ) {
       console.log("Range < 0, using fallback");
       _current = _fallback;
-      if(activeList.length == 0) {
+      if(activeList.length == 0 && Object.values(_res.db) > 1) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
-        setAssetDuration(_current, 0, 0.5);
+        setAssetDuration(_current, 0, 1);
       } else {
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
         // this out to some significant number
-        setAssetDuration(_current, 0, 20);
+        setAssetDuration(_current, 0, 1);
       }
 
     } else {
-      let accum = 0;
-
-      for(let row of activeList) {
+      // This is needed for the end case.
+      _current = false;
+      for(row of activeList) {
 
         accum += row.downweight * (row.goal - row.completed_seconds);
         if(accum > breakpoint) {
@@ -431,6 +435,7 @@ var Engine = function(opts){
       if(!_current) {
         _current = row;
       }
+      console.log('>>>', _current);
     }
 
     // 
@@ -468,6 +473,8 @@ var Engine = function(opts){
     Start: function(){
       _res.container.classList.add('engine');
       _res.SetFallback();
+      // Try to initially contact the server
+      sow();
       nextJob();
     },
     SetFallback: function(url) {
