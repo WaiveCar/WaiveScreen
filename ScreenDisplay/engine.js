@@ -1,6 +1,35 @@
+// This code, written in 2019, is designed to run on say, I dunno, IE 10 or so (2012)
+// so ES6/ECMA2015 things are off the table for now. A few modern things are ok, 
+// like Array.forEach, dom.classList, etc, but things like {[a]: 1, ...b} are probably not.
+//
+// If you're reading this and it's like 2022 or something, then go ahead and reconsider it,
+// it'll probably be fine by then.
+//
 var Engine = function(opts){
+  // Support {
+
+  // Edge 12 FF 34 (2015)
+  var merge = Object.assign || function (a,b) {
+    for(var k in b) {
+      a[k] = b[k];
+    }
+    return a;
+  }
+
+  // Edge 14 FF 43 (2016)
+  // Note: Not a true polyfill, this is just how I use it in practice.
+  if(!Array.prototype.includes) {
+    Object.defineProperty(Array.prototype, 'includes', {
+      value: function(valueToFind) {
+        return this.indexOf(valueToFind) !== -1;
+      }
+    });
+  }
+  // } End of support.
+
+
   var 
-    _res = Object.assign({
+    _res = merge({
       // This is what the ads attach to
       container: document.body,
 
@@ -12,15 +41,19 @@ var Engine = function(opts){
 
       db: {},
 
+      duration: 7.5,
+
       base: 'http://waivecar-prod.s3.amazonaws.com/',
     }, opts || {}),
     _last = false,
     _downweight = 0.7,
     _nop = function(){},
     _isNetUp = true,
-    _fallback,
-    _duration = 7.5;
+    _fallback;
 
+  function isString(obj) { 
+    return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
+  }
 
   function assetError(obj, e) {
     // TODO we need to report an improperly loading
@@ -69,35 +102,47 @@ var Engine = function(opts){
   function makeAsset(obj) {
     obj.downweight = obj.downweight || 1;
     obj.completed_seconds = obj.completed_seconds || 0;
-    obj.what = obj.what || obj.url;
+    // obj.what = obj.what || obj.url;
+    
+    // We need multi-asset support on a per-job
+    // basis which means we need to be able
+    // to track
+    obj.position = 0;
 
     //
     // We don't want to manually set this.
     // obj.goal
     //
-
-    var ext = obj.url.split('.').pop();
-    if(['mp4','ogv','mpeg','webm','flv','3gp','avi'].includes(ext.toLowerCase()) ) {
-      obj = video(obj);
-    } else {
-
-      var img = document.createElement('img');
-
-      obj.active = true;
-      obj.duration = obj.duration || _duration;
-      console.log("Yeah I'm here", _nop, _duration, _last);
-      obj.run = _nop;
-      obj.dom = img;
-
-      img.onerror = function(e) {
-        assetError(obj, e);
-      }
-      img.onload = function() {
-        obj.active = true;
-      }
-      img.src = obj.url;
+    if( isString(obj.url) ) {
+      obj.url = [ obj.url ];
     }
-      
+
+    obj.assetList = obj.url.map(function(url) {
+      var asset = {url: url};
+      var ext = url.split('.').pop();
+
+      if(['mp4','ogv','mpeg','webm','flv','3gp','avi'].includes(ext.toLowerCase()) ) {
+        asset = video(asset);
+      } else {
+
+        var img = document.createElement('img');
+        img.onerror = function(e) {
+          assetError(asset, e);
+        }
+        img.onload = function() {
+          asset.active = true;
+        }
+        img.src = obj.url;
+
+        asset.active = true;
+        // TODO: per asset custom duration 
+        asset.duration = _res.duration;
+        asset.run = _nop;
+        asset.dom = img;
+        return asset;
+      }
+    });
+        
     return obj;
   }
 
@@ -111,7 +156,7 @@ var Engine = function(opts){
       _res.db[job.campaign_id] = makeAsset({ url: job.asset });
     }
 
-    _res.db[job.campaign_id] = Object.assign(
+    _res.db[job.campaign_id] = merge(
       _res.db[job.campaign_id], job
     );
 
