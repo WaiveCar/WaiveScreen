@@ -1,26 +1,26 @@
-video {
+.engine video {
   object-fit: fill;
 }
-video,img { 
+.engine video, .engine img { 
   width: 100%;
   height: 100%;
   position: absolute;
   top: 0;
   left: 0;
 }
-@keyframes fadeOut {
+@keyframes enginefadeOut {
   0% {opacity: 1;}
   100% {opacity: 0;} 
 } 
-@keyframes fadeIn {
+@keyframes enginefadeIn {
   0% {opacity: 0;}
   100% {opacity: 1;} 
 } 
-.fadeOut {
-  animation-name: fadeOut;
+.engine .fadeOut {
+  animation-name: enginefadeOut;
   animation-duration: 0.4s;
 }
-.fadeIn {
-  animation-name: fadeIn;
+.engine .fadeIn {
+  animation-name: enginefadeIn;
   animation-duration: 0.4s;
 }
