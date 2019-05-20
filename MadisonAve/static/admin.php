@@ -52,11 +52,15 @@ for($ix = 0; $ix < count($campaignList); $ix++){
           <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a><br/>
           Radius: <?= $campaign['radius'] ?>m</p>
 
+          Start: <?= $campaign['start_time'] ?>
+          End: <?= $campaign['end_time'] ?>
 
+
+user
   
           <h5 class="card-title">Card title</h5>
-          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-          <a href="#" class="btn btn-primary">Go somewhere</a>
+          <p class="card-text">user</p>
+          <a href="#" class="btn btn-primary">Disable</a>
         </div>
       </div>
     <? } ?>
