@@ -99,8 +99,8 @@ var Engine = function(opts){
           //console.log(new Date() - _start, count, asset.url + " promise succeeded", e);
         })
         .catch(function(e) {
-          console.log(new Date() - now);
-          console.log(new Date() - _start, "setting " + asset.url + " to unplayable", e);
+          // console.log(new Date() - now);
+          // console.log(new Date() - _start, "setting " + asset.url + " to unplayable", e);
           console.log(e.message, e.name);
           if(new Date() - now < 100) {
             // if we were interrupted in some normal interval, maybe it will just work
