@@ -19,3 +19,6 @@ The api here matches the AdDaemon api for sow, refer to it for the information.
   A socket connection is kept open to the Screen Daemon which blindly instructs a "screenplay", in this case, a list of assets to display 
 
   The screen display then reports back whenever it changes the ad.
+
+
+Note : subslice video ffmpeg -i input.mp4 -c copy -map 0 -segment_time 00:20:00 -reset_timestamps 1 -f segment output%03d.mp4
