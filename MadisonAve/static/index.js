@@ -50,7 +50,9 @@ function create_campaign(obj) {
   });
   state.total = dealMap[state.option].price;
 
-  formData.append('file', uploadInput.files[0]);
+  for(var ix = 0; ix < uploadInput.files.length; ix++) {
+    formData.append('file' + ix, uploadInput.files[ix]);
+  }
 
   return axios({
     method: 'post',
