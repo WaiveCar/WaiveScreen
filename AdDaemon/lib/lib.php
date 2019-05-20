@@ -173,20 +173,23 @@ function create_job($campaignId, $screenId) {
   }
   $campaign = Get::campaign($campaignId);
 
-  $goal = min($ttl, 60 * 4);
+  if($campaign) {
+    $goal = min($ttl, 60 * 4);
 
-  $job_id = db_insert(
-    'job', [
-      'campaign_id' => $campaignId,
-      'screen_id' => $screenId,
-      'job_start' => 'current_timestamp',
-      'job_end' => db_string($campaign['end_time']),
-      'last_update' => 'current_timestamp',
-      'goal' => $goal
-    ]
-  );
-
-  return Get::job($job_id);
+    $job_id = db_insert(
+      'job', [
+        'campaign_id' => $campaignId,
+        'screen_id' => $screenId,
+        'job_start' => 'current_timestamp',
+        'job_end' => db_string($campaign['end_time']),
+        'last_update' => 'current_timestamp',
+        'goal' => $goal
+      ]
+    );
+  }
+  if($job_id) {
+    return Get::job($job_id);
+  }
 }
 
 function update_job($jobId, $completed_seconds) {
@@ -224,7 +227,7 @@ function sow($payload) {
   }
 
   $data = ['last_seen' => 'current_timestamp'];
-  if(isset($payload['lat'])) {
+  if(!empty($payload['lat'])) {
     $data['lat'] = floatval($payload['lat']);
     $data['lng'] = floatval($payload['lng']);
   }
@@ -254,26 +257,30 @@ function sow($payload) {
   }
 
   $active = active_campaigns();
-  // right now we are being realllly stupid.
-  $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
-    if(isset($payload['lat'])) {
-      // under 1.5km
-      return distance($campaign, $payload) < ($campaign['radius'] * 100);
-    } 
-    // essentially this is for debugging
-    return true;
-  });
+  // If we didn't get lat/lng from the sensor then we just any ad
+  if(empty($payload['lat'])) {
+    $nearby_campaigns = $active;
+  } else {
+    // right now we are being realllly stupid.
+    $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
+      if(isset($payload['lat'])) {
+        // under 1.5km
+        return distance($campaign, $payload) < ($campaign['radius'] * 100);
+      } 
+      // essentially this is for debugging
+      return true;
+    });
+  }
 
   // so if we have existing outstanding jobs with the
   // screen id and campaign then we can just re-use them.
   $job_list = array_map(function($campaign) use ($screen) {
-    $job = find_unfinished_job($campaign['id'], $screen['id']);
-    if(!$job) {
-      $job = create_job($campaign['id'], $screen['id']);
+    $jobList = find_unfinished_job($campaign['id'], $screen['id']);
+    if(!$jobList) {
+      $jobList = [ create_job($campaign['id'], $screen['id']) ];
     }
-    if($job) {
+    foreach($jobList as $job) {
       if(isset($job['id'])) {
-
         $res = array_merge([
           'job_id' => $job['id'],
           'campaign_id' => $campaign['id'],
