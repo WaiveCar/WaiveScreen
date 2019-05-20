@@ -6,14 +6,17 @@ window.onload = function init() {
   self.ads = Engine({
     server: false,//'http://localhost:4096/'
   });
-  var ix = 0;
+  var ix = 0, start = new Date();
   let ival = setInterval(function(){
-    console.log((100 * (ix / list.length)).toFixed(0));
+    if(ix % 30 == 0) {
+      console.log((100 * (ix / list.length)).toFixed(0));
+    }
     ads.AddJob({ url: [list[ix], list[ix + 1], list[ix + 2]], goal: 180 });
     ix+= 3;
     if(ix + 4 > list.length) {
+      console.log(ix, "loaded", new Date() - start);
       clearInterval(ival);
     }
-  }, 40);
+  }, 35);
   ads.Start();
 }
