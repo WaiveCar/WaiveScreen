@@ -363,6 +363,10 @@ function campaign_new($opts) {
   if($missing) {
     return doError("Missing parameters: " . implode(', ', $missing));
   }
+  if(is_array($opts['asset'])) {
+    $opts['asset'] = json_encode($opts['asset']);
+  }
+  // make sure things aren't arrays when they are passed in here.
   $opts = db_clean($opts);
 
   // by default active gets set to false
@@ -372,6 +376,7 @@ function campaign_new($opts) {
       $opts[$key] = db_date($opts[$key]);
     }
   }
+  //error_log(json_encode($opts));
   $campaign_id = db_insert(
     'campaign', [
       'active' => 1,//false,
@@ -394,12 +399,8 @@ function campaign_new($opts) {
 //
 // According to our current flow we may not know the user at the time
 // of creating this
-function campaign_create($data, $file, $user = false) {
+function campaign_create($data, $fileList, $user = false) {
   global $DEALMAP, $PLACEMAP, $DAY;
-
-  $asset = upload_s3($file);
-  //$asset = 'fakename.png';
-  $data['asset'] = $asset;
 
   // get the lat/lng radius of the location into the data.
   $data = array_merge($PLACEMAP[$data['location']], $data);
@@ -409,24 +410,33 @@ function campaign_create($data, $file, $user = false) {
   // currently (2019,10,29) all durations are 1 week.
   $data['start_time'] =  time();
   $data['end_time'] = time() + $DAY * 7;
+  $data['asset'] = [];
+
+  foreach($fileList as $file) {
+    //$asset = 'fakename.png';
+    $data['asset'][] = upload_s3($file);
+  }
+
 
   $campaign_id = campaign_new($data);
-  $order = [
-    'campaign_id' => $campaign_id,
-    'amount' => $data['total'], 
-    'status' => 'open'
-  ];
+  if($campaign_id) {
+    $order = [
+      'campaign_id' => $campaign_id,
+      'amount' => $data['total'], 
+      'status' => db_string('open')
+    ];
 
-  if(!empty($data['charge_id'])) {
-    $order['charge_id'] = $data['charge_id'];
+    if(!empty($data['charge_id'])) {
+      $order['charge_id'] = $data['charge_id'];
+    }
+
+    if($user) {
+      $row['user_id'] = $user['id'];
+    }
+    $order_id = db_insert('orders', $order);
+
+    db_update('campaign', $campaign_id, ['order_id' => $order_id]);
   }
-
-  if($user) {
-    $row['user_id'] = $user['id'];
-  }
-  $order_id = db_insert('orders', $order);
-
-  db_update('campaign', $campaign_id, ['order_id' => $order_id]);
   return $campaign_id;
 }
 

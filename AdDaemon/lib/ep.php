@@ -18,7 +18,7 @@ try {
       jemit(campaigns());
     } elseif ($verb == 'POST') {
       $assetList = array_values($_FILES);
-      jemit(campaign_create($_POST, $assetList[0]));
+      jemit(campaign_create($_POST, $assetList));
     } elseif ($verb == 'PUT') {
       jemit(campaign_activate($_POST['campaignId'], $_POST));
     }

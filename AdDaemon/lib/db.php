@@ -269,7 +269,11 @@ function db_clean($kv) {
   $res = [];
   $db = db_connect();
   foreach($kv as $k => $v) {
-    $res[$db->escapeString($k)] = $db->escapeString($v);
+    if(is_array($v)) {
+      error_log(json_encode([$k, $v]));
+    } else {
+      $res[$db->escapeString($k)] = $db->escapeString($v);
+    }
   } 
   return $res;
 }
@@ -329,5 +333,5 @@ function db_insert($table, $kv) {
   if(_query($qstr)) {
     return $db->lastInsertRowID();
   }
-  return $qstr;
+  return null;
 }
