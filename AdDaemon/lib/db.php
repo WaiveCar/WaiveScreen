@@ -1,6 +1,12 @@
 <?php
 date_default_timezone_set('UTC');
 
+$RULES = [
+  'campaign' => [ 
+    'asset' => 'json'
+   ]
+];
+
 $SCHEMA = [
   'user' => [
     'id'          => 'integer primary key autoincrement', 
@@ -292,7 +298,13 @@ function sql_kv($hash, $operator = '=', $quotes = "'", $intList = []) {
   return $ret;
 }
 
-function db_all($qstr) {
+function db_all($qstr, $table = false) {
+  global $RULES;
+  $ruleTable = false;
+  if($table && isset($RULES[$table])) {
+    $ruleTable = $RULES[$table];
+  }
+
   $rowList = [];
   if(!is_string($qstr)) {
     $res = $qstr;
@@ -304,6 +316,13 @@ function db_all($qstr) {
   }
   if($res) {
     while( $row = $res->fetchArray(SQLITE3_ASSOC) ) {
+      if($ruleTable) {
+        foreach($ruleTable as $key => $rule) {
+          if($rule == 'json') {
+            $row[$key] = json_decode($row[$key], true);
+          }
+        }
+      }
       $rowList[] = $row;
     } 
   }

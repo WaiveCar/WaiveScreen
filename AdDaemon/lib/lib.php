@@ -203,7 +203,7 @@ function update_job($jobId, $completed_seconds) {
 // ----
 
 function screens() {
-  return db_all('select * from screen');
+  return show('screen');
 }
 
 function update_campaign_completed($id) {
@@ -343,11 +343,11 @@ function upload_s3($file) {
 }
 
 function show($what) {
-  return db_all("select * from $what");
+  return db_all("select * from $what", $what);
 }
 
 function campaigns($clause = '') {
-  return db_all("select * from campaign $clause");
+  return db_all("select * from campaign $clause", 'campaign');
 }
 function active_campaigns() {
   return campaigns('where active=1 and end_time > current_timestamp and start_time < current_timestamp and completed_seconds < duration_seconds');
