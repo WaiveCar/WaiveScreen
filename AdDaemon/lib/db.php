@@ -3,7 +3,11 @@ date_default_timezone_set('UTC');
 
 $RULES = [
   'campaign' => [ 
-    'asset' => 'json'
+    'asset' => function($v) {
+      return array_map(function($m) {
+        return 'http://waivecar-prod.s3.amazonaws.com/' . $m;
+      }, json_decode($v, true));
+     }
    ]
 ];
 
@@ -317,10 +321,8 @@ function db_all($qstr, $table = false) {
   if($res) {
     while( $row = $res->fetchArray(SQLITE3_ASSOC) ) {
       if($ruleTable) {
-        foreach($ruleTable as $key => $rule) {
-          if($rule == 'json') {
-            $row[$key] = json_decode($row[$key], true);
-          }
+        foreach($ruleTable as $key => $processor) {
+          $row[$key] = $processor($row[$key]);
         }
       }
       $rowList[] = $row;
