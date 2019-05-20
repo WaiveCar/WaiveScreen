@@ -53,9 +53,11 @@ var Engine = function(opts){
     }, opts || {}),
     _current = false,
     _last = false,
+    _id = 0,
     _downweight = 0.7,
     _nop = function(){},
     _isNetUp = true,
+    _start = new Date(),
     _fallback;
 
   function isString(obj) { 
@@ -70,34 +72,36 @@ var Engine = function(opts){
     console.log("Making " + obj.url + " inactive");
   }
 
-  function video(obj) {
+  function video(asset, obj) {
     var vid = document.createElement('video');
     var src = document.createElement('source');
 
     vid.setAttribute('preload', 'auto');
     vid.appendChild(src);
 
-    src.src = obj.url;
-    obj.dom = vid;
+    src.src = asset.url;
+    asset.dom = vid;
 
-    obj.run = function() {
+    asset.run = function() {
       vid.currentTime = 0;
       vid.play();
     }
 
     vid.ondurationchange = function(e) {
       // This will only come if things are playable.
-      obj.duration = obj.duration || e.target.duration;
+      asset.duration = asset.duration || e.target.duration;
+      asset.active = true;
+      obj.duration += asset.duration;
       obj.active = true;
     }
 
-    // notice this is on the src object and not the vid
+    // notice this is on the src assetect and not the vid
     // containers.
     src.onerror = function(e) {
-      assetError(obj, e);
+      assetError(asset, e);
     }
 
-    return obj;
+    return asset;
   }
     
   // All the things returned from this have 2 properties
@@ -119,6 +123,7 @@ var Engine = function(opts){
     // assets included in this job.
     obj.duration = 0;
 
+    obj.id = obj.id || (_id ++);
     //
     // We don't want to manually set this.
     // obj.goal
@@ -132,7 +137,7 @@ var Engine = function(opts){
       var ext = url.split('.').pop();
 
       if(['mp4','ogv','mpeg','webm','flv','3gp','avi'].includes(ext.toLowerCase()) ) {
-        asset = video(asset);
+        asset = video(asset, obj);
       } else {
 
         var img = document.createElement('img');
@@ -140,6 +145,7 @@ var Engine = function(opts){
           assetError(asset, e);
         }
         img.onload = function() {
+          obj.active = true;
           asset.active = true;
         }
         img.src = obj.url;
@@ -147,10 +153,11 @@ var Engine = function(opts){
         asset.active = true;
         // TODO: per asset custom duration 
         asset.duration = _res.duration;
+        obj.duration += asset.duration;
         asset.run = _nop;
         asset.dom = img;
-        return asset;
       }
+      return asset;
     });
         
     return obj;
@@ -233,12 +240,19 @@ var Engine = function(opts){
     });
   }
 
+  function setAssetDuration(what, index, amount) {
+    // update the total aggregate to reflect the new amount
+    what.duration -= (what.duration - amount);
+    // now set the new amount
+    what.assetList[index].duration = amount;
+  }
+
   // Jobs have assets. nextJob chooses a job to run and then asks nextAsset
   // to do that work ... when nextAsset has no more assets for a particular job
   // it calls nextJob again.
   function nextAsset() {
     var prev;
-    var $nextFunc = nextAsset;
+    var doFade = false;
     // If we are at the start of our job
     // then this is the only valid time we'd
     // be transitioning away from a previous job
@@ -265,46 +279,50 @@ var Engine = function(opts){
     // If we are at the end then our next function should be to
     // choose the next job.
     if(_current.position === _current.assetList.length) {
-      $nextFunc = nextJob;
+      nextJob();
+    } else { 
+      // ****
+      // This ordering is important! 
+      // ****
+      //
+      // We may (quite likely) will
+      // have (_last === _current) most of the time. This means
+      // that we are "passing the torch" of the .shown pointer,
+      // being more than likely just one.
+      if(_last && (_current.position > 0 || _last.id !== _current.id)) {
+        _last.shown.dom.classList.add('fadeOut');
+
+        // This is NEEDED because by the time 
+        // we come back around, _last.shown will be 
+        // redefined.
+        prev = _last.shown;
+        setTimeout(function() {
+          prev.dom.classList.remove('fadeOut');
+          _res.container.removeChild(prev.dom);
+        }, _res.fadeMs);
+        doFade = true;
+      }
+
+
+      // Now we're ready to show the asset. This is done through
+      // a pointer as follows:
+      _current.shown = _current.assetList[_current.position];
+      
+      if(doFade) {
+        _current.shown.dom.classList.add('fadeIn');
+      }
+      _current.shown.run();
+      _res.container.appendChild(_current.shown.dom);
+
+      // And we increment the position to show the next asset
+      // when we come back around
+      _current.position ++;
+
+      // These will EQUAL each other EXCEPT when the position is 0.
+      _last = _current;
+
+      setTimeout(nextAsset, _current.shown.duration * 1000 - _res.fadeMs / 2);
     }
-
-    // ****
-    // This ordering is important! 
-    // ****
-    //
-    // We may (quite likely) will
-    // have (_last === _current) most of the time. This means
-    // that we are "passing the torch" of the .shown pointer,
-    // being more than likely just one.
-    if(_last) {
-      _last.shown.dom.classList.add('fadeOut');
-
-      // This is NEEDED because by the time 
-      // we come back around, _last.shown will be 
-      // redefined.
-      prev = _last.shown;
-      setTimeout(function() {
-        prev.dom.classList.remove('fadeOut');
-        _res.container.removeChild(prev.dom);
-      }, _res.fadeMs);
-    }
-
-    // Now we're ready to show the asset. This is done through
-    // a pointer as follows:
-    _current.shown = _current.assetList[_current.position];
-    
-    // And we increment the position to show the next asset
-    // when we come back around
-    _current.position ++;
-
-    _current.shown.dom.classList.add('fadeIn');
-    _current.shown.run();
-    _res.container.appendChild(_current.shown.dom);
-
-    // These will EQUAL each other EXCEPT when the position is 0.
-    _last = _current;
-
-    setTimeout($nextFunc, _current.shown.duration * 1000 - _res.fadeMs / 2);
   }
 
   function nextJob() {
@@ -349,12 +367,12 @@ var Engine = function(opts){
       if(activeList.length == 0) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
-        _current.duration = 0.1;
+        setAssetDuration(_current, 0, 0.2);
       } else {
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
         // this out to some significant number
-        _current.duration = 20;
+        setAssetDuration(_current, 0, 20);
       }
 
     } else {
@@ -378,6 +396,7 @@ var Engine = function(opts){
     //
     _current.downweight *= _downweight;
     _current.position = 0;
+    console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration);
 
     nextAsset();
 
@@ -398,17 +417,16 @@ var Engine = function(opts){
       _res.container.classList.add('engine');
       _res.SetFallback();
       nextJob();
-    }
+    },
     SetFallback: function(url) {
       _res.fallback = _res.fallback || url;
       _fallback = makeJob({url: _res.fallback, duration: .1});
-    }
+    },
     AddJob: function(obj) {
       var res = {};
       obj = makeJob(obj);
-      var id = obj.id || obj.what;
-      _res.db[id] = obj;
-      res[id] = obj;
+      _res.db[obj.id] = obj;
+      res[obj.id] = obj;
       return res;
     }
   });
