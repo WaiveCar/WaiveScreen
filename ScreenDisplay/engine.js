@@ -49,13 +49,10 @@ var Engine = function(opts){
       // but no thanks.
       fadeMs: 500,
 
-      // These aren't intended to be set but just to
-      // give easy introspection into the state.
-      last: false,
-      current: false,
-
       base: 'http://waivecar-prod.s3.amazonaws.com/',
     }, opts || {}),
+    _current = false,
+    _last = false,
     _downweight = 0.7,
     _nop = function(){},
     _isNetUp = true,
@@ -240,44 +237,74 @@ var Engine = function(opts){
   // to do that work ... when nextAsset has no more assets for a particular job
   // it calls nextJob again.
   function nextAsset() {
+    var prev;
+    var $nextFunc = nextAsset;
     // If we are at the start of our job
     // then this is the only valid time we'd
     // be transitioning away from a previous job
-    if(_res.current.position === 0) {
+    //
+    // so this is is when we do the reporting.
+    if(_current.position === 0) {
       // If this exists then it'd be set at the last asset
       // previous job.
-      if(_res.last) {
+      if(_last) {
         // We can state that we've shown all the assets that
         // we plan to show
-        _res.last.completed_seconds += _res.last.duration;
+        _last.completed_seconds += _last.duration;
 
-    if(!_res.last || _res.last.what != _res.current.what) {
-      if(_res.last) {
-        // we reset the downweight -- it can come back
-        _res.last.downweight = 1;
-        _res.last.shown.dom.classList.add('fadeOut');
+        // and report it up to the server
+        sow({id: _last.id, completed_seconds: _last.completed_seconds});
 
-        // This is NEEDED because by the time 
-        // we come back around, _res.last will be 
-        // redefined.
-        let prev = _res.last.shown;
-        setTimeout(function() {
-          prev.dom.classList.remove('fadeOut');
-          _res.container.removeChild(prev.dom);
-        }, _res.fadeMs);
+        if(_last.id !== _current.id) {
+          // we reset the downweight -- it can come back
+          _last.downweight = 1;
+        }
       }
-
-      _res.current.dom.classList.add('fadeIn');
-      _res.current.run();
-      _res.container.appendChild(_res.current.dom);
-
-      // This is a problem because we are stating they are completed prior
-      // to them actually running - this is more about what we "plan" to do
-      sow({id: _res.current.id, completed_seconds: _res.current.completed_seconds});
     }
 
-    _res.last = _res.current;
-    setTimeout(nextJob, _res.current.duration * 1000 - _res.fadeOut / 2);
+    // If we are at the end then our next function should be to
+    // choose the next job.
+    if(_current.position === _current.assetList.length) {
+      $nextFunc = nextJob;
+    }
+
+    // ****
+    // This ordering is important! 
+    // ****
+    //
+    // We may (quite likely) will
+    // have (_last === _current) most of the time. This means
+    // that we are "passing the torch" of the .shown pointer,
+    // being more than likely just one.
+    if(_last) {
+      _last.shown.dom.classList.add('fadeOut');
+
+      // This is NEEDED because by the time 
+      // we come back around, _last.shown will be 
+      // redefined.
+      prev = _last.shown;
+      setTimeout(function() {
+        prev.dom.classList.remove('fadeOut');
+        _res.container.removeChild(prev.dom);
+      }, _res.fadeMs);
+    }
+
+    // Now we're ready to show the asset. This is done through
+    // a pointer as follows:
+    _current.shown = _current.assetList[_current.position];
+    
+    // And we increment the position to show the next asset
+    // when we come back around
+    _current.position ++;
+
+    _current.shown.dom.classList.add('fadeIn');
+    _current.shown.run();
+    _res.container.appendChild(_current.shown.dom);
+
+    // These will EQUAL each other EXCEPT when the position is 0.
+    _last = _current;
+
+    setTimeout($nextFunc, _current.shown.duration * 1000 - _res.fadeMs / 2);
   }
 
   function nextJob() {
@@ -313,21 +340,21 @@ var Engine = function(opts){
       range = activeList.reduce( (a,b) => a + b.downweight * (b.goal - b.completed_seconds), 0),
 
       // We do this "dice roll" to see 
-      breakpoint = Math.random() * range,
+      breakpoint = Math.random() * range;
 
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
       console.log("Range < 0, using fallback");
-      _res.current = _fallback;
+      _current = _fallback;
       if(activeList.length == 0) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
-        _res.current.duration = 0.1;
+        _current.duration = 0.1;
       } else {
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
         // this out to some significant number
-        _res.current.duration = 20;
+        _current.duration = 20;
       }
 
     } else {
@@ -337,43 +364,52 @@ var Engine = function(opts){
 
         accum += row.downweight * (row.goal - row.completed_seconds);
         if(accum > breakpoint) {
-          _res.current = row;
+          _current = row;
           break;
         }
       }
-      if(!_res.current) {
-        _res.current = row;
+      if(!_current) {
+        _current = row;
       }
     }
 
     // 
     // By this time we know what we plan on showing.
     //
-    _res.current.downweight *= _downweight;
-    _res.current.position = 0;
+    _current.downweight *= _downweight;
+    _current.position = 0;
 
     nextAsset();
 
   }
 
-  _res.start = function(){
-    _res.container.classList.add('engine');
-    _res.setFallback();
-    nextJob();
-  }
-  _res.setFallback = function(url) {
-    _res.fallback = _res.fallback || url;
-    _fallback = makeJob({url: _res.fallback, duration: .1});
-  }
-  _res.addJob = function(obj) {
-    obj = makeJob(obj);
-    var id = obj.id || obj.what;
-    _res.db[id] = obj;
-
-    var res = {};
-    res[id] = obj;
-    return res;
-  }
-
-  return _res;
+  // The convention we'll be using is that
+  // variables start with lower case letters,
+  // function start with upper case.
+  return merge(_res, {
+    Debug: function() {
+      return {
+        current: _current,
+        last: _last,
+        isNetUp: _isNetUp 
+      };
+    }, 
+    Start: function(){
+      _res.container.classList.add('engine');
+      _res.SetFallback();
+      nextJob();
+    }
+    SetFallback: function(url) {
+      _res.fallback = _res.fallback || url;
+      _fallback = makeJob({url: _res.fallback, duration: .1});
+    }
+    AddJob: function(obj) {
+      var res = {};
+      obj = makeJob(obj);
+      var id = obj.id || obj.what;
+      _res.db[id] = obj;
+      res[id] = obj;
+      return res;
+    }
+  });
 };
