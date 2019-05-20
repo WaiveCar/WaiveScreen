@@ -244,7 +244,6 @@ var Engine = function(opts){
         current = row;
       }
     }
-    console.log(current);
 
     // 
     // By this time we know what we plan on showing.
