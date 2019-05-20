@@ -49,9 +49,8 @@ var Engine = function(opts){
       // but no thanks.
       fadeMs: 500,
 
-      pause: false,
+      pause: false
 
-      base: 'http://waivecar-prod.s3.amazonaws.com/',
     }, opts || {}),
     _current = false,
     _last = false,

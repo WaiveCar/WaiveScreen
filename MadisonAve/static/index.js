@@ -92,7 +92,7 @@ function addtime(n) {
     if(duration == 0) {
       $("#runtime").hide();
     } else {
-      $("#runtime").html("Runtime: " + duration + " sec").show();
+      $("#runtime").html("Runtime: " + duration.toFixed(2) + " sec").show();
     }
   }
 }
