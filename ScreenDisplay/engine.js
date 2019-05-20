@@ -49,6 +49,8 @@ var Engine = function(opts){
       // but no thanks.
       fadeMs: 500,
 
+      pause: false,
+
       base: 'http://waivecar-prod.s3.amazonaws.com/',
     }, opts || {}),
     _current = false,
@@ -253,6 +255,9 @@ var Engine = function(opts){
   // to do that work ... when nextAsset has no more assets for a particular job
   // it calls nextJob again.
   function nextAsset() {
+    if(_res.pause) {
+      return;
+    }
     var prev;
     var doFade = false;
     // If we are at the start of our job
@@ -281,7 +286,9 @@ var Engine = function(opts){
     // If we are at the end then our next function should be to
     // choose the next job.
     if(_current.position === _current.assetList.length) {
-      nextJob();
+      if(!_res.pause) {
+        nextJob();
+      }
     } else { 
       // ****
       // This ordering is important! 
@@ -324,7 +331,9 @@ var Engine = function(opts){
       // These will EQUAL each other EXCEPT when the position is 0.
       _last = _current;
 
-      setTimeout(nextAsset, _current.shown.duration * 1000 - _res.fadeMs / 2);
+      if(!_res.pause) {
+        setTimeout(nextAsset, _current.shown.duration * 1000 - _res.fadeMs / 2);
+      }
     }
   }
 
@@ -409,6 +418,16 @@ var Engine = function(opts){
   // variables start with lower case letters,
   // function start with upper case.
   return merge(_res, {
+    Play: function() {
+      _res.pause = false;
+      _current.shown.dom.play();
+      nextAsset();
+    },
+    Pause: function() {
+      _res.pause = !_res.pause;
+      _current.shown.dom.pause();
+    },
+
     Debug: function() {
       return {
         current: _current,
