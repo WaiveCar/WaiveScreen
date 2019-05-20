@@ -55,6 +55,7 @@ var Engine = function(opts){
     }, opts || {}),
     _current = false,
     _last = false,
+    _playCount = 0,
     _id = 0,
     _downweight = 0.7,
     _nop = function(){},
@@ -78,23 +79,43 @@ var Engine = function(opts){
     var vid = document.createElement('video');
     var src = document.createElement('source');
 
-    vid.setAttribute('preload', 'auto');
+    //vid.setAttribute('preload', 'auto');
     vid.appendChild(src);
 
     src.src = asset.url;
     asset.dom = vid;
 
+    asset.cycles = 1;
     asset.run = function() {
       vid.currentTime = 0;
       vid.volume = 0;
-      vid.play();
+      var playPromise = vid.play();
+
+      if (playPromise !== undefined) {
+        playPromise.then(function(e) {
+          //console.log(new Date() - _start, count, asset.url + " promise succeeded", e);
+        })
+        .catch(function(e) {
+          console.log(new Date() - _start, "setting " + asset.url + " to unplayable", e);
+          _res.Pause();
+          //asset.active = false;
+        });
+      }
+      _playCount ++;
     }
 
     vid.ondurationchange = function(e) {
       // This will only come if things are playable.
       asset.duration = asset.duration || e.target.duration;
       asset.active = true;
-      console.log("Registering " + e.target.duration + " for " + asset.url);
+      // if a video is really short then we force loop it.
+      if(asset.duration < 0.8) {
+        asset.cycles = Math.ceil(1/asset.duration); 
+        vid.setAttribute('loop', true);
+        console.log(asset.url + " is " + asset.duration + "s. Looping " + asset.cycles + " times");
+        asset.duration *= asset.cycles;
+      }
+
       obj.duration += asset.duration;
       obj.active = true;
     }
@@ -316,7 +337,7 @@ var Engine = function(opts){
       // Now we're ready to show the asset. This is done through
       // a pointer as follows:
       _current.shown = _current.assetList[_current.position];
-      console.log(new Date() - _start, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration);
+      console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
       
       if(doFade) {
         _current.shown.dom.classList.add('fadeIn');
@@ -408,7 +429,7 @@ var Engine = function(opts){
     //
     _current.downweight *= _downweight;
     _current.position = 0;
-    console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration, _current.assetList);
+    //console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration);
 
     nextAsset();
 
