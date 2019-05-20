@@ -6,6 +6,7 @@ import requests
 import json
 import dbus
 import time
+import logging
 from pprint import pprint
 
 # This is needed for the git describe to succeed
@@ -15,12 +16,16 @@ VERSION = os.popen("/usr/bin/git describe").read().strip()
 UUID = False
 BUS = dbus.SystemBus()
 
-# Eventually we can change this but right now nothing is live
-SERVER_URL = 'http://waivescreen.com/api/'
+if 'SERVER' in os.environ:
+  SERVER_URL = os.environ['SERVER']
+  logging.info("Using {} as the server as specified in the server shell env variable")
+else:
+  # Eventually we can change this but right now nothing is live
+  SERVER_URL = 'http://waivescreen.com/api/'
 
-# We aren't always calling from something with flask
-if 'app' in dir() and app.config['ENV'] == 'development':
-  SERVER_URL = 'http://waivescreen.com/api/' 
+  # We aren't always calling from something with flask
+  if 'app' in dir() and app.config['ENV'] == 'development':
+    SERVER_URL = 'http://waivescreen.com/api/' 
 
 storage_base = '/var/lib/waivescreen/'
 
@@ -106,7 +111,8 @@ def sensor_last(index = False):
   res = db.kv_get('sensor', index)
   # If we don't have a real sensor value then we just use 2102 pico in samo
   if not res:
-    return {'lat':34.019860, 'lng':-118.468477}
+    return {'lat':False, 'lng':False}
+    #return {'lat':34.019860, 'lng':-118.468477}
 
 def campaign_store(data):
   return db.upsert('campaign', data)

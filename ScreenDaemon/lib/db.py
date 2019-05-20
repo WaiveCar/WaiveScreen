@@ -260,7 +260,11 @@ def connect(db_file=None):
   # the database connection throughout the execution of the script.
   # Returns the database instance.
   global g_db_count
-  default_db = '/var/db/config.db'
+  if 'DB' in os.environ:
+    default_db = os.environ['DB']
+    logging.info("Using {} as the DB as specified in the DB shell env variable")
+  else:
+    default_db = '/var/db/config.db'
 
   if not db_file:
     db_file = default_db
