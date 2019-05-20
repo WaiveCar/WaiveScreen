@@ -349,15 +349,15 @@ function upload_s3($file) {
   return $name;
 }
 
-function show($what) {
-  return db_all("select * from $what", $what);
+function show($what, $clause = '') {
+  return db_all("select * from $what $clause", $what);
 }
 
-function campaigns($clause = '') {
-  return db_all("select * from campaign $clause", 'campaign');
-}
 function active_campaigns() {
-  return campaigns('where active=1 and end_time > current_timestamp and start_time < current_timestamp and completed_seconds < duration_seconds');
+  return show('campaign', 'where active=1 and end_time > current_timestamp and start_time < current_timestamp and completed_seconds < duration_seconds order by active desc, start_time desc');
+}
+function campaigns_list($opts) {
+  return show('campaign');
 }
 function campaign_new($opts) {
   //

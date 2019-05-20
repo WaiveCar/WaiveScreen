@@ -15,7 +15,7 @@ if($json_payload) {
 try {
   if($func == 'campaign') {
     if($verb == 'GET') {
-      jemit(campaigns());
+      jemit(campaigns_list($_GET));
     } elseif ($verb == 'POST') {
       $assetList = array_values($_FILES);
       jemit(campaign_create($_POST, $assetList));
