@@ -84,6 +84,7 @@ var Engine = function(opts){
 
     asset.run = function() {
       vid.currentTime = 0;
+      vid.volume = 0;
       vid.play();
     }
 
@@ -91,6 +92,7 @@ var Engine = function(opts){
       // This will only come if things are playable.
       asset.duration = asset.duration || e.target.duration;
       asset.active = true;
+      console.log("Registering " + e.target.duration + " for " + asset.url);
       obj.duration += asset.duration;
       obj.active = true;
     }
@@ -307,6 +309,7 @@ var Engine = function(opts){
       // Now we're ready to show the asset. This is done through
       // a pointer as follows:
       _current.shown = _current.assetList[_current.position];
+      console.log(new Date() - _start, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration);
       
       if(doFade) {
         _current.shown.dom.classList.add('fadeIn');
@@ -367,7 +370,7 @@ var Engine = function(opts){
       if(activeList.length == 0) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
-        setAssetDuration(_current, 0, 0.2);
+        setAssetDuration(_current, 0, 0.5);
       } else {
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
@@ -396,7 +399,7 @@ var Engine = function(opts){
     //
     _current.downweight *= _downweight;
     _current.position = 0;
-    console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration);
+    console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration, _current.assetList);
 
     nextAsset();
 
