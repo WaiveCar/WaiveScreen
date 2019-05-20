@@ -38,17 +38,20 @@ def next_ad(work = False):
 
   # The first thing we get is the last known location.
   sensor = lib.sensor_last()
-
-  jobList = request.get_json()
-  if type(jobList) is not list:
-    jobList = [ jobList ]
-
   payload = {
     'uid': lib.get_uuid(),
     'lat': sensor['lat'],
-    'lng': sensor['lng'],
-    'jobs': jobList
+    'lng': sensor['lng']
   }
+  try:
+    jobList = request.get_json()
+    if type(jobList) is not list:
+      jobList = [ jobList ]
+
+    payload['jobs'] = jobList
+
+  except:
+    pass
 
   with requests.post(lib.urlify('sow'), verify=False, json=payload) as response:
     data_raw = response.text
@@ -64,8 +67,9 @@ def next_ad(work = False):
       job_list = []
       if data['res']:
         for job in data['data']:
-          job_list.append(job)
-          lib.job_store(job)
+          if job:
+            job_list.append(job)
+            lib.job_store(job)
 
         return success(job_list)
       else:
