@@ -43,9 +43,19 @@ var Engine = function(opts){
 
       duration: 7.5,
 
+      // This needs to more or less correspond to the CSS
+      // animation delay in the engine.css file. There's
+      // really complicated ways to edit it dynamically 
+      // but no thanks.
+      fadeMs: 500,
+
+      // These aren't intended to be set but just to
+      // give easy introspection into the state.
+      last: false,
+      current: false,
+
       base: 'http://waivecar-prod.s3.amazonaws.com/',
     }, opts || {}),
-    _last = false,
     _downweight = 0.7,
     _nop = function(){},
     _isNetUp = true,
@@ -68,7 +78,6 @@ var Engine = function(opts){
     var src = document.createElement('source');
 
     vid.setAttribute('preload', 'auto');
-    vid.setAttribute('loop', 'true');
     vid.appendChild(src);
 
     src.src = obj.url;
@@ -99,7 +108,7 @@ var Engine = function(opts){
   //  run() - for videos it resets the time and starts the video
   //  duration - how long the asset should be displayed.
   //
-  function makeAsset(obj) {
+  function makeJob(obj) {
     obj.downweight = obj.downweight || 1;
     obj.completed_seconds = obj.completed_seconds || 0;
     // obj.what = obj.what || obj.url;
@@ -108,6 +117,10 @@ var Engine = function(opts){
     // basis which means we need to be able
     // to track
     obj.position = 0;
+
+    // This is the total duration of all the
+    // assets included in this job.
+    obj.duration = 0;
 
     //
     // We don't want to manually set this.
@@ -153,7 +166,7 @@ var Engine = function(opts){
       // this acts as the instantiation. 
       // the merging of the rest of the data
       // will come below.
-      _res.db[job.campaign_id] = makeAsset({ url: job.asset });
+      _res.db[job.campaign_id] = makeJob({ url: job.asset });
     }
 
     _res.db[job.campaign_id] = merge(
@@ -223,7 +236,51 @@ var Engine = function(opts){
     });
   }
 
-  function nextAd() {
+  // Jobs have assets. nextJob chooses a job to run and then asks nextAsset
+  // to do that work ... when nextAsset has no more assets for a particular job
+  // it calls nextJob again.
+  function nextAsset() {
+    // If we are at the start of our job
+    // then this is the only valid time we'd
+    // be transitioning away from a previous job
+    if(_res.current.position === 0) {
+      // If this exists then it'd be set at the last asset
+      // previous job.
+      if(_res.last) {
+        // We can state that we've shown all the assets that
+        // we plan to show
+        _res.last.completed_seconds += _res.last.duration;
+
+    if(!_res.last || _res.last.what != _res.current.what) {
+      if(_res.last) {
+        // we reset the downweight -- it can come back
+        _res.last.downweight = 1;
+        _res.last.shown.dom.classList.add('fadeOut');
+
+        // This is NEEDED because by the time 
+        // we come back around, _res.last will be 
+        // redefined.
+        let prev = _res.last.shown;
+        setTimeout(function() {
+          prev.dom.classList.remove('fadeOut');
+          _res.container.removeChild(prev.dom);
+        }, _res.fadeMs);
+      }
+
+      _res.current.dom.classList.add('fadeIn');
+      _res.current.run();
+      _res.container.appendChild(_res.current.dom);
+
+      // This is a problem because we are stating they are completed prior
+      // to them actually running - this is more about what we "plan" to do
+      sow({id: _res.current.id, completed_seconds: _res.current.completed_seconds});
+    }
+
+    _res.last = _res.current;
+    setTimeout(nextJob, _res.current.duration * 1000 - _res.fadeOut / 2);
+  }
+
+  function nextJob() {
     // We note something we call "breaks" which designate which asset to show.
     // This is a composite of what remains - this is two pass, eh, kill me.
     //
@@ -257,21 +314,20 @@ var Engine = function(opts){
 
       // We do this "dice roll" to see 
       breakpoint = Math.random() * range,
-      current;
 
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
       console.log("Range < 0, using fallback");
-      current = _fallback;
+      _res.current = _fallback;
       if(activeList.length == 0) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
-        current.duration = 0.1;
+        _res.current.duration = 0.1;
       } else {
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
         // this out to some significant number
-        current.duration = 20;
+        _res.current.duration = 20;
       }
 
     } else {
@@ -281,61 +337,36 @@ var Engine = function(opts){
 
         accum += row.downweight * (row.goal - row.completed_seconds);
         if(accum > breakpoint) {
-          current = row;
+          _res.current = row;
           break;
         }
       }
-      if(!current) {
-        current = row;
+      if(!_res.current) {
+        _res.current = row;
       }
     }
 
     // 
     // By this time we know what we plan on showing.
     //
-    current.completed_seconds += current.duration;
-    current.downweight *= _downweight;
+    _res.current.downweight *= _downweight;
+    _res.current.position = 0;
 
-    if(!_last || _last.what != current.what) {
-      if(_last) {
-        // we reset the downweight -- it can come back
-        _last.downweight = 1;
-        _last.dom.classList.add('fadeOut');
+    nextAsset();
 
-        // This is NEEDED because by the time 
-        // we come back around, _last will be 
-        // redefined.
-        let prev = _last;
-        setTimeout(function() {
-          prev.dom.classList.remove('fadeOut');
-          _res.container.removeChild(prev.dom);
-        }, 500);
-      }
-
-      current.dom.classList.add('fadeIn');
-      current.run();
-      _res.container.appendChild(current.dom);
-
-      // This is a problem because we are stating they are completed prior
-      // to them actually running - this is more about what we "plan" to do
-      sow({id: current.id, completed_seconds: current.completed_seconds});
-    }
-
-    _last = current;
-    setTimeout(nextAd, current.duration * 1000);
   }
 
   _res.start = function(){
     _res.container.classList.add('engine');
     _res.setFallback();
-    nextAd();
+    nextJob();
   }
   _res.setFallback = function(url) {
     _res.fallback = _res.fallback || url;
-    _fallback = makeAsset({url: _res.fallback, duration: .1});
+    _fallback = makeJob({url: _res.fallback, duration: .1});
   }
-  _res.addAsset = function(obj) {
-    obj = makeAsset(obj);
+  _res.addJob = function(obj) {
+    obj = makeJob(obj);
     var id = obj.id || obj.what;
     _res.db[id] = obj;
 
