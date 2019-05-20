@@ -86,9 +86,12 @@ var Engine = function(opts){
     asset.dom = vid;
 
     asset.cycles = 1;
-    asset.run = function() {
-      vid.currentTime = 0;
+    asset.run = function(noreset) {
+      if(!noreset) {
+        vid.currentTime = 0;
+      }
       vid.volume = 0;
+      var now = new Date();
       var playPromise = vid.play();
 
       if (playPromise !== undefined) {
@@ -96,8 +99,14 @@ var Engine = function(opts){
           //console.log(new Date() - _start, count, asset.url + " promise succeeded", e);
         })
         .catch(function(e) {
+          console.log(new Date() - now);
           console.log(new Date() - _start, "setting " + asset.url + " to unplayable", e);
-          _res.Pause();
+          console.log(e.message, e.name);
+          if(new Date() - now < 100) {
+            // if we were interrupted in some normal interval, maybe it will just work
+            // if we try again ... might as well - don't reset the clock though.
+            asset.run(true);
+          }
           //asset.active = false;
         });
       }
