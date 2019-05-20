@@ -104,6 +104,13 @@ $SCHEMA = [
     'end_time'    => 'datetime'
   ],
 
+  'kv' => [
+    'id'         => 'integer primary key autoincrement',
+    'key'        => 'text',
+    'value'      => 'text',
+    'created_at' => 'datetime default current_timestamp',
+  ],
+
   'job' => [
     'id'          => 'integer primary key autoincrement',
     'campaign_id' => 'integer',
