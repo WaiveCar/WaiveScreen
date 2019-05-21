@@ -101,9 +101,15 @@ modem_enable() {
     $SUDO mmcli -m 0 \
       --location-enable-gps-raw \
       --location-enable-agps \
-      --location-enable-gps-unmanaged \
       --location-enable-gps-nmea \
       --location-set-enable-signal
+
+      #
+      # I don't quite know what this option does (but I didn't 
+      # study the code). Our Quectel 25A modems seem to not 
+      # understand it.
+      #
+      #--location-enable-gps-unmanaged \
 
     set_event Modem
     break
