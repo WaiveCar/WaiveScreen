@@ -168,7 +168,7 @@ screen_daemon() {
 }
 
 sensor_daemon() {
-  $SUDO $BASE/ScreenDaemon/SensorStore.py &
+  $SUDO $BASE/ScreenDaemon/SensorDaemon.py &
   set_event sensor_daemon
 }
 
