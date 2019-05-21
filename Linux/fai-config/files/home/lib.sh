@@ -80,7 +80,7 @@ who_am_i() {
 
 set_event() {
   pid=${2:-!}
-  announce event:$1
+  [ -e $EV/$1 ] || announce Event:$1
   echo $pid > $EV/$1
   echo `date +%R:%S` $1
 }
@@ -91,7 +91,6 @@ modem_enable() {
 
     if [ ! $? ]; then 
       warn "Searching for modem"
-      echo 'trying again'
       sleep 1
       continue
     fi
@@ -100,6 +99,7 @@ modem_enable() {
       --location-enable-gps-raw \
       --location-enable-gps-nmea \
       --location-set-enable-signal
+
     announce "Modem Enabled"
     break
   done
@@ -135,7 +135,7 @@ modem_connect() {
 ENDL
   set_event net ''
 
-  sleep 5
+  sleep 9
 
   if ping -c 1 -i 0.3 waivescreen.com; then
     announce "waivescreen.com found" 
@@ -144,7 +144,7 @@ ENDL
 
     while ! mmcli -m 0; do
       announce "Waiting for modem"
-      sleep 2
+      sleep 9
     done
 
     hasip=$( ip addr show $wwan | grep inet | wc -l )
@@ -152,9 +152,9 @@ ENDL
     if (( hasip > 0 )); then
       warn "Data plan issues."
     else
-      warn "No ip assigned."
+      warn "No IP assigned."
     fi
-    error "My phone $myphone"
+    error "My phone: $myphone"
   fi
 }
 

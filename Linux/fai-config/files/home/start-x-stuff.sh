@@ -7,12 +7,12 @@ export DISPLAY=$1
 
 notion &
 
-who_am_i
-
 [ -e $DEST/screen-splash.png ] && display -window root $DEST/screen-splash.png
 
 # Everything above is stuff we can run every time we start X
 (( $( pgrep start-x-stuff | wc -l ) > 2 )) && exit -1
+
+who_am_i
 
 # Everything below should be stuff that we only need to run once
 loop_ad &
