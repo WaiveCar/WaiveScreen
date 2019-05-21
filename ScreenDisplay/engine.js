@@ -207,11 +207,10 @@ var Engine = function(opts){
       _res.db[job.campaign_id] = makeJob({ url: job.asset });
     }
 
-    /*
+    // This places in things like the goal
     _res.db[job.campaign_id] = merge(
       _res.db[job.campaign_id], job
     );
-    */
 
     return _res.db[job.campaign_id];
   }
