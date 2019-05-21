@@ -38,6 +38,7 @@ def close():
 def power_management():
   setup()
 
+  arduino = get_arduino()
   arduino.reset_input_buffer()
   received_dict = arduino_read()
   moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
@@ -63,29 +64,41 @@ def power_management():
       os.system("xset -display :0 dpms force on")
 
 
-def set_fan_speed(arduino, value):
+def set_fan_speed(value):
+    arduino = get_arduino()
     fan_speed = value
     if fan_speed > 255:
         fan_speed = 255
+    if value < 1: 
+        value = round(value * 256)
+
     arduino.write(b'\x01{}')
     arduino.write(struct.pack('!B', fan_speed))
 
 
-def set_fan_auto(arduino):
+def set_fan_auto():
+    arduino = get_arduino()
     arduino.write(b'\x01\x01')
 
 
-def set_backlight(arduino, value):
+def set_backlight(value):
+    arduino = get_arduino()
+    if value < 1: 
+        value = round(value * 256)
+
     backlight = min(value, 255)
+
     arduino.write('\x10'.encode())
     arduino.write(struct.pack('!B', backlight))
 
 
-def send_wakeup_signal(arduino):
+def send_wakeup_signal():
+    arduino = get_arduino()
     arduino.write(b'\x11\xff')
 
 
 def arduino_read():
+    arduino = get_arduino()
     try:
         arduino.in_waiting
     except 'SerialException':
@@ -178,8 +191,8 @@ def arduino_read():
     return received_dict
 
 
-def low_power_mode(arduino, backlight_resume_value):
-    arduino = arduino
+def low_power_mode(backlight_resume_value):
+    arduino = get_arduino()
     stored_backlight_value = backlight_resume_value
     set_backlight(arduino, 0)
     send_sleep_signal()
@@ -220,9 +233,9 @@ def get_move_status(first_read, last_read, last_smooth):
                       'y': math.fabs(last_read['Accel_y'] - first_read['Accel_y']),
                       'z': math.fabs(last_read['Accel_z'] - first_read['Accel_z'])}
     smooth_move = {
-        'x': min(move_magnitude['x']*alpha + last_smooth['x']*(1-alpha), 600),
-        'y': min(move_magnitude['y']*alpha + last_smooth['y']*(1-alpha), 600),
-        'z': min(move_magnitude['z']*alpha + last_smooth['z']*(1-alpha), 600)
+        'x': min(move_magnitude['x'] * alpha + last_smooth['x']*(1-alpha), 600),
+        'y': min(move_magnitude['y'] * alpha + last_smooth['y']*(1-alpha), 600),
+        'z': min(move_magnitude['z'] * alpha + last_smooth['z']*(1-alpha), 600)
     }
     if smooth_move['x'] > move_threshold or smooth_move['y'] > move_threshold or smooth_move['z'] > move_threshold:
         moving = True
