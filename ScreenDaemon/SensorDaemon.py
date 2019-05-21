@@ -7,33 +7,17 @@ import time
 import pprint
 from datetime import datetime
 
-
-arduino.setup()
-iface = get_modem()
 while True:
   sensor = arduino.arduino_read()
 
   # Put data in if we have it
-  location = {}
-  net_time = 0
+  location = lib.get_gps()
   system_time = datetime.now().replace(microsecond=0).isoformat()
-
-  if iface:
-    modem = iface['location'].GetLocation()
-    net_time = iface['time'].GetNetworkTime()
-  
-    try:
-      location = {
-        'lat': "{:.5f}".format(modem[2]['latitude']),
-        'lng': "{:.5f}".format(modem[2]['longitude'])
-      }
-    except:
-      pass
 
   # We can xref the net_time and system_time for now. Eventually this will
   # probably not be necessary but in the early stages (2019/05/09) this is
   # a sanity check.
-  all = {**location, **sensor, 'GPStime': net_time, 'SystemTime': system_time } 
+  all = {**location, **sensor,  'SystemTime': system_time } 
   pprint.pprint(all)
   time.sleep(5)
 
@@ -49,8 +33,8 @@ while True:
 
   old_lat = lat
   old_lng = lng
-  """
-  """
+
+
   start = time.time()
   period = 0.5
   ix = 0
@@ -68,3 +52,4 @@ while True:
     if tts > 0:
       time.sleep(tts)
 
+  """
