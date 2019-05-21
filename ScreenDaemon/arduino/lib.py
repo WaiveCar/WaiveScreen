@@ -158,17 +158,22 @@ def arduino_read():
     backlight_value = ord(arduino.read())
     received_dict = {
         'ArduinoTime': time_ms,
-        'Current': current,
-        'Voltage': v_in,
+        'Backlight': backlight_value,
+        'Fan': fan_speed,
         'Temp': temp_c,
+        'Current': current,
         'Accel_x': accel_x,
         'Accel_y': accel_y,
         'Accel_z': accel_z,
         'Gyro_x': gyro_x,
         'Gyro_y': gyro_y,
         'Gyro_z': gyro_z,
-        'Fan': fan_speed,
-        'Backlight': backlight_value
+        'Voltage': v_in,
+        'Therm_read': therm_read,
+        'Therm_resistance': therm_resistance,
+        'Pitch': pitch,
+        'Roll': roll,
+        'Yaw': yaw
     }
     return received_dict
 

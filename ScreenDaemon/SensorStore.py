@@ -9,6 +9,7 @@ from datetime import datetime
 
 
 arduino.setup()
+iface = get_modem()
 while True:
   sensor = arduino.arduino_read()
 
@@ -17,7 +18,6 @@ while True:
   net_time = 0
   system_time = datetime.now().replace(microsecond=0).isoformat()
 
-  iface = get_modem()
   if iface:
     modem = iface['location'].GetLocation()
     net_time = iface['time'].GetNetworkTime()
