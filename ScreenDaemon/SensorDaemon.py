@@ -50,3 +50,21 @@ while True:
   old_lat = lat
   old_lng = lng
   """
+  """
+  start = time.time()
+  period = 0.5
+  ix = 0
+
+  while True:
+
+    lib.sensor_store({
+      "now": time.time(),
+      "sensor": arduino.arduino_read(),
+      "gps": get_gps()
+    })
+
+    ix += 1
+    tts = (start + period * ix) - time.time()
+    if tts > 0:
+      time.sleep(tts)
+
