@@ -45,12 +45,13 @@ fai-client
 nfs-common
 gpg
 
-# def stuff
+# dev stuff
 sshfs
 
 # needed for modem stuff
 policykit-1
 
+xosd-bin
 
 PACKAGES install NONFREE
 # you may want these non-free kernel drivers
