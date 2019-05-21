@@ -79,7 +79,7 @@ who_am_i() {
 }
 
 set_event() {
-  pid=${2:-!}
+  pid=${2:-$!}
   [ -e $EV/$1 ] || announce Event:$1
   echo $pid > $EV/$1
   echo `date +%R:%S` $1
