@@ -38,18 +38,20 @@ onscreen() {
     offset=$( cat /tmp/offset )
   fi
 
+  ts=$( printf "%03d" $(( $(date +%s) - $(cat /tmp/startup) )))
   size=14
 
   #from=$( caller 1 | awk ' { print $2":"$1 } ' )
-  echo $1 | osd_cat \
+  echo "$ts" $1 | osd_cat \
       -c $2 \
       -u black \
       -O 1 \
       -o $offset \
       -d $3 \
-      -f lucidasanstypewriter-$size &
+      -f lucidasanstypewriter-bold-$size &
 
-  offset=$(( (offset + size + 9) % 800 ))
+  echo $1
+  offset=$(( (offset + size + 9) % ((size + 9) * 25) ))
 
   echo $offset > /tmp/offset
   chmod 0666 /tmp/offset
@@ -57,16 +59,23 @@ onscreen() {
 announce() {
   onscreen "$*" white 20
 }
+info() {
+  onscreen "$*" white 10
+}
 warn() {
   onscreen "$*" yellow 40
 }
 error() {
-  onscreen "$*" red 80
+  onscreen "$*" red 90
 }
 ann() {
   announce "hello world"
   warn "hello world"
   error "hello world"
+}
+
+who_am_i() {
+  info $(uuid) $ENV
 }
 
 set_event() {
@@ -97,14 +106,17 @@ modem_enable() {
 }
 
 modem_connect() {
-  $SUDO mmcli -m 0 --simple-connect="apn=internet"
-  wwan=`ip addr show | grep wwp | head -1 | awk -F ':' ' { print $2 } '`
+  for i in 1 2; do
+    $SUDO mmcli -m 0 --simple-connect="apn=internet"
+    wwan=`ip addr show | grep wwp | head -1 | awk -F ':' ' { print $2 } '`
 
-  if [ -z "$wwan" ]; then
-    error "No modem found"
-    echo "Modem Not Found!!"
-    exit -1
-  fi
+    if [ -z "$wwan" ]; then
+      warn  "No modem found. Trying again"
+      sleep 4
+    else
+      break
+    fi
+  done
 
   # get ipv6
   $SUDO dhclient $wwan &
@@ -123,12 +135,18 @@ modem_connect() {
 ENDL
   set_event net ''
 
-  sleep 2
+  sleep 5
 
   if ping -c 1 -i 0.3 waivescreen.com; then
     announce "waivescreen.com found" 
   else
     warn "waivescreen.com unresolvable!"
+
+    while ! mmcli -m 0; do
+      announce "Waiting for modem"
+      sleep 2
+    done
+
     hasip=$( ip addr show $wwan | grep inet | wc -l )
     myphone=$( mmcli  -m 0 | grep own | awk ' { print $NF } ' )
     if (( hasip > 0 )); then
@@ -136,7 +154,7 @@ ENDL
     else
       warn "No ip assigned."
     fi
-    warn "My phone $myphone"
+    error "My phone $myphone"
   fi
 }
 
@@ -161,6 +179,7 @@ git_waivescreen() {
 
     if [ -e $DEST/WaiveScreen ]; then
       cd $DEST/WaiveScreen
+      git stash
       git pull
     else  
       cd $DEST
@@ -175,6 +194,7 @@ uuid() {
   if [ ! -e $UUID ] ; then
     $SUDO dmidecode -t 4 | grep ID | sed -E s'/ID://;s/\s//g' | $SUDO tee $UUID
   fi
+  cat $UUID
 }
 
 sync_scripts() {
@@ -201,10 +221,13 @@ dev_setup() {
   #
   # note! this usually runs as normal user
   #
-  announce "Using Development"
-  echo development > $DEST/.env
+  # echo development > $DEST/.env
   $SUDO dhclient enp3s0 
   [ -e $DEV ] || mkdir $DEV
+
+  if [ -z "$SUDO" ]; then
+    warn "Hey, you can't be root to do sshfs"
+  fi
 
   sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO) dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
   export BASE=$DEV
@@ -231,7 +254,8 @@ show_ad() {
     chromium --app=file://$app &
     set_event chromium
   else
-    error "Can't find $app"
+    error "Can't find $app. Exiting"
+    exit 
   fi
 }
 
