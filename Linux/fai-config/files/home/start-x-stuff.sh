@@ -18,9 +18,9 @@ loop_ad &
 modem_enable
 
 # TODO: comment out b4 prod
-dev_setup
+#dev_setup
 # TODO: put this in
-# modem_connect
+modem_connect
 
 set_event xstartup $$
 
