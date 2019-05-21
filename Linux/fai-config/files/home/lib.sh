@@ -7,6 +7,7 @@ export BASE=$DEST/WaiveScreen
 export DEV=$BASE.sshfs
 export VID=$DEST/capture
 export EV=/tmp/event
+export DISPLAY=${DISPLAY:-:0}
 #
 # Valid values are "production" and "development"
 #
@@ -15,6 +16,7 @@ export EV=/tmp/event
 # to somehow accomodate for that fact.
 #
 export ENV=`cat $DEST/.env`
+pkill osd_cat
 
 if [ ! -d $EV ]; then 
   mkdir -p $EV 
@@ -29,8 +31,47 @@ help() {
   declare -F | sed s/'declare -f//g' | sort
 }
 
+onscreen() {
+  if [ ! -e /tmp/offset ]; then
+    offset=0
+  else
+    offset=$( cat /tmp/offset )
+  fi
+
+  size=14
+
+  #from=$( caller 1 | awk ' { print $2":"$1 } ' )
+  echo $1 | osd_cat \
+      -c $2 \
+      -u black \
+      -O 1 \
+      -o $offset \
+      -d $3 \
+      -f lucidasanstypewriter-$size &
+
+  offset=$(( (offset + size + 9) % 800 ))
+
+  echo $offset > /tmp/offset
+  chmod 0666 /tmp/offset
+}
+announce() {
+  onscreen "$*" white 20
+}
+warn() {
+  onscreen "$*" yellow 40
+}
+error() {
+  onscreen "$*" red 80
+}
+ann() {
+  announce "hello world"
+  warn "hello world"
+  error "hello world"
+}
+
 set_event() {
   pid=${2:-!}
+  announce event:$1
   echo $pid > $EV/$1
   echo `date +%R:%S` $1
 }
@@ -40,6 +81,7 @@ modem_enable() {
     $SUDO mmcli -m 0 -e
 
     if [ ! $? ]; then 
+      warn "Searching for modem"
       echo 'trying again'
       sleep 1
       continue
@@ -49,6 +91,7 @@ modem_enable() {
       --location-enable-gps-raw \
       --location-enable-gps-nmea \
       --location-set-enable-signal
+    announce "Modem Enabled"
     break
   done
 }
@@ -58,6 +101,7 @@ modem_connect() {
   wwan=`ip addr show | grep wwp | head -1 | awk -F ':' ' { print $2 } '`
 
   if [ -z "$wwan" ]; then
+    error "No modem found"
     echo "Modem Not Found!!"
     exit -1
   fi
@@ -78,6 +122,22 @@ modem_connect() {
   nameserver 2001:4860:4860::8844
 ENDL
   set_event net ''
+
+  sleep 2
+
+  if ping -c 1 -i 0.3 waivescreen.com; then
+    announce "waivescreen.com found" 
+  else
+    warn "waivescreen.com unresolvable!"
+    hasip=$( ip addr show $wwan | grep inet | wc -l )
+    myphone=$( mmcli  -m 0 | grep own | awk ' { print $NF } ' )
+    if (( hasip > 0 )); then
+      warn "Data plan issues."
+    else
+      warn "No ip assigned."
+    fi
+    warn "My phone $myphone"
+  fi
 }
 
 ssh_hole() {
@@ -85,12 +145,12 @@ ssh_hole() {
 }
 
 screen_daemon() {
-  FLASK_ENV=$ENV $BASE/ScreenDaemon/ScreenDaemon.py
+  FLASK_ENV=$ENV $BASE/ScreenDaemon/ScreenDaemon.py &
   set_event screen_daemon
 }
 
 sensor_daemon() {
-  $SUDO $BASE/ScreenDaemon/SensorStore.py
+  $SUDO $BASE/ScreenDaemon/SensorStore.py &
   set_event sensor_daemon
 }
 
@@ -141,6 +201,7 @@ dev_setup() {
   #
   # note! this usually runs as normal user
   #
+  announce "Using Development"
   echo development > $DEST/.env
   $SUDO dhclient enp3s0 
   [ -e $DEV ] || mkdir $DEV
@@ -165,8 +226,13 @@ show_ad() {
     wait_for $BASE ''
   fi
 
-  chromium --app=file://$BASE/ScreenDisplay/display.html &
-  set_event chromium
+  local app=$BASE/ScreenDisplay/display.html 
+  if [ -e $app ]; then
+    chromium --app=file://$app &
+    set_event chromium
+  else
+    error "Can't find $app"
+  fi
 }
 
 loop_ad() {
