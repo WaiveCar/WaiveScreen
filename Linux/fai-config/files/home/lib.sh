@@ -95,12 +95,17 @@ modem_enable() {
       continue
     fi
 
+    # You won't find these options in the manpage, they are from
+    # cli/mmcli-modem-location.c in the ModemManager source code
+    # over at https://www.freedesktop.org/software/ModemManager/
     $SUDO mmcli -m 0 \
       --location-enable-gps-raw \
+      --location-enable-agps \
+      --location-enable-gps-unmanaged \
       --location-enable-gps-nmea \
       --location-set-enable-signal
 
-    announce "Modem Enabled"
+    set_event Modem
     break
   done
 }
@@ -154,7 +159,7 @@ ENDL
     else
       warn "No IP assigned."
     fi
-    error "My phone: $myphone"
+    error "$myphone"
   fi
 }
 
@@ -286,6 +291,11 @@ xrestart() {
     $SUDO pkill Xorg
     $SUDO xinit
   } &
+}
+
+location() {
+  $SUDO mmcli -m 0 --location-get
+  $SUDO mmcli -m 0 --location-status
 }
 
 nop() { 
