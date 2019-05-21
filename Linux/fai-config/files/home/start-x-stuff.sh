@@ -1,10 +1,13 @@
 #!/bin/bash
 
 . lib.sh
+date +%s > /tmp/startup
 
 export DISPLAY=$1
 
 notion &
+
+who_am_i
 
 [ -e $DEST/screen-splash.png ] && display -window root $DEST/screen-splash.png
 
