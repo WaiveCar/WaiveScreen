@@ -26,6 +26,11 @@ def failure(what):
 def get_location():
   return lib.sensor_last()
 
+@app.route('/fallback')
+def fallback():
+  campaign_id = db.kv_get('default')
+  return success(db.get('campaign', campaign_id))
+
 @app.route('/sow', methods=['GET', 'POST'])
 def next_ad(work = False):
   """
