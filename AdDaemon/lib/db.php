@@ -268,8 +268,8 @@ class Get {
 };
 
 class Many extends Get {
-  public static function doquery($qstr) {
-    return db_all($qstr);
+  public static function doquery($qstr, $table) {
+    return db_all($qstr, $table);
   }
 };
 
