@@ -223,8 +223,18 @@ function get_campaign_completion($id) {
 }
 
 class Get {
-  public static function doquery($qstr) {
-    return _query($qstr, 'querySingle');
+  public static function doquery($qstr, $table) {
+    global $RULES;
+    $res = _query($qstr, 'querySingle');
+    if($res) {
+      if($table && isset($RULES[$table])) {
+        $ruleTable = $RULES[$table];
+        foreach($ruleTable as $key => $processor) {
+          $res[$key] = $processor($res[$key]);
+        }
+      }
+    }
+    return $res;
   }
 
   public static function __callStatic($name, $argList) {
@@ -253,13 +263,13 @@ class Get {
     $kvstr = implode(' and ', $kvargs);
 
     $qstr = "select * from $name where $kvstr";
-    return static::doquery($qstr);
+    return static::doquery($qstr, $name);
   }
 };
 
 class Many extends Get {
-  public static function doquery($qstr) {
-    return db_all($qstr);
+  public static function doquery($qstr, $table) {
+    return db_all($qstr, $table);
   }
 };
 
