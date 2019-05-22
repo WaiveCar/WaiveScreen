@@ -9,6 +9,12 @@ cp -vuTr --preserve=mode,timestamps ../files/home $DEST
 chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
 [ -e $DEST/.env-saveme ] && mv $DEST/.env-saveme $DEST/.env
 
+if [ ! -e $DEST/assets ] ; then
+  # This is a cache for assets in case we go offline
+  mkdir $DEST/assets
+  chmod 0777 $DEST/assets
+fi
+
 # Allow any user to create a logfile.
 chmod 0777 /var/log
 
