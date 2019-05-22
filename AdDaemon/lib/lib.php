@@ -5,6 +5,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 
+include_once('const.php');
 include_once('db.php');
 include_once('email.php');
 include_once('user.php');
@@ -163,7 +164,14 @@ function ping($data) {
     db_update('screen', $screen['id'], $obj);
   }
 
-  return $screen;
+  // We return the definition for the default campaign
+  // The latest version of the software
+  // and the definition of the screen.
+  return [
+    'version' => $VERSION,
+    'screen' => $screen,
+    'default' => Get::campaign(1)
+  ];
 }
 
 function create_job($campaignId, $screenId) {
