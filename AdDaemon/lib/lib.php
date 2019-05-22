@@ -365,9 +365,31 @@ function show($what, $clause = '') {
 function active_campaigns() {
   return show('campaign', 'where active=1 and end_time > current_timestamp and start_time < current_timestamp and completed_seconds < duration_seconds order by active desc, start_time desc');
 }
-function campaigns_list($opts) {
-  return show('campaign');
+
+function campaigns_list($opts = []) {
+  $filter = [];
+
+  if(isset($opts['id'])) {
+    // ah, with this slight increase in bullshit we 
+    // can do comma separated mulit-request support.
+    // What a life.
+    $idList = array_map(
+      function($row) { 
+        return intval($row); 
+      }, 
+      explode(',', $opts['id'])
+    );
+    $filter[] = 'id in (' . implode(',', $idList) . ')';
+  }
+  $append = '';
+
+  if($filter) {
+    $append = 'where ' . implode(' and ', $filter);
+  }
+
+  return show('campaign', $append);
 }
+
 function campaign_new($opts) {
   //
   // Currently we don't care about radius ... eventually we'll be using
@@ -377,7 +399,7 @@ function campaign_new($opts) {
   //
   $missing = missing($opts, ['duration', 'asset', 'lat', 'lng', 'start_time', 'end_time']);
   if($missing) {
-    return doError("Missing parameters: " . implode(', ', $missing));
+    return doError('Missing parameters: ' . implode(', ', $missing));
   }
   if(is_array($opts['asset'])) {
     $opts['asset'] = json_encode($opts['asset']);
