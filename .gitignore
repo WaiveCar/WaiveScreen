@@ -5,3 +5,4 @@ node_modules
 *.swp
 *.swo
 vendor
+AdDaemon/lib/const.php
