@@ -12,6 +12,7 @@ include_once('user.php');
 
 $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
+$DEFAULT_CAMPAIGN_ID = 30;
 
 // Play time in seconds of one ad.
 $PLAYTIME = 7.5;
@@ -170,7 +171,7 @@ function ping($data) {
   return [
     'version' => $VERSION,
     'screen' => $screen,
-    'default' => Get::campaign(1)
+    'default' => Get::campaign($DEFAULT_CAMPAIGN_ID)
   ];
 }
 
