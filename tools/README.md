@@ -4,4 +4,5 @@ TP-Link smart plug
 
 The other important thing here is the "syncer.sh" which essentially has an inotify running on the files and then copies them over to the /srv directory (which is what FAI seems to have a love affair with) along with running an rsync to update it immediately on the remote host.  This is similar to the vagrant model where you can modify a file on the host machine and then have it updated on the client.
 
+`clone-db.sh` copies the database from the production server and installs it locally
 It's all instrumented from the host in this case
