@@ -16,6 +16,14 @@ VERSION = os.popen("/usr/bin/git describe").read().strip()
 UUID = False
 BUS = dbus.SystemBus()
 
+
+if os.environ['USER'] == 'root':
+  # This tool probably shouldn't be run as root but we should
+  # know who we are talking about if it is
+  USER = 'adorno'
+else:
+  USER = os.environ['USER']
+
 if 'SERVER' in os.environ:
   SERVER_URL = os.environ['SERVER']
   logging.info("Using {} as the server as specified in the server shell env variable")
@@ -155,6 +163,36 @@ def emit_startup():
   print("ssh -f -NC -R bounce:{}:127.0.0.1:22 bounce".format(port))
 
 
+def asset_cache(check):
+  #
+  # Now we have the campaign in the database, yay us I guess
+  # On the FAi partition, assuming we have 2, most crap goes
+  # into the home directory which can derive from our global
+  # USER variable
+  #
+  path = "/home/{}/assets".format(USER)
+
+  res = []
+  for asset in check['asset']:
+    name = "{}/{}".format(path, asset.split('/')[-1])
+    if not os.path.exists(name):
+      r = requests.get(asset, allow_redirects=True)
+      # 
+      # Since we are serving a file:/// then we don't have to worry
+      # about putting shit in an accessible path ... we have the
+      # whole file system to access.
+      #
+      open(name, 'wb').write(r.content)
+
+    res.append(name)
+
+  check['asset'] = res
+  return check
+
+def campaign_cache(check):
+  campaign = get(check['id'])
+  if not campaign:
+    campaign = campaign_store(check)
 
 def ping():
   payload = {
@@ -172,7 +210,20 @@ def ping():
       logging.warn("Unable to parse {}".format(data_raw))
 
     if data:
-      db.kv_set('port', data['port'])
+      # we have 
+      #
+      #  * this screen's info in "screen"
+      #  * the default campaign in "default"
+      #  * software version in "version"
+      #
+      if data['version'] != VERSION:
+        # TODO we need to do better than this bullshit
+        logging.warn("This is {} but {} is available".format(VERSION, data['version']))
+
+      db.kv_set('port', data['screen']['port'])
+
+      # set the default campaign
+      db.kv_set('default', data['default']['id'])
 
 def get_uuid():
   global UUID

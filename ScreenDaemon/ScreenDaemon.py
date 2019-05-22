@@ -68,6 +68,15 @@ def next_ad(work = False):
       if data['res']:
         for job in data['data']:
           if job:
+            # Here we cache the assets
+            # so the display is using
+            # local copies so if all
+            # hell breaks lose and it
+            # loses the cached copy or
+            # whatever, it won't matter.
+            job = lib.asset_cache(job)
+
+            pprint.pprint(job)
             job_list.append(job)
             lib.job_store(job)
 
