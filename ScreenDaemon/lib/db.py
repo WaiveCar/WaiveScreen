@@ -15,6 +15,12 @@ g_params = {}
 
 # This is a way to get the column names after grabbing everything
 # I guess it's also good practice
+_PROCESSOR = {
+  'campaign' : {
+    'asset': lambda x: json.dumps(x)
+  }
+}
+
 _SCHEMA = {
   'streams' : [	
     ('id', 'integer primary key autoincrement'), 
@@ -382,6 +388,16 @@ def kv_set(key, value):
   return value
 
 
+def process(res, table):
+  if table in _PROCESSOR:
+    for row in res:
+      if row:
+        for k, v in _PROCESSOR[table].items():
+          print(row,k,v)
+          row[k] = v(row[k])
+
+  return res
+
 def get(table, id = False):
   _checkForTable(table)
 
@@ -391,7 +407,7 @@ def get(table, id = False):
     res = run("select * from {} where key = ?".format(table), (id, ))
 
   if res:
-    return res.fetchone()
+    return process([res.fetchone()], table)[0]
 
 
 def run(query, args=None, with_last=False, db=None):
