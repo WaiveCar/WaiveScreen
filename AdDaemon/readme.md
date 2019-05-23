@@ -14,3 +14,8 @@ This tries to keep the consistency among the screens easy to deal with so that t
 Installation notes:
 
   Remember to increase the max upload file size in the php.ini
+
+The default ad should be inactive:
+ 
+ update campaign set active=false where id=30; // or whatever the default becomes
+
