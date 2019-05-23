@@ -24,6 +24,8 @@ if os.environ['USER'] == 'root':
 else:
   USER = os.environ['USER']
 
+NOMODEM = 'NOMODEM' in os.environ
+
 if 'SERVER' in os.environ:
   SERVER_URL = os.environ['SERVER']
   logging.info("Using {} as the server as specified in the server shell env variable")
@@ -48,6 +50,9 @@ modem_ix = 0
 modem_max = 10
 modem_info = {}
 def get_modem(try_again=False):
+  if NOMODEM:
+    return {}
+
   global modem_iface, modem_ix
   
   # If we've found it previously than don't
@@ -203,6 +208,7 @@ def ping():
 
   with requests.post(urlify('ping'), verify=False, json=payload) as response:
     data_raw = response.text
+    print(data_raw)
     try:
       data = json.loads(data_raw)
     except:
@@ -210,6 +216,7 @@ def ping():
       logging.warn("Unable to parse {}".format(data_raw))
 
     if data:
+      pprint.pprint(data)
       # we have 
       #
       #  * this screen's info in "screen"
