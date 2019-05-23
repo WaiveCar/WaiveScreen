@@ -28,8 +28,26 @@ def get_location():
 
 @app.route('/default')
 def default():
+  campaign = False
   campaign_id = db.kv_get('default')
-  return success(db.get('campaign', campaign_id))
+
+  # This means we probably haven't successfully pinged yet.
+  if not campaign_id:
+    lib.ping()
+    campaign_id = db.kv_get('default')
+
+  # Let's make sure we can pull it from the database
+  if campaign_id:
+    campaign = db.get('campaign', campaign_id)
+    if not campaign:
+      lib.ping()
+      campaign = db.get('campaign', campaign_id)
+
+  if not campaign:
+    # Things aren't working out for us
+    return failure("Cannot contact server")
+
+  return success(campaign)
 
 @app.route('/sow', methods=['GET', 'POST'])
 def next_ad(work = False):
