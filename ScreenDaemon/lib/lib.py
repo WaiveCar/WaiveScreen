@@ -195,9 +195,9 @@ def asset_cache(check):
   return check
 
 def campaign_cache(check):
-  campaign = get(check['id'])
+  campaign = db.get('campaign', check['id'])
   if not campaign:
-    campaign = campaign_store(check)
+    campaign = db.insert('campaign', data['default'])
 
 def ping():
   payload = {
@@ -231,7 +231,8 @@ def ping():
       db.kv_set('default', data['default']['id'])
 
       if not db.get('campaign', data['default']['id']):
-        db.insert('campaign', data['default'])
+        default = asset_cache(data['default'])
+        db.insert('campaign', default)
 
 
 def get_uuid():
