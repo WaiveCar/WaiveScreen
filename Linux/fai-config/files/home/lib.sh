@@ -174,7 +174,12 @@ ssh_hole() {
 }
 
 screen_daemon() {
-  FLASK_ENV=$ENV $BASE/ScreenDaemon/ScreenDaemon.py &
+  # TODO: We need to use some polkit thing so we can
+  # access the modem here and not run this as root in the future
+  {
+    FLASK_ENV=$ENV $SUDO $BASE/ScreenDaemon/ScreenDaemon.py &
+  } | $SUDO tee -a /var/log/screendaemon.log
+
   set_event screen_daemon
 }
 

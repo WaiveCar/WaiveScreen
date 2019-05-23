@@ -505,14 +505,21 @@ var Engine = function(opts){
       nextJob();
     },
     SetFallback: function(url) {
-      // we look for a system default
+
+      // We look for a system default
       if(!_res.fallback && !url) {
         function trylocal(){
           if(localStorage['default']) {
             _fallback = makeJob(JSON.parse(localStorage['default']));
+          } else if (_res.server) {
+            // If we have a server defined and we have yet to succeed
+            // to get our default then we should probably try it again
+            // until we get it
+            setTimeout(function(){_res.setFallback()}, _res.duration * 1000);
           }
         }
-        // if we have a server we can get it from there
+
+        // If we have a server we can get it from there
         get('/default', function(res) {
           if(res.res) {
             localStorage['default'] = JSON.stringify(res.data);

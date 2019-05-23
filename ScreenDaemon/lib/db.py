@@ -26,7 +26,7 @@ _PROCESSOR = {
 }
 
 _SCHEMA = {
-  'streams' : [	
+  'streams' : [
     ('id', 'integer primary key autoincrement'), 
     ('datatype', 'integer default null'),
     ('name', 'text default null'),
@@ -276,6 +276,8 @@ def connect(db_file=None):
     logging.info("Using {} as the DB as specified in the DB shell env variable")
   else:
     default_db = '/var/db/config.db'
+    os.popen("/usr/bin/sudo /usr/bin/chmod 0666 {}".format(default_db))
+    logging.info("Using {} as the DB".format(default_db))
 
   if not db_file:
     db_file = default_db
@@ -296,7 +298,7 @@ def connect(db_file=None):
   conn = sqlite3.connect(db_file)
   conn.row_factory = sqlite3.Row
 
-  if os.environ['DEBUG']:
+  if 'DEBUG' in os.environ:
     conn.set_trace_callback(print)
 
   instance.update({

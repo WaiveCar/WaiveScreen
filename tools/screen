@@ -70,7 +70,7 @@ for i in $*; do
     force) pcycle ;;
     restart|reboot|reset|pcycle) restart ;;
     *) 
-      echo "Error: $1\nValid: git reload off on restart"
+      echo -e "Error: $1\nValid: git sync|reload list off connect on restart|reboot"
       if [ $# -gt "1" ]; then
         echo "Exit: Found unknown command. Ending parsing"
       fi
