@@ -171,7 +171,7 @@ def arduino_read():
   fan_speed = ord(arduino.read())
   backlight_value = ord(arduino.read())
   received_dict = {
-    'ArduinoTime': time_ms,
+    'Arduino_time': time_ms,
     'Backlight': backlight_value,
     'Fan': fan_speed,
     'Temp': temp_c,
