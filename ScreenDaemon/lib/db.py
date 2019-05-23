@@ -8,6 +8,7 @@ import sys
 import json
 from datetime import timedelta
 from threading import Lock
+from pprint import pprint
 
 g_db_count = 0
 g_lock = Lock()
@@ -17,7 +18,10 @@ g_params = {}
 # I guess it's also good practice
 _PROCESSOR = {
   'campaign' : {
-    'asset': lambda x: json.dumps(x)
+    'asset': {
+      'pre': lambda x: json.dumps(x),
+      'post': lambda x: json.loads(x)
+    }
   }
 }
 
@@ -117,6 +121,7 @@ def _checkForTable(what):
 def _insert(table, data):
   _checkForTable(table)
 
+  data = process(data, table, 'pre')
   known_keys = [x[0] for x in _SCHEMA[table]] 
   insert_keys = list(data.keys() & known_keys)
   shared_keys = insert_keys
@@ -125,8 +130,8 @@ def _insert(table, data):
   toInsert = [data[key] for key in insert_keys]
 
   # Throw the full raw data on to the end.
-  insert_keys.append('raw')
-  toInsert.append(json.dumps(data))
+  #insert_keys.append('raw')
+  #toInsert.append(json.dumps(data))
 
   key_string = ','.join(insert_keys)
 
@@ -143,7 +148,7 @@ def insert(table, data):
     return last
 
   except:
-    logging.warn("Unable to insert a record {}".format(qstr))
+    logging.warn("Unable to insert a record {} {}".format(qstr, json.dumps(values)))
 
   
 def upsert(table, data):
@@ -246,7 +251,7 @@ def all(table, field_list='*', sort_by='id'):
     return [record[0] for record in query.fetchall()]
 
   else:
-    return [record for record in query.fetchall()]
+    return process([record for record in query.fetchall()], table, 'post')
 
 
 def schema(table, db=None):
@@ -289,6 +294,11 @@ def connect(db_file=None):
     sys.stderr.write("Info: Creating db file %s\n" % db_file)
 
   conn = sqlite3.connect(db_file)
+  conn.row_factory = sqlite3.Row
+
+  if os.environ['DEBUG']:
+    conn.set_trace_callback(print)
+
   instance.update({
     'conn': conn,
     'c': conn.cursor()
@@ -388,26 +398,39 @@ def kv_set(key, value):
   return value
 
 
-def process(res, table):
+def process(res, table, what):
   if table in _PROCESSOR:
-    for row in res:
+    unwrap = False
+    if type(res) is not list:
+      unwrap = True
+      res = [ res ]
+     
+    for ix, row in enumerate(res):
       if row:
+        # The SQLITE3.ROW type is immutable so
+        # we need to convert it to a dict in order
+        # to get it back to our user
+        row = dict(row)
         for k, v in _PROCESSOR[table].items():
-          print(row,k,v)
-          row[k] = v(row[k])
+          # If a pre/post is defined for this key
+          # on this table then we do it
+          if v[what]:
+            row[k] = v[what](row[k])
 
+        res[ix] = row
+
+    if unwrap:
+      res = res[0]
+  
   return res
 
 def get(table, id = False):
   _checkForTable(table)
 
-  if not id:
-    res = run("select * from {} order by id desc limit 1".format(table))
-  else:
-    res = run("select * from {} where key = ?".format(table), (id, ))
+  res = run("select * from {} where id = ?".format(table), (id, ))
 
   if res:
-    return process([res.fetchone()], table)[0]
+    return process(res.fetchone(), table, 'post')
 
 
 def run(query, args=None, with_last=False, db=None):
