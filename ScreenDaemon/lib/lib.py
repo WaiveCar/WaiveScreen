@@ -108,11 +108,11 @@ def get_gps():
       return { 'time': networktime }
     else:
       return {
-        'altitude': location[2]['altitude'],
-        'latitude': location[2]['latitude'],
-        'longitude': location[2]['longitude'],
-        'gps_time': location[2]['utc-time'],
-        'time': networktime[0]
+        'Altitude': location[2]['altitude'],
+        'Latitude': location[2]['latitude'],
+        'Longitude': location[2]['longitude'],
+        'GPS_time': location[2]['utc-time'],
+        'Time': networktime[0]
       }
   return {}
 
