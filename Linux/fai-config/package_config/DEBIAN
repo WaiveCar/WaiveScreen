@@ -47,6 +47,7 @@ gpg
 
 # dev stuff
 sshfs
+sqlite3
 
 # needed for modem stuff
 policykit-1
