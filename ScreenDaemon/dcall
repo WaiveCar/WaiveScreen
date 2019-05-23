@@ -2,15 +2,21 @@
 import lib.lib as lib
 import sys
 import json
+import os
+
+DEBUG = 'DEBUG' in os.environ
 
 if len(sys.argv) > 1:
-  try:
+  if DEBUG:
     res = eval("lib." + sys.argv[1] + "()")
-  except:
+  else:
     try:
-      res = eval("lib." + sys.argv[1])
+      res = eval("lib." + sys.argv[1] + "()")
     except:
-      res = False
+      try:
+        res = eval("lib." + sys.argv[1])
+      except:
+        res = False
 
   if res and not callable(res):
     print(json.dumps(res))
