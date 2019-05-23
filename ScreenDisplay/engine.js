@@ -57,6 +57,7 @@ var Engine = function(opts){
     _playCount = 0,
     _id = 0,
     _downweight = 0.7,
+    _firstRun = false,
     _nop = function(){},
     _isNetUp = true,
     _start = new Date(),
@@ -78,6 +79,7 @@ var Engine = function(opts){
     var vid = document.createElement('video');
     var src = document.createElement('source');
 
+    vid.setAttribute('muted', true);
     //vid.setAttribute('preload', 'auto');
     vid.appendChild(src);
 
@@ -104,7 +106,7 @@ var Engine = function(opts){
           if(new Date() - now < 100) {
             // if we were interrupted in some normal interval, maybe it will just work
             // if we try again ... might as well - don't reset the clock though.
-            asset.run(true);
+            //asset.run(true);
           }
           //asset.active = false;
         });
@@ -330,6 +332,7 @@ var Engine = function(opts){
       // that we are "passing the torch" of the .shown pointer,
       // being more than likely just one.
       if(_last && (_current.position > 0 || _last.id !== _current.id)) {
+        console.log(_current.position, _last.id, _current.id);
         _last.shown.dom.classList.add('fadeOut');
 
         // This is NEEDED because by the time 
@@ -351,6 +354,8 @@ var Engine = function(opts){
       
       if(doFade) {
         _current.shown.dom.classList.add('fadeIn');
+      } else {
+        _current.shown.dom.classList.remove('fadeIn');
       }
       _current.shown.run();
       _res.container.appendChild(_current.shown.dom);
@@ -408,19 +413,20 @@ var Engine = function(opts){
     if( range <= 0 ) {
       console.log("Range < 0, using fallback");
       _current = _fallback;
-      if(activeList.length == 0 && Object.values(_res.db) > 1) {
+      if(!_firstRun && activeList.length == 0 && Object.values(_res.db) > 1) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
-        setAssetDuration(_current, 0, 1);
+        setAssetDuration(_current, 0, 0.2);
       } else {
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
         // this out to some significant number
-        setAssetDuration(_current, 0, 1);
+        setAssetDuration(_current, 0, 20);
       }
 
     } else {
       // This is needed for the end case.
+      _firstRun = true;
       _current = false;
       for(row of activeList) {
 
