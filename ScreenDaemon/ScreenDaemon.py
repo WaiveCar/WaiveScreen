@@ -26,8 +26,8 @@ def failure(what):
 def get_location():
   return lib.sensor_last()
 
-@app.route('/fallback')
-def fallback():
+@app.route('/default')
+def default():
   campaign_id = db.kv_get('default')
   return success(db.get('campaign', campaign_id))
 
