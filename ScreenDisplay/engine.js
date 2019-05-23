@@ -37,8 +37,6 @@ var Engine = function(opts){
       // off to it - also new assets and jobs can come from it.
       server: false,
 
-      fallback: 'fallback.png',
-
       db: {},
 
       duration: 7.5,
@@ -163,6 +161,10 @@ var Engine = function(opts){
     // We don't want to manually set this.
     // obj.goal
     //
+    if( ! ('url' in obj) ) {
+      obj.url = obj.asset;
+    }
+
     if( isString(obj.url) ) {
       obj.url = [ obj.url ];
     }
@@ -202,7 +204,7 @@ var Engine = function(opts){
   function addJob(job) {
     if(!_res.db[job.campaign_id]) {
 
-      // this acts as the instantiation. 
+      // This acts as the instantiation. 
       // the merging of the rest of the data
       // will come below.
       console.log(job.asset);
@@ -219,35 +221,41 @@ var Engine = function(opts){
 
   // TODO: A circular buffer to try and navigate poor network
   // conditions.
-  function post(url, what, cb) {
-    post.ix = (post.ix + 1) % post.size;
+  function remote(verb, url, what, onsuccess, onfail) {
+    if(!_res.server) {
+      onfail();
+    }
+    remote.ix = (remote.ix + 1) % remote.size;
 
-    if(post.lock) {
-      console.log("Not posting, locked on " + post.lock);
+    if(remote.lock) {
+      console.log("Not connecting, locked on " + remote.lock);
       return false;
     }
     // Try to avoid a barrage of requests
-    post.lock = post.ix;
+    remote.lock = remote.ix;
 
     var http = new XMLHttpRequest();
 
-    http.open('POST', _res.server + url, true);
+    http.open(verb, _res.server + url.replace(/^\/*/,''), true);
     http.setRequestHeader('Content-type', 'application/json');
 
     http.onreadystatechange = function() {
       if(http.readyState == 4) {
-        post.lock = false;
+        remote.lock = false;
         if( http.status == 200) {
           _isNetUp = true;
-          cb(JSON.parse(http.responseText));
+          onsuccess(JSON.parse(http.responseText));
         }
       }
     }
 
     http.onabort = http.onerror = http.ontimeout = http.onloadend = function(){
+      if(onfail) {
+        onfail();
+      }
       // ehhh ... maybe we just can't contact things?
       _isNetUp = false;
-      post.lock = false;
+      remote.lock = false;
     }
     
     if(what) {
@@ -256,16 +264,22 @@ var Engine = function(opts){
       http.send();
     }
   }
-  post.size = 5000;
-  post.ix = 0;
+  function get(url, onsuccess, onfail) {
+    return remote('GET', url, false, onsuccess, onfail);
+  }
+  function post(url, what, onsuccess, onfail) {
+    return remote('POST', url, what, onsuccess, onfail);
+  }
+  remote.size = 5000;
+  remote.ix = 0;
 
   function sow(payload) {
     // no server is set
     if(!_res.server) {
-      if(post.ix == 0) {
+      if(remote.ix == 0) {
         console.info("No server is set.");
       }
-      post.ix++;
+      remote.ix++;
       return;
     }
     post('sow', payload, function(res) {
@@ -278,9 +292,10 @@ var Engine = function(opts){
   }
 
   function setAssetDuration(what, index, amount) {
-    // update the total aggregate to reflect the new amount
+    // Update the total aggregate to reflect the new amount
     what.duration -= (what.duration - amount);
-    // now set the new amount
+
+    // Now set the new amount
     what.assetList[index].duration = amount;
   }
 
@@ -412,7 +427,15 @@ var Engine = function(opts){
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
       console.log("Range < 0, using fallback");
+
+      if(!_fallback) {
+        // woops what do we do now?! 
+        // I guess we just try this again?!
+        return setTimeout(nextJob, 1500);
+      }
+
       _current = _fallback;
+
       if(!_firstRun && activeList.length == 0 && Object.values(_res.db) > 1) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
@@ -421,7 +444,7 @@ var Engine = function(opts){
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
         // this out to some significant number
-        setAssetDuration(_current, 0, 20);
+        setAssetDuration(_current, 0, _res.duration);
       }
 
     } else {
@@ -482,8 +505,25 @@ var Engine = function(opts){
       nextJob();
     },
     SetFallback: function(url) {
-      _res.fallback = _res.fallback || url;
-      _fallback = makeJob({url: _res.fallback, duration: .1});
+      // we look for a system default
+      if(!_res.fallback && !url) {
+        function trylocal(){
+          if(localStorage['default']) {
+            _fallback = makeJob(JSON.parse(localStorage['default']));
+          }
+        }
+        // if we have a server we can get it from there
+        get('/default', function(res) {
+          if(res.res) {
+            localStorage['default'] = JSON.stringify(res.data);
+          }
+          trylocal();
+        }, trylocal);
+
+      } else {
+        _res.fallback = _res.fallback || url;
+        _fallback = makeJob({url: _res.fallback, duration: .1});
+      }
     },
     AddJob: function(obj) {
       var res = {};
