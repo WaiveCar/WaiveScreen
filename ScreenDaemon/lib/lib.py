@@ -25,6 +25,7 @@ else:
   USER = os.environ['USER']
 
 NOMODEM = 'NOMODEM' in os.environ
+DEBUG = 'DEBUG' in os.environ
 
 if 'SERVER' in os.environ:
   SERVER_URL = os.environ['SERVER']
@@ -47,7 +48,7 @@ storage_base = '/var/lib/waivescreen/'
 
 modem_iface = False
 modem_ix = 0
-modem_max = 10
+modem_max = 4
 modem_info = {}
 def get_modem(try_again=False):
   if NOMODEM:
@@ -91,6 +92,7 @@ def get_modem(try_again=False):
   
     except Exception as exc:
       time.sleep(1)
+      modem_iface = False
       print(exc)
       pass
 
@@ -206,33 +208,39 @@ def ping():
     **get_modem_info()
   }
 
-  with requests.post(urlify('ping'), verify=False, json=payload) as response:
-    data_raw = response.text
-    try:
-      data = json.loads(data_raw)
-    except:
-      data = False
-      logging.warn("Unable to parse {}".format(data_raw))
+  try: 
+    with requests.post(urlify('ping'), verify=False, json=payload) as response:
+      data_raw = response.text
+      try:
+        data = json.loads(data_raw)
+      except:
+        data = False
+        logging.warn("Unable to parse {}".format(data_raw))
+  
+      if data:
+        # we have 
+        #
+        #  * this screen's info in "screen"
+        #  * the default campaign in "default"
+        #  * software version in "version"
+        #
+        if data['version'] != VERSION:
+          # TODO we need to do better than this bullshit
+          logging.warn("This is {} but {} is available".format(VERSION, data['version']))
+  
+        db.kv_set('port', data['screen']['port'])
+  
+        # set the default campaign
+        db.kv_set('default', data['default']['id'])
+  
+        if not db.get('campaign', data['default']['id']):
+          default = asset_cache(data['default'])
+          db.insert('campaign', default)
+  except Exception as ex:
+    if DEBUG:
+      raise ex
 
-    if data:
-      # we have 
-      #
-      #  * this screen's info in "screen"
-      #  * the default campaign in "default"
-      #  * software version in "version"
-      #
-      if data['version'] != VERSION:
-        # TODO we need to do better than this bullshit
-        logging.warn("This is {} but {} is available".format(VERSION, data['version']))
-
-      db.kv_set('port', data['screen']['port'])
-
-      # set the default campaign
-      db.kv_set('default', data['default']['id'])
-
-      if not db.get('campaign', data['default']['id']):
-        default = asset_cache(data['default'])
-        db.insert('campaign', default)
+    return False
 
 
 def get_uuid():
