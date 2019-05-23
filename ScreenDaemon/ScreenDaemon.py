@@ -39,6 +39,9 @@ def default():
   # Let's make sure we can pull it from the database
   if campaign_id:
     campaign = db.get('campaign', campaign_id)
+    if not campaign:
+      lib.ping()
+      campaign = db.get('campaign', campaign_id)
 
   if not campaign:
     # Things aren't working out for us
