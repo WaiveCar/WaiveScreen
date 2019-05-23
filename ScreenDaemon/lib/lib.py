@@ -208,7 +208,6 @@ def ping():
 
   with requests.post(urlify('ping'), verify=False, json=payload) as response:
     data_raw = response.text
-    print(data_raw)
     try:
       data = json.loads(data_raw)
     except:
@@ -216,7 +215,6 @@ def ping():
       logging.warn("Unable to parse {}".format(data_raw))
 
     if data:
-      pprint.pprint(data)
       # we have 
       #
       #  * this screen's info in "screen"
@@ -231,6 +229,10 @@ def ping():
 
       # set the default campaign
       db.kv_set('default', data['default']['id'])
+
+      if not db.get('campaign', data['default']['id']):
+        db.insert('campaign', data['default'])
+
 
 def get_uuid():
   global UUID
