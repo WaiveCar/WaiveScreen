@@ -29,6 +29,15 @@ def get_location():
 @app.route('/default')
 def default():
   campaign_id = db.kv_get('default')
+  # This means we probably haven't successfully pinged yet.
+  if not campaign_id:
+    lib.ping()
+    campaign_id = db.kv_get('default')
+
+    if not campaign_id:
+      # Things aren't working out for us
+      return failure("Cannot contact server")
+
   return success(db.get('campaign', campaign_id))
 
 @app.route('/sow', methods=['GET', 'POST'])
