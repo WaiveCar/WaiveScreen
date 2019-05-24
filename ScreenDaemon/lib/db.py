@@ -19,8 +19,8 @@ g_params = {}
 _PROCESSOR = {
   'campaign' : {
     'asset': {
-      'pre': lambda x: json.dumps(x),
-      'post': lambda x: json.loads(x)
+      'pre': lambda x, row: json.dumps(x),
+      'post': lambda x, row: json.loads(x)
     }
   }
 }
@@ -85,6 +85,7 @@ _SCHEMA = {
   # There's probably a better way to do this, let's do that later.
   'sensor' : [
     ('id', 'INTEGER PRIMARY KEY autoincrement'),
+    """
     ('ts', 'INTEGER default null'),
     ('backlight', 'FLOAT default null'),
     ('fan', 'FLOAT default null'),
@@ -107,6 +108,7 @@ _SCHEMA = {
     ('longitude', 'FLOAT default null'),
     ('gps_time', 'TIMESTAMP'),
     ('time', 'TIMESTAMP'),
+    """
     ('raw', 'TEXT'),
     ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
   ]
@@ -417,7 +419,7 @@ def process(res, table, what):
           # If a pre/post is defined for this key
           # on this table then we do it
           if v[what]:
-            row[k] = v[what](row[k])
+            row[k] = v[what](row[k], row)
 
         res[ix] = row
 
