@@ -6,7 +6,7 @@ git pull
 lib/update_db.php
 
 ver=$(git describe)
-last_commit=$(git log -1 --format="%at" | xargs -I{} date -d @{} +%Y%m%d%H%M%S)
+last_commit=$(git log -1 --format="%at")
 
 cat > lib/const.php << ENDL
 <?php
