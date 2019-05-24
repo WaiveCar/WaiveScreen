@@ -92,7 +92,29 @@ def send_wakeup_signal():
   arduino.write(b'\x11\xff')
 
 
+start = 0
+last = 0
+mea = {}
+count = 0
+def check(name = ''):
+  global start, last, mea, count
+  now = time.time()
+  if name == '':
+    start = now
+    count += 1
+  else:
+    if not name in mea:
+      mea[name] = 0
+    mea[name] += now - last
+
+    if name == 'done' and count % 100 == 0:
+      for k,v in mea.items():
+        print("{:20s} {}".format(k, 1000 * v / count))
+        
+  last = now
+
 def arduino_read():
+  # check()
   arduino = get_arduino()
   try:
     arduino.in_waiting
@@ -103,8 +125,12 @@ def arduino_read():
     arduino.open()
 
   while arduino.in_waiting < 25:
+    # Our period is 100hz so we try to 
+    # wait a bit under that.
+    time.sleep(0.007)
     pass
 
+  # check("wait")
   # first byte is the header, must be 0xff
   header = ord(arduino.read())
   while header != 0xff:
@@ -189,6 +215,7 @@ def arduino_read():
     'Roll': roll,
     'Yaw': yaw
   }
+  # check("done")
   return received_dict
 
 
