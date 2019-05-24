@@ -11,6 +11,11 @@ from datetime import datetime
 # would take a reading every 0.2 seconds
 FREQUENCY = 0.05
 
+# If all the sensor deltas reach this percentage
+# (multiplied by 100) from the baseline, then we
+# call this a "significant event" and store it.
+AGGREGATE_THRESHOLD = 10
+
 # This is the Heartbeat in seconds - we do
 # a reading in this frequency (in seconds) to state that
 # we're still alive.
@@ -18,6 +23,7 @@ HB = 30
 
 PERIOD = HB / FREQUENCY
 START = time.time()
+
 last_reading = False
 ix = 0
 ix_hb = 0
@@ -27,10 +33,12 @@ def is_significant(totest):
 
   if not last_reading or ix % PERIOD == 0:
     if not last_reading:
-      print("First reading")
+      #print("First reading")
+      pass
     else:
       ix_hb += 1
-      print("HB {}".format(ix_hb))
+      #print("HB {}".format(ix_hb))
+      pass
     last_reading = totest
     return True
 
@@ -60,9 +68,8 @@ def is_significant(totest):
         ttl += (diff / v) - 1
         #print("{:10s}:{:5.2f} reached: {}".format(k,v, diff))
 
-  min = 10
-  if ttl > min:
-    print("{:10s}:{:5.2f} reached: {}".format('percent', min, ttl))
+  if ttl > AGGREGATE_THRESHOLD:
+    #print("{:10s}:{:5.2f} reached: {}".format('percent', min, ttl))
     last_reading = totest
     return True
 
@@ -74,6 +81,7 @@ while True:
   # Put data in if we have it
   if lib.NOMODEM:
     location = {}
+
   else:
     location = lib.get_gps()
 
@@ -85,6 +93,7 @@ while True:
   all = {**location, **sensor, 'SystemTime': system_time } 
 
   if is_significant(all):
+    lib.sensor_store(all)
     pass
     #pprint.pprint(all)
 
