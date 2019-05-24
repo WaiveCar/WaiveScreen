@@ -9,6 +9,12 @@ cp -vuTr --preserve=mode,timestamps ../files/home $DEST
 chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
 [ -e $DEST/.env-saveme ] && mv $DEST/.env-saveme $DEST/.env
 
+# This is to allow non-root users to get the modem info (and
+# everything else, but let's ignore that)
+#
+# TODO: This doesn't fix it ... I don't know why
+sed -i 's/auth_self_keep/yes/g' /usr/share/polkit-1/actions/org.freedesktop.ModemManager1.policy 
+
 if [ ! -e $DEST/assets ] ; then
   # This is a cache for assets in case we go offline
   mkdir $DEST/assets
