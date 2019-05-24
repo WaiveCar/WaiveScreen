@@ -143,8 +143,13 @@ function find_unfinished_job($campaignId, $screenId) {
 }
 
 function ping($data) {
-  global $VERSION, $DEFAULT_CAMPAIGN_ID;
-  error_log(json_encode($data));
+  global 
+    $VERSION, 
+    $DEFAULT_CAMPAIGN_ID,
+    $LASTCOMMIT;
+
+  //error_log(json_encode($data));
+
   if(!isset($data['uid'])) {
     return doError("You need to pass in a UID");
   }
@@ -171,6 +176,7 @@ function ping($data) {
   // and the definition of the screen.
   return [
     'version' => $VERSION,
+    'last' => $LASTCOMMIT,
     'screen' => $screen,
     'default' => Get::campaign($DEFAULT_CAMPAIGN_ID)
   ];
