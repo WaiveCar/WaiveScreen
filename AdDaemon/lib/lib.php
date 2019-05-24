@@ -176,7 +176,7 @@ function ping($data) {
   // and the definition of the screen.
   return [
     'version' => $VERSION,
-    'last' => $LASTCOMMIT,
+    'version_date' => $LASTCOMMIT,
     'screen' => $screen,
     'default' => Get::campaign($DEFAULT_CAMPAIGN_ID)
   ];
