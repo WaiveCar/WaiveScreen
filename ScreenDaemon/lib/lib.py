@@ -143,7 +143,10 @@ def urlify(what):
   return "{}/{}".format(SERVER_URL, what)
 
 def sensor_store(data):
-  return db.insert('sensor', data)
+  toInsert = {
+    'raw': json.dumps(data)
+  }
+  return db.insert('sensor', toInsert)
 
 def sensor_last(index = False):
   res = db.kv_get('sensor', index)
