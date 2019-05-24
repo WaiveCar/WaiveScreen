@@ -13,6 +13,9 @@ from pprint import pprint
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 VERSION = os.popen("/usr/bin/git describe").read().strip()
 
+# The unix time of the last commit
+VERSIONDATE=os.popen("/usr/bin/git log -1 --format='%at'").read().strip()
+
 UUID = False
 BUS = dbus.SystemBus()
 
