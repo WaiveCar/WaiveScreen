@@ -10,11 +10,12 @@ import logging
 from pprint import pprint
 
 # This is needed for the git describe to succeed
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
+MYPATH = os.path.dirname(os.path.realpath(__file__))
+os.chdir(MYPATH)
 VERSION = os.popen("/usr/bin/git describe").read().strip()
 
 # The unix time of the last commit
-VERSIONDATE=os.popen("/usr/bin/git log -1 --format='%at'").read().strip()
+VERSIONDATE = os.popen("/usr/bin/git log -1 --format='%at'").read().strip()
 
 UUID = False
 BUS = dbus.SystemBus()
@@ -221,7 +222,7 @@ def ping():
       except:
         data = False
         logging.warn("Unable to parse {}".format(data_raw))
-  
+
       if data:
         # we have 
         #
@@ -241,6 +242,34 @@ def ping():
         if not db.get('campaign', data['default']['id']):
           default = asset_cache(data['default'])
           db.insert('campaign', default)
+
+        if data['version_date'] > VERSIONDATE:
+          # This means we can upgrade.
+          #
+          # We need to make sure that a failed
+          # upgrade doesn't send us in some kind
+          # of crazy upgrade loop where we constantly
+          # try to restart things.
+          #
+          version = db.kv_get('version_date')
+          if version < data['version_date']:
+            # Regardless of whether we succeed or not
+            # we store this latest version as the last
+            # version we *attempted* to upgrade to
+            # in order to avoid the aforementioned 
+            # issue
+            db.kv_set('version_date', data['version_date'])
+            logging.info("Upgrading from {} to {}. So long.".format(VERSION, data['version']))
+
+            # Now we ask the shell to do the upgrade
+            # a bunch of assumptions are being done here.
+            # If we are on the screen then we assume that adorno
+            # is our username.
+            os.chdir('/home/adorno')
+            os.spawnl(os.P_DETACH, './dcall upgrade')
+
+  
+
   except Exception as ex:
     if DEBUG:
       raise ex
