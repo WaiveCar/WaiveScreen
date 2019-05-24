@@ -81,7 +81,7 @@ who_am_i() {
 set_event() {
   pid=${2:-$!}
   [ -e $EV/$1 ] || announce Event:$1
-  echo $pid > $EV/$1
+  echo -n $pid > $EV/$1
   echo `date +%R:%S` $1
 }
 
@@ -174,6 +174,7 @@ ssh_hole() {
 }
 
 screen_daemon() {
+  down screen_daemon
   # TODO: We need to use some polkit thing so we can
   # access the modem here and not run this as root in the future
   {
@@ -184,6 +185,7 @@ screen_daemon() {
 }
 
 sensor_daemon() {
+  down sensor_daemon
   $SUDO $BASE/ScreenDaemon/SensorDaemon.py &
   set_event sensor_daemon
 }
@@ -290,11 +292,16 @@ loop_ad() {
 
 down() {
   cd $EV
-  for pidfile in $( ls ); do
-    echo $pidfile
+  if [ -n "$1" ]; then
     [ -s "$pidfile" ] && kill $( cat $pidfile )
-    rm $pidfile > /dev/null
-  done
+    [ -e "$pidfile" ] && rm $pidfile
+  else
+    for pidfile in $( ls ); do
+      echo $pidfile
+      [ -s "$pidfile" ] && kill $( cat $pidfile )
+      [ -e "$pidfile" ] && rm $pidfile
+    done
+  fi
 }
 
 xrestart() {
