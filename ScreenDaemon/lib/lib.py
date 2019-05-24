@@ -105,7 +105,6 @@ def get_gps():
   if modem:
     location = modem['location'].GetLocation()
     networktime = modem['time'].GetNetworkTime()
-    pprint(locatoin)
     if '2' not in location:
       return { 'time': networktime }
     else:
