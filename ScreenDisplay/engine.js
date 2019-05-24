@@ -314,6 +314,12 @@ var Engine = function(opts){
     //
     // so this is is when we do the reporting.
     if(_current.position === 0) {
+      // We set the start time of the showing of this ad
+      // so we can cross-correlate the gps from the ScreenDaemon
+      // when we send it off upstream.  We use the system time
+      // which is consistent between the two time stores.
+      _current.start_time = +new Date();
+
       // If this exists then it'd be set at the last asset
       // previous job.
       if(_last) {
@@ -322,7 +328,12 @@ var Engine = function(opts){
         _last.completed_seconds += _last.duration;
 
         // and report it up to the server
-        sow({id: _last.id, completed_seconds: _last.completed_seconds});
+        sow({
+          start_time: _last.start_time,
+          end_time: +new Date(),
+          id: _last.id, 
+          completed_seconds: _last.completed_seconds
+        });
 
         if(_last.id !== _current.id) {
           // we reset the downweight -- it can come back
