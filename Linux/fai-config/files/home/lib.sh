@@ -68,11 +68,6 @@ warn() {
 error() {
   onscreen "$*" red 90
 }
-ann() {
-  announce "hello world"
-  warn "hello world"
-  error "hello world"
-}
 
 who_am_i() {
   info $(uuid) $ENV
@@ -111,7 +106,7 @@ modem_enable() {
       #
       #--location-enable-gps-unmanaged \
 
-    set_event Modem
+    set_event modem
     break
   done
 }
@@ -171,6 +166,7 @@ ENDL
 
 ssh_hole() {
   $SUDO $BASE/ScreenDaemon/dcall emit_startup | /bin/sh
+  set_event ssh
 }
 
 screen_daemon() {
@@ -178,7 +174,7 @@ screen_daemon() {
   # TODO: We need to use some polkit thing so we can
   # access the modem here and not run this as root in the future
   {
-    FLASK_ENV=$ENV $SUDO $BASE/ScreenDaemon/ScreenDaemon.py &
+    $SUDO FLASK_ENV=$ENV $BASE/ScreenDaemon/ScreenDaemon.py &
   } | $SUDO tee -a /var/log/screendaemon.log
 
   set_event screen_daemon
