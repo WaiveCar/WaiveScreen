@@ -245,7 +245,7 @@ _screen_display_single() {
 
   local app=$BASE/ScreenDisplay/display.html 
   if [ -e $app ]; then
-    chromium --app=file://$app &
+    chromium --no-first-run --non-secure --default-background-color='#000' --app=file://$app &
     set_event screen_display
   else
     _error "Can't find $app. Exiting"
