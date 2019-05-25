@@ -15,7 +15,7 @@ notion &
 who_am_i
 
 # Everything below should be stuff that we only need to run once
-loop_ad &
+screen_display
 
 # Get online and open up our ssh hole
 modem_enable
@@ -29,4 +29,5 @@ set_event xstartup $$
 
 wait_for net
   ssh_hole
+  sensor_daemon
   screen_daemon
