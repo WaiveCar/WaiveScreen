@@ -317,6 +317,7 @@ upgrade() {
     # Upgrade the database if necessary
     {
       cd $BASE/ScreenDaemon
+      pip3 install -r requirements.txt
       ./dcall upgrade
     }
 
