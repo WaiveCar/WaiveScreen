@@ -487,6 +487,49 @@ var Engine = function(opts){
 
   }
 
+  function setFallback (url) {
+    // We look for a system default
+    if(!_res.fallback && !url) {
+      function trylocal(){
+        // For some unknown stupid fucked up completely mysterious reason
+        // a local document when running locally and talking to local resources
+        // can't have permission to access the local storage, you know, because
+        // somehow that should be a more secure, less trusted context then 
+        // running random fucking code from the wild internet. Unbelievable.
+        //
+        // Fuck google and fuck permissions.
+        //
+        var fuck_google;
+        try {
+          fuck_google = localStorage['default'];
+        } catch (ex) { }
+
+        if(fuck_google) {
+          _fallback = makeJob(JSON.parse(fuck_google));
+        } else if (_res.server) {
+          // If we have a server defined and we have yet to succeed
+          // to get our default then we should probably try it again
+          // until we get it
+          setTimeout(function(){setFallback()}, _res.duration * 1000);
+        }
+      }
+
+      // If we have a server we can get it from there
+      get('/default', function(res) {
+        try {
+          localStorage['default'] = JSON.stringify(res.data);
+          trylocal();
+        } catch (ex) { 
+          _fallback = makeJob(res.data);
+        }
+      }, trylocal);
+
+    } else {
+      _res.fallback = _res.fallback || url;
+      _fallback = makeJob({url: _res.fallback, duration: .1});
+    }
+  }
+
   // The convention we'll be using is that
   // variables start with lower case letters,
   // function start with upper case.
@@ -515,49 +558,7 @@ var Engine = function(opts){
       sow();
       nextJob();
     },
-    SetFallback: function(url) {
-
-      // We look for a system default
-      if(!_res.fallback && !url) {
-        function trylocal(){
-          // For some unknown stupid fucked up completely mysterious reason
-          // a local document when running locally and talking to local resources
-          // can't have permission to access the local storage, you know, because
-          // somehow that should be a more secure, less trusted context then 
-          // running random fucking code from the wild internet. Unbelievable.
-          //
-          // Fuck google and fuck permissions.
-          //
-          var fuck_google;
-          try {
-            fuck_google = localStorage['default'];
-          } catch (ex) { }
-
-          if(fuck_google) {
-            _fallback = makeJob(JSON.parse(fuck_google));
-          } else if (_res.server) {
-            // If we have a server defined and we have yet to succeed
-            // to get our default then we should probably try it again
-            // until we get it
-            setTimeout(function(){_res.setFallback()}, _res.duration * 1000);
-          }
-        }
-
-        // If we have a server we can get it from there
-        get('/default', function(res) {
-          try {
-            localStorage['default'] = JSON.stringify(res.data);
-            trylocal();
-          } catch (ex) { 
-            _fallback = makeJob(res.data);
-          }
-        }, trylocal);
-
-      } else {
-        _res.fallback = _res.fallback || url;
-        _fallback = makeJob({url: _res.fallback, duration: .1});
-      }
-    },
+    SetFallback: setFallback,
     AddJob: function(obj) {
       var res = {};
       obj = makeJob(obj);
