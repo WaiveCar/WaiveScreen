@@ -520,8 +520,21 @@ var Engine = function(opts){
       // We look for a system default
       if(!_res.fallback && !url) {
         function trylocal(){
-          if(localStorage['default']) {
-            _fallback = makeJob(JSON.parse(localStorage['default']));
+          // For some unknown stupid fucked up completely mysterious reason
+          // a local document when running locally and talking to local resources
+          // can't have permission to access the local storage, you know, because
+          // somehow that should be a more secure, less trusted context then 
+          // running random fucking code from the wild internet. Unbelievable.
+          //
+          // Fuck google and fuck permissions.
+          //
+          var fuck_google;
+          try {
+            fuck_google = localStorage['default'];
+          } catch (ex) { }
+
+          if(fuck_google) {
+            _fallback = makeJob(JSON.parse(fuck_google));
           } else if (_res.server) {
             // If we have a server defined and we have yet to succeed
             // to get our default then we should probably try it again
@@ -532,10 +545,12 @@ var Engine = function(opts){
 
         // If we have a server we can get it from there
         get('/default', function(res) {
-          if(res.res) {
+          try {
             localStorage['default'] = JSON.stringify(res.data);
+            trylocal();
+          } catch (ex) { 
+            _fallback = makeJob(res.data);
           }
-          trylocal();
         }, trylocal);
 
       } else {
