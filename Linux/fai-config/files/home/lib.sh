@@ -73,6 +73,10 @@ who_am_i() {
   info $(uuid) $ENV
 }
 
+event_is_set() {
+  return [ -e $EV/$1 ] 
+}
+
 set_event() {
   pid=${2:-$!}
   [ -e $EV/$1 ] || announce Event:$1
@@ -233,7 +237,7 @@ wait_for() {
 
 dev_setup() {
   #
-  # note! this usually runs as normal user
+  # Note: this usually runs as normal user
   #
   # echo development > $DEST/.env
   $SUDO dhclient enp3s0 
@@ -254,7 +258,7 @@ install() {
   $SUDO pip3 install -r requirements.txt 
 }
 
-show_ad() {
+screen_display_loop() {
   export DISPLAY=${DISPLAY:-:0}
   [[ $ENV = 'development' ]] && wait_for net
 
@@ -266,14 +270,14 @@ show_ad() {
   local app=$BASE/ScreenDisplay/display.html 
   if [ -e $app ]; then
     chromium --app=file://$app &
-    set_event chromium
+    set_event screen_display
   else
     error "Can't find $app. Exiting"
     exit 
   fi
 }
 
-loop_ad() {
+screen_display() {
   {
     while pgrep Xorg; do
 
@@ -281,9 +285,13 @@ loop_ad() {
         sleep 5
       done
 
-      show_ad
+      if event_is_set screen_display; then
+        screen_display_single
+      else
+        break
+      fi
     done
-  } > /dev/null
+  } > /dev/null &
 }
 
 down() {
@@ -297,6 +305,36 @@ down() {
       [ -s "$pidfile" ] && kill $( cat $pidfile )
       [ -e "$pidfile" ] && rm $pidfile
     done
+  fi
+}
+
+upgrade() {
+  # Since everything is in memory and already loaded
+  # we can try to just pull things down
+  cd $BASE
+  
+  # We make sure that local changes (there shouldn't be any)
+  # get tossed aside and pull down the new code.
+  git stash
+
+  if git pull; then
+    # If there's script updates we try to pull those down
+    # as well
+    rsync --exclude=.xinitrc -aqzr $BASE/Linux/fai-config/files/home/ $DEST
+    chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
+
+    # Now we take down the browser.
+    down screen_display
+
+    # And the server (which in practice called us from a ping command)
+    down screen_daemon
+
+    # And lastly the sensor daemon
+    down sensor_daemon
+
+    sensor_daemon
+    screen_daemon
+    screen_display 
   fi
 }
 
