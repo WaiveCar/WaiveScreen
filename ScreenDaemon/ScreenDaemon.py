@@ -119,6 +119,16 @@ def next_ad(work = False):
     # now we ask the ad daemon for jobs given our lat/lng
 
 if __name__ == '__main__':
+
+  if os.path.exists('/home/adorno'):
+    logpath = '/home/adorno'
+  else:
+    logpath = os.getenv('HOME')
+
+  logger = logging.getLogger()
+  handler = RotatingFileHandler('{}/screendaemon.log'.format(logpath), maxBytes=5000000, backupCount=2)
+  logger.addHandler(handler)
+
   # db.upgrade()
   db.incr('runcount')
   app.run(port=4096)
