@@ -313,6 +313,13 @@ upgrade() {
 
     screen_display 
     sensor_daemon
+
+    # Upgrade the database if necessary
+    {
+      cd $BASE/ScreenDaemon
+      ./dcall upgrade
+    }
+
     screen_daemon
   fi
 }
