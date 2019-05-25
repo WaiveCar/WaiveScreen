@@ -36,11 +36,11 @@ if 'SERVER' in os.environ:
   logging.info("Using {} as the server as specified in the server shell env variable")
 else:
   # Eventually we can change this but right now nothing is live
-  SERVER_URL = 'http://waivescreen.com/api/'
+  SERVER_URL = 'http://waivescreen.com/api'
 
   # We aren't always calling from something with flask
   if 'app' in dir() and app.config['ENV'] == 'development':
-    SERVER_URL = 'http://waivescreen.com/api/' 
+    SERVER_URL = 'http://waivescreen.com/api' 
 
 storage_base = '/var/lib/waivescreen/'
 

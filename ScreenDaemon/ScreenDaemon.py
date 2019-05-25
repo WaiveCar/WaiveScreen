@@ -79,13 +79,15 @@ def next_ad(work = False):
   except:
     pass
 
-  with requests.post(lib.urlify('sow'), verify=False, json=payload) as response:
-    data_raw = response.text
-
-    try:
+  data = False
+  try:
+    with requests.post(lib.urlify('sow'), verify=False, json=payload) as response:
+      data_raw = response.text
       data = json.loads(data_raw)
-    except:
-      data = False
+
+  except:
+    data = False
+    if data_raw:
       logging.warn("Unable to parse {}".format(data_raw))
 
   if data:
@@ -118,8 +120,8 @@ def next_ad(work = False):
 
 
   else:
-    return failure("Got nothing back from the ad server")
-    # now we ask the ad daemon for jobs given our lat/lng
+    # We just can't contact the server that's fine
+    pass
 
 if __name__ == '__main__':
 
