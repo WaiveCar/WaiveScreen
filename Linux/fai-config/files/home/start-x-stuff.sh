@@ -5,6 +5,8 @@ date +%s > /tmp/startup
 
 export DISPLAY=$1
 
+# I want to remove anything that I did previously so I can start fresh
+rm -r $DEST/.notion/default-session--* $
 notion &
 
 [ -e $DEST/screen-splash.png ] && display -window root $DEST/screen-splash.png
@@ -15,19 +17,15 @@ notion &
 who_am_i
 
 # Everything below should be stuff that we only need to run once
+sensor_daemon
+screen_daemon
 screen_display
 
 # Get online and open up our ssh hole
 modem_enable
-
-# TODO: comment out b4 prod
-#dev_setup
-# TODO: put this in
 modem_connect
 
 set_event xstartup $$
 
 wait_for net
   ssh_hole
-  sensor_daemon
-  screen_daemon
