@@ -11,6 +11,8 @@ import logging
 import pprint
 import traceback
 import os
+from logging.handlers import RotatingFileHandler
+
 
 app = Flask(__name__)
 CORS(app)
