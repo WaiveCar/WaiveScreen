@@ -326,11 +326,18 @@ upgrade() {
     # Now we take down the browser.
     down screen_display
 
+    # This stuff shouldn't be needed
+    # But right now it is.
+    $SUDO pkill start-x-stuff
+    $SUDO pkill -f ScreenDisplay
+
     # And the server (which in practice called us from a ping command)
     down screen_daemon
+    $SUDO pkill -f ScreenDaemon
 
     # And lastly the sensor daemon
     down sensor_daemon
+    $SUDO pkill -f SensorDaemon
 
     sensor_daemon
     screen_daemon
