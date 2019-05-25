@@ -276,7 +276,9 @@ def connect(db_file=None):
     logging.info("Using {} as the DB as specified in the DB shell env variable")
   else:
     default_db = '/var/db/config.db'
-    os.popen("/usr/bin/sudo /usr/bin/chmod 0666 {}".format(default_db))
+    os.popen("/usr/bin/sudo /bin/mkdir -p /var/db/".format(default_db))
+    os.popen("/usr/bin/sudo /usr/bin/touch {}".format(default_db))
+    os.popen("/usr/bin/sudo /bin/chmod 0666 {}".format(default_db))
     logging.info("Using {} as the DB".format(default_db))
 
   if not db_file:
