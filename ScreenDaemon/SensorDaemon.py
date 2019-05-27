@@ -74,11 +74,7 @@ while True:
   sensor = arduino.arduino_read()
 
   # Put data in if we have it
-  if lib.NOMODEM:
-    location = {}
-
-  else:
-    location = lib.get_gps()
+  location = {} if lib.NOMODEM else lib.get_gps()
 
   system_time = datetime.now().replace(microsecond=0).isoformat()
 
@@ -89,7 +85,9 @@ while True:
 
   if is_significant(all):
     lib.sensor_store(all)
-    pass
+
+  # If we need to go into/get out of a low power mode
+  arduino.pm_if_needed(sensor)
 
   # Now you'd think that we just sleep on the frequency, that'd be wrong.
   # Thanks, try again. Instead we need to use the baseline time from start
