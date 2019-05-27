@@ -1,9 +1,12 @@
 #!/bin/bash
  
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-. $DIR/lib.sh
 
-while [ $# -gt 0 ]; do
-  eval $1
-  shift
-done
+. $DIR/baseline.sh
+
+if ! eval $* >& /dev/null; then
+  . $DIR/lib.sh
+  if ! eval $*; then
+    list
+  fi
+fi
