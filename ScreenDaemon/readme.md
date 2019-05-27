@@ -1,3 +1,14 @@
+
+When starting the server there's a number of environment variables that the code should be observing if it's working correctly:
+
+  * NOMODEM - If set, skips over trying to initialize an LTE modem
+  * DEBUG - If set, toggles on all the debugging flags wherever that is
+  * SERVER - The server URL to try to get ads from
+  * DB - The path to place the local SQLITE3 file
+
+These are observed (I think) for both the Sensor and Screen Daemon.py. Look into `debug-server.sh` for up-to date invocation examples.
+
+### Old stuff:
 Note: This has been the most difficult part to write ... having a few failed attempts at refactoring my indycast codebase and then
   a few failed attempts to create a single version with websockets support using various async libraries. Each attempt was aborted due to complexity and difficulty. This has to be, by the constraints of resources, a small thing to maintain and not a grand project although honestly if I just continued with a grand project in October it would have been done by now ... although probably been a hassle to maintain. Is this analysis paralysis a mistake? How will we ever know?
   
