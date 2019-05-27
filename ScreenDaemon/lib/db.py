@@ -85,30 +85,28 @@ _SCHEMA = {
   # There's probably a better way to do this, let's do that later.
   'sensor' : [
     ('id', 'INTEGER PRIMARY KEY autoincrement'),
-    """
-    ('ts', 'INTEGER default null'),
-    ('backlight', 'FLOAT default null'),
-    ('fan', 'FLOAT default null'),
-    ('temp', 'FLOAT default null'),
-    ('current_raw', 'FLOAT default null'),
-    ('current_normalized', 'FLOAT default null'),
-    ('accel_x', 'FLOAT default null'),
-    ('accel_y', 'FLOAT default null'),
-    ('accel_z', 'FLOAT default null'),
-    ('gyro_x', 'FLOAT default null'),
-    ('gyro_y', 'FLOAT default null'),
-    ('gyro_z', 'FLOAT default null'),
-    ('therm_read', 'FLOAT default null'),
-    ('therm_resistance', 'FLOAT default null'),
-    ('pitch', 'FLOAT default null'),
-    ('roll', 'FLOAT default null'),
-    ('yaw', 'FLOAT default null'),
-    ('altitude', 'FLOAT default null'),
-    ('latitude', 'FLOAT default null'),
-    ('longitude', 'FLOAT default null'),
-    ('gps_time', 'TIMESTAMP'),
-    ('time', 'TIMESTAMP'),
-    """
+    #('ts', 'INTEGER default null'),
+    #('backlight', 'FLOAT default null'),
+    #('fan', 'FLOAT default null'),
+    #('temp', 'FLOAT default null'),
+    #('current_raw', 'FLOAT default null'),
+    #('current_normalized', 'FLOAT default null'),
+    #('accel_x', 'FLOAT default null'),
+    #('accel_y', 'FLOAT default null'),
+    #('accel_z', 'FLOAT default null'),
+    #('gyro_x', 'FLOAT default null'),
+    #('gyro_y', 'FLOAT default null'),
+    #('gyro_z', 'FLOAT default null'),
+    #('therm_read', 'FLOAT default null'),
+    #('therm_resistance', 'FLOAT default null'),
+    #('pitch', 'FLOAT default null'),
+    #('roll', 'FLOAT default null'),
+    #('yaw', 'FLOAT default null'),
+    #('altitude', 'FLOAT default null'),
+    #('latitude', 'FLOAT default null'),
+    #('longitude', 'FLOAT default null'),
+    #('gps_time', 'TIMESTAMP'),
+    #('time', 'TIMESTAMP'),
     ('raw', 'TEXT'),
     ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
   ]
@@ -278,7 +276,9 @@ def connect(db_file=None):
     logging.info("Using {} as the DB as specified in the DB shell env variable")
   else:
     default_db = '/var/db/config.db'
-    os.popen("/usr/bin/sudo /usr/bin/chmod 0666 {}".format(default_db))
+    os.popen("/usr/bin/sudo /bin/mkdir -p /var/db/".format(default_db))
+    os.popen("/usr/bin/sudo /usr/bin/touch {}".format(default_db))
+    os.popen("/usr/bin/sudo /bin/chmod 0666 {}".format(default_db))
     logging.info("Using {} as the DB".format(default_db))
 
   if not db_file:

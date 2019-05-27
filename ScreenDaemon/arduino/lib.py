@@ -30,6 +30,7 @@ def get_arduino():
 
   return arduino
 
+# TODO: We need to find out how to mitigate this.
 def power_management():
   arduino = get_arduino()
 
@@ -58,6 +59,32 @@ def power_management():
       # the below line will wake up the dpms if it's a linux machine
       os.system("xset -display :0 dpms force on")
 
+def low_power_mode(backlight_resume_value):
+  arduino = get_arduino()
+  stored_backlight_value = backlight_resume_value
+  set_backlight(arduino, 0)
+  send_sleep_signal()
+
+  os.system("xset -display :0 dpms force suspend")
+
+  # This shuts things down.
+  os.system("/usr/bin/sudo /usr/bin/acpitool -s")
+
+  received_dict = arduino_read()
+
+  # todo: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
+  # triggered by either the door closing or the car starting to move.
+  z_init = received_dict['Accel_z']
+  while received_dict['Voltage'] < 13.5 or \
+          (received_dict['Voltage'] > 13.5 and -1500 < received_dict['Accel_z'] - z_init < 1500):
+
+    time.sleep(2)
+
+    received_dict = arduino_read()
+
+  set_backlight(arduino, stored_backlight_value)
+  now = time.localtime()
+  return received_dict
 
 def set_fan_speed(value):
   arduino = get_arduino()
@@ -219,39 +246,6 @@ def arduino_read():
   return received_dict
 
 
-def low_power_mode(backlight_resume_value):
-  arduino = get_arduino()
-  stored_backlight_value = backlight_resume_value
-  set_backlight(arduino, 0)
-  send_sleep_signal()
-
-  os.system("xset -display :0 dpms force suspend")
-
-  # This shuts things down.
-  os.system("/usr/bin/sudo /usr/bin/acpitool -s")
-
-  i = 0
-  received_dict = arduino_read()
-
-  # todo: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
-  # triggered by either the door closing or the car starting to move.
-  z_init = received_dict['Accel_z']
-  while received_dict['Voltage'] < 13.5 or \
-          (received_dict['Voltage'] > 13.5 and -1500 < received_dict['Accel_z'] - z_init < 1500):
-    i += 1
-    received_dict = arduino_read()
-    df.loc[i] = {
-      'Time': received_dict['Time'],
-      'Current': received_dict['Current'],
-      'Voltage': received_dict['Voltage'],
-      'Temp': received_dict['Temp'],
-      'Fan': received_dict['Fan'],
-      'Backlight': received_dict['Backlight']
-    }
-
-  set_backlight(arduino, stored_backlight_value)
-  now = time.localtime()
-  return received_dict
 
 
 def get_move_status(first_read, last_read, last_smooth):

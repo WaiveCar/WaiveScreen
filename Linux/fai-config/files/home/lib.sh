@@ -1,21 +1,8 @@
 #!/bin/bash
 
-export WHO=adorno
-export DEST=/home/$WHO
-export PATH=/usr/bin:/usr/sbin:$PATH:$DEST
-export BASE=$DEST/WaiveScreen
-export DEV=$BASE.sshfs
-export VID=$DEST/capture
-export EV=/tmp/event
-export DISPLAY=${DISPLAY:-:0}
-#
-# Valid values are "production" and "development"
-#
-# These are used for things like flask so you really
-# shouldn't be lazy and shorten them unless you want
-# to somehow accomodate for that fact.
-#
-export ENV=`cat $DEST/.env`
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+. $DIR/const.sh
+
 pkill osd_cat
 
 if [ ! -d $EV ]; then 
@@ -26,12 +13,12 @@ fi
 [[ $ENV = 'development' ]] && export BASE=$DEV
 [[ $USER = 'root' ]] && SUDO= || SUDO=/usr/bin/sudo
 
-help() {
+list() {
   # just show the local fuctions
   declare -F | sed s/'declare -f//g' | sort
 }
 
-onscreen() {
+_onscreen() {
   if [ ! -e /tmp/offset ]; then
     offset=0
   else
@@ -56,28 +43,27 @@ onscreen() {
   echo $offset > /tmp/offset
   chmod 0666 /tmp/offset
 }
-announce() {
-  onscreen "$*" white 20
+_announce() {
+  _onscreen "$*" white 20
 }
-info() {
-  onscreen "$*" white 10
+_info() {
+  _onscreen "$*" white 10
 }
-warn() {
-  onscreen "$*" yellow 40
+_warn() {
+  _onscreen "$*" yellow 40
 }
-error() {
-  onscreen "$*" red 90
+_error() {
+  _onscreen "$*" red 90
 }
 
 who_am_i() {
-  info $(uuid) $ENV
+  _info $(uuid) $ENV
 }
 
 set_event() {
   pid=${2:-$!}
-  [ -e $EV/$1 ] || announce Event:$1
+  [ -e $EV/$1 ] || _announce Event:$1
   echo -n $pid > $EV/$1
-  echo `date +%R:%S` $1
 }
 
 modem_enable() {
@@ -85,7 +71,7 @@ modem_enable() {
     $SUDO mmcli -m 0 -e
 
     if [ ! $? ]; then 
-      warn "Searching for modem"
+      _warn "Searching for modem"
       sleep 1
       continue
     fi
@@ -117,7 +103,7 @@ modem_connect() {
     wwan=`ip addr show | grep wwp | head -1 | awk -F ':' ' { print $2 } '`
 
     if [ -z "$wwan" ]; then
-      warn  "No modem found. Trying again"
+      _warn  "No modem found. Trying again"
       sleep 4
     else
       break
@@ -144,23 +130,23 @@ ENDL
   sleep 9
 
   if ping -c 1 -i 0.3 waivescreen.com; then
-    announce "waivescreen.com found" 
+    _announce "waivescreen.com found" 
   else
-    warn "waivescreen.com unresolvable!"
+    _warn "waivescreen.com unresolvable!"
 
     while ! mmcli -m 0; do
-      announce "Waiting for modem"
+      _announce "Waiting for modem"
       sleep 9
     done
 
     hasip=$( ip addr show $wwan | grep inet | wc -l )
     myphone=$( mmcli  -m 0 | grep own | awk ' { print $NF } ' )
     if (( hasip > 0 )); then
-      warn "Data plan issues."
+      _warn "Data plan issues."
     else
-      warn "No IP assigned."
+      _warn "No IP assigned."
     fi
-    error "$myphone"
+    _error "$myphone"
   fi
 }
 
@@ -173,9 +159,7 @@ screen_daemon() {
   down screen_daemon
   # TODO: We need to use some polkit thing so we can
   # access the modem here and not run this as root in the future
-  {
-    $SUDO FLASK_ENV=$ENV $BASE/ScreenDaemon/ScreenDaemon.py &
-  } | $SUDO tee -a /var/log/screendaemon.log
+  $SUDO FLASK_ENV=$ENV $BASE/ScreenDaemon/ScreenDaemon.py &
 
   set_event screen_daemon
 }
@@ -211,11 +195,6 @@ uuid() {
   cat $UUID
 }
 
-sync_scripts() {
-  rsync --exclude=.xinitrc -aqzr $DEV/Linux/fai-config/files/home/ $DEST
-  chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
-}
-
 wait_for() {
   path=${2:-$EV}/$1
 
@@ -233,14 +212,14 @@ wait_for() {
 
 dev_setup() {
   #
-  # note! this usually runs as normal user
+  # Note: this usually runs as normal user
   #
   # echo development > $DEST/.env
   $SUDO dhclient enp3s0 
   [ -e $DEV ] || mkdir $DEV
 
   if [ -z "$SUDO" ]; then
-    warn "Hey, you can't be root to do sshfs"
+    _warn "Hey, you can't be root to do sshfs"
   fi
 
   sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO) dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
@@ -254,8 +233,9 @@ install() {
   $SUDO pip3 install -r requirements.txt 
 }
 
-show_ad() {
+_screen_display_single() {
   export DISPLAY=${DISPLAY:-:0}
+
   [[ $ENV = 'development' ]] && wait_for net
 
   if [ ! -e $BASE ]; then
@@ -265,15 +245,15 @@ show_ad() {
 
   local app=$BASE/ScreenDisplay/display.html 
   if [ -e $app ]; then
-    chromium --app=file://$app &
-    set_event chromium
+    chromium --no-first-run --non-secure --default-background-color='#000' --app=file://$app &
+    set_event screen_display
   else
-    error "Can't find $app. Exiting"
+    _error "Can't find $app. Exiting"
     exit 
   fi
 }
 
-loop_ad() {
+screen_display() {
   {
     while pgrep Xorg; do
 
@@ -281,9 +261,9 @@ loop_ad() {
         sleep 5
       done
 
-      show_ad
+      _screen_display_single
     done
-  } > /dev/null
+  } > /dev/null &
 }
 
 down() {
@@ -300,7 +280,52 @@ down() {
   fi
 }
 
-xrestart() {
+upgrade() {
+  # Since everything is in memory and already loaded
+  # we can try to just pull things down
+  cd $BASE
+  
+  # We make sure that local changes (there shouldn't be any)
+  # get tossed aside and pull down the new code.
+  git stash
+
+  if git pull; then
+    # If there's script updates we try to pull those down
+    # as well
+    rsync --exclude=.xinitrc -aqzr $BASE/Linux/fai-config/files/home/ $DEST
+    chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
+
+    # Now we take down the browser.
+    down screen_display
+
+    # This stuff shouldn't be needed
+    # But right now it is.
+    $SUDO pkill start-x-stuff
+    $SUDO pkill -f ScreenDisplay
+
+    # And the server (which in practice called us from a ping command)
+    down screen_daemon
+    $SUDO pkill -f ScreenDaemon
+
+    # And lastly the sensor daemon
+    down sensor_daemon
+    $SUDO pkill -f SensorDaemon
+
+    screen_display 
+    sensor_daemon
+
+    # Upgrade the database if necessary
+    {
+      cd $BASE/ScreenDaemon
+      pip3 install -r requirements.txt
+      ./dcall upgrade
+    }
+
+    screen_daemon
+  fi
+}
+
+restart_xorg() {
   {
     $SUDO pkill Xorg
     $SUDO xinit
