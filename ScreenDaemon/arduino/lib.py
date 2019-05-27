@@ -3,13 +3,16 @@ import serial
 import time
 import math
 import struct
-import pandas as pd
 import sys
 import os
 import atexit
 
 arduino = False
 first_read = False
+
+# If the voltage drops below this we send it off to sleep
+VOLTAGE_SLEEP = 12.5
+VOLTAGE_WAKE = VOLTAGE_SLEEP + 1
 
 @atexit.register
 def close():
@@ -30,34 +33,11 @@ def get_arduino():
 
   return arduino
 
-# TODO: We need to find out how to mitigate this.
-def power_management():
-  arduino = get_arduino()
+def sleep_if_needed(reading):
+  if reading['Voltage'] < VOLTAGE_SLEEP and reading['Current'] < 1:
+    low_power_mode(reading['Backlight'])
 
-  arduino.reset_input_buffer()
-  received_dict = arduino_read()
-  moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
-                                        last_smooth={'x': 0.0, 'y': 0.0, 'z': 0.0})
-  voltage = received_dict['Voltage']
-  voltage_timeout = 0
-  while voltage > 12.5 or moving or voltage_timeout < 150:
-    received_dict = arduino_read()
-    if received_dict != -1:
-      voltage = received_dict['Voltage']
-      if voltage < 12.5:
-        voltage_timeout += 1
-      else:
-        voltage_timeout = 0
-
-      moving, last_smooth = get_move_status(first_read=first_read, last_read=received_dict,
-                                            last_smooth=last_smooth)
-    current = received_dict['Current']
-    if voltage < 12.5 and current > 1:
-      # low_power_mode will hold and record until voltage goes above 13.5V
-
-      received_dict = low_power_mode(arduino, received_dict['Backlight'])
-      # the below line will wake up the dpms if it's a linux machine
-      os.system("xset -display :0 dpms force on")
+    os.system("xset -display :0 dpms force on")
 
 def low_power_mode(backlight_resume_value):
   arduino = get_arduino()
@@ -75,8 +55,8 @@ def low_power_mode(backlight_resume_value):
   # todo: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
   # triggered by either the door closing or the car starting to move.
   z_init = received_dict['Accel_z']
-  while received_dict['Voltage'] < 13.5 or \
-          (received_dict['Voltage'] > 13.5 and -1500 < received_dict['Accel_z'] - z_init < 1500):
+  while received_dict['Voltage'] < VOLTAGE_WAKE or \
+          (received_dict['Voltage'] > VOLTAGE_WAKE and -1500 < received_dict['Accel_z'] - z_init < 1500):
 
     time.sleep(2)
 
@@ -86,13 +66,13 @@ def low_power_mode(backlight_resume_value):
   now = time.localtime()
   return received_dict
 
+#TODO: likely broken
 def set_fan_speed(value):
   arduino = get_arduino()
-  fan_speed = value
-  if fan_speed > 255:
-    fan_speed = 255
   if value < 1: 
     value = round(value * 256)
+
+  fan_speed = min(value, 255)
 
   arduino.write(b'\x01{}')
   arduino.write(struct.pack('!B', fan_speed))
@@ -110,7 +90,7 @@ def set_backlight(value):
 
   backlight = min(value, 255)
 
-  arduino.write('\x10'.encode())
+  arduino.write(b'\x10')
   arduino.write(struct.pack('!B', backlight))
 
 
@@ -119,35 +99,12 @@ def send_wakeup_signal():
   arduino.write(b'\x11\xff')
 
 
-start = 0
-last = 0
-mea = {}
-count = 0
-def check(name = ''):
-  global start, last, mea, count
-  now = time.time()
-  if name == '':
-    start = now
-    count += 1
-  else:
-    if not name in mea:
-      mea[name] = 0
-    mea[name] += now - last
-
-    if name == 'done' and count % 100 == 0:
-      for k,v in mea.items():
-        print("{:20s} {}".format(k, 1000 * v / count))
-        
-  last = now
-
 def arduino_read():
-  # check()
   arduino = get_arduino()
   try:
     arduino.in_waiting
     
   except 'SerialException':
-    print("trying")
     arduino.close()
     arduino.open()
 
@@ -157,7 +114,6 @@ def arduino_read():
     time.sleep(0.007)
     pass
 
-  # check("wait")
   # first byte is the header, must be 0xff
   header = ord(arduino.read())
   while header != 0xff:
@@ -242,13 +198,13 @@ def arduino_read():
     'Roll': roll,
     'Yaw': yaw
   }
-  # check("done")
   return received_dict
 
 
 
 
-def get_move_status(first_read, last_read, last_smooth):
+def get_move_status(last_read, last_smooth):
+  global first_read
   alpha = 0.01
   move_threshold = 250
   
@@ -264,10 +220,7 @@ def get_move_status(first_read, last_read, last_smooth):
     'z': min(move_magnitude['z'] * alpha + last_smooth['z'] * (1 - alpha), 600)
   }
 
-  if smooth_move['x'] > move_threshold or smooth_move['y'] > move_threshold or smooth_move['z'] > move_threshold:
-    moving = True
-  else:
-    moving = False
+  moving = smooth_move['x'] > move_threshold or smooth_move['y'] > move_threshold or smooth_move['z'] > move_threshold
 
   return moving, smooth_move
 
@@ -289,4 +242,32 @@ go:
             asleep = true
             
         
+# TODO: We need to find out how to mitigate this.
+def power_management():
+  arduino = get_arduino()
+
+  arduino.reset_input_buffer()
+  res = arduino_read()
+  moving, last_smooth = get_move_status(last_read=res,
+                                        last_smooth={'x': 0.0, 'y': 0.0, 'z': 0.0})
+  voltage_timeout = 0
+  while res['Voltage'] > VOLTAGE_SLEEP or moving or voltage_timeout < 150:
+    res = arduino_read()
+
+    if res['Voltage'] < VOLTAGE_SLEEP:
+      voltage_timeout += 1
+    else:
+      voltage_timeout = 0
+
+    moving, last_smooth = get_move_status(last_read=res, last_smooth=last_smooth)
+
+    if res['Voltage'] < VOLTAGE_SLEEP and res['Current'] > 1:
+      # low_power_mode will hold and record until voltage goes above VOLTAGE_WAKE
+
+      res = low_power_mode(res['Backlight'])
+      # the below line will wake up the dpms if it's a linux machine
+      os.system("xset -display :0 dpms force on")
+"""
+
+
 """
