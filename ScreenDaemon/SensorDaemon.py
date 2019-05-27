@@ -33,11 +33,9 @@ def is_significant(totest):
 
   if not last_reading or ix % PERIOD == 0:
     if not last_reading:
-      #print("First reading")
       pass
     else:
       ix_hb += 1
-      #print("HB {}".format(ix_hb))
       pass
     last_reading = totest
     return True
@@ -66,14 +64,11 @@ def is_significant(totest):
       diff = abs(last_reading[k] - totest[k])
       if diff > v:
         ttl += (diff / v) - 1
-        #print("{:10s}:{:5.2f} reached: {}".format(k,v, diff))
 
   if ttl > AGGREGATE_THRESHOLD:
-    #print("{:10s}:{:5.2f} reached: {}".format('percent', min, ttl))
     last_reading = totest
     return True
 
-  #print("skip")
 
 while True:
   sensor = arduino.arduino_read()
@@ -95,7 +90,6 @@ while True:
   if is_significant(all):
     lib.sensor_store(all)
     pass
-    #pprint.pprint(all)
 
   # Now you'd think that we just sleep on the frequency, that'd be wrong.
   # Thanks, try again. Instead we need to use the baseline time from start
