@@ -32,6 +32,7 @@ _onscreen() {
   echo "$ts" $1 | osd_cat \
       -c $2 \
       -u black \
+      -A right \
       -O 1 \
       -o $offset \
       -d $3 \
@@ -269,13 +270,13 @@ screen_display() {
 down() {
   cd $EV
   if [ -n "$1" ]; then
-    [ -s "$pidfile" ] && kill $( cat $pidfile )
-    [ -e "$pidfile" ] && rm $pidfile
+    [ -s "$pidfile" ] && $SUDO kill $( cat $pidfile )
+    [ -e "$pidfile" ] && $SUDO rm $pidfile
   else
     for pidfile in $( ls ); do
       echo $pidfile
-      [ -s "$pidfile" ] && kill $( cat $pidfile )
-      [ -e "$pidfile" ] && rm $pidfile
+      [ -s "$pidfile" ] && $SUDO kill $( cat $pidfile )
+      [ -e "$pidfile" ] && $SUDO rm $pidfile
     done
   fi
 }
