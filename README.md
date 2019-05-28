@@ -21,7 +21,6 @@ The SCREEN parts:
 
   * Screen display 
     * Displays advertisements on the screen. 
-    * In charge of making sure it has the assets to display cached and has the content on the screen that it's been told to display.
     * Records when and how long a display was shown to report back to the screen daemon.
   * Time daemon
     * Syncs timestamps and records the last time it was sync'd via an incrementing counter stored on disk. Should be simple
@@ -34,6 +33,7 @@ The SCREEN parts:
     * Knows whether the car is plugged in, the ignition is on, and what strategies to execute based on the power draw, which it talks to the screen sensor to get.
     * It's also responsible for recording these states in a timestamped way so that they can be retrieved later.
   * Screen daemon
+    * In charge of making sure it has the assets to display cached and has the content on the screen that it's been told to display.
     * Works with the Screen Sensor to pass readings over the network.
     * Works with the Ad Daemon: 
       * Sends over gps readings from the Screen sensor and retrieves assets to display
@@ -65,9 +65,9 @@ Flow:
 
 Things currently not covered:
 
-  * Upgrade strategies
-  * Installation management
-  * Failure detection 
+  * Upgrade strategies - covered in various tickets
+  * Installation management - covered in the Linux directory
+  * Failure detection - still incomplete
 
 Some notes:
 
