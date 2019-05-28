@@ -46,12 +46,17 @@ def get_arduino():
 def do_awake(reading = {}):
   global _sleeping, _base
   _sleeping = False
-  set_backlight(_base['Backlight'])
+
+  if _base and 'Backlight' in _base:
+    set_backlight(_base['Backlight'])
+
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
 
 def do_sleep(reading = {}):
   global _sleeping, _base
+  _log.debug("here")
   set_backlight(0)
+  set_fanspeed(0)
   _base = reading
   _sleeping = True
   _log.info("Going to sleep")
@@ -77,18 +82,18 @@ def pm_if_needed(reading):
 def clear():
   get_arduino().reset_input_buffer()
 
-def set_fan_speed(value):
+def set_fanspeed(value):
   _arduino = get_arduino()
   if value < 1: 
     value = round(value * 256)
 
   fan_speed = int(min(value, 255))
 
-  _arduino.write(b'\x01{}')
+  _arduino.write(b'\x01')
   _arduino.write(struct.pack('!B', fan_speed))
 
 
-def set_fan_auto():
+def set_fanauto():
   _arduino = get_arduino()
   _arduino.write(b'\x01\x01')
 
@@ -109,6 +114,26 @@ def send_wakeup_signal():
   _arduino = get_arduino()
   _arduino.write(b'\x11\xff')
 
+
+def test_do(ex, delay=1):
+  _log.debug(ex)
+  eval(ex)
+  if delay:
+    time.sleep(delay)
+
+def test(parts='fbs'):
+  if parts.find('f') != -1:
+    for fn in ['set_fanspeed', 'set_backlight']:
+      for rate in range(0, 20):
+        test_do("{}({})".format(fn, float(rate)/20), 0.2)
+
+  if parts.find('s') != -1: 
+    set_fanauto()
+    _log.debug('do_sleep')
+    do_sleep()
+    time.sleep(30)
+    _log.debug('do_awake')
+    do_awake()
 
 def arduino_read():
   _arduino = get_arduino()
