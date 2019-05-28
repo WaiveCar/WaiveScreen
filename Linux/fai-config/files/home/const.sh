@@ -15,4 +15,8 @@ export DISPLAY=${DISPLAY:-:0}
 # shouldn't be lazy and shorten them unless you want
 # to somehow accomodate for that fact.
 #
-export ENV=`cat $DEST/.env`
+if [ -e $DEST/.env ]; then
+  export ENV=$( cat $DEST/.env )
+else
+  export ENV=production
+fi
