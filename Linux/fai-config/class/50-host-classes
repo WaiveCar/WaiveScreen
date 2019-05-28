@@ -11,10 +11,6 @@ case $HOSTNAME in
         echo "FAIBASE DEBIAN DEMO FAISERVER" ;;
     demohost|client*)
         echo "FAIBASE DEBIAN DEMO" ;;
-    xfcehost)
-        echo "FAIBASE DEBIAN DEMO XORG XFCE LVM";;
-    gnomehost)
-        echo "FAIBASE DEBIAN DEMO XORG GNOME";;
     *)
         echo "FAIBASE DEBIAN DEMO SCREEN" ;;
 esac
