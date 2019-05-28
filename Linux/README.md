@@ -1,6 +1,12 @@
 This things uses FAI and will eventually be on a USB stick. The fai-config is where the screen install magic lives.
 
 
+Network install notes:
+
+  TFTP server options:
+
+  /usr/sbin/in.tftpd --listen --user tftp --address 0.0.0.0:69 --secure /srv/tftp --verbosity 5 -L -p
+
 FAI notes
 
   I really fucking hate this thing but it appears to be the best 
