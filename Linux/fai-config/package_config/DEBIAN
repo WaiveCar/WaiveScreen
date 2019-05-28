@@ -53,6 +53,7 @@ sqlite3
 policykit-1
 
 xosd-bin
+unattended-upgrades
 
 PACKAGES install NONFREE
 # you may want these non-free kernel drivers
@@ -83,7 +84,4 @@ grub-efi
 
 PACKAGES install LVM
 lvm2
-
-PACKAGES install CLOUD
-unattended-upgrades
 
