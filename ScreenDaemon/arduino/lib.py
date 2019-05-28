@@ -55,7 +55,9 @@ def pm_if_needed(reading):
     os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
 
 
-# TODO: likely broken
+def clear():
+  get_arduino().reset_input_buffer()
+
 def set_fan_speed(value):
   _arduino = get_arduino()
   if value < 1: 

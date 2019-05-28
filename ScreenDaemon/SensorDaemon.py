@@ -98,4 +98,4 @@ while True:
   if naptime > 0:
     time.sleep(naptime)
 
-  arduino.arduino.reset_input_buffer()
+  arduino.clear()
