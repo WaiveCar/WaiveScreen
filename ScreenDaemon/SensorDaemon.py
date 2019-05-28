@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import lib.lib as lib
 import arduino.lib as arduino
+import logging
 import sys
 
 import time
@@ -27,6 +28,12 @@ START = time.time()
 last_reading = False
 ix = 0
 ix_hb = 0
+first = False
+
+FORMAT = '%(asctime)-15s %(message)s'
+logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+arduino.set_log(logger)
 
 def is_significant(totest):
   global last_reading, ix, ix_hb
@@ -70,8 +77,12 @@ def is_significant(totest):
     return True
 
 
+logging.debug("Starting up")
 while True:
   sensor = arduino.arduino_read()
+  if first:
+    logging.info("Got first arduino read")
+    print("ardy")
 
   # Put data in if we have it
   location = {} if lib.NOMODEM else lib.get_gps()
@@ -82,6 +93,10 @@ while True:
   # probably not be necessary but in the early stages (2019/05/09) this is
   # a sanity check.
   all = {**location, **sensor, 'SystemTime': system_time } 
+
+  if first:
+    logging.info("Everything up")
+    first = False
 
   if is_significant(all):
     lib.sensor_store(all)
