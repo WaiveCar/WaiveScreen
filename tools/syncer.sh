@@ -9,12 +9,14 @@ while [ 0 ]; do
   sudo rsync -azvr $CODE/ --delete /srv/fai/config
   sudo chown -R root.root /srv/fai/config/scripts
 
-  if ssh screen "./dcall sync_scripts"; then
-    fn=$(date +%X)
-  else
-    fn="!! Failure !!"
+  if [ ! "$NONET" ]; then
+    if ssh screen "./dcall sync_scripts"; then
+      fn=$(date +%X)
+    else
+      fn="!! Failure !!"
+    fi
   fi
-  
+    
   echo $fn| osd_cat \
       -c white \
       -p top -A right \
