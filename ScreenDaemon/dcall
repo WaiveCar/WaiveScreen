@@ -15,26 +15,27 @@ logger = logging.getLogger(__name__)
 arduino.set_log(logger)
 
 _last = False
-attemptList = []
+_succ = False
+_attemptList = []
+
 def tryit(fn):
-  global attemptList, _last
-  succ = False
+  global _attemptList, _last, _succ
   row = [fn]
 
   try:
     res = eval(fn)
     row.append(fn)
     _last = res
-    succ = True
+    _succ = True
 
   except Exception as ex:
     row.append(ex)
 
-  attemptList.append(row)
-  return succ
+  _attemptList.append(row)
+  return _succ
 
 def dumpfailure():
-  for row in attemptList:
+  for row in _attemptList:
     logging.warning("{:20} - {}".format(row[0], row[1]))
 
 
@@ -59,10 +60,10 @@ if len(sys.argv) > 1:
 
   # if something succeeded then we try to 
   # make heads or tails of it.
-  if _last:
+  if _succ:
     if type(_last) is str:
       print(_last)
-    else:
+    elif _last:
       print(json.dumps(_last))
   else:
     # If we get failure then we should bail.
