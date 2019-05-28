@@ -13,6 +13,7 @@ from pprint import pprint
 g_db_count = 0
 g_lock = Lock()
 g_params = {}
+g_instance = False
 
 # This is a way to get the column names after grabbing everything
 # I guess it's also good practice
@@ -270,7 +271,11 @@ def connect(db_file=None):
   # A "singleton pattern" or some other fancy $10-world style of maintaining 
   # the database connection throughout the execution of the script.
   # Returns the database instance.
-  global g_db_count
+  global g_db_count, g_instance
+
+  if g_instance:
+    return g_instance 
+
   if 'DB' in os.environ:
     default_db = os.environ['DB']
     logging.info("Using {} as the DB as specified in the DB shell env variable")
@@ -285,14 +290,11 @@ def connect(db_file=None):
     db_file = default_db
 
   #
-  # We need to have one instance per thread, as this is what
-  # sqlite's driver dictates ... so we do this based on thread id.
-  #
   # We don't have to worry about the different memory sharing models here.
   # Really, just think about it ... it's totally irrelevant.
   #
 
-  instance = {}
+  g_instance = {}
 
   if not os.path.exists(db_file):
     sys.stderr.write("Info: Creating db file %s\n" % db_file)
@@ -303,7 +305,7 @@ def connect(db_file=None):
   if 'DEBUG' in os.environ:
     conn.set_trace_callback(print)
 
-  instance.update({
+  g_instance.update({
     'conn': conn,
     'c': conn.cursor()
   })
@@ -312,13 +314,13 @@ def connect(db_file=None):
 
     for table, schema in list(_SCHEMA.items()):
       dfn = ','.join(["%s %s" % (key, klass) for key, klass in schema])
-      instance['c'].execute("CREATE TABLE IF NOT EXISTS %s(%s)" % (table, dfn))
+      g_instance['c'].execute("CREATE TABLE IF NOT EXISTS %s(%s)" % (table, dfn))
 
-    instance['conn'].commit()
+    g_instance['conn'].commit()
 
   g_db_count += 1 
 
-  return instance
+  return g_instance
 
 
 def incr(key, value=1):
