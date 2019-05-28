@@ -7,7 +7,6 @@ while [ 0 ]; do
   #sudo cp -pru $CODE/* /srv/fai/config
   sudo rsync -azvr $CODE/ /srv/fai/config
   sudo rsync -azvr $CODE/ --delete /srv/fai/config
-  exit
   sudo chown -R root.root /srv/fai/config/scripts
 
   if ssh screen "./dcall sync_scripts"; then
