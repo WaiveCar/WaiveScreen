@@ -98,6 +98,7 @@ def send_wakeup_signal():
 
 def arduino_read():
   _arduino = get_arduino()
+  attempts = 0
   try:
     _arduino.in_waiting
     
@@ -108,7 +109,16 @@ def arduino_read():
   while _arduino.in_waiting < 25:
     # Our period is 100hz so we try to 
     # wait a bit under that.
-    time.sleep(0.007)
+    sleep = 0.007
+    time.sleep(sleep)
+    attempts += 1
+
+    # if we didn't hear anything back
+    # in some time period, then we just
+    # return a fail case 
+    if attempts > (3 / sleep):
+      _log.warn("Timeout: Could not read from arduino ({})".format(_arduino.in_waiting))
+      return {}
     pass
 
   # First byte is the header, must be 0xff

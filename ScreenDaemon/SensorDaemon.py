@@ -28,7 +28,7 @@ START = time.time()
 last_reading = False
 ix = 0
 ix_hb = 0
-first = False
+first = True
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.DEBUG)
@@ -77,12 +77,10 @@ def is_significant(totest):
     return True
 
 
-logging.debug("Starting up")
 while True:
   sensor = arduino.arduino_read()
   if first:
     logging.info("Got first arduino read")
-    print("ardy")
 
   # Put data in if we have it
   location = {} if lib.NOMODEM else lib.get_gps()
@@ -95,7 +93,7 @@ while True:
   all = {**location, **sensor, 'SystemTime': system_time } 
 
   if first:
-    logging.info("Everything up")
+    logging.info("Success, Main Loop")
     first = False
 
   if is_significant(all):
