@@ -173,7 +173,7 @@ def emit_startup():
   # Contact the server, get the port if needed
   ping()
   port = db.kv_get('port')
-  print("ssh -f -NC -R bounce:{}:127.0.0.1:22 bounce".format(port))
+  return("ssh -f -NC -R bounce:{}:127.0.0.1:22 bounce".format(port))
 
 
 def asset_cache(check):
@@ -230,9 +230,11 @@ def ping():
         #  * the default campaign in "default"
         #  * software version in "version"
         #
-        if data['version'] != VERSION:
+        if data['version'] != VERSION and data['version_date'] > VERSIONDATE:
           # TODO we need to do better than this bullshit
           logging.warn("This is {} but {} is available".format(VERSION, data['version']))
+        else:
+          logging.debug("{} {} is either up to date or newer than the server".format(data['version'], data['version_date']))
   
         db.kv_set('port', data['screen']['port'])
   
