@@ -25,7 +25,6 @@ perl
 python
 python-minimal
 reportbug
-telnet
 traceroute
 ucf
 xz-utils
