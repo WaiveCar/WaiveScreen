@@ -56,7 +56,13 @@ def do_sleep(reading = {}):
   _sleeping = True
   _log.info("Going to sleep")
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force suspend".format(DISPLAY))
-  os.system("/usr/bin/sudo /usr/bin/acpitool -s")
+  #
+  # TODO: This will immediately turn back on thanks to our Quectel modem. See #8 at 
+  # https://github.com/WaiveCar/WaiveScreen/issues/8 to follow this - we're going 
+  # to not even try it for now since all it will do in practice is drain some power
+  # by doing some unnecessary shit and then turn immediately back on.
+  #
+  # os.system("/usr/bin/sudo /usr/bin/acpitool -s")
 
 def pm_if_needed(reading):
   if not _sleeping and reading['Voltage'] < VOLTAGE_SLEEP and reading['Current'] < 1:
@@ -123,7 +129,7 @@ def arduino_read():
     # if we didn't hear anything back
     # in some time period, then we just
     # return a fail case 
-    if attempts > (3 / sleep):
+    if attempts > 3 / sleep:
       _log.warn("Timeout: Could not read from arduino ({})".format(_arduino.in_waiting))
       return {}
     pass
@@ -147,7 +153,7 @@ def arduino_read():
     current = 73.3 * current_read / 1023 - 36.7
   else:
     # GY-712-30A
-    current = (513.0-current_read) / 1023.0 * 60.0
+    current = (513.0 - current_read) / 1023.0 * 60.0
 
   voltage_read = (ord(_arduino.read()) << 8) + (ord(_arduino.read()))
 
