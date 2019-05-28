@@ -4,20 +4,25 @@ import arduino.lib as arduino
 import sys
 import json
 import os
+import logging
 
 DEBUG = 'DEBUG' in os.environ
 
+FORMAT = '%(asctime)-15s %(message)s'
+logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+arduino.set_log(logger)
+
 if len(sys.argv) > 1:
-  if DEBUG:
-    res = eval("lib." + sys.argv[1] + "()")
-  else:
+  fn = sys.argv[1]
+  try:
+    res = eval("lib.{}()".format(fn))
+  except:
     try:
-      res = eval("arduino." + sys.argv[1] + "()")
-    except:
-      try:
-        res = eval("lib." + sys.argv[1])
-      except:
-        res = False
+      res = eval("arduino.{}()".format(fn))
+    except Exception as ex:
+      logging.warning("Failed to execute {}: {}".format(fn, ex))
+      res = False
 
   if res and not callable(res):
     print(json.dumps(res))
