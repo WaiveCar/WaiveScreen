@@ -116,6 +116,6 @@ fcopy -iM /etc/resolv.conf
 fcopy -iM /etc/network/interfaces /etc/networks
 
 # we don't want to fucking block on not having a fucking network.
-rm -f /etc/network/interfaces.d/enp*
+rm -f $FAI_ROOT/etc/network/interfaces.d/enp*
 
 exit $error

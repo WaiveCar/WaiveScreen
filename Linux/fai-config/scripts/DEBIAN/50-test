@@ -2,7 +2,7 @@
 
 CP="cp -pvu"
 USER=adorno
-DEST=/home/$USER
+DEST=$FAI_ROOT/home/$USER
 
 [ -e $DEST/.env ] && cp -p $DEST/.env $DEST/.env-saveme
 cp -vuTr --preserve=mode,timestamps ../files/home $DEST
@@ -13,7 +13,7 @@ chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
 # everything else, but let's ignore that)
 #
 # TODO: This doesn't fix it ... I don't know why
-sed -i 's/auth_self_keep/yes/g' /usr/share/polkit-1/actions/org.freedesktop.ModemManager1.policy 
+sed -i 's/auth_self_keep/yes/g' $FAI_ROOT/usr/share/polkit-1/actions/org.freedesktop.ModemManager1.policy 
 
 if [ ! -e $DEST/assets ] ; then
   # This is a cache for assets in case we go offline
@@ -22,26 +22,26 @@ if [ ! -e $DEST/assets ] ; then
 fi
 
 # Allow any user to create a logfile.
-chmod 0777 /var/log
+chmod 0777 $FAI_ROOT/var/log
 
 # This shouldn't be necessary, but permissions seem to
 # want to just snap back after the above thing is done.
-touch /var/log/screendaemon.log
-chown $USER.$USER /var/log/screendaemon.log
+touch $FAI_ROOT/var/log/screendaemon.log
+$ROOTCMD chown $USER.$USER /var/log/screendaemon.log
 
 # xinit is going to be at a root level
-$CP ../files/home/.xinitrc ~root
+$CP ../files/home/.xinitrc $FAI_ROOT/root
 rm $DEST/.xinitrc
 
 # The overly user-hostile version of sudo needs to be fixed
-ainsl /etc/sudoers "$USER ALL=NOPASSWD: ALL" "$USER"
+ainsl $FAI_ROOT/etc/sudoers "$USER ALL=NOPASSWD: ALL" "$USER"
 
 # The retarded default bell thing in bash to do nothing
 # on tab complete needs to go
-sed -i '/^# set bell-style none/s/^# //' /etc/inputrc
+sed -i '/^# set bell-style none/s/^# //' $FAI_ROOT/etc/inputrc
 
 # This stupid smarmy "plan your install" crap needs to go.
-[ -e /etc/motd ] && sudo rm -f /etc/motd   
+[ -e $FAI_ROOT/etc/motd ] && sudo rm -f $FAI_ROOT/etc/motd   
 
 cpfile() {
 
@@ -51,7 +51,7 @@ cpfile() {
     echo "Copying $1"
   fi
 
-  $CP "../files"$1 $1
+  $CP "../files"$1 $FAI_ROOT$1
 }
 
 # A bunch of stupid modules shouldn't be loaded.
@@ -59,9 +59,11 @@ cpfile /etc/modprobe.d/blacklist.conf
 cpfile /etc/udev/rules.d/45-arduino.rules
 cpfile /etc/logrotate.d/screen.log
 
+ainsl -a /etc/modprobe.d/blacklist.conf 'blacklist pcspkr'
+
 for path in /var/log/screen /var/db/; do
-  mkdir -p $path
-  chmod 0777 $path
+  mkdir -p $FAI_ROOT$path
+  chmod 0777 $FAI_ROOT$path
 done
 
 # Swap may be needed for ACPI
@@ -70,13 +72,13 @@ done
 # apt purge -y rpcbind
 
 # Gives the user perms for arduino
-usermod -G dialout -a $USER
+$ROOTCMD usermod -G dialout -a $USER
 
-chsh -s /bin/bash $USER
+$ROOTCMD chsh -s /bin/bash $USER
 
 # Optimize the screen for power
 #powertop --auto-tune --debug
 
 # Make sure the paths from the lib are shared to the shell
 ainsl $DEST/.bashrc 'source $HOME/dcall nop' 'dcall nop'
-$DEST/dcall uuid
+$ROOTCMD $DEST/dcall uuid
