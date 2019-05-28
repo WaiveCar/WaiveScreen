@@ -5,27 +5,68 @@ import sys
 import json
 import os
 import logging
+import sys
 
 DEBUG = 'DEBUG' in os.environ
 
 FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+logging.basicConfig(format=FORMAT, level=logging.DEBUG, stream=sys.stderr)
 logger = logging.getLogger(__name__)
 arduino.set_log(logger)
 
+_last = False
+attemptList = []
+def tryit(fn):
+  global attemptList, _last
+  succ = False
+  row = [fn]
+
+  try:
+    res = eval(fn)
+    row.append(fn)
+    _last = res
+    succ = True
+
+  except Exception as ex:
+    row.append(ex)
+
+  attemptList.append(row)
+  return succ
+
+def dumpfailure():
+  for row in attemptList:
+    logging.warning("{:20} - {}".format(row[0], row[1]))
+
+
 if len(sys.argv) > 1:
   fn = sys.argv[1]
-  try:
-    res = eval("lib.{}()".format(fn))
-  except:
-    try:
-      res = eval("arduino.{}()".format(fn))
-    except Exception as ex:
-      logging.warning("Failed to execute {}: {}".format(fn, ex))
-      res = False
+  arg = ''
 
-  if res and not callable(res):
-    print(json.dumps(res))
+  if len(sys.argv) > 2:
+    arg_raw = sys.argv[2]
+    # Try and see if we have a number here.
+    try:
+      arg = float(arg_raw)
+    except:
+      # Otherwise pass it in as a string
+      arg = '"{}"'.format(arg_raw)
+
+  # Try to run it a number of ways
+  baseList =  [ '', 'lib.', 'arduino.' ] if fn.find('.') == -1 else [ '' ]
+  for base in baseList:
+    if tryit( "{}{}({})".format(base, fn, arg) ):
+      break
+
+  # if something succeeded then we try to 
+  # make heads or tails of it.
+  if _last:
+    if type(_last) is str:
+      print(_last)
+    else:
+      print(json.dumps(_last))
+  else:
+    # If we get failure then we should bail.
+    dumpfailure()
 
 else:
   print("I need an argument")
