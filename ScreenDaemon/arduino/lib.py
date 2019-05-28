@@ -43,22 +43,29 @@ def get_arduino():
 
   return _arduino
 
-def pm_if_needed(reading):
+def do_awake(reading = {}):
   global _sleeping, _base
+  _sleeping = False
+  set_backlight(_base['Backlight'])
+  os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
 
+def do_sleep(reading = {}):
+  global _sleeping, _base
+  set_backlight(0)
+  _base = reading
+  _sleeping = True
+  _log.info("Going to sleep")
+  os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force suspend".format(DISPLAY))
+  os.system("/usr/bin/sudo /usr/bin/acpitool -s")
+
+def pm_if_needed(reading):
   if not _sleeping and reading['Voltage'] < VOLTAGE_SLEEP and reading['Current'] < 1:
-    set_backlight(0)
-    _base = reading
-    _sleeping = True
-    os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force suspend".format(DISPLAY))
-    os.system("/usr/bin/sudo /usr/bin/acpitool -s")
+    do_sleep(reading)
 
   # TODO: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
   # triggered by either the door closing or the car starting to move.
   if _sleeping and (reading['Voltage'] > VOLTAGE_WAKE or abs(_base - reading['Accel_z']) > 1500):
-    _sleeping = False
-    set_backlight(_base['Backlight'])
-    os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
+    do_awake(reading)
 
 
 def clear():
