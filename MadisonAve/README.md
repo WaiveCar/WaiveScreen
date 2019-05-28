@@ -16,6 +16,11 @@ python 3.7+, nodejs, npm is required
  - to create the database run `sqlite3 ad-platform.db < create-tables.sql`
  - make sure the aws cli tool is configured correctly with both an aws_access_key_id and aws_secret_access_key and that there is an s3 bucket associated with those accounts
  - `npm run sass` to start compliling the server
+
+#### old
+
+Things have since been redone in php ... so the above stuff just compiles the sass
+
  - `npm start` to start the server
  - visit localhost:5050 in a browser to view the page
 
