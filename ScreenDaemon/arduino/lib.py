@@ -11,6 +11,7 @@ _arduino = False
 _first = False
 _sleeping = False
 _base = False
+_log = False
 
 # If the voltage drops below this we send it off to sleep
 VOLTAGE_SLEEP = 12.5
@@ -25,12 +26,17 @@ def close():
   if _arduino:
     _arduino.close()
 
+def set_log(what):
+  global _log
+  _log = what
+
 def get_arduino():
   global _arduino, _first
 
   if not _arduino:
-    com_port = '/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0'
-    # com_port = '/dev/ttyACM0'
+    direct = '/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0'
+    com_port = direct if os.path.exists(direct) else  '/dev/ttyACM0'
+    _log.debug("Using {}".format(com_port))
 
     _arduino = serial.Serial(com_port, 115200, timeout=0.1)
     _first = arduino_read()
