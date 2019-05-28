@@ -14,7 +14,7 @@ Short: Unity desktop
 Long: We use the Debian nfsroot for installing the Ubuntu OS.
 You should have a fast network connection, because most packages are
 downloaded from the internet.
-Classes: INSTALL FAIBASE DEMO DEBIAN UBUNTU BIONIC BIONIC64 XORG
+Classes: INSTALL FAIBASE DEMO DEBIAN BIONIC BIONIC64 XORG
 
 Name: Inventory
 Description: Show hardware info
