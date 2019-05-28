@@ -67,6 +67,25 @@ set_event() {
   echo -n $pid > $EV/$1
 }
 
+test_arduino() {
+  {
+    cd $BASE/ScreenDaemon/ScreenDaemon.py
+    for func in set_fan_speed set_backlight; do
+      for lvl in 0 0.5 1; do
+        announce "$func $lvl"
+        ./dcall $func $lvl
+        sleep 1
+      done
+    done
+
+    for func in do_sleep do_awake arduino_read; do
+      announce $func
+      ./dcall $func
+      sleep 1
+    done
+  }
+}
+
 modem_enable() {
   for i in $( seq 1 5 ); do
     $SUDO mmcli -m 0 -e
