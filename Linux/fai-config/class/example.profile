@@ -8,14 +8,6 @@ Additional account called demo with password: fai, root password: fai
 All needed packages are already on the CD or USB stick.
 Classes: INSTALL FAIBASE DEBIAN DEMO
 
-Name: Ubuntu
-Description: Ubuntu 18.04 desktop installation
-Short: Unity desktop
-Long: We use the Debian nfsroot for installing the Ubuntu OS.
-You should have a fast network connection, because most packages are
-downloaded from the internet.
-Classes: INSTALL FAIBASE DEMO DEBIAN BIONIC BIONIC64 XORG
-
 Name: Inventory
 Description: Show hardware info
 Short: Show some basic hardware infos
