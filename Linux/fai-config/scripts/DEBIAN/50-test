@@ -2,7 +2,11 @@
 
 CP="cp -pvu"
 USER=adorno
-DEST=$FAI_ROOT/home/$USER
+
+# This is predictable
+USERID=1000
+CHDEST=/home/$USER
+DEST=$FAI_ROOT$CHDEST
 
 [ -e $DEST/.env ] && cp -p $DEST/.env $DEST/.env-saveme
 cp -vuTr --preserve=mode,timestamps ../files/home $DEST
@@ -27,21 +31,21 @@ chmod 0777 $FAI_ROOT/var/log
 # This shouldn't be necessary, but permissions seem to
 # want to just snap back after the above thing is done.
 touch $FAI_ROOT/var/log/screendaemon.log
-$ROOTCMD chown $USER.$USER /var/log/screendaemon.log
+$ROOTCMD chown $USERID.$USERID /var/log/screendaemon.log
 
 # xinit is going to be at a root level
 $CP ../files/home/.xinitrc $FAI_ROOT/root
 rm $DEST/.xinitrc
 
 # The overly user-hostile version of sudo needs to be fixed
-ainsl $FAI_ROOT/etc/sudoers "$USER ALL=NOPASSWD: ALL" "$USER"
+ainsl /etc/sudoers "$USER ALL=NOPASSWD: ALL" "$USER"
 
 # The retarded default bell thing in bash to do nothing
 # on tab complete needs to go
 sed -i '/^# set bell-style none/s/^# //' $FAI_ROOT/etc/inputrc
 
 # This stupid smarmy "plan your install" crap needs to go.
-[ -e $FAI_ROOT/etc/motd ] && sudo rm -f $FAI_ROOT/etc/motd   
+[ -e $FAI_ROOT/etc/motd ] && rm -f $FAI_ROOT/etc/motd   
 
 cpfile() {
 
@@ -72,13 +76,14 @@ done
 # apt purge -y rpcbind
 
 # Gives the user perms for arduino
-$ROOTCMD usermod -G dialout -a $USER
+ainsl /etc/group "dialout:x:20:adorno"
+ainsl /etc/group- "dialout:x:20:adorno"
 
-$ROOTCMD chsh -s /bin/bash $USER
+# $ROOTCMD chsh -s /bin/bash $USER
 
 # Optimize the screen for power
 #powertop --auto-tune --debug
 
 # Make sure the paths from the lib are shared to the shell
-ainsl $DEST/.bashrc 'source $HOME/dcall nop' 'dcall nop'
-$ROOTCMD $DEST/dcall uuid
+ainsl $CHDEST/.bashrc 'source $HOME/const.sh' 'const.sh'
+$ROOTCMD $CHDEST/dcall uuid
