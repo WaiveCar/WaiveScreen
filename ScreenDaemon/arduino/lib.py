@@ -54,9 +54,10 @@ def do_awake(reading = {}):
 
 def do_sleep(reading = {}):
   global _sleeping, _base
-  _log.debug("here")
+
   set_backlight(0)
   set_fanspeed(0)
+
   _base = reading
   _sleeping = True
   _log.info("Going to sleep")
@@ -122,17 +123,24 @@ def test_do(ex, delay=1):
     time.sleep(delay)
 
 def test(parts='fbs'):
+  fnlist = []
+
   if parts.find('f') != -1:
-    for fn in ['set_fanspeed', 'set_backlight']:
-      for rate in range(0, 20):
-        test_do("{}({})".format(fn, float(rate)/20), 0.2)
+    fnlist.append('set_fanspeed')
+
+  if parts.find('b') != -1:
+    fnlist.append('set_backlight')
+
+  for fn in fnlist:
+    for rate in range(0, 20):
+      test_do("{}({})".format(fn, float(rate)/20), 0.2)
 
   if parts.find('s') != -1: 
     set_fanauto()
-    _log.debug('do_sleep')
+    _log.debug('do_sleep()')
     do_sleep()
     time.sleep(30)
-    _log.debug('do_awake')
+    _log.debug('do_awake()')
     do_awake()
 
 def arduino_read():
