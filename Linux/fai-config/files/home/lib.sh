@@ -68,20 +68,21 @@ set_event() {
 }
 
 test_arduino() {
+  sleep=4
   {
-    cd $BASE/ScreenDaemon/ScreenDaemon.py
+    cd $BASE/ScreenDaemon
     for func in set_fan_speed set_backlight; do
       for lvl in 0 0.5 1; do
-        announce "$func $lvl"
+        _announce "arduino.$func $lvl"
         ./dcall $func $lvl
-        sleep 1
+        sleep $sleep
       done
     done
 
     for func in do_sleep do_awake arduino_read; do
-      announce $func
-      ./dcall $func
-      sleep 1
+      _announce $func
+      ./dcall arduino.$func
+      sleep $sleep
     done
   }
 }
