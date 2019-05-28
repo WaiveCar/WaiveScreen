@@ -29,7 +29,7 @@ _onscreen() {
   size=14
 
   #from=$( caller 1 | awk ' { print $2":"$1 } ' )
-  echo "$ts" $1 | osd_cat \
+  echo $1 "$ts" | osd_cat \
       -c $2 \
       -u black \
       -A right \
