@@ -82,7 +82,7 @@ def set_fan_speed(value):
   if value < 1: 
     value = round(value * 256)
 
-  fan_speed = min(value, 255)
+  fan_speed = int(min(value, 255))
 
   _arduino.write(b'\x01{}')
   _arduino.write(struct.pack('!B', fan_speed))
@@ -98,11 +98,12 @@ def set_backlight(value):
   if value < 1: 
     value = round(value * 256)
 
-  backlight = min(value, 255)
+  backlight = int(min(value, 255))
 
   _arduino.write(b'\x10')
   _arduino.write(struct.pack('!B', backlight))
 
+  return True
 
 def send_wakeup_signal():
   _arduino = get_arduino()
