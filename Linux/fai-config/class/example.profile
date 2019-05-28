@@ -16,23 +16,6 @@ Additional account called demo with password: fai, root password: fai
 All needed packages are already on the CD or USB stick.
 Classes: INSTALL FAIBASE DEBIAN DEMO
 
-Name: Xfce
-Description: Xfce desktop, LVM partitioning
-Short: A fancy Xfce desktop will be installed, the user account is demo
-Long: This is the Xfce desktop example. Additional account called
-demo with password: fai, root password: fai
-All needed packages are already on the CD or USB stick.
-Classes: INSTALL FAIBASE DEBIAN DEMO XORG XFCE LVM
-
-Name: Gnome
-Description: Gnome desktop installation
-Short: A Gnome desktop, no LVM, You will get an account called demo
-Long: This is the Gnome desktop example. Additional account called
-demo with password: fai, root password: fai
-You should have a fast network connection, because most packages are
-downloaded from the internet.
-Classes: INSTALL FAIBASE DEBIAN DEMO XORG GNOME
-
 Name: Ubuntu
 Description: Ubuntu 18.04 desktop installation
 Short: Unity desktop
