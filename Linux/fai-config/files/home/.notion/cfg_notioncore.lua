@@ -26,11 +26,6 @@ defbindings("WScreen", {
         kpress("T", "ioncore.tagged_clear()"),
     }),
 
-    bdoc("Go to n:th screen on multihead setup."),
-    
-    bdoc("Go to next/previous screen on multihead setup."),
-    kpress(META.."Shift+comma", "ioncore.goto_prev_screen()"),
-    kpress(META.."Shift+period", "ioncore.goto_next_screen()"),
     
     bdoc("Create a new workspace of chosen default type."),
     kpress(META.."equal", "ioncore.create_ws(_)"),
@@ -79,10 +74,6 @@ defbindings("WScreen", {
 -- These bindings affect client windows directly.
 
 defbindings("WClientWin", {
-    bdoc("Nudge the client window. This might help with some "..
-         "programs' resizing problems."),
-    kpress_wait(META.."L", "WClientWin.nudge(_)"),
-    
     kpress(METASHIFT.."4", "WClientWin.kill(_)"),
     kpress(OTHERMETASHIFT.."4", "WClientWin.kill(_)"),
 
@@ -182,13 +173,6 @@ defbindings("WFrame.toplevel", {
         kpress("1", "WFrame.switch_nth(_, 0)"),
         kpress("2", "WFrame.switch_nth(_, 1)"),
         kpress("3", "WFrame.switch_nth(_, 2)"),
-        kpress("4", "WFrame.switch_nth(_, 3)"),
-        kpress("5", "WFrame.switch_nth(_, 4)"),
-        kpress("6", "WFrame.switch_nth(_, 5)"),
-        kpress("7", "WFrame.switch_nth(_, 6)"),
-        kpress("8", "WFrame.switch_nth(_, 7)"),
-        kpress("9", "WFrame.switch_nth(_, 8)"),
-        kpress("0", "WFrame.switch_nth(_, 9)"),
         
         bdoc("Switch to next/previous object within the frame."),
         kpress("N", "WFrame.switch_next(_)"),
@@ -246,10 +230,6 @@ defbindings("WMoveresMode", {
     kpress("Right", "WMoveresMode.resize(_, 0, 1, 0, 0)"),
     kpress("Up",    "WMoveresMode.resize(_, 0, 0, 1, 0)"),
     kpress("Down",  "WMoveresMode.resize(_, 0, 0, 0, 1)"),
-    kpress("F",     "WMoveresMode.resize(_, 1, 0, 0, 0)"),
-    kpress("B",     "WMoveresMode.resize(_, 0, 1, 0, 0)"),
-    kpress("P",     "WMoveresMode.resize(_, 0, 0, 1, 0)"),
-    kpress("N",     "WMoveresMode.resize(_, 0, 0, 0, 1)"),
     
     bdoc("Move in specified direction."),
     kpress(META.."Left",  "WMoveresMode.move(_,-1, 0)"),
