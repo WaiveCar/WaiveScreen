@@ -3,17 +3,16 @@ apt-transport-https # is only needed for stretch
 debconf-utils
 file
 less
-linuxlogo
+# linuxlogo
 rsync
 openssh-client openssh-server
 time
 procinfo
 nullmailer
-eject
+# eject
 locales
 console-setup kbd
 pciutils usbutils
-unattended-upgrades
 xorg xserver-xorg-video-all xserver-xorg-input-all
 fonts-freefont-ttf
 xterm
