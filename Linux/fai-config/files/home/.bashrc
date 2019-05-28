@@ -111,5 +111,19 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
+
+gousb() {
+  for i in /sys/bus/usb/devices/*; do
+    if [ -e $i/idProduct ]; then
+      if [ $(cat $i/idVendor):$(cat $i/idProduct) = $1 ]; then
+        cd $i
+        return
+      fi
+    fi
+  done
+
+  echo "$1 not found :-("
+}
+
 PATH=$PATH:$HOME/.local/bin
 source $HOME/const.sh
