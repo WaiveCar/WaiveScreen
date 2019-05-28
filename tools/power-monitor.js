@@ -1,3 +1,4 @@
+#!/usr/bin/nodejs
 const { Client } = require('tplink-smarthome-api');
 let fs = require('fs');
 
