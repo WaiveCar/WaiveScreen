@@ -4,7 +4,6 @@ debconf-utils
 file
 less
 # linuxlogo
-rsync
 openssh-client openssh-server
 time
 procinfo
@@ -14,22 +13,29 @@ locales
 console-setup kbd
 pciutils usbutils
 xorg xserver-xorg-video-all xserver-xorg-input-all
+x11-xserver-utils
+notion
 fonts-freefont-ttf
+chromium chromium-sandbox
 xterm
+tmux
 modemmanager
 isc-dhcp-client
-x11-xserver-utils
-chromium chromium-sandbox
 imagemagick
 ffmpeg
 redshift
 unclutter
-tmux
 curl
-notion
 sudo
 locate
 vim
+
+# wireless stuff
+iw
+wpasupplicant
+
+# and ble
+bluez
 
 # power management suite
 powertop
@@ -45,6 +51,7 @@ nfs-common
 gpg
 
 # dev stuff
+rsync
 sshfs
 sqlite3
 
