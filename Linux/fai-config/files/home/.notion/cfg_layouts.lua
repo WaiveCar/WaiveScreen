@@ -1,11 +1,3 @@
---
--- Layouts for Notion
---
-
---
--- Helper routines and structures
---
-
 -- Tiled frame template for the layouts below
 local a_frame = {
     type="WSplitRegion",
@@ -45,12 +37,9 @@ local function mktiling(split_tree)
     }
 end
 
---
--- The layouts
---
-
 -- Tiling with single 1:1 horizontal split
-local tmp=mktiling(mksplit("horizontal", a_frame, a_frame))
+-- local tmp=mktiling(mksplit("horizontal", a_frame, a_frame))
+local tmp=mktiling(a_frame)
 ioncore.deflayout("hsplit", tmp)
 ioncore.deflayout("default", tmp)
 
