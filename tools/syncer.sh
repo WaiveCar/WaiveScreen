@@ -3,13 +3,28 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 CODE=$DIR/../Linux/fai-config
 GIT=$DIR/../
+LOCAL_HOME=$CODE/files/home
+SRV_HOME=/srv/fai/config/files/home
+
+if [ $# -gt 0 ]; then
+  case $1 in
+    pip)
+      cd $DIR/../ScreenDaemon
+      mkdir -p $LOCAL_HOME/pip
+      pip3 download -d $LOCAL_HOME/pip -r requirements.txt
+      ;;
+  esac
+  exit
+fi
 
 while [ 0 ]; do
+
   #sudo cp -pru $CODE/* /srv/fai/config
   sudo rsync -azvr $CODE/ /srv/fai/config
   #sudo rsync -azvr $CODE/ --delete /srv/fai/config
-  [ -e /srv/fai/config/files/home/WaiveScreen ] || mkdir -p /srv/fai/config/files/home/WaiveScreen
-  sudo rsync -azvr $GIT /srv/fai/config/files/home/WaiveScreen
+
+  [ -e $SRV_HOME/WaiveScreen ] || mkdir -p $SRV_HOME/WaiveScreen
+  sudo rsync -azvr $GIT $SRV_HOME/WaiveScreen
   sudo chown -R root.root /srv/fai/config/scripts
 
   if [ ! "$NONET" ]; then
