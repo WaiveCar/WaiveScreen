@@ -88,6 +88,8 @@ ainsl /etc/group- "dialout:x:20:adorno"
 # Optimize the screen for power
 #powertop --auto-tune --debug
 
+$ROOTCMD pip3 install $CHDEST/pip/*
+
 # Make sure the paths from the lib are shared to the shell
 ainsl $CHDEST/.bashrc 'source $HOME/const.sh' 'const.sh'
 $ROOTCMD $CHDEST/dcall uuid
