@@ -20,7 +20,7 @@ fi
 ainsl /etc/default/grub 'GRUB_DISABLE_OS_PROBER=true'
 
 # No menu
-sed -i s'/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /etc/default/grub
+sed -i s'/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' $FAI_ROOT/etc/default/grub
 
 # Low resolution console saves a fraction of a second.
 ainsl /etc/default/grub "^GRUB_TERMINAL=console"
