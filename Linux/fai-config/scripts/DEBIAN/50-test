@@ -12,6 +12,7 @@ DEST=$FAI_ROOT$CHDEST
 cp -vuTr --preserve=mode,timestamps ../files/home $DEST
 chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
 [ -e $DEST/.env-saveme ] && mv $DEST/.env-saveme $DEST/.env
+chown -R $USERID.$USERID $DEST
 
 # This is to allow non-root users to get the modem info (and
 # everything else, but let's ignore that)
