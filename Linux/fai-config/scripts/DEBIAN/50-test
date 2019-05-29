@@ -66,6 +66,9 @@ cpfile /etc/logrotate.d/screen.log
 
 ainsl -a /etc/modprobe.d/blacklist.conf 'blacklist pcspkr'
 
+# This allows a dev mount
+ainsl /etc/fuse.conf "^user_allow_other"
+
 for path in /var/log/screen /var/db/; do
   mkdir -p $FAI_ROOT$path
   chmod 0777 $FAI_ROOT$path
