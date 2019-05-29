@@ -2,11 +2,14 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 CODE=$DIR/../Linux/fai-config
+GIT=$DIR/../
 
 while [ 0 ]; do
   #sudo cp -pru $CODE/* /srv/fai/config
   sudo rsync -azvr $CODE/ /srv/fai/config
-  sudo rsync -azvr $CODE/ --delete /srv/fai/config
+  #sudo rsync -azvr $CODE/ --delete /srv/fai/config
+  [ -e /srv/fai/config/files/home/WaiveScreen ] || mkdir -p /srv/fai/config/files/home/WaiveScreen
+  sudo rsync -azvr $GIT /srv/fai/config/files/home/WaiveScreen
   sudo chown -R root.root /srv/fai/config/scripts
 
   if [ ! "$NONET" ]; then
