@@ -12,9 +12,11 @@ if [ $# -gt 0 ]; then
       cd $DIR/../ScreenDaemon
       mkdir -p $LOCAL_HOME/pip
       pip3 download -d $LOCAL_HOME/pip -r requirements.txt
+      exit
       ;;
+    force)
+      FORCE=0
   esac
-  exit
 fi
 
 while [ 0 ]; do
@@ -44,5 +46,10 @@ while [ 0 ]; do
       -f lucidasanstypewriter-bold-14 &
 
   date +%s > /tmp/last-sync
+
+  if [ "$FORCE" ]; then
+    exit
+  fi
+
   inotifywait -qe close_write,attrib,modify,move,move_self,create,delete,delete_self -r $CODE
 done
