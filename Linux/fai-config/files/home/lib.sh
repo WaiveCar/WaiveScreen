@@ -68,23 +68,8 @@ set_event() {
 }
 
 test_arduino() {
-  sleep=4
-  {
-    cd $BASE/ScreenDaemon
-    for func in set_fan_speed set_backlight; do
-      for lvl in 0 0.5 1; do
-        _announce "arduino.$func $lvl"
-        ./dcall $func $lvl
-        sleep $sleep
-      done
-    done
-
-    for func in do_sleep do_awake arduino_read; do
-      _announce $func
-      ./dcall arduino.$func
-      sleep $sleep
-    done
-  }
+  cd $BASE/ScreenDaemon
+  ./dcall arduino.test
 }
 
 modem_enable() {
