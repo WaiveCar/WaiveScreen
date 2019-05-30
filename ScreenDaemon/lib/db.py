@@ -6,6 +6,7 @@ import time
 import os
 import sys
 import json
+import threading
 from datetime import timedelta
 from threading import Lock
 from pprint import pprint
@@ -13,7 +14,7 @@ from pprint import pprint
 g_db_count = 0
 g_lock = Lock()
 g_params = {}
-g_instance = False
+g_instance = {}
 
 # This is a way to get the column names after grabbing everything
 # I guess it's also good practice
@@ -273,8 +274,10 @@ def connect(db_file=None):
   # Returns the database instance.
   global g_db_count, g_instance
 
-  if g_instance:
-    return g_instance 
+  id = threading.get_ident()
+
+  if id in g_instance:
+    return g_instance[id] 
 
   if 'DB' in os.environ:
     default_db = os.environ['DB']
@@ -294,7 +297,7 @@ def connect(db_file=None):
   # Really, just think about it ... it's totally irrelevant.
   #
 
-  g_instance = {}
+  g_instance[id] = {}
 
   if not os.path.exists(db_file):
     sys.stderr.write("Info: Creating db file %s\n" % db_file)
@@ -305,7 +308,7 @@ def connect(db_file=None):
   if 'DEBUG' in os.environ:
     conn.set_trace_callback(print)
 
-  g_instance.update({
+  g_instance[id].update({
     'conn': conn,
     'c': conn.cursor()
   })
@@ -314,13 +317,13 @@ def connect(db_file=None):
 
     for table, schema in list(_SCHEMA.items()):
       dfn = ','.join(["%s %s" % (key, klass) for key, klass in schema])
-      g_instance['c'].execute("CREATE TABLE IF NOT EXISTS %s(%s)" % (table, dfn))
+      g_instance[id]['c'].execute("CREATE TABLE IF NOT EXISTS %s(%s)" % (table, dfn))
 
-    g_instance['conn'].commit()
+    g_instance[id]['conn'].commit()
 
   g_db_count += 1 
 
-  return g_instance
+  return g_instance[id]
 
 
 def incr(key, value=1):
