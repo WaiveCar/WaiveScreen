@@ -38,7 +38,7 @@ _onscreen() {
       -d $3 \
       -f lucidasanstypewriter-bold-$size &
 
-  echo $1 | $SUDO tee -a /tmp/messages
+  echo $ts $1 | $SUDO tee -a /tmp/messages
   offset=$(( (offset + size + 9) % ((size + 9) * 25) ))
 
   echo $offset > /tmp/offset
