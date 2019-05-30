@@ -1,8 +1,25 @@
 #!/bin/bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 now=$(date +%Y%m%d%H%M)
 dir=${1:-$HOME/usb}
 file=${2:-$HOME/WaiveScreen-$now.iso}
+current=$(git describe)
+isopath=/srv/fai/config/files/home/WaiveScreen
+{
+  cd $isopath
+  toiso=$(git describe)
+}
+
+echo "$current: current"
+echo "$toiso: $isopath"
+if [ "$current" != "$toiso" ]; then
+  echo "Out of date ... syncing"
+  NONET=1 $DIR/syncer.sh force
+else
+  echo "Not syncing"
+fi
 
 if [ "$NOMIRROR" ]; then
   echo "Skipping mirroring"
