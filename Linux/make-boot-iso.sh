@@ -1,7 +1,8 @@
 #!/bin/bash
 
+now=$(date +%Y%m%d%H%M)
 dir=${1:-$HOME/usb}
-file=${2:-bootable.iso}
+file=${2:-$HOME/WaiveScreen-$now.iso}
 
 if [ "$NOMIRROR" ]; then
   echo "Skipping mirroring"
@@ -11,6 +12,7 @@ else
   fai-mirror -v -cDEBIAN $dir
 fi
 
+echo "Creating a bootable iso named $file"
 sudo fai-cd -m $dir $file
-echo "Created a bootable iso named $file"
+echo "dd if=bootable.iso of=/dev/sdXXXX bs=1M"
 
