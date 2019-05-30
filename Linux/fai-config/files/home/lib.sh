@@ -341,11 +341,12 @@ upgrade() {
 
   if git pull; then
     # If there's script updates we try to pull those down
-    # as well
-    rsync --exclude=.xinitrc -aqzr $BASE/Linux/fai-config/files/home/ $DEST
-    chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
+    # as well - we can use our pre-existing sync script
+    # to deal with it.
+    sync_scripts $BASE/Linux/fai-config/files/home/
 
     # Now we take down the browser.
+    down 0_screen_wrapper
     down screen_display
 
     # This stuff shouldn't be needed
@@ -354,7 +355,6 @@ upgrade() {
     $SUDO pkill -f ScreenDisplay
 
     # And the server (which in practice called us from a ping command)
-    down 0_screen_wrapper
     down screen_daemon
     $SUDO pkill -f ScreenDaemon
 

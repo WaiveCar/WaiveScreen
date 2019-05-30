@@ -4,7 +4,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . $DIR/const.sh
 
 sync_scripts() {
-  source=$DEV/Linux/fai-config/files/home/
+  source=${1:-$DEV/Linux/fai-config/files/home/}
 
   if [ ! -e $source ]; then
     echo "Warning: $source doesn't exist."
