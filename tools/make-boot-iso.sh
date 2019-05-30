@@ -31,5 +31,6 @@ fi
 
 echo "Creating a bootable iso named $file"
 sudo fai-cd -m $dir $file
-echo "dd if=$file of=/dev/sdXXXX bs=1M"
+size=$(stat -c %s $file)
+echo "dd if=$file | pv -s $size | sudo of=/dev/sdXXXX bs=2M"
 
