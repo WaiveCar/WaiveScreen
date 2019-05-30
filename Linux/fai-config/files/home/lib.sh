@@ -186,17 +186,30 @@ local_set() {
 
 ssh_hole() {
   {
-    if [ ! "$PORT" ]; then
-      local_set PORT "$($SUDO $BASE/ScreenDaemon/dcall get_port)"
-    fi
-    
-    if [ ! "$PORT" ]; then
-      _warn "Cannot contact the server for my port"
-    else
-      ssh -NC -R bounce:$PORT:127.0.0.1:22 bounce &
-      set_event ssh
-    fi
-  } &
+    while [ 0 ]; do
+      if [ ! "$PORT" ]; then
+        local_set PORT "$($SUDO $BASE/ScreenDaemon/dcall get_port)"
+      fi
+      
+      if [ ! "$PORT" ]; then
+        _warn "Cannot contact the server for my port"
+
+      elif ps -o pid= -p $( cat $EV/ssh ); then
+        # this means we have an ssh open and life is fine
+        sleep 10
+
+      else
+        ssh -NC -R bounce:$PORT:127.0.0.1:22 bounce &
+        set_event ssh
+      fi
+
+      sleep 10
+    done
+  } > /dev/null &
+
+  # The 0 makes sure that the wrapper is killed before
+  # the client 
+  set_event 0_ssh_wrapper
 }
 
 screen_daemon() {
@@ -299,6 +312,8 @@ screen_display() {
       _screen_display_single
     done
   } > /dev/null &
+
+  set_event 0_screen_wrapper
 }
 
 down() {
@@ -339,6 +354,7 @@ upgrade() {
     $SUDO pkill -f ScreenDisplay
 
     # And the server (which in practice called us from a ping command)
+    down 0_screen_wrapper
     down screen_daemon
     $SUDO pkill -f ScreenDaemon
 
@@ -372,6 +388,3 @@ location() {
   $SUDO mmcli -m 0 --location-status
 }
 
-nop() { 
-  true
-}
