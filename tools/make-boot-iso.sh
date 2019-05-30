@@ -3,9 +3,9 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 now=$(date +%Y%m%d%H%M)
-dir=${1:-$HOME/usb}
-file=${2:-$HOME/WaiveScreen-$now.iso}
 current=$(git describe)
+dir=${1:-$HOME/usb}
+file=${2:-$HOME/WaiveScreen-$now-$current.iso}
 isopath=/srv/fai/config/files/home/WaiveScreen
 {
   cd $isopath
@@ -31,5 +31,5 @@ fi
 
 echo "Creating a bootable iso named $file"
 sudo fai-cd -m $dir $file
-echo "dd if=bootable.iso of=/dev/sdXXXX bs=1M"
+echo "dd if=$file of=/dev/sdXXXX bs=1M"
 
