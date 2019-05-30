@@ -25,6 +25,7 @@ if [ "$NOMIRROR" ]; then
   echo "Skipping mirroring"
 else
   echo "Using $dir - some serious space is probably needed"
+  [ -e $dir ] && rm -rf $dir
   mkdir -p $dir
   fai-mirror -v -cDEBIAN $dir
 fi
