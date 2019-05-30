@@ -80,8 +80,7 @@ done
 ainsl /etc/group "dialout:x:20:adorno"
 ainsl /etc/group- "dialout:x:20:adorno"
 
-$ROOTCMD pip3 install $CHDEST/pip/*
-
 # Make sure the paths from the lib are shared to the shell
 ainsl $CHDEST/.bashrc 'source $HOME/const.sh' 'const.sh'
 $ROOTCMD $CHDEST/dcall uuid
+$ROOTCMD $CHDEST/dcall pip_install

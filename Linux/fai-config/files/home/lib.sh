@@ -231,6 +231,10 @@ git_waivescreen() {
   } &
 }
 
+pip_install() {
+  pip3 install $DEST/pip/*
+}
+
 uuid() {
   UUID=/etc/UUID
   if [ ! -e $UUID ] ; then
