@@ -188,16 +188,18 @@ local_set() {
 }
 
 ssh_hole() {
-  if [ ! "$PORT" ]; then
-    local_set PORT "$($SUDO $BASE/ScreenDaemon/dcall get_port)"
-  fi
-  
-  if [ ! "$PORT" ]; then
-    _warn "Cannot contact the server for my port"
-  else
-    ssh -NC -R bounce:$PORT:127.0.0.1:22 bounce &
-    set_event ssh
-  fi
+  {
+    if [ ! "$PORT" ]; then
+      local_set PORT "$($SUDO $BASE/ScreenDaemon/dcall get_port)"
+    fi
+    
+    if [ ! "$PORT" ]; then
+      _warn "Cannot contact the server for my port"
+    else
+      ssh -NC -R bounce:$PORT:127.0.0.1:22 bounce &
+      set_event ssh
+    fi
+  } &
 }
 
 screen_daemon() {
@@ -254,24 +256,6 @@ wait_for() {
     sleep 0.05
   fi
 }
-
-dev_setup() {
-  #
-  # Note: this usually runs as normal user
-  #
-  # echo development > $DEST/.env
-  $SUDO dhclient enp3s0 
-  [ -e $DEV ] || mkdir $DEV
-
-  if [ -z "$SUDO" ]; then
-    _warn "Hey, you can't be root to do sshfs"
-  fi
-
-  sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO) dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
-  export BASE=$DEV
-  set_event net ''
-}
-
 
 install() {
   cd $BASE/ScreenDaemon
