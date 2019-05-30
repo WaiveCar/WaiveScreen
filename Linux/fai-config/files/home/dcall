@@ -4,9 +4,14 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 . $DIR/baseline.sh
 
-if ! eval $* ; then
+if ! declare -f $1 > /dev/null; then
   . $DIR/lib.sh
-  if ! eval $*; then
-    list
-  fi
 fi
+
+if ! declare -f $1 > /dev/null; then
+  echo "Woops, $1 is not defined"
+  list
+  exit 1
+fi
+
+eval $* 
