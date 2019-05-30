@@ -213,6 +213,11 @@ def campaign_cache(check):
   if not campaign:
     campaign = db.insert('campaign', data['default'])
 
+def ping_if_needed():
+  last_ping = db.kv_get('lastping')
+  if not last_ping or int(db.kv_get('runcount')) > int(lastping):
+    ping()
+
 def ping():
   payload = {
     'uid': get_uuid(),
@@ -250,6 +255,8 @@ def ping():
         if not db.get('campaign', data['default']['id']):
           default = asset_cache(data['default'])
           db.insert('campaign', default)
+
+        db.kv_set('lastping', db.kv_get('runcount')) 
 
         if data['version_date'] > VERSIONDATE:
           # This means we can upgrade.
