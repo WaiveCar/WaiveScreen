@@ -13,7 +13,7 @@ onebigscreen() {
   xrandr --output HDMI-2 --reflect xy
 }
 
-if [ $( xrandr | grep \ connected | grep -i vga | wc -l) -ne 1 ]; then
+if [ $( xrandr | grep \ connected | wc -l) -ne 1 ]; then
   resize
 fi
 
