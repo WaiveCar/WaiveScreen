@@ -169,11 +169,17 @@ def job_store(data):
 def job_get(index = False):
   return db.kv_get('job', index)
 
-def emit_startup():
-  # Contact the server, get the port if needed
-  ping()
+def get_port():
   port = db.kv_get('port')
-  return("ssh -f -NC -R bounce:{}:127.0.0.1:22 bounce".format(port))
+
+  if not port:
+    ping()
+    port = db.kv_get('port')
+
+  if not port:
+    return ""
+
+  return port
 
 
 def asset_cache(check):
