@@ -23,10 +23,10 @@ dev_setup() {
   [ -e $DEV ] || mkdir $DEV
 
   if [ -z "$SUDO" ]; then
-    _warn "Hey, you can't be root to do sshfs"
+    echo "Hey, you can't be root to do sshfs"
+    exit
   fi
 
-  sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO) dev:/home/chris/code/WaiveScreen $DEV -C -o allow_root
+  sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO),nonempty,allow_root dev:/home/chris/code/WaiveScreen $DEV -C 
   export BASE=$DEV
-  set_event net ''
 }
