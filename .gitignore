@@ -6,4 +6,3 @@ node_modules
 *.swo
 vendor
 AdDaemon/lib/const.php
-Linux/bootable.iso
