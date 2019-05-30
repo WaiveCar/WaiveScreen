@@ -14,8 +14,8 @@ if [ $# -gt 0 ]; then
       pip3 download -d $LOCAL_HOME/pip -r requirements.txt
       exit
       ;;
-    force)
-      FORCE=0
+    loop)
+      LOOP=0
   esac
 fi
 
@@ -47,7 +47,7 @@ while [ 0 ]; do
 
   date +%s > /tmp/last-sync
 
-  if [ "$FORCE" ]; then
+  if [ ! "$LOOP" ]; then
     exit
   fi
 
