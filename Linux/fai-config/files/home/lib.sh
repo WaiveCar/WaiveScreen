@@ -1,7 +1,10 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+LOCALS=$DIR/locals.sh
+
 . $DIR/const.sh
+. $LOCALS
 
 pkill osd_cat
 
@@ -59,6 +62,19 @@ _error() {
 
 who_am_i() {
   _info $(uuid) $ENV
+}
+
+online_loop() {
+  {
+    cat > $DEST/online
+
+    ONLINE=0
+    while [ 0 ]; do
+      if ping -c 1 waivecreen.com; then
+        echo 'ONLINE=1' > $DEST/online
+      fi
+    done
+  }&
 }
 
 set_event() {
@@ -156,9 +172,32 @@ ENDL
   fi
 }
 
+local_set() {
+  # First remove it
+  sed -i "s/^$1.*//" $LOCALS
+
+  # Now get rid of excess newlines created
+  # by the above process.
+  sed -i ':a;N;$!ba;s/\n//g' $LOCALS
+
+  # Then put it back in
+  echo $1=$2 >> $LOCALS
+  
+  # And re-read it
+  source $LOCALS
+}
+
 ssh_hole() {
-  $SUDO $BASE/ScreenDaemon/dcall emit_startup | /bin/sh
-  set_event ssh
+  if [ ! "$PORT" ]; then
+    local_set PORT "$($SUDO $BASE/ScreenDaemon/dcall get_port)"
+  fi
+  
+  if [ ! "$PORT" ]; then
+    _warn "Cannot contact the server for my port"
+  else
+    ssh -NC -R bounce:$PORT:127.0.0.1:22 bounce &
+    set_event ssh
+  fi
 }
 
 screen_daemon() {
