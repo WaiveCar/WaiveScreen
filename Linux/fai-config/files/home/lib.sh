@@ -234,7 +234,12 @@ git_waivescreen() {
 uuid() {
   UUID=/etc/UUID
   if [ ! -e $UUID ] ; then
-    $SUDO dmidecode -t 4 | grep ID | sed -E s'/ID://;s/\s//g' | $SUDO tee $UUID
+    {
+      $SUDO dmidecode -t 4 | grep ID | sed -E s'/ID://;s/\s//g' | $SUDO tee $UUID
+      hostname=bernays-$(cat $UUID)
+      echo $hostname | $SUDO tee /etc/hostname
+      $SUDO ainsl /etc/hosts "127.0.0.1 $hostname"
+    } > /dev/null
   fi
   cat $UUID
 }
