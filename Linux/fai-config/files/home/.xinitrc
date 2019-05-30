@@ -13,7 +13,9 @@ onebigscreen() {
   xrandr --output HDMI-2 --reflect xy
 }
 
-#resize
+if [ $( xrandr | grep \ connected | grep -i vga | wc -l) -ne 1 ]; then
+  resize
+fi
 
 WHO=adorno
 
