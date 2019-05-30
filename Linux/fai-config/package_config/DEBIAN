@@ -30,8 +30,6 @@ sudo
 locate
 vim
 
-dnsutils
-
 # wireless stuff
 iw
 wpasupplicant
