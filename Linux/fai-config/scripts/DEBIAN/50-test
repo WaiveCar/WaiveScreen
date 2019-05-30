@@ -74,24 +74,14 @@ for path in /var/log/screen /var/db/; do
   chmod 0777 $FAI_ROOT$path
 done
 
-# Swap may be needed for ACPI
-#sed -i '/swap/d' /etc/fstab
-
 # apt purge -y rpcbind
 
 # Gives the user perms for arduino
 ainsl /etc/group "dialout:x:20:adorno"
 ainsl /etc/group- "dialout:x:20:adorno"
 
-# $ROOTCMD chsh -s /bin/bash $USER
-
-# Optimize the screen for power
-#powertop --auto-tune --debug
-
 $ROOTCMD pip3 install $CHDEST/pip/*
 
 # Make sure the paths from the lib are shared to the shell
 ainsl $CHDEST/.bashrc 'source $HOME/const.sh' 'const.sh'
 $ROOTCMD $CHDEST/dcall uuid
-
-ainsl /etc/hosts "127.0.0.1 debian"
