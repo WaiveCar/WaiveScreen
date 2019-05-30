@@ -9,7 +9,7 @@ sync_scripts() {
   if [ ! -e $source ]; then
     echo "Warning: $source doesn't exist."
   else
-    rsync --exclude=.xinitrc -aqzr $source $DEST
+    rsync --exclude=.xinitrc,locals.sh -aqzr $source $DEST
     chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
   fi
 }
