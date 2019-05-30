@@ -61,6 +61,8 @@ def next_ad(work = False):
   rules apply
   """
 
+  if not db.kv_get('default'):
+    lib.ping()
 
   # The first thing we get is the last known location.
   sensor = lib.sensor_last()
