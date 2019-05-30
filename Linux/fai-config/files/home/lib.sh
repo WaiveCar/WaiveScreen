@@ -171,11 +171,11 @@ ENDL
 
 local_set() {
   # First remove it
-  sed -i "s/^$1.*//" $LOCALS
+  sed -i "s/^$1=.*//" $LOCALS
 
   # Now get rid of excess newlines created
   # by the above process.
-  sed -i ':a;N;$!ba;s/\n//g' $LOCALS
+  sed -ni '/./p' $LOCALS
 
   # Then put it back in
   echo $1=$2 >> $LOCALS
