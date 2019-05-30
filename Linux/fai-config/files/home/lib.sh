@@ -13,9 +13,6 @@ if [ ! -d $EV ]; then
   chmod 0777 $EV
 fi
 
-[[ $ENV = 'development' ]] && export BASE=$DEV
-[[ $USER = 'root' ]] && SUDO= || SUDO=/usr/bin/sudo
-
 list() {
   # just show the local fuctions
   declare -F | sed s/'declare -f//g' | sort
@@ -41,7 +38,7 @@ _onscreen() {
       -d $3 \
       -f lucidasanstypewriter-bold-$size &
 
-  echo $1
+  echo $1 | $SUDO tee -a /tmp/messages
   offset=$(( (offset + size + 9) % ((size + 9) * 25) ))
 
   echo $offset > /tmp/offset

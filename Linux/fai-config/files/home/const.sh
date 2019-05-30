@@ -20,3 +20,7 @@ if [ -e $DEST/.env ]; then
 else
   export ENV=production
 fi
+
+[[ $ENV = 'development' ]] && export BASE=$DEV
+[[ $USER = 'root' ]] && SUDO= || SUDO=/usr/bin/sudo
+
