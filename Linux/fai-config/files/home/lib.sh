@@ -325,6 +325,11 @@ screen_display() {
   set_event 0_screen_wrapper
 }
 
+running() {
+  cd $EV
+  ls
+}
+
 down() {
   cd $EV
 
