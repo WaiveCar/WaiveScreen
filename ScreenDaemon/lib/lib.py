@@ -241,11 +241,6 @@ def ping():
         #  * the default campaign in "default"
         #  * software version in "version"
         #
-        if data['version'] != VERSION and data['version_date'] > VERSIONDATE:
-          # TODO we need to do better than this bullshit
-          logging.warn("This is {} but {} is available".format(VERSION, data['version']))
-        else:
-          logging.debug("{} {} is either up to date or newer than the server".format(data['version'], data['version_date']))
   
         db.kv_set('port', data['screen']['port'])
   
@@ -258,7 +253,10 @@ def ping():
 
         db.kv_set('lastping', db.kv_get('runcount')) 
 
-        if data['version_date'] > VERSIONDATE:
+        if data['version_date'] <= VERSIONDATE:
+          logging.debug("Us: {} {}, server: {} {}".format(VERSION, VERSIONDATE, data['version'], data['version_date']))
+        else:
+          logging.warn("This is {} but {} is available".format(VERSION, data['version']))
           # This means we can upgrade.
           #
           # We need to make sure that a failed
@@ -267,7 +265,10 @@ def ping():
           # try to restart things.
           #
           version = db.kv_get('version_date')
-          if version < data['version_date']:
+          if version and version >= data['version_date']:
+            logging.warn("Not upgrading to {}. We attempted to do it before ({}={})".format(VERSION, version,  data['version_date']))
+
+          else:
             # Regardless of whether we succeed or not
             # we store this latest version as the last
             # version we *attempted* to upgrade to
@@ -281,9 +282,8 @@ def ping():
             # If we are on the screen then we assume that adorno
             # is our username.
             os.chdir('/home/adorno')
-            os.spawnl(os.P_DETACH, './dcall upgrade')
+            os.system('./dcall upgrade &')
 
-  
 
   except Exception as ex:
     if DEBUG:
