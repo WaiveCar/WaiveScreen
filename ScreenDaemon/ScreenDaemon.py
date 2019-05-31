@@ -146,12 +146,7 @@ if __name__ == '__main__':
   else:
     level = logging.WARN
 
-  logger = logging.getLogger(__name__)
-  FORMAT = '%(asctime)-15s %(message)s'
-  logging.basicConfig(format=FORMAT, level=level)
-  handler = RotatingFileHandler('{}/screendaemon.log'.format(logpath), maxBytes=5000000, backupCount=2)
-  handler.setLevel(level)
-  logger.addHandler(handler)
+  logging.basicConfig(filename='/var/log/screen/screendaemon.log', format='%(asctime)-15s %(levelname)s %(message)s', level=level)
 
   # db.upgrade()
   db.incr('runcount')

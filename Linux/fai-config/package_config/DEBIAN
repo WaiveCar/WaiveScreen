@@ -54,6 +54,8 @@ gpg
 rsync
 sshfs
 sqlite3
+htop
+lsof
 
 # needed for modem stuff
 policykit-1

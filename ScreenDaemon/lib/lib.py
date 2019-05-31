@@ -109,18 +109,22 @@ def get_gps():
   modem = get_modem()
 
   if modem:
-    location = modem['location'].GetLocation()
-    networktime = modem['time'].GetNetworkTime()
-    if '2' not in location:
-      return { 'time': networktime }
-    else:
-      return {
-        'Altitude': location[2]['altitude'],
-        'Latitude': location[2]['latitude'],
-        'Longitude': location[2]['longitude'],
-        'GPS_time': location[2]['utc-time'],
-        'Time': networktime[0]
-      }
+    try:
+      location = modem['location'].GetLocation()
+      networktime = modem['time'].GetNetworkTime()
+      if '2' not in location:
+        return { 'time': networktime }
+      else:
+        return {
+          'Altitude': location[2]['altitude'],
+          'Latitude': location[2]['latitude'],
+          'Longitude': location[2]['longitude'],
+          'GPS_time': location[2]['utc-time'],
+          'Time': networktime[0]
+        }
+    except Exception as ex:
+      logging.warn("Modem issue {}".format(ex)) 
+
   return {}
 
 

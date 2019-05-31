@@ -4,6 +4,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LOCALS=$DIR/locals.sh
 
 . $DIR/const.sh
+. $DIR/baseline.sh
 . $LOCALS
 
 pkill osd_cat
@@ -30,13 +31,13 @@ _onscreen() {
 
   #from=$( caller 1 | awk ' { print $2":"$1 } ' )
   echo $1 "$ts" | osd_cat \
-      -c $2 \
-      -u black \
-      -A right \
-      -O 1 \
-      -o $offset \
-      -d $3 \
-      -f lucidasanstypewriter-bold-$size &
+    -c $2 \
+    -u black \
+    -A right \
+    -O 1 \
+    -o $offset \
+    -d $3 \
+    -f lucidasanstypewriter-bold-$size &
 
   echo $ts $1 | $SUDO tee -a /tmp/messages
   offset=$(( (offset + size + 9) % ((size + 9) * 25) ))
@@ -205,7 +206,7 @@ ssh_hole() {
 
       sleep 10
     done
-  } > /dev/null &
+  } >> /tmp/ssh_hole.log &
 
   # The 0 makes sure that the wrapper is killed before
   # the client 
@@ -319,7 +320,7 @@ screen_display() {
 
       _screen_display_single
     done
-  } > /dev/null &
+  } >> /tmp/screen_display.log &
 
   set_event 0_screen_wrapper
 }
