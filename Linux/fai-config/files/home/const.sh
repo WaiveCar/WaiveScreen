@@ -21,6 +21,8 @@ else
   export ENV=production
 fi
 
+[ -n "$FORCEDEV" ] && export ENV=development
+
 [[ $ENV = 'development' ]] && export BASE=$DEV
 [[ $USER = 'root' ]] && SUDO= || SUDO=/usr/bin/sudo
 
