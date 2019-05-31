@@ -37,12 +37,12 @@ _SCHEMA = {
     ('end_unix', 'datetime default current_timestamp')
   ],
   'kv': [
-    ('id', 'INTEGER PRIMARY KEY'),
-    ('key', 'TEXT UNIQUE'),
+    ('id', 'integer primary key'),
+    ('key', 'text unique'),
     ('value', 'text'),
     ('namespace', 'text'),
     ('created_at', 'datetime default current_timestamp'),
-    ('updated_at', 'datetime')
+    ('updated_at', 'datetime default current_timestamp')
   ],
   # The next two tables basically map to the server's version
   # (see AdDaemon/lib/db.php)
@@ -197,9 +197,14 @@ def upgrade():
       #
       our_schema = schema[our_column_names.index(key)][1]
       # print 'alter table %s add column %s %s' % (table, key, our_schema)
-      db['c'].execute('alter table %s add column %s %s' % (table, key, our_schema))
-      logging.debug("Adding column {} to {}".format(key, table))
-      db['conn'].commit()
+      qstr = 'alter table %s add column %s %s' % (table, key, our_schema)
+      try:
+        db['c'].execute(qstr)
+        db['conn'].commit()
+        logging.debug("Adding column {} to {}".format(key, table))
+
+      except Exception as ex:
+        logging.warn("Failed: {} ({})".format(qstr, ex))
 
     to_remove = my_set(existing_column_names).difference(my_set(our_column_names))
 
@@ -216,10 +221,16 @@ def upgrade():
       DROP TABLE my_backup;
       """ % (our_schema, our_columns, table, table,    table, our_schema, table, our_columns)
 
-      for sql_line in drop_column_sql.strip().split('\n'):
-        db['c'].execute(sql_line)
+      try:
+        for sql_line in drop_column_sql.strip().split('\n'):
+          db['c'].execute(sql_line)
 
-      db['conn'].commit()
+        logging.debug("Removing column {} from {}".format(','.join(to_remove), table))
+
+        db['conn'].commit()
+
+      except Exception as ex:
+        logging.warn("Failed: {} ({})".format(drop_column_sql, ex))
 
 def map(row_list, table, db=None):
   # Using the schema of a table, map the row_list to a list of dicts.
@@ -396,7 +407,7 @@ def kv_set(key, value):
       # this is atomic enough.
       res = run('select id,value from kv where key = ?', (key, )).fetchone()
       if not res:
-        run('insert into kv (key, value, updated_at) values(?, ?, current_timestamp)', (key, value))
+        run('insert into kv (key, value) values(?, ?)', (key, value))
 
       else:
         if res[1] == str(value):
