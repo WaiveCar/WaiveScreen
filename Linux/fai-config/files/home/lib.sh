@@ -319,7 +319,11 @@ screen_display() {
     while pgrep Xorg; do
 
       while pgrep chromium; do
-        sleep 5
+        sleep 10
+        # We try to ping the remote here
+        # in case our browser broke from
+        # a botched upgrade.
+        $BASE/ScreenDaemon/dcall lib.ping
       done
 
       _screen_display_single
@@ -339,19 +343,22 @@ down() {
   fi
 
   for pidfile in $list; do
-    echo $pidfile
-
     if [ -e "$pidfile" ]; then
+      echo "Trying to kill $pidfile"
       {
         if ps -o pid= -p $( cat $pidfile ); then
           $SUDO kill $( cat $pidfile )
         fi
       } > /dev/null
       $SUDO rm $pidfile
-    else
-      echo "Woops, $pidfile does not exist"
     fi
   done
+}
+
+up() {
+  $DEST/dcall screen_display 
+  $DEST/dcall sensor_daemon
+  $DEST/dcall screen_daemon
 }
 
 upgrade() {
