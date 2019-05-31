@@ -63,10 +63,10 @@ who_am_i() {
 
 _as_user() {
   if [ $USER = 'root' ]; then
-    _announce "Running as $WHO"
+    echo "Running as $WHO"
     su $WHO -c "$*"
   else
-    _announce "Running as me"
+    echo "Running as me"
     eval $*
   fi
 }
@@ -229,7 +229,7 @@ screen_daemon() {
   down screen_daemon
   # TODO: We need to use some polkit thing so we can
   # access the modem here and not run this as root in the future
-  FLASK_ENV=$ENV $SUDO $BASE/ScreenDaemon/ScreenDaemon.py &
+  FLASK_ENV=$ENV DEBUG=1 $SUDO $BASE/ScreenDaemon/ScreenDaemon.py &
 
   set_event screen_daemon
 }
@@ -379,8 +379,10 @@ upgrade() {
     down sensor_daemon
     $SUDO pkill -f SensorDaemon
 
-    screen_display 
-    sensor_daemon
+    # This permits us to use a potentially new way
+    # of starting up the tools
+    $DEST/dcall screen_display 
+    $DEST/dcall sensor_daemon
 
     # Upgrade the database if necessary
     {
@@ -389,7 +391,7 @@ upgrade() {
       ./dcall upgrade
     }
 
-    screen_daemon
+    $DEST/dcall screen_daemon
   fi
 }
 
