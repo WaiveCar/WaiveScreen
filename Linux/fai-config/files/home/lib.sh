@@ -315,15 +315,19 @@ _screen_display_single() {
 }
 
 screen_display() {
+  ix=0
   {
     while pgrep Xorg; do
 
       while pgrep chromium; do
+        (( ix ++ ))
         sleep 10
         # We try to ping the remote here
         # in case our browser broke from
         # a botched upgrade.
-        $BASE/ScreenDaemon/dcall lib.ping
+        if (( ix % 30 == 0 )); wthen
+          $BASE/ScreenDaemon/dcall lib.ping
+        fi
       done
 
       _screen_display_single
