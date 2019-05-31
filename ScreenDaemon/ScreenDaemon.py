@@ -67,7 +67,9 @@ def next_ad(work = False):
   rules apply
   """
 
-  lib.ping_if_needed()
+  # This is likely unnecessary.
+  #
+  # lib.ping_if_needed()
 
   # The first thing we get is the last known location.
   sensor = lib.sensor_last()
@@ -76,21 +78,40 @@ def next_ad(work = False):
     'lat': sensor['lat'],
     'lng': sensor['lng']
   }
+
   try:
     jobList = request.get_json()
+    print("----->>>>")
+    sensorList = db.range('sensor', jobList['start_time'], jobList['end_time'])
+    pprint.pprint(sensorList)
+    print("<<<<<-----")
     if type(jobList) is not list:
       jobList = [ jobList ]
 
     payload['jobs'] = jobList
 
-  except:
+  except Exception as ex:
+    logging.warning("Error in getting ranges: {}".format(ex))
     pass
 
   data = False
+  data_raw = False
+
+  # This is a really retarded job queue system. Essentially we take our payload and always put it
+  # in the queue.
+  db.insert('queue', {'data': json.dumps(payload)})
+
   try:
-    with requests.post(lib.urlify('sow'), verify=False, json=payload) as response:
-      data_raw = response.text
-      data = json.loads(data_raw)
+    for job in db.all('queue'):
+      payload = json.loads(job['data'])
+      with requests.post(lib.urlify('sow'), verify=False, json=payload) as response:
+        data_raw = response.text
+
+        # we really only care about the last job ... 
+        data = json.loads(data_raw)
+
+        # Let's celebrate this is done.
+        db.delete('queue', job['id']) 
 
   except:
     data = False
@@ -136,17 +157,19 @@ def next_ad(work = False):
 
 if __name__ == '__main__':
 
-  if os.path.exists('/home/adorno'):
-    logpath = '/home/adorno'
-  else:
-    logpath = os.getenv('HOME')
-
   if os.getenv('DEBUG'):
     level = logging.DEBUG
   else:
     level = logging.WARN
 
-  logging.basicConfig(filename='/var/log/screen/screendaemon.log', format='%(asctime)-15s %(levelname)s %(message)s', level=level)
+  logpath='/var/log/screen/screendaemon.log'
+  try:
+    logging.basicConfig(filename=logpath, format='%(message)s', level=level)
+
+  except:
+    os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
+    logging.basicConfig(filename=logpath, format='%(message)s', level=level)
+
 
   # db.upgrade()
   db.incr('runcount')
