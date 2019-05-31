@@ -30,3 +30,32 @@ dev_setup() {
   sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO),nonempty,allow_root dev:/home/chris/code/WaiveScreen $DEV -C 
   export BASE=$DEV
 }
+
+_as_user() {
+  if [ $USER = 'root' ]; then
+    echo "Running as $WHO"
+    su $WHO -c "$*"
+  else
+    echo "Running as me"
+    eval $*
+  fi
+}
+_git() {
+  _as_user git $*
+}
+
+local_sync() {
+  # Since everything is in memory and already loaded
+  # we can try to just pull things down
+  cd $BASE
+  
+  # We make sure that local changes (there shouldn't be any)
+  # get tossed aside and pull down the new code.
+  _git stash
+  _git pull
+
+  # If there's script updates we try to pull those down
+  # as well - we can use our pre-existing sync script
+  # to deal with it.
+  sync_scripts $BASE/Linux/fai-config/files/home/
+}

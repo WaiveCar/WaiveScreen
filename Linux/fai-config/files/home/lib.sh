@@ -61,19 +61,6 @@ who_am_i() {
   _info $(uuid) $ENV
 }
 
-_as_user() {
-  if [ $USER = 'root' ]; then
-    echo "Running as $WHO"
-    su $WHO -c "$*"
-  else
-    echo "Running as me"
-    eval $*
-  fi
-}
-_git() {
-  _as_user git $*
-}
-
 online_loop() {
   {
     cat > $DEST/online
@@ -366,51 +353,39 @@ up() {
 }
 
 upgrade() {
-  # Since everything is in memory and already loaded
-  # we can try to just pull things down
-  cd $BASE
-  
-  # We make sure that local changes (there shouldn't be any)
-  # get tossed aside and pull down the new code.
-  _git stash
+  # should be run OOB
+  # local_sync
 
-  if _git pull; then
-    # If there's script updates we try to pull those down
-    # as well - we can use our pre-existing sync script
-    # to deal with it.
-    sync_scripts $BASE/Linux/fai-config/files/home/
+  # Now we take down the browser.
+  $DEST/dcall down 0_screen_wrapper
+  $DEST/dcall down screen_display
 
-    # Now we take down the browser.
-    $DEST/dcall down 0_screen_wrapper
-    $DEST/dcall down screen_display
+  # This stuff shouldn't be needed
+  # But right now it is.
+  $SUDO pkill start-x-stuff
+  #$SUDO pkill -f ScreenDisplay
 
-    # This stuff shouldn't be needed
-    # But right now it is.
-    $SUDO pkill start-x-stuff
-    $SUDO pkill -f ScreenDisplay
+  # And the server (which in practice called us from a ping command)
+  $DEST/dcall down screen_daemon
+  #$SUDO pkill -f ScreenDaemon
 
-    # And the server (which in practice called us from a ping command)
-    down screen_daemon
-    $SUDO pkill -f ScreenDaemon
+  # And lastly the sensor daemon
+  $DEST/dcall down sensor_daemon
+  #$SUDO pkill -f SensorDaemon
 
-    # And lastly the sensor daemon
-    down sensor_daemon
-    $SUDO pkill -f SensorDaemon
+  # This permits us to use a potentially new way
+  # of starting up the tools
+  $DEST/dcall screen_display 
+  $DEST/dcall sensor_daemon
 
-    # This permits us to use a potentially new way
-    # of starting up the tools
-    $DEST/dcall screen_display 
-    $DEST/dcall sensor_daemon
+  # Upgrade the database if necessary
+  {
+    cd $BASE/ScreenDaemon
+    pip3 install -r requirements.txt
+    ./dcall upgrade
+  }
 
-    # Upgrade the database if necessary
-    {
-      cd $BASE/ScreenDaemon
-      pip3 install -r requirements.txt
-      ./dcall upgrade
-    }
-
-    $DEST/dcall screen_daemon
-  fi
+  $DEST/dcall screen_daemon
 }
 
 restart_xorg() {
