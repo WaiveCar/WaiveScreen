@@ -59,6 +59,7 @@ var Engine = function(opts){
     _nop = function(){},
     _isNetUp = true,
     _start = new Date(),
+    _last_sow = _start,
     _fallback;
 
   function isString(obj) { 
@@ -288,6 +289,7 @@ var Engine = function(opts){
       remote.ix++;
       return;
     }
+
     post('sow', payload, function(res) {
       if(res.res) {
         res.data.forEach(function(row) {
@@ -320,11 +322,6 @@ var Engine = function(opts){
     //
     // so this is is when we do the reporting.
     if(_current.position === 0) {
-      // We set the start time of the showing of this ad
-      // so we can cross-correlate the gps from the ScreenDaemon
-      // when we send it off upstream.  We use the system time
-      // which is consistent between the two time stores.
-      _current.start_time = +new Date();
 
       // If this exists then it'd be set at the last asset
       // previous job.
@@ -335,7 +332,7 @@ var Engine = function(opts){
 
         // and report it up to the server
         sow({
-          start_time: _last.start_time,
+          start_time: _last_sow,
           end_time: +new Date(),
           id: _last.id, 
           completed_seconds: _last.completed_seconds
@@ -488,6 +485,12 @@ var Engine = function(opts){
     _current.downweight *= _downweight;
     _current.position = 0;
     //console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration);
+    //
+    // We set the start time of the showing of this ad
+    // so we can cross-correlate the gps from the ScreenDaemon
+    // when we send it off upstream.  We use the system time
+    // which is consistent between the two time stores.
+    _last_sow = new Date();
 
     nextAsset();
 
