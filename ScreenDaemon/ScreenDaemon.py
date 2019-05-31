@@ -31,12 +31,14 @@ def get_location():
 
 @app.route('/default')
 def default():
+  attempted_ping = False
   campaign = False
   campaign_id = db.kv_get('default')
 
   # This means we probably haven't successfully pinged yet.
   if not campaign_id:
     lib.ping()
+    attempted_ping = True
     campaign_id = db.kv_get('default')
 
   # Let's make sure we can pull it from the database
@@ -44,7 +46,11 @@ def default():
     campaign = db.get('campaign', campaign_id)
     if not campaign:
       lib.ping()
+      attempted_ping = True
       campaign = db.get('campaign', campaign_id)
+
+  if not attempted_ping:
+    lib.ping_if_needed()
 
   if not campaign:
     # Things aren't working out for us
