@@ -380,6 +380,7 @@ upgrade() {
 
   # And lastly the sensor daemon
   $DEST/dcall down sensor_daemon
+  $SUDO pkill ScreenDaemon
 
   # This permits us to use a potentially new way
   # of starting up the tools
