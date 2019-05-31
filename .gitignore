@@ -8,3 +8,4 @@ vendor
 AdDaemon/lib/const.php
 tools/package-lock.json
 ScreenDisplay/assets/
+tools/power-history
