@@ -141,8 +141,16 @@ if __name__ == '__main__':
   else:
     logpath = os.getenv('HOME')
 
-  logger = logging.getLogger()
+  if os.getenv('DEBUG'):
+    level = logging.DEBUG
+  else:
+    level = logging.WARN
+
+  logger = logging.getLogger(__name__)
+  FORMAT = '%(asctime)-15s %(message)s'
+  logging.basicConfig(format=FORMAT, level=level)
   handler = RotatingFileHandler('{}/screendaemon.log'.format(logpath), maxBytes=5000000, backupCount=2)
+  handler.setLevel(level)
   logger.addHandler(handler)
 
   # db.upgrade()
