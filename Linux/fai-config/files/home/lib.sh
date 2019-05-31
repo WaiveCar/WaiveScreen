@@ -325,7 +325,7 @@ screen_display() {
         # We try to ping the remote here
         # in case our browser broke from
         # a botched upgrade.
-        if (( ix % 30 == 0 )); wthen
+        if (( ix % 30 == 0 )); then
           $BASE/ScreenDaemon/dcall lib.ping
         fi
       done
