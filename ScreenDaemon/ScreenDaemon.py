@@ -12,6 +12,8 @@ import pprint
 import traceback
 import os
 from logging.handlers import RotatingFileHandler
+from pdb import set_trace as bp
+
 
 
 app = Flask(__name__)
@@ -81,14 +83,15 @@ def next_ad(work = False):
 
   try:
     jobList = request.get_json()
-    pprint.pprint(jobList)
-    sensorList = db.range('sensor', jobList['start_time'], jobList['end_time'])
-    pprint.pprint(sensorList)
+    sensorList = [x['raw'] for x in db.range('sensor', jobList['start_time'], jobList['end_time'])]
 
     if type(jobList) is not list:
       jobList = [ jobList ]
 
-    payload['jobs'] = jobList
+    payload.update({
+      'jobs': jobList,
+      'sensor': sensorList
+    })
 
   except Exception as ex:
     logging.warning("Error in getting ranges: {}".format(ex))
