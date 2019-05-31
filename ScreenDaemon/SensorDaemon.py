@@ -90,7 +90,7 @@ while True:
   # We can xref the net_time and system_time for now. Eventually this will
   # probably not be necessary but in the early stages (2019/05/09) this is
   # a sanity check.
-  all = {**location, **sensor, 'SystemTime': system_time } 
+  all = {**location, **sensor} 
 
   if first:
     logging.info("Success, Main Loop")
