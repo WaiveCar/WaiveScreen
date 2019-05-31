@@ -496,6 +496,7 @@ var Engine = function(opts){
   function setFallback (url) {
     // We look for a system default
     if(!_res.fallback && !url) {
+      /*
       function trylocal(){
         // For some unknown stupid fucked up completely mysterious reason
         // a local document when running locally and talking to local resources
@@ -519,15 +520,19 @@ var Engine = function(opts){
           setTimeout(function(){setFallback()}, _res.duration * 1000);
         }
       }
+      */
 
       // If we have a server we can get it from there
       get('/default', function(res) {
+        _fallback = makeJob(res.data);
+        /*
         try {
           localStorage['default'] = JSON.stringify(res.data);
           trylocal();
         } catch (ex) { 
           _fallback = makeJob(res.data);
         }
+        */
       }, trylocal);
 
     } else {
