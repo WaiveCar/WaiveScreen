@@ -7,3 +7,4 @@ node_modules
 vendor
 AdDaemon/lib/const.php
 tools/package-lock.json
+ScreenDisplay/assets/
