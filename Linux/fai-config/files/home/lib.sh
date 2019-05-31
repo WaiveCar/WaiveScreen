@@ -75,6 +75,11 @@ online_loop() {
   }&
 }
 
+set_wrap() {
+  pid=${2:-$!}
+  echo -n $pid > $EV/0_$1
+}
+
 set_event() {
   pid=${2:-$!}
   [ -e $EV/$1 ] || _announce Event:$1
@@ -195,22 +200,22 @@ ssh_hole() {
       if [ ! "$PORT" ]; then
         _warn "Cannot contact the server for my port"
 
-      elif ps -o pid= -p $( cat $EV/ssh ); then
+      elif [ -e $EV/ssh ] && ps -o pid= -p $( cat $EV/ssh ); then
         # this means we have an ssh open and life is fine
         sleep 10
 
       else
         ssh -NC -R bounce:$PORT:127.0.0.1:22 bounce &
-        set_event ssh
+        set_event ssh_hole
       fi
 
       sleep 10
     done
-  } >> /tmp/ssh_hole.log &
+  } > /dev/null &
 
   # The 0 makes sure that the wrapper is killed before
   # the client 
-  set_event 0_ssh_wrapper
+  set_wrap ssh_hole
 }
 
 screen_daemon() {
@@ -322,7 +327,7 @@ screen_display() {
     done
   } >> /tmp/screen_display.log &
 
-  set_event 0_screen_wrapper
+  set_wrap screen_display
 }
 
 running() {
@@ -340,14 +345,21 @@ down() {
   fi
 
   for pidfile in $list; do
+    # kill the wrapper first
+    if [ -e "0_$pidfile" ]; then
+      down "0_$pidfile"
+    fi
+
     if [ -e "$pidfile" ]; then
-      echo "Trying to kill $pidfile"
+      printf " \xE2\x9C\x97 $pidfile\n"
       {
         if ps -o pid= -p $( cat $pidfile ); then
           $SUDO kill $( cat $pidfile )
         fi
       } > /dev/null
       $SUDO rm $pidfile
+    else
+      printf " \xE2\x9d\x93$pidfile\n"
     fi
   done
 }
