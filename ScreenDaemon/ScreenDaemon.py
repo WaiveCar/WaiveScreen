@@ -81,10 +81,10 @@ def next_ad(work = False):
 
   try:
     jobList = request.get_json()
-    print("----->>>>")
+    pprint.pprint(jobList)
     sensorList = db.range('sensor', jobList['start_time'], jobList['end_time'])
     pprint.pprint(sensorList)
-    print("<<<<<-----")
+
     if type(jobList) is not list:
       jobList = [ jobList ]
 
@@ -124,15 +124,12 @@ def next_ad(work = False):
       if data['res']:
         for job in data['data']:
           if job:
-            # Here we cache the assets
-            # so the display is using
-            # local copies so if all
-            # hell breaks lose and it
-            # loses the cached copy or
-            # whatever, it won't matter.
+            # Here we cache the assets so the display is using
+            # local copies so if all hell breaks lose and it
+            # loses the cached copy or whatever, it won't matter.
             job = lib.asset_cache(job)
 
-            pprint.pprint(job)
+            #pprint.pprint(job)
             job_list.append(job)
             lib.job_store(job)
 
@@ -145,7 +142,7 @@ def next_ad(work = False):
         return failure(data['data'])
 
     except Exception as ex:
-      pprint.pprint([ex, traceback.format_exc()])
+      logging.warn("parsing issues?! {}".format(ex))
       return failure({
         'payload': data
       })
@@ -162,13 +159,14 @@ if __name__ == '__main__':
   else:
     level = logging.WARN
 
+  format='%(levelname)s@%(lineno)d:%(message)s'
   logpath='/var/log/screen/screendaemon.log'
   try:
-    logging.basicConfig(filename=logpath, format='%(message)s', level=level)
+    logging.basicConfig(filename=logpath, format=format, level=level)
 
   except:
     os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
-    logging.basicConfig(filename=logpath, format='%(message)s', level=level)
+    logging.basicConfig(filename=logpath, format=format, level=level)
 
 
   # db.upgrade()

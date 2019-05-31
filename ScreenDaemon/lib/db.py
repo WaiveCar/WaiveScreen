@@ -318,7 +318,7 @@ def connect(db_file=None):
   conn.row_factory = sqlite3.Row
 
   if 'DEBUG' in os.environ:
-    conn.set_trace_callback(print)
+    conn.set_trace_callback(logging.debug)
 
   g_instance[id].update({
     'conn': conn,
@@ -458,6 +458,7 @@ def get(table, id = False):
 
 
 def range(table, start, end):
+  pprint([start,end])
   if type(start) is int:
     # if it's in milliseconds or if the year > 2514
     # (which would be truly remarkable)
@@ -468,7 +469,7 @@ def range(table, start, end):
     start = "datetime({}, 'unixepoch')".format(start)
     end = "datetime({}, 'unixepoch')".format(end)
 
-  return run("select * from ? where created_at > ? and created_at < ?", (table, start, end)).fetchall()
+  return run("select * from {} where created_at > ? and created_at < ?".format(table), (start, end)).fetchall()
 
 def run(query, args=None, with_last=False, db=None):
   global g_lock
