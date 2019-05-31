@@ -255,7 +255,7 @@ var Engine = function(opts){
       }
     }
 
-    http.onabort = http.onerror = http.ontimeout = http.onloadend = function(){
+    http.onabort = http.onerror = http.ontimeout = function(){
       if(onfail) {
         onfail();
       }
@@ -533,7 +533,7 @@ var Engine = function(opts){
           _fallback = makeJob(res.data);
         }
         */
-      }, function(){ setFallback() });
+      }, function(){ setTimeout(function(){setFallback()}, _res.duration * 1000) });
 
     } else {
       _res.fallback = _res.fallback || url;
