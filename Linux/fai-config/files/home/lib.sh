@@ -61,6 +61,19 @@ who_am_i() {
   _info $(uuid) $ENV
 }
 
+_as_user() {
+  if [ $USER = 'root' ]; then
+    _announce "Running as $WHO"
+    su $WHO -c "$*"
+  else
+    _announce "Running as me"
+    eval $*
+  fi
+}
+_git() {
+  _as_user git $*
+}
+
 online_loop() {
   {
     cat > $DEST/online
@@ -216,7 +229,7 @@ screen_daemon() {
   down screen_daemon
   # TODO: We need to use some polkit thing so we can
   # access the modem here and not run this as root in the future
-  $SUDO FLASK_ENV=$ENV $BASE/ScreenDaemon/ScreenDaemon.py &
+  FLASK_ENV=$ENV $SUDO $BASE/ScreenDaemon/ScreenDaemon.py &
 
   set_event screen_daemon
 }
@@ -234,11 +247,11 @@ git_waivescreen() {
 
     if [ -e $DEST/WaiveScreen ]; then
       cd $DEST/WaiveScreen
-      git stash
-      git pull
+      _git stash
+      _git pull
     else  
       cd $DEST
-      git clone git@github.com:WaiveCar/WaiveScreen.git
+      _git clone git@github.com:WaiveCar/WaiveScreen.git
       ainsl $DEST/.bashrc 'PATH=$PATH:$HOME/.local/bin' 'HOME/.local/bin'
     fi
   } &
@@ -293,7 +306,7 @@ _screen_display_single() {
 
   local app=$BASE/ScreenDisplay/display.html 
   if [ -e $app ]; then
-    chromium --no-first-run --non-secure --default-background-color='#000' --app=file://$app &
+    _as_user chromium --no-first-run --non-secure --default-background-color='#000' --app=file://$app &
     set_event screen_display
   else
     _error "Can't find $app. Exiting"
@@ -324,7 +337,11 @@ down() {
   else
     for pidfile in $( ls ); do
       echo $pidfile
-      [ -s "$pidfile" ] && $SUDO kill $( cat $pidfile )
+      {
+        if ps -o pid= -p $( cat $pidfile ); then
+          $SUDO kill $( cat $pidfile )
+        fi
+      } > /dev/null
       [ -e "$pidfile" ] && $SUDO rm $pidfile
     done
   fi
@@ -337,9 +354,9 @@ upgrade() {
   
   # We make sure that local changes (there shouldn't be any)
   # get tossed aside and pull down the new code.
-  git stash
+  _git stash
 
-  if git pull; then
+  if _git pull; then
     # If there's script updates we try to pull those down
     # as well - we can use our pre-existing sync script
     # to deal with it.
