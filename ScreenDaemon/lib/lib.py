@@ -7,6 +7,7 @@ import json
 import dbus
 import time
 import logging
+from threading import Lock
 from pprint import pprint
 
 # This is needed for the git describe to succeed
@@ -20,6 +21,7 @@ VERSIONDATE = os.popen("/usr/bin/git log -1 --format='%at'").read().strip()
 UUID = False
 BUS = dbus.SystemBus()
 
+_pinglock = Lock()
 
 if os.environ['USER'] == 'root':
   # This tool probably shouldn't be run as root but we should
@@ -219,6 +221,11 @@ def ping_if_needed():
     ping()
 
 def ping():
+  global _pinglock
+
+  if _pinglock.acquire(False):
+    return True
+
   payload = {
     'uid': get_uuid(),
     'version': VERSION,
@@ -284,8 +291,10 @@ def ping():
             os.chdir('/home/adorno')
             os.system('./dcall upgrade &')
 
+    _pinglock.release()
 
   except Exception as ex:
+    _pinglock.release()
     if DEBUG:
       raise ex
 
