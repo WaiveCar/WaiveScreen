@@ -354,24 +354,26 @@ up() {
 
 upgrade() {
   # should be run OOB
+  #
   # local_sync
+  #
 
   # Now we take down the browser.
   $DEST/dcall down 0_screen_wrapper
   $DEST/dcall down screen_display
 
+  # There's a bug in the infrastructure that required this.
+  $SUDO pkill chromium
+
   # This stuff shouldn't be needed
   # But right now it is.
   $SUDO pkill start-x-stuff
-  #$SUDO pkill -f ScreenDisplay
 
   # And the server (which in practice called us from a ping command)
   $DEST/dcall down screen_daemon
-  #$SUDO pkill -f ScreenDaemon
 
   # And lastly the sensor daemon
   $DEST/dcall down sensor_daemon
-  #$SUDO pkill -f SensorDaemon
 
   # This permits us to use a potentially new way
   # of starting up the tools
@@ -382,7 +384,7 @@ upgrade() {
   {
     cd $BASE/ScreenDaemon
     pip3 install -r requirements.txt
-    ./dcall upgrade
+    ./dcall db.upgrade
   }
 
   $DEST/dcall screen_daemon
