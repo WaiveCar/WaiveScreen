@@ -115,6 +115,10 @@ def next_ad(work = False):
             job_list.append(job)
             lib.job_store(job)
 
+        if 'task' in data:
+          if data['task'] == 'upgrade':
+            lib.ping()
+
         return success(job_list)
       else:
         return failure(data['data'])

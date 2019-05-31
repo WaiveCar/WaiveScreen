@@ -230,6 +230,8 @@ function update_campaign_completed($id) {
 }
   
 function sow($payload) {
+  $server_response = [ 'res' => true ];
+
   if(isset($payload['uid'])) {
     $uid = $payload['uid'];
   } else {
@@ -250,8 +252,9 @@ function sow($payload) {
 
   db_update('screen', db_string($uid), $data);
 
-	$jobList = aget($payload, 'jobs');
+  $jobList = aget($payload, 'jobs');
   $campaignsToUpdateList = [];
+
   if($jobList) {
     foreach($jobList as $job) {
       if(!empty($job['id'])) {
@@ -270,6 +273,13 @@ function sow($payload) {
   $uniqueCampaignList = array_unique($campaignsToUpdateList);
   foreach($uniqueCampaignList as $campaign) {
     update_campaign_completed($campaign);
+  }
+	
+  // Before we assign new jobs we want to make sure that the server
+  // is up to date.  We need to make sure we continue to give it 
+  // tasks in case the server is failing to upgrade.
+  if($screen['version'] != $last_commit) {
+    $server_response['task'] = 'upgrade';
   }
 
   $active = active_campaigns();
@@ -307,11 +317,9 @@ function sow($payload) {
     }
   }, $nearby_campaigns);
   
+  $server_response['data'] = $job_list;
   // error_log(json_encode($job_list));
-  return [
-    'res' => true,
-    'data' => $job_list
-  ];
+  return $server_response; 
 }
 
 function get_available_slots($start_query, $duration) {
