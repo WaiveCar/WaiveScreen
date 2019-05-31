@@ -150,6 +150,12 @@ def urlify(what):
   return "{}/{}".format(SERVER_URL, what)
 
 def sensor_store(data):
+
+  precision = {'Temp': 2, 'Current': 2, 'Voltage': 2, 'Tres': 2, 'Pitch': 3, 'Roll': 3, 'Yaw': 3 }
+  for k,v in precision.items():
+    if k in data:
+      data[k] = round(data[k], v)
+
   toInsert = {
     'raw': json.dumps(data)
   }
