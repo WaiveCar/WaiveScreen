@@ -443,7 +443,7 @@ def process(res, table, what):
         for k, v in _PROCESSOR[table].items():
           # If a pre/post is defined for this key
           # on this table then we do it
-          if v[what]:
+          if what in v:
             row[k] = v[what](row[k], row)
 
         res[ix] = row
