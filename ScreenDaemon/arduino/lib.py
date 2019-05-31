@@ -47,8 +47,8 @@ def do_awake(reading = {}):
   global _sleeping, _base
   _sleeping = False
 
-  if _base and 'Backlight' in _base:
-    set_backlight(_base['Backlight'])
+  if _base and 'Light' in _base:
+    set_backlight(_base['Light'])
 
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
 
@@ -237,7 +237,7 @@ def arduino_read():
   backlight_value = ord(_arduino.read())
   received_dict = {
     #'Arduino_time': time_ms,
-    'Backlight': backlight_value,
+    'Light': backlight_value,
     'Fan': fan_speed,
     'Temp': temp_c,
     'Current': current,
@@ -315,7 +315,7 @@ def power_management():
     if res['Voltage'] < VOLTAGE_SLEEP and res['Current'] > 1:
       # low_power_mode will hold and record until voltage goes above VOLTAGE_WAKE
 
-      res = low_power_mode(res['Backlight'])
+      res = low_power_mode(res['Light'])
       # the below line will wake up the dpms if it's a linux machine
       os.system("xset -display :0 dpms force on")
 
