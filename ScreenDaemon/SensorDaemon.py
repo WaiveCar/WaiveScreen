@@ -52,12 +52,8 @@ def is_significant(totest):
   # triggering this.
   deltaMap = {
     'Temp': 5,
-    'Accel_x': 200,
-    'Accel_y': 200,
-    'Accel_z': 300,
-    'Gyro_x': 30,
-    'Gyro_y': 30,
-    'Gyro_z': 30,
+    'Accel': [200, 200, 300],
+    'Gyro': [30, 30, 30],
     'Pitch': 0.8,
     'Roll': 0.8,
     'Yaw': 0.9,
@@ -68,9 +64,16 @@ def is_significant(totest):
   ttl = 0
   for k,v in deltaMap.items():
     if k in last_reading:
-      diff = abs(last_reading[k] - totest[k])
-      if diff > v:
-        ttl += (diff / v) - 1
+      if type(v) is list:
+        for i in range(v):
+          diff = abs(last_reading[k][i] - totest[k][i])
+          if diff > v[i]:
+            ttl += (diff / v[i]) - 1
+
+      else:
+        diff = abs(last_reading[k] - totest[k])
+        if diff > v:
+          ttl += (diff / v) - 1
 
   if ttl > AGGREGATE_THRESHOLD:
     last_reading = totest
@@ -84,8 +87,6 @@ while True:
 
   # Put data in if we have it
   location = {} if lib.NOMODEM else lib.get_gps()
-
-  system_time = datetime.now().replace(microsecond=0).isoformat()
 
   # We can xref the net_time and system_time for now. Eventually this will
   # probably not be necessary but in the early stages (2019/05/09) this is
