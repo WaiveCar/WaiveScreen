@@ -23,6 +23,11 @@ _PROCESSOR = {
     'asset': {
       'pre': lambda x, row: json.dumps(x),
       'post': lambda x, row: json.loads(x)
+    },
+  },
+  'sensor': {
+    'raw': {
+      'post': lambda x, row: json.loads(x)
     }
   }
 }
@@ -457,8 +462,7 @@ def get(table, id = False):
     return process(res.fetchone(), table, 'post')
 
 
-def range(table, start, end):
-  pprint([start,end])
+def range(table, start, end, field='*'):
   if type(start) is int:
     # if it's in milliseconds or if the year > 2514
     # (which would be truly remarkable)
@@ -466,10 +470,9 @@ def range(table, start, end):
       start /= 1000
       end /= 1000
 
-    start = "datetime({}, 'unixepoch')".format(start)
-    end = "datetime({}, 'unixepoch')".format(end)
-
-  return run("select * from {} where created_at > ? and created_at < ?".format(table), (start, end)).fetchall()
+  query = run("select {} from {} where created_at > datetime(?, 'unixepoch') and created_at < datetime(?, 'unixepoch')".format(field, table), (start, end))
+  return process([record for record in query.fetchall()], table, 'post')
+  #return [[x for x in record] for record in query.fetchall()]
 
 def run(query, args=None, with_last=False, db=None):
   global g_lock
