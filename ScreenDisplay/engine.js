@@ -244,7 +244,13 @@ var Engine = function(opts){
         remote.lock = false;
         if( http.status == 200) {
           _isNetUp = true;
-          onsuccess(JSON.parse(http.responseText));
+          var res = JSON.parse(http.responseText);
+
+          if(res.res === false) {
+            onfail(res.data);
+          } else {
+            onsuccess(res);
+          }
         }
       }
     }
