@@ -215,7 +215,7 @@ def campaign_cache(check):
 
 def ping_if_needed():
   last_ping = db.kv_get('lastping')
-  if not last_ping or int(db.kv_get('runcount')) > int(lastping):
+  if not last_ping or int(db.kv_get('runcount')) > int(last_ping):
     ping()
 
 def ping():
