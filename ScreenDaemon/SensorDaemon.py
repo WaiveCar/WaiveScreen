@@ -65,7 +65,7 @@ def is_significant(totest):
   for k,v in deltaMap.items():
     if k in last_reading:
       if type(v) is list:
-        for i in range(v):
+        for i in range(len(v)):
           diff = abs(last_reading[k][i] - totest[k][i])
           if diff > v[i]:
             ttl += (diff / v[i]) - 1
