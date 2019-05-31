@@ -39,9 +39,10 @@ _SCHEMA = {
   'kv': [
     ('id', 'INTEGER PRIMARY KEY'),
     ('key', 'TEXT UNIQUE'),
-    ('value', 'TEXT'),
-    ('namespace', 'TEXT'),
-    ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+    ('value', 'text'),
+    ('namespace', 'text'),
+    ('created_at', 'datetime default current_timestamp'),
+    ('updated_at', 'datetime')
   ],
   # The next two tables basically map to the server's version
   # (see AdDaemon/lib/db.php)
@@ -86,7 +87,7 @@ _SCHEMA = {
   ],
   # There's probably a better way to do this, let's do that later.
   'sensor' : [
-    ('id', 'INTEGER PRIMARY KEY autoincrement'),
+    ('id', 'integer primary key autoincrement'),
     #('ts', 'INTEGER default null'),
     #('backlight', 'FLOAT default null'),
     #('fan', 'FLOAT default null'),
@@ -197,6 +198,7 @@ def upgrade():
       our_schema = schema[our_column_names.index(key)][1]
       # print 'alter table %s add column %s %s' % (table, key, our_schema)
       db['c'].execute('alter table %s add column %s %s' % (table, key, our_schema))
+      logging.debug("Adding column {} to {}".format(key, table))
       db['conn'].commit()
 
     to_remove = my_set(existing_column_names).difference(my_set(our_column_names))
@@ -390,17 +392,20 @@ def kv_set(key, value):
       res = run('delete from kv where key = ?', (key, ))
       
     else:
-      # From http://stackoverflow.com/questions/418898/sqlite-upsert-not-insert-or-replace
-      res = run('''
-        INSERT OR REPLACE INTO kv (key, value, created_at) 
-          VALUES ( 
-            COALESCE((SELECT key FROM kv WHERE key = ?), ?),
-            ?,
-            current_timestamp 
-        )''', (key, key, value, ))
+      # Let's just do two calls. Nobody else is accessing it right here I think
+      # this is atomic enough.
+      res = run('select id,value from kv where key = ?', (key, )).fetchone()
+      if not res:
+        run('insert into kv (key, value, updated_at) values(?, ?, current_timestamp)', (key, value))
 
-  except:
-    logging.warn("Couldn't set {} to {}".format(key, value))
+      else:
+        if res[1] == str(value):
+          logging.debug("{} already set to {}".format(key, value))
+        else:
+          run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
+
+  except Exception as ex:
+    logging.warn("Couldn't set {} to {}: {}".format(key, value, ex))
 
   g_params[key] = value
 
