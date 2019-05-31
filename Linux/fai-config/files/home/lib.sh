@@ -77,6 +77,7 @@ online_loop() {
 
 set_wrap() {
   pid=${2:-$!}
+  $SUDO rm $EV/0_$1
   echo -n $pid > $EV/0_$1
 }
 
