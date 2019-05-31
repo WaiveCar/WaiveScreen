@@ -331,20 +331,27 @@ screen_display() {
 
 down() {
   cd $EV
+
   if [ -n "$1" ]; then
-    [ -s "$pidfile" ] && $SUDO kill $( cat $pidfile )
-    [ -e "$pidfile" ] && $SUDO rm $pidfile
+    list=$1
   else
-    for pidfile in $( ls ); do
-      echo $pidfile
+    list=$( ls )
+  fi
+
+  for pidfile in $list; do
+    echo $pidfile
+
+    if [ -e "$pidfile" ]; then
       {
         if ps -o pid= -p $( cat $pidfile ); then
           $SUDO kill $( cat $pidfile )
         fi
       } > /dev/null
-      [ -e "$pidfile" ] && $SUDO rm $pidfile
-    done
-  fi
+      $SUDO rm $pidfile
+    else
+      echo "Woops, $pidfile does not exist"
+    fi
+  done
 }
 
 upgrade() {
@@ -363,8 +370,8 @@ upgrade() {
     sync_scripts $BASE/Linux/fai-config/files/home/
 
     # Now we take down the browser.
-    down 0_screen_wrapper
-    down screen_display
+    $DEST/dcall down 0_screen_wrapper
+    $DEST/dcall down screen_display
 
     # This stuff shouldn't be needed
     # But right now it is.
