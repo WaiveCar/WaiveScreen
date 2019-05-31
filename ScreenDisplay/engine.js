@@ -533,7 +533,7 @@ var Engine = function(opts){
           _fallback = makeJob(res.data);
         }
         */
-      }, trylocal);
+      }, function(){ setFallback() });
 
     } else {
       _res.fallback = _res.fallback || url;
