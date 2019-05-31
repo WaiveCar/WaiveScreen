@@ -28,13 +28,9 @@ _PROCESSOR = {
 }
 
 _SCHEMA = {
-  'streams' : [
-    ('id', 'integer primary key autoincrement'), 
-    ('datatype', 'integer default null'),
-    ('name', 'text default null'),
-    ('size', 'integer default 0'),
-    ('start_unix', 'datetime default current_timestamp'),
-    ('end_unix', 'datetime default current_timestamp')
+  'queue': [
+    ('id', 'integer primary key'),
+    ('data', 'text'),
   ],
   'kv': [
     ('id', 'integer primary key'),
@@ -143,6 +139,9 @@ def _insert(table, data):
 
   return ['insert into {}({}) values({})'.format(table,key_string,value_string), shared_keys, toInsert]
   
+def delete(table, id):
+  return run('delete from {} where id = ?'.format(table), (id, ))
+
 def insert(table, data):
   last = False
   qstr, key_list, values = _insert(table, data)
@@ -457,6 +456,19 @@ def get(table, id = False):
   if res:
     return process(res.fetchone(), table, 'post')
 
+
+def range(table, start, end):
+  if type(start) is int:
+    # if it's in milliseconds or if the year > 2514
+    # (which would be truly remarkable)
+    if start > 2**34:
+      start /= 1000
+      end /= 1000
+
+    start = "datetime({}, 'unixepoch')".format(start)
+    end = "datetime({}, 'unixepoch')".format(end)
+
+  return run("select * from ? where created_at > ? and created_at < ?", (table, start, end)).fetchall()
 
 def run(query, args=None, with_last=False, db=None):
   global g_lock
