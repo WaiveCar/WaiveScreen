@@ -289,6 +289,7 @@ def ping():
             # If we are on the screen then we assume that adorno
             # is our username.
             os.chdir('/home/adorno')
+            os.system('./dcall local_sync')
             os.system('./dcall upgrade &')
 
     _pinglock.release()
