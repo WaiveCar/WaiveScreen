@@ -223,7 +223,7 @@ def ping_if_needed():
 def ping():
   global _pinglock
 
-  if _pinglock.acquire(False):
+  if not _pinglock.acquire(False):
     return True
 
   payload = {
