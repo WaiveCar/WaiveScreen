@@ -59,7 +59,7 @@ var Engine = function(opts){
     _nop = function(){},
     _isNetUp = true,
     _start = new Date(),
-    _last_sow = _start,
+    _last_sow = +_start,
     _fallback;
 
   function isString(obj) { 
@@ -490,7 +490,7 @@ var Engine = function(opts){
     // so we can cross-correlate the gps from the ScreenDaemon
     // when we send it off upstream.  We use the system time
     // which is consistent between the two time stores.
-    _last_sow = new Date();
+    _last_sow = +new Date();
 
     nextAsset();
 
