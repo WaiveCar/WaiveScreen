@@ -85,7 +85,7 @@ def clear():
 
 def set_fanspeed(value):
   _arduino = get_arduino()
-  if value < 1: 
+  if value <= 1: 
     value = round(value * 256)
 
   fan_speed = int(min(value, 255))
@@ -101,7 +101,7 @@ def set_fanauto():
 
 def set_backlight(value):
   _arduino = get_arduino()
-  if value < 1: 
+  if value <= 1: 
     value = round(value * 256)
 
   backlight = int(min(value, 255))
