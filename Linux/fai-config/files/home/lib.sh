@@ -88,8 +88,19 @@ set_event() {
 }
 
 test_arduino() {
-  cd $BASE/ScreenDaemon
-  ./dcall arduino.test
+  pycall arduino.test
+}
+
+brightness() {
+  shift=$1
+  level=$2
+  revlevel=$(perl -e "print .75 * (1 - $level) + 1")
+
+  pycall arduino.set_backlight $level
+
+  for display in HDMI-1 HDMI-2; do
+    DISPLAY=:0 xrandr --output $display --gamma 1:1:$shift --brightness $revlevel
+  done
 }
 
 modem_enable() {
@@ -189,6 +200,10 @@ local_set() {
   
   # And re-read it
   source $LOCALS
+}
+
+pycall() {
+  $BASE/ScreenDaemon/dcall $*
 }
 
 ssh_hole() {
@@ -320,7 +335,7 @@ screen_display() {
         # in case our browser broke from
         # a botched upgrade.
         if (( ix % 30 == 0 )); then
-          $BASE/ScreenDaemon/dcall lib.ping
+          pycall lib.ping
         fi
       done
 
