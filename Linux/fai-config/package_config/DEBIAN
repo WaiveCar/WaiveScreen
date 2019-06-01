@@ -23,7 +23,6 @@ modemmanager
 isc-dhcp-client
 imagemagick
 ffmpeg
-redshift
 unclutter
 curl
 sudo
