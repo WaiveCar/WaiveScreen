@@ -426,7 +426,8 @@ var Engine = function(opts){
     // In this model, a fair dice would show ad 2 80% of the time.
     //
     var 
-      activeList = Object.values(_res.db).filter(row => row.active),
+      maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority)),
+      activeList = Object.values(_res.db).filter(row => row.active && row.filter === maxPriority),
 
       // Here's the range of numbers, calculated by looking at all the remaining things we have to satisfy
       range = activeList.reduce( (a,b) => a + b.downweight * (b.goal - b.completed_seconds), 0),
