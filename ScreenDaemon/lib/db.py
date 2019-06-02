@@ -73,6 +73,7 @@ _SCHEMA = {
     ('lat', 'float default null'),
     ('lng', 'float default null'),
 
+    ('priority', 'integer default 0'),
     ('start_time', 'datetime'),
     ('end_time', 'datetime')
   ],
@@ -83,6 +84,7 @@ _SCHEMA = {
     ('goal', 'integer'),
     ('completed_seconds', 'integer default 0'),
     ('last_update', 'datetime default current_timestamp'),
+    ('priority', 'integer default 0'),
     ('job_start',  'datetime'),
     ('job_end', 'datetime')
   ],
