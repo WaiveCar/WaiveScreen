@@ -279,7 +279,7 @@ function sow($payload) {
   // is up to date.  We need to make sure we continue to give it 
   // tasks in case the server is failing to upgrade.
   if($screen['version'] != $last_commit) {
-    $server_response['task'] = 'upgrade';
+    $server_response['task'] = [['upgrade',false]];
   }
 
   $active = active_campaigns();
