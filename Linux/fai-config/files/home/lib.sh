@@ -16,7 +16,14 @@ fi
 
 list() {
   # just show the local fuctions
-  declare -F | sed s/'declare -f//g' | sort
+  if [ $# -gt 0 ]; then
+    while [ $# -gt 0 ]; do
+      declare -f $1
+      shift
+    done
+  else
+    declare -F | sed s/'declare -f//g' | sort
+  fi
 }
 
 _onscreen() {
@@ -387,6 +394,12 @@ up() {
   $DEST/dcall screen_display 
   $DEST/dcall sensor_daemon
   $DEST/dcall screen_daemon
+}
+
+# This is for upgrading over USB
+localupgrade() {
+  pip_install
+  sync_scripts $BASE/Linux/fai-config/files/home/
 }
 
 upgrade() {
