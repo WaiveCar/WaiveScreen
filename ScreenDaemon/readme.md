@@ -4,6 +4,7 @@ When starting the server there's a number of environment variables that the code
   * NOMODEM - If set, skips over trying to initialize an LTE modem
   * DEBUG - If set, toggles on all the debugging flags wherever that is
   * SERVER - The server URL to try to get ads from
+  * DISPLAY - X display to use (defaults to :0)
   * DB - The path to place the local SQLITE3 file
 
 These are observed (I think) for both the Sensor and Screen Daemon.py. Look into `debug-server.sh` for up-to date invocation examples.
