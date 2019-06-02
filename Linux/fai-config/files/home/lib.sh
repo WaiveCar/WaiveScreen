@@ -194,6 +194,19 @@ ENDL
   fi
 }
 
+# This tries to see if it can find a wireless network
+# to connect to. Generally speaking this is for debugging
+# something that is out in the field
+try_wireless() {
+  down wpa_supplicant
+  $SUDO wpa_supplicant -d -Dnl80211,wext -i$DEV -c/etc/wpa_supplicant.conf &
+  set_event wpa_supplicant
+
+  down wireless_dhclient
+  $SUDO dhclient $DEV &
+  set_event wireless_dhclient
+}
+
 local_set() {
   # First remove it
   sed -i "s/^$1=.*//" $LOCALS
