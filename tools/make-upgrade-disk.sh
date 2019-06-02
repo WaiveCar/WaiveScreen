@@ -3,9 +3,7 @@ path=/tmp/upgradedisk
 package=/tmp/upgrade.package
 [ -e $path ] && rm -fr $path
 mkdir $path
-git log -1 --format="%at" > $path/timestamp
-git describe > $path/version
-git clone git@github.com:WaiveCar/WaiveScreen.git $path/repo
+git clone git@github.com:WaiveCar/WaiveScreen.git $path
 cd $path
 
 #
