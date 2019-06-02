@@ -214,7 +214,10 @@ ssh_hole() {
       fi
       
       if [ ! "$PORT" ]; then
-        _warn "Cannot contact the server for my port"
+        # This will cycle on a screen that's not properly
+        # installed. That's kinda unnecessary
+        # _warn "Cannot contact the server for my port"
+        /bin/true
 
       elif [ -e $EV/ssh ] && ps -o pid= -p $( cat $EV/ssh ); then
         # this means we have an ssh open and life is fine
