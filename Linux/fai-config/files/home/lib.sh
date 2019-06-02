@@ -280,6 +280,11 @@ pip_install() {
   pip3 install $DEST/pip/*
 }
 
+install() {
+  cd $BASE/ScreenDaemon
+  $SUDO pip3 install -r requirements.txt 
+}
+
 uuid() {
   UUID=/etc/UUID
   if [ ! -e $UUID ] ; then
@@ -308,10 +313,6 @@ wait_for() {
   fi
 }
 
-install() {
-  cd $BASE/ScreenDaemon
-  $SUDO pip3 install -r requirements.txt 
-}
 
 _screen_display_single() {
   export DISPLAY=${DISPLAY:-:0}
@@ -390,16 +391,26 @@ down() {
   done
 }
 
+# This permits us to use a potentially new way
+# of starting up the tools
 up() {
   $DEST/dcall screen_display 
   $DEST/dcall sensor_daemon
   $DEST/dcall screen_daemon
+  $DEST/dcall disk_monitor
 }
 
 # This is for upgrading over USB
 localupgrade() {
   pip_install
   sync_scripts $BASE/Linux/fai-config/files/home/
+  cd $BASE
+  _announce "Upgraded to $(git describe)"
+}
+
+disk_monitor() {
+  pycall lib.disk_monitor &
+  set_event disk_monitor
 }
 
 upgrade() {
@@ -411,6 +422,7 @@ upgrade() {
   # Now we take down the browser.
   $DEST/dcall down 0_screen_wrapper
   $DEST/dcall down screen_display
+  $DEST/dcall down disk_monitor
 
   # There's a bug in the infrastructure that required this.
   $SUDO pkill chromium
@@ -426,19 +438,13 @@ upgrade() {
   $DEST/dcall down sensor_daemon
   $SUDO pkill ScreenDaemon
 
-  # This permits us to use a potentially new way
-  # of starting up the tools
-  $DEST/dcall screen_display 
-  $DEST/dcall sensor_daemon
-
   # Upgrade the database if necessary
   {
     cd $BASE/ScreenDaemon
     pip3 install -r requirements.txt
     ./dcall db.upgrade
   }
-
-  $DEST/dcall screen_daemon
+  up
 }
 
 restart_xorg() {
