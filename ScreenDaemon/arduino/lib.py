@@ -52,8 +52,11 @@ def do_awake(reading = {}):
 
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
 
-def do_sleep(reading = {}):
+def do_sleep(reading = False):
   global _sleeping, _base
+  
+  if not reading:
+    reading = arduino_read()
 
   set_backlight(0)
   set_fanspeed(0)
