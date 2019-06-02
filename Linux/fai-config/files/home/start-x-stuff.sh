@@ -16,10 +16,7 @@ notion &
 
 who_am_i
 
-# Everything below should be stuff that we only need to run once
-sensor_daemon
-screen_daemon
-screen_display
+up
 
 # Get online and open up our ssh hole
 modem_enable
