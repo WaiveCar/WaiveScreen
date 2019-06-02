@@ -72,6 +72,7 @@ def do_sleep(reading = False):
   # by doing some unnecessary shit and then turn immediately back on.
   #
   # os.system("/usr/bin/sudo /usr/bin/acpitool -s")
+  return reading
 
 def pm_if_needed(reading):
   if not _sleeping and reading['Voltage'] < VOLTAGE_SLEEP and reading['Current'] < 1:

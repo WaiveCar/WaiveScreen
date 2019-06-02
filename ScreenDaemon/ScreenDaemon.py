@@ -16,6 +16,7 @@ from pdb import set_trace as bp
 
 
 
+_reading = False
 app = Flask(__name__)
 CORS(app)
 
@@ -139,6 +140,14 @@ def next_ad(work = False):
         if 'task' in data:
           if data['task'] == 'upgrade':
             lib.ping()
+
+          elif data['task'] == 'screenoff':
+            global _reading
+            _reading = arduino.do_sleep()
+
+          elif data['task'] == 'screenon':
+            arduino.do_awake(_reading)
+
 
         return success(job_list)
       else:
