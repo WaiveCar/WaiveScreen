@@ -296,9 +296,7 @@ def ping():
 
             # Now we ask the shell to do the upgrade
             # a bunch of assumptions are being done here.
-            # If we are on the screen then we assume that adorno
-            # is our username.
-            os.chdir('/home/adorno')
+            os.chdir('/home/{}'.format(USER))
             os.system('./dcall local_sync')
             os.system('./dcall upgrade &')
 
@@ -323,3 +321,56 @@ def get_uuid():
         UUID = f.read().strip()
        
   return UUID
+
+def disk_monitor(): 
+  import pyudev
+  import shutil
+
+  context = pyudev.Context()
+  monitor = pyudev.Monitor.from_netlink(context)
+
+  mountpoint = '/tmp/upgrade'
+  home = '/home/{}'.format(USER)
+  dcall = '{}/dcall'.format(home)
+
+  def screen(what):
+    os.popen('{} _announce "{}"'.format(dcall,what))
+
+  def doit(what):
+    os.popen('/usr/bin/sudo {}'.format(what))
+
+  def diskdone():
+    doit('/bin/umount {}'.format(mountpoint))
+    screen("Done with disk - remove")
+
+  for action, device in monitor:
+    if action == 'add' and device.get('DEVTYPE') == 'partition':
+      path = device.get('DEVNAME')
+      screen("Found partition {}".format(path))
+
+      package='{}/{}'.format(mountpoint, 'upgrade.package')
+
+      try:
+        doit('/bin/umount -l {}'.format(mountpoint))
+
+      except:
+        pass
+
+      try:
+        doit('/bin/mount {} {}'.format(path, mountpoint))
+        screen("Mounted")
+
+      except:
+        screen("Failed to mount {} {} - giving up".format(path, mountpoint))
+        continue
+
+      if not os.path.exists(package):
+        screen("No upgrade found")
+        diskdone()
+
+      else:
+        doit('/bintar xf {}/upgrade.package -C {}/WaiveScreen'.format(mountpoint, home))
+        diskdone()
+
+        os.popen('{} localupgrade'.format(dcall)
+
