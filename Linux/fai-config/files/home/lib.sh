@@ -477,7 +477,7 @@ stack_down() {
   $DEST/dcall down 
 
   # This stuff shouldn't be needed but right now it is.
-  echo chromium start-x-stuff ScreenDaemon | xargs -n 1 $SUDO pkill
+  echo lib.disk_monitor chromium start-x-stuff ScreenDaemon | xargs -n 1 $SUDO pkill -f 
 }
 
 # This permits us to use a potentially new way
