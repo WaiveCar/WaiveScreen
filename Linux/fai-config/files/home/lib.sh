@@ -449,18 +449,24 @@ local_upgrade() {
 
   if $SUDO mount $dev $mountpoint; then
     if [ -e $package ]; then
+      _info "Found upgrade package - installing"
       tar xf $package -C $BASE
+      $SUDO umount -l $mountpoint
+
+      _info "Disk can be removed"
       pip_install
+
+      _info "Reinstalling base"
       sync_scripts $BASE/Linux/fai-config/files/home/
       # this is needed to get the git version
       cd $BASE
       _announce "Upgraded to $(git describe) - restarting stack"
       pycall db.upgrade
-      stack_restart
+      stack_restart &
     else
       _info "No upgrade found"
+      $SUDO umount -l $mountpoint
     fi
-    $SUDO umount -l $mountpoint
   else
     _info "Failed to mount $dev"
   fi
