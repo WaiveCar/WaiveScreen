@@ -30,16 +30,34 @@ def set_log(what):
   global _log
   _log = what
 
-def get_arduino():
+def get_arduino(stop_on_failure=True):
   global _arduino, _first
 
   if not _arduino:
     direct = '/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0'
-    com_port = direct if os.path.exists(direct) else  '/dev/ttyACM0'
+    com_port = direct if os.path.exists(direct) else '/dev/ttyACM0'
+
+    if not os.path.exists(com_port):
+      err = "Can't find port {}, stopping here.".format(com_port)
+      _log.warn(err)
+      if stop_on_failure:
+        raise(err)
+      else:
+        return False
+
     _log.debug("Using {}".format(com_port))
 
-    _arduino = serial.Serial(com_port, 115200, timeout=0.1)
-    _first = arduino_read()
+    try:
+      _arduino = serial.Serial(com_port, 115200, timeout=0.1)
+      _first = arduino_read()
+
+    except Exception as ex:
+      err = "Can't open arduino: {}".format(ex)
+      _log.warn(err)
+      if stop_on_failure:
+        raise(err)
+      else:
+        return False
 
   return _arduino
 
@@ -148,7 +166,11 @@ def test(parts='fbs'):
     do_awake()
 
 def arduino_read():
-  _arduino = get_arduino()
+  _arduino = get_arduino(False)
+
+  if not _arduino:
+    return {}
+
   attempts = 0
   try:
     _arduino.in_waiting
