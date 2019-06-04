@@ -84,7 +84,7 @@ online_loop() {
 
 set_wrap() {
   pid=${2:-$!}
-  $SUDO rm $EV/0_$1
+  [ -e $EV/0_$1 ] && $SUDO rm $EV/0_$1
   echo -n $pid > $EV/0_$1
 }
 
@@ -412,7 +412,7 @@ down() {
           $SUDO kill $( cat $pidfile )
         fi
       } > /dev/null
-      [ -e "$pidfile" ] && $SUDO rm $pidfile || echo "$pidfile was removed from under us!"
+      $SUDO rm $pidfile
     else
       printf " \xE2\x9d\x93$pidfile\n"
     fi
