@@ -1,23 +1,29 @@
 #!/bin/bash
-if [ $# -lt 1 ]; then
-  echo "You need to pass a dev entry for it such as /dev/sdb1"
-  exit
+if [ -z "$NODISK" ]; then
+  if [ $# -lt 1 ]; then
+    echo "You need to pass a dev entry for it such as /dev/sdb1"
+    exit
+  fi
 fi
 
 disk=$1
 path=/tmp/upgradedisk
 package=/tmp/upgrade.package
 mount=/tmp/mount
+dest_home=$path/Linux/fai-config/files/home
 
 if [ -z "$NOCLONE" ]; then
   if [ -e $path ]; then
     cd $path
     git pull
+    pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
   else
     mkdir $path
     git clone git@github.com:WaiveCar/WaiveScreen.git $path
+    mkdir -p $dest_home/pip
+    pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
     cd $path
-  else
+  fi
 
   #
   # This is not a mistake, this was tested among xz, compress, bzip2, 
@@ -33,17 +39,19 @@ if [ -z "$NOCLONE" ]; then
   echo "Upgrade package at $package"
 fi
 
-if [ ! -e $disk ]; then
-  echo "Woops, $disk doesn't exist. Check your spelling."
-  exit
-fi
+if [ -z "$NODISK" ]; then
+  if [ ! -e $disk ]; then
+    echo "Woops, $disk doesn't exist. Check your spelling."
+    exit
+  fi
 
-[ -e $mount ] || mkdir $mount
-sudo umount $mount >& /dev/null 
+  [ -e $mount ] || mkdir $mount
+  sudo umount $mount >& /dev/null 
 
-if sudo mount $disk $mount; then
-  sudo cp -v $package $mount
-  sudo umount $mount
-else
-  echo "Can't mount $disk on $mount - fix this and then rerun with the NOCLONE=1 env variable to skip the cloning"
+  if sudo mount $disk $mount; then
+    sudo cp -v $package $mount
+    sudo umount $mount
+  else
+    echo "Can't mount $disk on $mount - fix this and then rerun with the NOCLONE=1 env variable to skip the cloning"
+  fi
 fi
