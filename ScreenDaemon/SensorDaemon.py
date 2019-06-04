@@ -65,17 +65,19 @@ def is_significant(totest):
 
   ttl = 0
   for k,v in deltaMap.items():
-    if k in last_reading:
-      if type(v) is list:
-        for i in range(len(v)):
-          diff = abs(last_reading[k][i] - totest[k][i])
-          if diff > v[i]:
-            ttl += (diff / v[i]) - 1
+    if k not in last_reading:
+      continue
 
-      else:
-        diff = abs(last_reading[k] - totest[k])
-        if diff > v:
-          ttl += (diff / v) - 1
+    if type(v) is list:
+      for i in range(len(v)):
+        diff = abs(last_reading[k][i] - totest[k][i])
+        if diff > v[i]:
+          ttl += (diff / v[i]) - 1
+
+    else:
+      diff = abs(last_reading[k] - totest[k])
+      if diff > v:
+        ttl += (diff / v) - 1
 
   if ttl > AGGREGATE_THRESHOLD:
     last_reading = totest
@@ -103,7 +105,8 @@ while True:
     lib.sensor_store(all)
 
   # If we need to go into/get out of a low power mode
-  arduino.pm_if_needed(sensor)
+  if sensor:
+    arduino.pm_if_needed(sensor)
 
   # Now you'd think that we just sleep on the frequency, that'd be wrong.
   # Thanks, try again. Instead we need to use the baseline time from start
