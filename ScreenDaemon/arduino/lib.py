@@ -41,7 +41,7 @@ def get_arduino(stop_on_failure=True):
       err = "Can't find port {}, stopping here.".format(com_port)
       _log.warn(err)
       if stop_on_failure:
-        raise(err)
+        raise Exception(err)
       else:
         return False
 
@@ -55,7 +55,7 @@ def get_arduino(stop_on_failure=True):
       err = "Can't open arduino: {}".format(ex)
       _log.warn(err)
       if stop_on_failure:
-        raise(err)
+        raise Exception(err)
       else:
         return False
 
@@ -103,7 +103,9 @@ def pm_if_needed(reading):
 
 
 def clear():
-  get_arduino().reset_input_buffer()
+  _arduino = get_arduino(False)
+  if _arduino:
+    _arduino.reset_input_buffer()
 
 def set_fanspeed(value):
   _arduino = get_arduino()
