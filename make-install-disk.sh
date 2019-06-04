@@ -1,7 +1,12 @@
 #!/bin/bash
+if [ $# -lt 1 ]; then
+  echo "You need to pass a disk dev entry for it such as /dev/sdb"
+  exit
+fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+disk=$1
 now=$(date +%Y%m%d%H%M)
 current=$(git describe)
 dir=${1:-$HOME/usb}
@@ -33,5 +38,11 @@ fi
 echo "Creating a bootable iso named $file"
 sudo fai-cd -m $dir $file
 size=$(stat -c %s $file)
-echo "dd if=$file | pv -s $size | sudo dd of=/dev/sdb bs=2M"
+echo "Writing to $disk"
+
+for i in $( seq 9 -1 0 ); do
+  echo -n $i...
+done
+
+dd if=$file | pv -s $size | sudo dd of=$disk bs=2M
 
