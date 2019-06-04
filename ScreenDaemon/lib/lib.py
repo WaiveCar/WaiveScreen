@@ -371,5 +371,5 @@ def disk_monitor():
         doit('/bintar xf {}/upgrade.package -C {}/WaiveScreen'.format(mountpoint, home))
         diskdone()
 
-        os.popen('{} localupgrade'.format(dcall))
+        os.popen('{} local_upgrade'.format(dcall))
 

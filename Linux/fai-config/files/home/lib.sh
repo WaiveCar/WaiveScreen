@@ -429,7 +429,7 @@ up() {
 }
 
 # This is for upgrading over USB
-localupgrade() {
+local_upgrade() {
   pip_install
   sync_scripts $BASE/Linux/fai-config/files/home/
   cd $BASE
