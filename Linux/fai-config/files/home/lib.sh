@@ -439,10 +439,26 @@ down() {
 
 # This is for upgrading over USB
 local_upgrade() {
-  pip_install
-  sync_scripts $BASE/Linux/fai-config/files/home/
-  cd $BASE
-  _announce "Upgraded to $(git describe)"
+  local dev=$1
+  local mountpoint='/tmp/upgrade'
+  local package=$mountpoint/upgrade.package
+
+  $SUDO umount -l $mountpoint
+  if $SUDO mount $dev $mountpoint; then
+    if [ -e $package ]; then
+      tar xf $package -C $BASE
+      pip_install
+      sync_scripts $BASE/Linux/fai-config/files/home/
+      # this is needed to get the git version
+      cd $BASE
+      _announce "Upgraded to $(git describe)"
+      $SUDO umount -l $mountpoint
+    else
+      _info "No upgrade found"
+    fi
+  else
+    _info "Failed to mount $dev"
+  fi
 }
 
 disk_monitor() {
