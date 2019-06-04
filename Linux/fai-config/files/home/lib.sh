@@ -424,12 +424,19 @@ down() {
 
     if [ -e "$pidfile" ]; then
       printf " \xE2\x9C\x97 $pidfile\n"
-      {
-        if ps -o pid= -p $( cat $pidfile ); then
-          $SUDO kill $( cat $pidfile )
-        fi
-      } > /dev/null
-      $SUDO rm $pidfile
+      local pid=$( cat $pidfile )
+      # Anonymous events, like the net
+      # need to stay triggered while
+      # process dependent ones should
+      # go away
+      if [ -n "$pid" ]; then
+        {
+          if ps -o pid= -p $pid; then
+            $SUDO kill $pid
+          fi
+        } > /dev/null
+        $SUDO rm $pidfile
+      fi
     else
       printf " \xE2\x9d\x93$pidfile\n"
     fi
