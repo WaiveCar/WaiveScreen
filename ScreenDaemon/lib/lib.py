@@ -30,8 +30,8 @@ if os.environ['USER'] == 'root':
 else:
   USER = os.environ['USER']
 
-NOMODEM = 'NOMODEM' in os.environ
-DEBUG = 'DEBUG' in os.environ
+NOMODEM = os.environ.get('NOMODEM')
+DEBUG = os.environ.get('DEBUG')
 
 if 'SERVER' in os.environ:
   SERVER_URL = os.environ['SERVER']
@@ -137,10 +137,13 @@ def get_modem_info():
     if modem:
       props = modem['device'].GetAll('org.freedesktop.ModemManager1.Modem')
 
-      modem_info = {
-       'phone': props['OwnNumbers'][0],
-       'imei': props['EquipmentIdentifier']
-      }
+      modem_info = {}
+
+      modem_info = { 'imei': props.get('EquipmentIdentifier') }
+      numberList = props.get('OwnNumbers')
+
+      if numberList:
+        modem_info['phone'] = numberList[0]
 
   return modem_info
 
