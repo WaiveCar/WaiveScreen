@@ -10,10 +10,14 @@ package=/tmp/upgrade.package
 mount=/tmp/mount
 
 if [ -z "$NOCLONE" ]; then
-  [ -e $path ] && rm -fr $path
-  mkdir $path
-  git clone git@github.com:WaiveCar/WaiveScreen.git $path
-  cd $path
+  if [ -e $path ]; then
+    cd $path
+    git pull
+  else
+    mkdir $path
+    git clone git@github.com:WaiveCar/WaiveScreen.git $path
+    cd $path
+  else
 
   #
   # This is not a mistake, this was tested among xz, compress, bzip2, 
@@ -26,9 +30,12 @@ if [ -z "$NOCLONE" ]; then
   # generic bland .tar since it's 2 orders of magnitude faster
   #
   tar -cf $package .
-  echo "cleaning up"
-  rm -fr $path
   echo "Upgrade package at $package"
+fi
+
+if [ ! -e $disk ]; then
+  echo "Woops, $disk doesn't exist. Check your spelling."
+  exit
 fi
 
 [ -e $mount ] || mkdir $mount
