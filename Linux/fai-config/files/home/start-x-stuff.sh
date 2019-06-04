@@ -16,10 +16,22 @@ notion &
 
 who_am_i
 
+#
+# This delay is rather important because the
+# wwan modem loads asynchronously and if we 
+# try to do things with it before it's up 
+# and running then it will break it and we 
+# need to start over.
+#
+# We could *potentially* show an ad prior
+# to this delay but let's put such streamlining
+# off to later.
+#
+sleep 20
+
 up
 
 # Get online and open up our ssh hole
-sleep 20
 modem_enable
 modem_connect
 
