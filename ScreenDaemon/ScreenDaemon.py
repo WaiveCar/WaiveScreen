@@ -15,7 +15,6 @@ from logging.handlers import RotatingFileHandler
 from pdb import set_trace as bp
 
 
-
 _reading = False
 app = Flask(__name__)
 CORS(app)
@@ -120,7 +119,7 @@ def next_ad(work = False):
   except:
     data = False
     if data_raw:
-      logging.warn("Unable to parse {}".format(data_raw))
+      logging.warning("Unable to parse {}".format(data_raw))
 
   if data:
     try:
@@ -158,7 +157,7 @@ def next_ad(work = False):
         return failure(data['data'])
 
     except Exception as ex:
-      logging.warn("parsing issues?! {}".format(ex))
+      logging.warning("parsing issues?! {}".format(ex))
       return failure({
         'payload': data
       })

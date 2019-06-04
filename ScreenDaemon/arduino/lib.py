@@ -43,7 +43,7 @@ def get_arduino(stop_on_failure=True):
 
       _arduino_err += 1
       if _arduino_err < 5:
-        _log.warn(err)
+        _log.warning(err)
 
       if stop_on_failure:
         raise Exception(err)
@@ -61,7 +61,7 @@ def get_arduino(stop_on_failure=True):
 
       _arduino_err += 1
       if _arduino_err < 5:
-        _log.warn(err)
+        _log.warning(err)
 
       if stop_on_failure:
         raise Exception(err)
@@ -201,7 +201,7 @@ def arduino_read():
     # in some time period, then we just
     # return a fail case 
     if attempts > 3 / sleep:
-      _log.warn("Timeout: Could not read from arduino ({})".format(_arduino.in_waiting))
+      _log.warning("Timeout: Could not read from arduino ({})".format(_arduino.in_waiting))
       return {}
     pass
 

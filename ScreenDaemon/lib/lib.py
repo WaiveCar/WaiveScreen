@@ -122,7 +122,7 @@ def get_gps():
           'GPS_time': location[2]['utc-time']
         }
     except Exception as ex:
-      logging.warn("Modem issue {}".format(ex)) 
+      logging.warning("Modem issue {}".format(ex)) 
 
   return {}
 
@@ -251,7 +251,7 @@ def ping():
         data = json.loads(data_raw)
       except:
         data = False
-        logging.warn("Unable to parse {}".format(data_raw))
+        logging.warning("Unable to parse {}".format(data_raw))
 
       if data:
         # we have 
@@ -275,7 +275,7 @@ def ping():
         if data['version_date'] <= VERSIONDATE:
           logging.debug("Us: {} {}, server: {} {}".format(VERSION, VERSIONDATE, data['version'], data['version_date']))
         else:
-          logging.warn("This is {} but {} is available".format(VERSION, data['version']))
+          logging.warning("This is {} but {} is available".format(VERSION, data['version']))
           # This means we can upgrade.
           #
           # We need to make sure that a failed
@@ -285,7 +285,7 @@ def ping():
           #
           version = db.kv_get('version_date')
           if version and version >= data['version_date']:
-            logging.warn("Not upgrading to {}. We attempted to do it before ({}={})".format(VERSION, version,  data['version_date']))
+            logging.warning("Not upgrading to {}. We attempted to do it before ({}={})".format(VERSION, version,  data['version_date']))
 
           else:
             # Regardless of whether we succeed or not

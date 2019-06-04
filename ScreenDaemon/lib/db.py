@@ -157,7 +157,7 @@ def insert(table, data):
     return last
 
   except:
-    logging.warn("Unable to insert a record {} {}".format(qstr, json.dumps(values)))
+    logging.warning("Unable to insert a record {} {}".format(qstr, json.dumps(values)))
 
   
 def upsert(table, data):
@@ -171,7 +171,7 @@ def upsert(table, data):
     return last
 
   except:
-    logging.warn("Unable to upsert a record {}".format(','.join([str(x) for x in values])))
+    logging.warning("Unable to upsert a record {}".format(','.join([str(x) for x in values])))
 
 
 # Ok so if column order or type changes, this isn't found ... nor
@@ -210,7 +210,7 @@ def upgrade():
         logging.debug("Adding column {} to {}".format(key, table))
 
       except Exception as ex:
-        logging.warn("Failed: {} ({})".format(qstr, ex))
+        logging.warning("Failed: {} ({})".format(qstr, ex))
 
     to_remove = my_set(existing_column_names).difference(my_set(our_column_names))
 
@@ -236,7 +236,7 @@ def upgrade():
         db['conn'].commit()
 
       except Exception as ex:
-        logging.warn("Failed: {} ({})".format(drop_column_sql, ex))
+        logging.warningn("Failed: {} ({})".format(drop_column_sql, ex))
 
 def map(row_list, table, db=None):
   # Using the schema of a table, map the row_list to a list of dicts.
@@ -356,7 +356,7 @@ def incr(key, value=1):
     try:
       run('insert into kv(value, key) values(?, ?)', args=(value, key, ))
     except sqlite3.OperationalError as exc:
-      logging.warn("Unable to increment key: %s", exc)
+      logging.warning("Unable to increment key: %s", exc)
       pass
 
 
@@ -422,7 +422,7 @@ def kv_set(key, value):
           run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
 
   except Exception as ex:
-    logging.warn("Couldn't set {} to {}: {}".format(key, value, ex))
+    logging.warning("Couldn't set {} to {}: {}".format(key, value, ex))
 
   g_params[key] = value
 
