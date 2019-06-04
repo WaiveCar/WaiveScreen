@@ -42,6 +42,7 @@ acpitool
 ethtool
 
 python3-pip
+python3-setuptools
 git
 
 # to do a softupdate during testing
