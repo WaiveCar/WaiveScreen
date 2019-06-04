@@ -145,7 +145,7 @@ modem_enable() {
       #
       #--location-enable-gps-unmanaged \
 
-    set_event modem
+    set_event modem_enable
     break
   done
 }
@@ -279,9 +279,12 @@ screen_daemon() {
 }
 
 sensor_daemon() {
-  down sensor_daemon
-  $SUDO $BASE/ScreenDaemon/SensorDaemon.py &
-  set_event sensor_daemon
+  {
+    wait_for net
+    down sensor_daemon
+    $SUDO $BASE/ScreenDaemon/SensorDaemon.py &
+    set_event sensor_daemon
+  }
 }
 
 git_waivescreen() {
@@ -409,7 +412,7 @@ down() {
           $SUDO kill $( cat $pidfile )
         fi
       } > /dev/null
-      $SUDO rm $pidfile
+      [ -e "$pidfile" ] && $SUDO rm $pidfile || echo "$pidfile was removed from under us!"
     else
       printf " \xE2\x9d\x93$pidfile\n"
     fi
