@@ -172,7 +172,7 @@ modem_connect() {
   $SUDO ip addr add $address/$prefix dev $wwan
   $SUDO ip route add default via $gateway dev $wwan
 
-  cat << ENDL | $SUDO tee /etc/resolv.conf
+  cat << ENDL | sed 's/^\s*// | $SUDO tee /etc/resolv.conf
   nameserver 8.8.8.8
   nameserver 4.2.2.1
   nameserver 2001:4860:4860::8888 
