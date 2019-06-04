@@ -22,12 +22,7 @@ dev_setup() {
   $SUDO dhclient enp3s0 
   [ -e $DEV ] || mkdir $DEV
 
-  if [ -z "$SUDO" ]; then
-    echo "Hey, you can't be root to do sshfs"
-    exit
-  fi
-
-  sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO),nonempty,allow_root dev:/home/chris/code/WaiveScreen $DEV -C 
+  _as_user sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO),nonempty,allow_root dev:/home/chris/code/WaiveScreen $DEV -C 
   export BASE=$DEV
 }
 
