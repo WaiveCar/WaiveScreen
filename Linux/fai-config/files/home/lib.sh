@@ -330,8 +330,8 @@ wait_for() {
   path=${2:-$EV}/$1
 
   if [ ! -e "$path" ]; then
+    echo `date +%R:%S` WAIT $1
     until [ -e "$path" ]; do
-      echo `date +%R:%S` WAIT $1
       sleep 0.5
     done
 
