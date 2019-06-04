@@ -296,7 +296,6 @@ def ping():
             # Now we ask the shell to do the upgrade
             # a bunch of assumptions are being done here.
             os.chdir('/home/{}'.format(USER))
-            os.system('./dcall local_sync')
             os.system('./dcall upgrade &')
 
     _pinglock.release()

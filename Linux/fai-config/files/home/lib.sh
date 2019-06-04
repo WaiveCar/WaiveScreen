@@ -98,7 +98,7 @@ test_arduino() {
   pycall arduino.test
 }
 
-brightness() {
+set_brightness() {
   shift=$1
   level=$2
   revlevel=$(perl -e "print .75 * (1 - $level) + 1")
@@ -304,6 +304,7 @@ git_waivescreen() {
   } &
 }
 
+# This is used during the installation - don't touch it!
 pip_install() {
   pip3 install $DEST/pip/*
 }
@@ -419,14 +420,6 @@ down() {
   done
 }
 
-# This permits us to use a potentially new way
-# of starting up the tools
-up() {
-  $DEST/dcall screen_display 
-  $DEST/dcall sensor_daemon
-  $DEST/dcall screen_daemon
-  $DEST/dcall disk_monitor
-}
 
 # This is for upgrading over USB
 local_upgrade() {
@@ -441,38 +434,35 @@ disk_monitor() {
   set_event disk_monitor
 }
 
-upgrade() {
-  # should be run OOB
-  #
-  # local_sync
-  #
 
+stack_down() {
   # Now we take down the browser.
-  $DEST/dcall down 0_screen_wrapper
-  $DEST/dcall down screen_display
-  $DEST/dcall down disk_monitor
+  $DEST/dcall down 
 
-  # There's a bug in the infrastructure that required this.
-  $SUDO pkill chromium
+  # This stuff shouldn't be needed but right now it is.
+  $SUDO pkill chromium start-x-stuff ScreenDaemon
+}
 
-  # This stuff shouldn't be needed
-  # But right now it is.
-  $SUDO pkill start-x-stuff
+# This permits us to use a potentially new way
+# of starting up the tools
+stack_up() {
+  $DEST/dcall disk_monitor
+  $DEST/dcall screen_display 
+  $DEST/dcall sensor_daemon
+  $DEST/dcall screen_daemon
+}
 
-  # And the server (which in practice called us from a ping command)
-  $DEST/dcall down screen_daemon
+stack_restart() {
+  stack_down
+  stack_up
+}
 
-  # And lastly the sensor daemon
-  $DEST/dcall down sensor_daemon
-  $SUDO pkill ScreenDaemon
-
-  # Upgrade the database if necessary
-  {
-    cd $BASE/ScreenDaemon
-    pip3 install -r requirements.txt
-    ./dcall db.upgrade
-  }
-  up
+upgrade() {
+  local_sync
+  cd $BASE/ScreenDaemon
+  $SUDO pip3 install -r requirements.txt
+  ./dcall db.upgrade
+  stack_restart
 }
 
 restart_xorg() {
