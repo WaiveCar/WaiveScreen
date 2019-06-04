@@ -100,7 +100,7 @@ $SCHEMA = [
     'start_minute'=> 'integer default null',
     'end_minute'  => 'integer default null',
     'active'      => 'boolean default false',
-    'priority'    => 'integer defaul 0',
+    'priority'    => 'integer default 0',
     'start_time'  => 'datetime default current_timestamp',
     'end_time'    => 'datetime'
   ],
