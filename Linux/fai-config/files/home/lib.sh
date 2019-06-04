@@ -249,7 +249,7 @@ ssh_hole() {
         # _warn "Cannot contact the server for my port"
         /bin/true
 
-      elif [ -e $EV/$event] && ps -o pid= -p $( cat $EV/$event ); then
+      elif [ -e $EV/$event ] && ps -o pid= -p $( cat $EV/$event ); then
         # this means we have an ssh open and life is fine
         sleep 10
 
