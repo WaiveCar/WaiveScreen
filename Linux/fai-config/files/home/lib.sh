@@ -151,8 +151,9 @@ modem_enable() {
 }
 
 modem_connect() {
-  for i in 1 2; do
-    $SUDO mmcli -m 0 --simple-connect="apn=internet"
+  for i in 1 4; do
+    $SUDO mmcli -m 0 --set-allowed-modes='3g|4g' --set-preferred-mode=4g
+    $SUDO mmcli -m 0 --simple-connect="apn=internet,ip-type=ipv4v6"
     wwan=`ip addr show | grep wwp | head -1 | awk -F ':' ' { print $2 } '`
 
     if [ -z "$wwan" ]; then
@@ -164,15 +165,16 @@ modem_connect() {
   done
 
   # get ipv6
-  $SUDO dhclient $wwan &
+  #$SUDO dhclient $wwan &
 
   # Show the config | find ipv4 | drop the LHS | replace the colons with equals | drop the whitespace | put everything on one line
   eval `mmcli -b 0 | grep -A 3 IPv4 | awk -F '|' ' { print $2 } ' | sed s'/: /=/' | sed -E s'/\s+//' | tr '\n' ';'`
 
+  $SUDO ifconfig $wwan up
   $SUDO ip addr add $address/$prefix dev $wwan
   $SUDO ip route add default via $gateway dev $wwan
 
-  cat << ENDL | sed 's/^\s*// | $SUDO tee /etc/resolv.conf
+  cat << ENDL | sed 's/^\s*//' | $SUDO tee /etc/resolv.conf
   nameserver 8.8.8.8
   nameserver 4.2.2.1
   nameserver 2001:4860:4860::8888 
