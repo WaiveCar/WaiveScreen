@@ -20,7 +20,9 @@ dev_setup() {
   #
   # echo development > $DEST/.env
   $SUDO pkill dhclient
-  $SUDO ip route delete $(ip route show | grep default | awk ' { print $1" "$2" "$3 }')
+  oldroute=$(ip route show | grep default | awk ' { print $1" "$2" "$3 }')
+  [ -n "$oldroute" ] && $SUDO ip route delete $oldroute
+
   $SUDO dhclient enp3s0 
   [ -e $DEV ] || mkdir $DEV
 
