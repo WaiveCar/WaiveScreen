@@ -110,6 +110,15 @@ brightness() {
   done
 }
 
+#
+# --3gpp-scan
+# status state: registered
+#
+# --3gpp-register-home then
+# try $SUDO mmcli -m 0 --simple-connect="apn=internet"
+#
+# Then mmcli -b 0 will show up
+#
 modem_enable() {
   for i in $( seq 1 5 ); do
     $SUDO mmcli -m 0 -e
@@ -227,6 +236,7 @@ pycall() {
 }
 
 ssh_hole() {
+  event=ssh_hole
   {
     while [ 0 ]; do
       if [ ! "$PORT" ]; then
@@ -239,13 +249,13 @@ ssh_hole() {
         # _warn "Cannot contact the server for my port"
         /bin/true
 
-      elif [ -e $EV/ssh ] && ps -o pid= -p $( cat $EV/ssh ); then
+      elif [ -e $EV/$event] && ps -o pid= -p $( cat $EV/$event ); then
         # this means we have an ssh open and life is fine
         sleep 10
 
       else
         ssh -NC -R bounce:$PORT:127.0.0.1:22 bounce &
-        set_event ssh_hole
+        set_event $event
       fi
 
       sleep 10
