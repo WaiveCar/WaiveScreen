@@ -1,13 +1,15 @@
 #!/bin/bash
 
 . lib.sh
+
 date +%s > /tmp/startup
 
 export DISPLAY=$1
+local REALPPID=$2
 
 # I want to remove anything that I did previously so I can start fresh
 rm -fr $DEST/.notion/default-session--* 
-notion &
+/usr/bin/notion &
 
 [ -e $DEST/screen-splash.png ] && display -window root $DEST/screen-splash.png
 
@@ -27,6 +29,9 @@ who_am_i
 # to this delay but let's put such streamlining
 # off to later.
 #
+disk_monitor
+screen_display 
+
 sleep 20
 
 #
@@ -37,9 +42,8 @@ sleep 20
 modem_enable
 modem_connect
 
-stack_up
+ssh_hole
+sensor_daemon
+screen_daemon
 
-set_event xstartup $$
-
-wait_for net
-  ssh_hole
+set_event xstartup $REALPPID
