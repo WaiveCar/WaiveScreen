@@ -454,7 +454,9 @@ local_upgrade() {
       sync_scripts $BASE/Linux/fai-config/files/home/
       # this is needed to get the git version
       cd $BASE
-      _announce "Upgraded to $(git describe)"
+      _announce "Upgraded to $(git describe) - restarting stack"
+      pycall db.upgrade
+      stack_restart
     else
       _info "No upgrade found"
     fi
@@ -475,7 +477,7 @@ stack_down() {
   $DEST/dcall down 
 
   # This stuff shouldn't be needed but right now it is.
-  $SUDO pkill chromium start-x-stuff ScreenDaemon
+  echo chromium start-x-stuff ScreenDaemon | xargs -n 1 $SUDO pkill
 }
 
 # This permits us to use a potentially new way
