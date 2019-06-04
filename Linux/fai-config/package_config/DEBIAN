@@ -55,6 +55,7 @@ sshfs
 sqlite3
 htop
 lsof
+net-tools
 
 # needed for modem stuff
 policykit-1
