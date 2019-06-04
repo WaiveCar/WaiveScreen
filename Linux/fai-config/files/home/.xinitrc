@@ -30,6 +30,6 @@ xset dpms force on
 # Hide the mouse cursor
 unclutter -idle 1 -root &
 
-su -c "/home/$WHO/start-x-stuff.sh $DISPLAY" - $WHO
+su -c "/home/$WHO/start-x-stuff.sh $DISPLAY $$" - $WHO
 
 sleep 10000000
