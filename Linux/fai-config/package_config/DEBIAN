@@ -56,6 +56,7 @@ sqlite3
 htop
 lsof
 net-tools
+traceroute
 
 # needed for modem stuff
 policykit-1
