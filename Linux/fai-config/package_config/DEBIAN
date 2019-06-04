@@ -57,6 +57,7 @@ htop
 lsof
 net-tools
 traceroute
+libqmi-utils
 
 # needed for modem stuff
 policykit-1
