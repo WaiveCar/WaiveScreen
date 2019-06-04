@@ -29,7 +29,7 @@ who_am_i
 #
 sleep 20
 
-up
+stack_up
 
 # Get online and open up our ssh hole
 modem_enable
