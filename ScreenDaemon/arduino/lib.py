@@ -30,8 +30,9 @@ def set_log(what):
   global _log
   _log = what
 
+_arduino_err = 0
 def get_arduino(stop_on_failure=True):
-  global _arduino, _first
+  global _arduino, _first, _arduino_err
 
   if not _arduino:
     direct = '/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0'
@@ -39,7 +40,11 @@ def get_arduino(stop_on_failure=True):
 
     if not os.path.exists(com_port):
       err = "Can't find port {}, stopping here.".format(com_port)
-      _log.warn(err)
+
+      _arduino_err += 1
+      if _arduino_err < 5:
+        _log.warn(err)
+
       if stop_on_failure:
         raise Exception(err)
       else:
@@ -53,7 +58,11 @@ def get_arduino(stop_on_failure=True):
 
     except Exception as ex:
       err = "Can't open arduino: {}".format(ex)
-      _log.warn(err)
+
+      _arduino_err += 1
+      if _arduino_err < 5:
+        _log.warn(err)
+
       if stop_on_failure:
         raise Exception(err)
       else:
