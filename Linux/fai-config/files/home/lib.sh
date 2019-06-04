@@ -66,7 +66,7 @@ _error() {
 }
 
 who_am_i() {
-  _info $(uuid) $ENV
+  _info $(get_uuid) $ENV
 }
 
 online_loop() {
@@ -313,7 +313,7 @@ install() {
   $SUDO pip3 install -r requirements.txt 
 }
 
-uuid() {
+get_uuid() {
   UUID=/etc/UUID
   if [ ! -e $UUID ] ; then
     {
@@ -482,7 +482,7 @@ restart_xorg() {
   } &
 }
 
-location() {
+get_location() {
   $SUDO mmcli -m 0 --location-get
   $SUDO mmcli -m 0 --location-status
 }
