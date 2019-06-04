@@ -32,10 +32,8 @@ dev_setup() {
 
 _as_user() {
   if [ $USER = 'root' ]; then
-    echo "Running as $WHO"
     su $WHO -c "$*"
   else
-    echo "Running as me"
     eval $*
   fi
 }
