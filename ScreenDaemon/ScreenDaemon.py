@@ -157,7 +157,7 @@ def next_ad(work = False):
         return failure(data['data'])
 
     except Exception as ex:
-      logging.warning("parsing issues?! {}".format(ex))
+      logging.warning("parsing issues?! {} {}".format(ex, data_raw))
       return failure({
         'payload': data
       })
