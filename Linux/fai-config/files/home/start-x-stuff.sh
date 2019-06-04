@@ -6,7 +6,7 @@ date +%s > /tmp/startup
 export DISPLAY=$1
 
 # I want to remove anything that I did previously so I can start fresh
-rm -r $DEST/.notion/default-session--* $
+rm -fr $DEST/.notion/default-session--* 
 notion &
 
 [ -e $DEST/screen-splash.png ] && display -window root $DEST/screen-splash.png
@@ -19,6 +19,7 @@ who_am_i
 up
 
 # Get online and open up our ssh hole
+sleep 20
 modem_enable
 modem_connect
 
