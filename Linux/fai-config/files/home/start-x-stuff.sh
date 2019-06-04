@@ -29,11 +29,15 @@ who_am_i
 #
 sleep 20
 
-stack_up
-
-# Get online and open up our ssh hole
+#
+# Get online first before anything in the 
+# stack spoils our beautiful virgin modem
+# (it gets confused very easily apparently)
+#
 modem_enable
 modem_connect
+
+stack_up
 
 set_event xstartup $$
 
