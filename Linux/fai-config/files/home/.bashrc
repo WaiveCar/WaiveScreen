@@ -125,5 +125,6 @@ gousb() {
   echo "$1 not found :-("
 }
 
+alias pycall=$HOME/WaveScreen/ScreenDaemon/dcall
 PATH=$PATH:$HOME/.local/bin
 source $HOME/const.sh
