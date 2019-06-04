@@ -284,7 +284,8 @@ sensor_daemon() {
     down sensor_daemon
     $SUDO $BASE/ScreenDaemon/SensorDaemon.py &
     set_event sensor_daemon
-  }
+  } &
+  set_wrap sensor_daemon
 }
 
 git_waivescreen() {
