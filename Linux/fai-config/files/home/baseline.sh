@@ -19,6 +19,8 @@ dev_setup() {
   # Note: this usually runs as normal user
   #
   # echo development > $DEST/.env
+  $SUDO pkill dhclient
+  $SUDO ip route delete $(ip route show | grep default | awk ' { print $1" "$2" "$3 }')
   $SUDO dhclient enp3s0 
   [ -e $DEV ] || mkdir $DEV
 
