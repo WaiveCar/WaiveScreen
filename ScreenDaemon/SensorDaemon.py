@@ -4,13 +4,15 @@ import arduino.lib as arduino
 import logging
 import sys
 
+import os
 import time
 import pprint
 from datetime import datetime
 
 # Reading interval, so a number such as 0.2
 # would take a reading every 0.2 seconds
-FREQUENCY = 0.05
+
+FREQUENCY = 0.1 if 'FREQUENCY' not in os.environ else os.environ['FREQUENCY']
 
 # If all the sensor deltas reach this percentage
 # (multiplied by 100) from the baseline, then we
