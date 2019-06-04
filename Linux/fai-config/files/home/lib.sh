@@ -182,7 +182,7 @@ modem_connect() {
 ENDL
   set_event net ''
 
-  sleep 9
+  sleep 4
 
   if ping -c 1 -i 0.3 waivescreen.com; then
     _announce "waivescreen.com found" 
@@ -389,7 +389,22 @@ screen_display() {
 
 running() {
   cd $EV
-  ls
+  for pidfile in $( ls ); do
+    pid=$( cat $pidfile )
+    {
+      if [ -n "$pid" ]; then 
+        if ps -o pid= -p $( cat $pidfile ); then
+          running="UP"
+        else
+          running="??"
+        fi
+      else
+        pid="---"
+        running="NA"
+      fi
+    } > /dev/null
+    printf "%5s %s %s\n" $pid $running $pidfile
+  done
 }
 
 down() {
