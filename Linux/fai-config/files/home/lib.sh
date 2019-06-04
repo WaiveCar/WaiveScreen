@@ -443,7 +443,10 @@ local_upgrade() {
   local mountpoint='/tmp/upgrade'
   local package=$mountpoint/upgrade.package
 
-  $SUDO umount -l $mountpoint
+  [ -e $mountpoint ] || mkdir $mountpoint
+
+  $SUDO umount -l $mountpoint >& /dev/null
+
   if $SUDO mount $dev $mountpoint; then
     if [ -e $package ]; then
       tar xf $package -C $BASE
@@ -452,10 +455,10 @@ local_upgrade() {
       # this is needed to get the git version
       cd $BASE
       _announce "Upgraded to $(git describe)"
-      $SUDO umount -l $mountpoint
     else
       _info "No upgrade found"
     fi
+    $SUDO umount -l $mountpoint
   else
     _info "Failed to mount $dev"
   fi
