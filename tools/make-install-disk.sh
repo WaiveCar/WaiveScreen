@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ $# -lt 1 ]; then
-  echo "You need to pass a disk dev entry for it such as /dev/sdb"
+  echo "You need to pass a disk dev entry to install to such as /dev/sdb"
   exit
 fi
 
@@ -9,13 +9,16 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 disk=$1
 now=$(date +%Y%m%d%H%M)
 current=$(git describe)
-dir=${1:-$HOME/usb}
-file=${2:-$HOME/WaiveScreen-$now-$current.iso}
+dir=$HOME/usb
+file=$HOME/WaiveScreen-$now-$current.iso
 isopath=/srv/fai/config/files/home/WaiveScreen
 {
   cd $isopath
   toiso=$(git describe)
 }
+
+echo "Installing to $disk"
+sudo fdisk -l $disk
 
 echo "$current: current"
 echo "$toiso: $isopath"
@@ -40,9 +43,9 @@ sudo fai-cd -m $dir $file
 size=$(stat -c %s $file)
 echo "Writing to $disk"
 
-for i in $( seq 9 -1 0 ); do
-  echo -n $i...
-done
-
-dd if=$file | pv -s $size | sudo dd of=$disk bs=2M
+if [ -e "$file" ]; then
+  dd if=$file | pv -s $size | sudo dd of=$disk bs=2M
+else
+  echo "$file does not exist, Bailing!"
+fi
 
