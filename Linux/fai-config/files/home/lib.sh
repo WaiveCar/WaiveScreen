@@ -415,9 +415,9 @@ down() {
   cd $EV
 
   if [ -n "$1" ]; then
-    list=$1
+    local list=$1
   else
-    list=$( ls )
+    local list=$( ls )
   fi
 
   for pidfile in $list; do
