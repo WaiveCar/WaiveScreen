@@ -123,8 +123,8 @@ def get_gps():
         return { }
       else:
         return {
-          'Latitude': gps['latitude'],
-          'Longitude': gps['longitude']
+          'Lat': gps['latitude'],
+          'Lng': gps['longitude']
         }
     except Exception as ex:
       logging.warning("Modem issue {}".format(ex)) 
@@ -181,7 +181,7 @@ def urlify(what):
 
 def sensor_store(data):
 
-  precision = {'Temp': 2, 'Current': 2, 'Voltage': 2, 'Tres': 0, 'Pitch': 3, 'Roll': 3, 'Yaw': 3 }
+  precision = {'Temp': 2, 'Current': 2, 'Voltage': 2, 'Tres': 0, 'Pitch': 3, 'Roll': 3, 'Yaw': 3, 'Lat': 4, 'Lng': 4 }
   for k,v in precision.items():
     if k in data:
       data[k] = round(data[k], v)

@@ -68,8 +68,8 @@ def is_significant(totest):
     'Pitch': 0.8,
     'Roll': 0.8,
     'Yaw': 0.9,
-    'Latitude': 0.01,
-    'Longitude': 0.01
+    'Lat': 0.01,
+    'Lng': 0.01
   }
 
   ttl = 0
