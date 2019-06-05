@@ -228,7 +228,7 @@ def asset_cache(check):
   # into the home directory which can derive from our global
   # USER variable
   #
-  path = "/home/{}/assets".format(USER)
+  path = "/var/cache/assets"
 
   res = []
   for asset in check['asset']:
