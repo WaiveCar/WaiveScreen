@@ -3,6 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . $DIR/const.sh
 
+# this copies over the .sh scripts and infrastructure
 sync_scripts() {
   source=${1:-$DEV/Linux/fai-config/files/home/}
 

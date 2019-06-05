@@ -91,10 +91,6 @@ set_event() {
   echo -n $pid > $EV/$1
 }
 
-test_arduino() {
-  pycall arduino.test
-}
-
 set_brightness() {
   level=$1
   nopy=$2
@@ -322,7 +318,6 @@ wait_for() {
   fi
 }
 
-
 _screen_display_single() {
   export DISPLAY=${DISPLAY:-:0}
 
@@ -505,13 +500,6 @@ upgrade() {
   $SUDO pip3 install -r requirements.txt
   ./dcall db.upgrade
   stack_restart
-}
-
-restart_xorg() {
-  {
-    $SUDO pkill Xorg
-    $SUDO xinit
-  } &
 }
 
 get_location() {
