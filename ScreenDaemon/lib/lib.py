@@ -118,20 +118,42 @@ def get_gps():
     try:
       location = modem['location'].GetLocation()
 
-      if '2' not in location:
+      gps = location.get(2)
+      if not gps:
         return { }
       else:
         return {
-          'Altitude': location[2]['altitude'],
-          'Latitude': location[2]['latitude'],
-          'Longitude': location[2]['longitude'],
-          'GPS_time': location[2]['utc-time']
+          'Latitude': gps['latitude'],
+          'Longitude': gps['longitude']
         }
     except Exception as ex:
       logging.warning("Modem issue {}".format(ex)) 
 
   return {}
 
+
+def task_ingest(data):
+  if 'task' in not data:
+    return
+
+  for action, args in data['task']:
+    if action == 'upgrade':
+      lib.ping()
+
+    elif action == 'screenoff':
+      global _reading
+      _reading = arduino.do_sleep()
+
+    elif action == 'screenon':
+      arduino.do_awake(_reading)
+
+    elif action == 'reboot':
+      os.system('/usr/bin/sudo /sbin/reboot')
+
+    elif action == 'brightness':
+      val = float(args)
+      arduino.set_backlight(val)
+      dcall('set_brightness', val, 'nopy')
 
 
 def get_modem_info():
@@ -306,6 +328,8 @@ def ping():
             # a bunch of assumptions are being done here.
             os.chdir('/home/{}'.format(USER))
             os.system('./dcall upgrade &')
+
+        task_ingest(data)
 
     _pinglock.release()
 
