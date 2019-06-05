@@ -5,6 +5,7 @@ export DEST=/home/$WHO
 export PATH=/usr/bin:/usr/sbin:$PATH:$DEST
 export BASE=$DEST/WaiveScreen
 export DEV=$BASE.sshfs
+export UPGRADE=$BASE.new
 export VID=$DEST/capture
 export EV=/tmp/event
 export DISPLAY=${DISPLAY:-:0}
