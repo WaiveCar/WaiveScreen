@@ -20,10 +20,11 @@ chown -R $USERID.$USERID $DEST
 # TODO: This doesn't fix it ... I don't know why
 sed -i 's/auth_self_keep/yes/g' $FAI_ROOT/usr/share/polkit-1/actions/org.freedesktop.ModemManager1.policy 
 
-if [ ! -e $DEST/assets ] ; then
+ASSETCACHE=$FAI_ROOT/var/cache/assets
+if [ ! -e $ASSSETCACHE ] ; then
   # This is a cache for assets in case we go offline
-  mkdir $DEST/assets
-  chmod 0777 $DEST/assets
+  mkdir -p $ASSETCACHE
+  chmod 0777 $ASSETCACHE
 fi
 
 # Allow any user to create a logfile.
