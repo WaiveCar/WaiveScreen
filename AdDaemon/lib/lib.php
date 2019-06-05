@@ -209,10 +209,15 @@ function create_job($campaignId, $screenId) {
 }
 
 function update_job($jobId, $completed_seconds) {
-  return db_update('job', $jobId, [
-    'completed_seconds' => $completed_seconds,
-    'job_end' => 'current_timestamp'
-  ]);
+  if($jobId) {
+    return db_update('job', $jobId, [
+      'completed_seconds' => $completed_seconds,
+      'job_end' => 'current_timestamp'
+    ]);
+  } else {
+    error_log("update job failed: $jobId");
+  }
+
 }
 
 // ----
