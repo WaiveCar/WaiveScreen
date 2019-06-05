@@ -230,6 +230,7 @@ function update_campaign_completed($id) {
 }
   
 function sow($payload) {
+  global $LASTCOMMIT, $VERSION;
   $server_response = [ 'res' => true ];
 
   if(isset($payload['uid'])) {
@@ -278,7 +279,7 @@ function sow($payload) {
   // Before we assign new jobs we want to make sure that the server
   // is up to date.  We need to make sure we continue to give it 
   // tasks in case the server is failing to upgrade.
-  if($screen['version'] != $last_commit) {
+  if($screen['version'] != $VERSION) {
     $server_response['task'] = [['upgrade',false]];
   }
 
