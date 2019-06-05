@@ -1,4 +1,11 @@
 #!/bin/bash
+#
+# NODISK    - Won't do disk things 
+# NONET     - Won't try to do internet stuff
+# NOMIRROR  - Won't do the mirroring
+#
+##
+
 if [ -z "$NODISK" ]; then
   if [ $# -lt 1 ]; then
     echo "You need to pass a disk dev entry to install to such as /dev/sdb"
