@@ -1,7 +1,9 @@
 #!/bin/bash
-if [ $# -lt 1 ]; then
-  echo "You need to pass a disk dev entry to install to such as /dev/sdb"
-  exit
+if [ -z "$NODISK" ]; then
+  if [ $# -lt 1 ]; then
+    echo "You need to pass a disk dev entry to install to such as /dev/sdb"
+    exit
+  fi
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -22,12 +24,9 @@ sudo fdisk -l $disk
 
 echo "$current: current"
 echo "$toiso: $isopath"
-if [ "$current" != "$toiso" ]; then
-  echo "Out of date ... syncing"
-  NONET=1 $DIR/syncer.sh force
-else
-  echo "Not syncing"
-fi
+# Place the pip stuff there regardless every time.
+NONET=1 $DIR/syncer.sh pip
+NONET=1 $DIR/syncer.sh force
 
 if [ "$NOMIRROR" ]; then
   echo "Skipping mirroring"
@@ -41,11 +40,16 @@ fi
 echo "Creating a bootable iso named $file"
 sudo fai-cd -m $dir $file
 size=$(stat -c %s $file)
-echo "Writing to $disk"
 
-if [ -e "$file" ]; then
-  dd if=$file | pv -s $size | sudo dd of=$disk bs=2M
-else
-  echo "$file does not exist, Bailing!"
+if [ -z "$NODISK" ]; then
+  echo "Writing to $disk"
+
+  if [ -e "$file" ]; then
+    dd if=$file | pv -s $size | sudo dd of=$disk bs=2M
+  else
+    echo "$file does not exist, Bailing!"
+  fi
+else 
+  echo dd if=$file | pv -s $size | sudo dd of=$disk bs=2M
 fi
 
