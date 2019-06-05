@@ -1,4 +1,12 @@
 #!/bin/bash
+#
+# RESET   - Will remove the previous copy of the code and start afresh
+# NODISK  - Won't do disk things 
+# NOCLONE - Will skip over cloning
+# NOPIP   - Skips over pip install
+#
+##
+
 if [ -z "$NODISK" ]; then
   if [ $# -lt 1 ]; then
     echo "You need to pass a dev entry for it such as /dev/sdb1"
@@ -20,12 +28,12 @@ if [ -z "$NOCLONE" ]; then
   if [ -e $path ]; then
     cd $path
     git pull
-    pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
+    [ -z "$NOPIP" ] && pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
   else
     mkdir $path
     git clone git@github.com:WaiveCar/WaiveScreen.git $path
     mkdir -p $dest_home/pip
-    pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
+    [ -z "$NOPIP"] && pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
     cd $path
   fi
 
