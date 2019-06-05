@@ -137,7 +137,7 @@ def next_ad(work = False):
             lib.job_store(job)
 
         if 'task' in data:
-          for action, args in data['task'].items():
+          for action, args in data['task']:
             if action == 'upgrade':
               lib.ping()
 
@@ -149,6 +149,9 @@ def next_ad(work = False):
               arduino.do_awake(_reading)
 
             elif action == 'brightness':
+              val = float(args)
+              arduino.set_backlight(val)
+              dcall('set_brightness', val, 'nopy')
               # Here's where the args come in
               pass
 
