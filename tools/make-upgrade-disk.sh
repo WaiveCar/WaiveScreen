@@ -12,6 +12,10 @@ package=/tmp/upgrade.package
 mount=/tmp/mount
 dest_home=$path/Linux/fai-config/files/home
 
+if [ -n "$RESET" ]; then
+  [ -e $path ] && rm -fr $path
+fi
+
 if [ -z "$NOCLONE" ]; then
   if [ -e $path ]; then
     cd $path
