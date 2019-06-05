@@ -160,7 +160,7 @@ function _query($qstr, $func='exec') {
       error_log("Failed Query:" . $qstr);
     }
   } catch(Exception $ex) { 
-    error_log($qstr);
+    error_log("$qstr $ex " . json_encode($ex->getTrace()));
   }
 }
 
