@@ -99,11 +99,13 @@ test_arduino() {
 }
 
 set_brightness() {
-  shift=$1
-  level=$2
+  level=$1
+  nopy=$2
+
+  shift=$(perl -e "print .5 * $level + .5")
   revlevel=$(perl -e "print .75 * (1 - $level) + 1")
 
-  pycall arduino.set_backlight $level
+  [ -z "$nopy" ] && pycall arduino.set_backlight $level
 
   for display in HDMI-1 HDMI-2; do
     DISPLAY=:0 xrandr --output $display --gamma 1:1:$shift --brightness $revlevel
