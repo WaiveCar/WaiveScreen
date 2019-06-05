@@ -317,7 +317,7 @@ install() {
 
 get_uuid() {
   UUID=/etc/UUID
-  if [ ! -e $UUID ] ; then
+  if [ -n "$1" -o ! -e $UUID ] ; then
     {
       ifconfig | grep ether | sort | awk ' { print $2 } ' | md5sum | awk ' { print $1 } ' | md5sum | xxd -r -p | base64 | sed s'/=//g' | $SUDO tee $UUID
       hostname=bernays-$(cat $UUID)
