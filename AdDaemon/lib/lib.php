@@ -278,8 +278,13 @@ function sow($payload) {
   // Make sure we update our grand totals on a per campaign basis when it comes in.
   $uniqueCampaignList = array_unique($campaignsToUpdateList);
   foreach($uniqueCampaignList as $campaign) {
-    update_campaign_completed($campaign);
+    if($campaign) {
+      update_campaign_completed($campaign);
+    } else {
+      error_log("Couldn't update campaign");
+    }
   }
+  error_log(json_encode($uniqueCampaignList));
 	
   // Before we assign new jobs we want to make sure that the server
   // is up to date.  We need to make sure we continue to give it 
