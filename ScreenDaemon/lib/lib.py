@@ -7,6 +7,7 @@ import json
 import dbus
 import time
 import logging
+import sys
 from threading import Lock
 from pprint import pprint
 
@@ -338,5 +339,7 @@ def disk_monitor():
   for action, device in monitor:
     if action == 'add' and device.get('DEVTYPE') == 'partition':
       path = device.get('DEVNAME')
-      dcall('local_upgrade', path)
+      print(path)
+      sys.exit(0)
+      #dcall('local_upgrade', path, '&')
 

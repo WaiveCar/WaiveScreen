@@ -4,6 +4,7 @@
 # NODISK  - Won't do disk things 
 # NOCLONE - Will skip over cloning
 # NOPIP   - Skips over pip install
+# LOCAL   - Just use local code
 #
 ##
 
@@ -13,6 +14,8 @@ if [ -z "$NODISK" ]; then
     exit
   fi
 fi
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 disk=$1
 path=/tmp/upgradedisk
@@ -25,7 +28,10 @@ if [ -n "$RESET" ]; then
 fi
 
 if [ -z "$NOCLONE" ]; then
-  if [ -e $path ]; then
+  if [ -n "$LOCAL" ]; then
+    echo "Using local code"
+    cp -puvr $DIR/../* $path
+  elif [ -e $path ]; then
     cd $path
     git pull
     [ -z "$NOPIP" ] && pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
