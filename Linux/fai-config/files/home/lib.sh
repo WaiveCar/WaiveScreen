@@ -47,7 +47,7 @@ _onscreen() {
     -f lucidasanstypewriter-bold-$size &
 
   echo $ts $1 | $SUDO tee -a /tmp/messages
-  offset=$(( (offset + size + 9) % ((size + 9) * 25) ))
+  offset=$(( (offset + size + 9) % ((size + 9) * 28) ))
 
   echo $offset > /tmp/offset
   chmod 0666 /tmp/offset
@@ -492,7 +492,8 @@ disk_monitor() {
     {
       while true; do
         disk=$(pycall lib.disk_monitor)
-        local_upgrade $disk
+        [ -n "$disk" ] local_upgrade $disk
+        sleep 3
       done
     } &
   else
