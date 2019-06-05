@@ -131,22 +131,6 @@ modem_enable() {
       continue
     fi
 
-    # You won't find these options in the manpage, they are from
-    # cli/mmcli-modem-location.c in the ModemManager source code
-    # over at https://www.freedesktop.org/software/ModemManager/
-    $SUDO mmcli -m 0 \
-      --location-enable-gps-raw \
-      --location-enable-agps \
-      --location-enable-gps-nmea \
-      --location-set-enable-signal
-
-      #
-      # I don't quite know what this option does (but I didn't 
-      # study the code). Our Quectel 25A modems seem to not 
-      # understand it.
-      #
-      #--location-enable-gps-unmanaged \
-
     set_event modem_enable
     break
   done
@@ -156,7 +140,7 @@ modem_connect() {
   for i in 1 4; do
     $SUDO mmcli -m 0 --set-allowed-modes='3g|4g' --set-preferred-mode=4g
     $SUDO mmcli -m 0 --simple-connect="apn=internet,ip-type=ipv4v6"
-    wwan=`ip addr show | grep wwp | head -1 | awk -F ':' ' { print $2 } '`
+    wwan=`ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } '`
 
     if [ -z "$wwan" ]; then
       _warn  "No modem found. Trying again"
@@ -185,6 +169,22 @@ ENDL
   set_event net ''
 
   sleep 4
+
+  # You won't find these options in the manpage, they are from
+  # cli/mmcli-modem-location.c in the ModemManager source code
+  # over at https://www.freedesktop.org/software/ModemManager/
+  $SUDO mmcli -m 0 \
+    --location-set-enable-signal \
+    --location-enable-gps-raw \
+    --location-enable-agps 
+
+    #
+    # I don't quite know what this option does (but I didn't 
+    # study the code). Our Quectel 25A modems seem to not 
+    # understand it.
+    #
+    # --location-enable-gps-nmea \
+    # --location-enable-gps-unmanaged \
 
   if ping -c 1 -i 0.3 waivescreen.com; then
     _announce "waivescreen.com found" 
