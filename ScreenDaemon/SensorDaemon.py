@@ -32,8 +32,17 @@ ix = 0
 ix_hb = 0
 first = True
 
-FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+format = '%(asctime)-15s %(message)s'
+level = logging.DEBUG if os.getenv('DEBUG') else logging.WARN
+logpath = '/var/log/screen/sensordaemon.log'
+
+try:
+  logging.basicConfig(filename=logpath, format=format, level=level)
+
+except:
+  os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
+  logging.basicConfig(filename=logpath, format=format, level=level)
+
 logger = logging.getLogger(__name__)
 arduino.set_log(logger)
 

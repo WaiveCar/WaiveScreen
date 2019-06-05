@@ -172,11 +172,7 @@ def next_ad(work = False):
 
 if __name__ == '__main__':
 
-  if os.getenv('DEBUG'):
-    level = logging.DEBUG
-  else:
-    level = logging.WARN
-
+  level = logging.DEBUG if os.getenv('DEBUG') else logging.WARN
   format='%(levelname)s@%(lineno)d:%(message)s'
   logpath='/var/log/screen/screendaemon.log'
   try:
