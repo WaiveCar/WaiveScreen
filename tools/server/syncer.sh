@@ -1,7 +1,7 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-CODE=$DIR/../Linux/fai-config
+CODE=$DIR/../../Linux/fai-config
 GIT=$DIR/../
 LOCAL_HOME=$CODE/files/home
 SRV_HOME=/srv/fai/config/files/home
@@ -9,7 +9,7 @@ SRV_HOME=/srv/fai/config/files/home
 if [ $# -gt 0 ]; then
   case $1 in
     pip)
-      cd $DIR/../ScreenDaemon
+      cd $DIR/../../ScreenDaemon
       mkdir -p $LOCAL_HOME/pip
       pip3 download -d $LOCAL_HOME/pip -r requirements.txt
       exit
@@ -21,6 +21,7 @@ fi
 
 while [ 0 ]; do
 
+  # This is needed to the get the git version
   cd $DIR
 
   newname=WaiveScreen-$(date +%Y%m%d%H%m%S)-$(git describe)

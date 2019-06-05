@@ -13,13 +13,15 @@ if [ -z "$NODISK" ]; then
   fi
 fi
 
+die() {
+  echo $1
+  exit 1
+}
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 disk=$1
-now=$(date +%Y%m%d%H%M)
-current=$(git describe)
 dir=$HOME/usb
-file=$HOME/WaiveScreen-$now-$current.iso
+file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe).iso
 isopath=/srv/fai/config/files/home/WaiveScreen
 {
   cd $isopath
@@ -32,8 +34,8 @@ sudo fdisk -l $disk
 echo "$current: current"
 echo "$toiso: $isopath"
 # Place the pip stuff there regardless every time.
-NONET=1 $DIR/syncer.sh pip
-NONET=1 $DIR/syncer.sh force
+NONET=1 $DIR/syncer.sh pip || die "Can't sync"
+NONET=1 $DIR/syncer.sh force || die "Can't force an update"
 
 if [ "$NOMIRROR" ]; then
   echo "Skipping mirroring"
