@@ -1,9 +1,6 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-git() {
-  ssh screen "./dcall git_waivescreen"
-}
 
 list() {
   curl -s waivescreen.com/api/screens | python -mjson.tool
@@ -61,7 +58,6 @@ restart() {
 
 for i in $*; do
   case $1 in
-    git) git ;;
     list) list ;;
     connect) connect $1 ;;
     sync|reload) reload ;;
@@ -70,7 +66,7 @@ for i in $*; do
     force) pcycle ;;
     restart|reboot|reset|pcycle) restart ;;
     *) 
-      echo -e "Error: $1\nValid: git sync|reload list off connect on restart|reboot"
+      echo -e "Error: $1\nValid: sync|reload list off connect on restart|reboot"
       if [ $# -gt "1" ]; then
         echo "Exit: Found unknown command. Ending parsing"
       fi

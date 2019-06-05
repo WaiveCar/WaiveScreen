@@ -52,9 +52,6 @@ _onscreen() {
   echo $offset > /tmp/offset
   chmod 0666 /tmp/offset
 }
-_announce() {
-  _onscreen "$*" white 20
-}
 _info() {
   _onscreen "$*" white 10
 }
@@ -90,7 +87,7 @@ set_wrap() {
 
 set_event() {
   pid=${2:-$!}
-  [ -e $EV/$1 ] || _announce Event:$1
+  [ -e $EV/$1 ] || _info Event:$1
   echo -n $pid > $EV/$1
 }
 
@@ -187,12 +184,12 @@ ENDL
     # --location-enable-gps-unmanaged \
 
   if ping -c 1 -i 0.3 waivescreen.com; then
-    _announce "waivescreen.com found" 
+    _info "waivescreen.com found" 
   else
     _warn "waivescreen.com unresolvable!"
 
     while ! mmcli -m 0; do
-      _announce "Waiting for modem"
+      _info "Waiting for modem"
       sleep 9
     done
 
@@ -286,23 +283,6 @@ sensor_daemon() {
   set_event sensor_daemon
 }
 
-git_waivescreen() {
-  {
-    # Make sure we're online
-    wait_for net
-
-    if [ -e $DEST/WaiveScreen ]; then
-      cd $DEST/WaiveScreen
-      _git stash
-      _git pull
-    else  
-      cd $DEST
-      _git clone git@github.com:WaiveCar/WaiveScreen.git
-      ainsl $DEST/.bashrc 'PATH=$PATH:$HOME/.local/bin' 'HOME/.local/bin'
-    fi
-  } &
-}
-
 # This is used during the installation - don't touch it!
 pip_install() {
   pip3 -q install $DEST/pip/*
@@ -347,11 +327,6 @@ _screen_display_single() {
   export DISPLAY=${DISPLAY:-:0}
 
   [[ $ENV = 'development' ]] && wait_for net
-
-  if [ ! -e $BASE ]; then
-    git_waivescreen
-    wait_for $BASE ''
-  fi
 
   local app=$BASE/ScreenDisplay/display.html 
   if [ -e $app ]; then
@@ -473,7 +448,7 @@ local_upgrade() {
       sync_scripts $BASE/Linux/fai-config/files/home/
       # this is needed to get the git version
       cd $BASE
-      _announce "Upgraded to $(git describe) - restarting stack"
+      _info "Upgraded to $(git describe) - restarting stack"
       set -x
       pycall db.upgrade
       stack_restart 
