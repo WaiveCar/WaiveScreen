@@ -9,3 +9,5 @@ AdDaemon/lib/const.php
 tools/package-lock.json
 ScreenDisplay/assets/
 tools/power-history
+Linux/fai-config/files/home/pip/*.whl
+Linux/fai-config/files/home/pip/*.gz
