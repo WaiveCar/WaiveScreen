@@ -319,7 +319,7 @@ get_uuid() {
   UUID=/etc/UUID
   if [ -n "$1" -o ! -e $UUID ] ; then
     {
-      ifconfig | grep ether | sort | awk ' { print $2 } ' | md5sum | awk ' { print $1 } ' | md5sum | xxd -r -p | base64 | sed s'/=//g' | $SUDO tee $UUID
+      cat /sys/class/net/enp3s0/address | sed s'/://g' | xxd -r -p | base64 | $SUDO tee $UUID
       hostname=bernays-$(cat $UUID)
       echo $hostname | $SUDO tee /etc/hostname
       $SUDO ainsl /etc/hosts "127.0.0.1 $hostname"
