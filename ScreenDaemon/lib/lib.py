@@ -105,6 +105,11 @@ def get_modem(try_again=False):
   return modem_iface
 
 
+def dcall(*kvarg):
+  home = '/home/{}'.format(USER)
+  dcall = '{}/dcall'.format(home)
+  os.popen('{} {}'.format(dcall,' '.join([str(k) for k in kvarg])))
+
 def get_gps():
   modem = get_modem()
 
@@ -330,15 +335,8 @@ def disk_monitor():
   context = pyudev.Context()
   monitor = pyudev.Monitor.from_netlink(context)
 
-  home = '/home/{}'.format(USER)
-  dcall = '{}/dcall'.format(home)
-
-  def screen(what):
-    os.popen('{} _announce "{}"'.format(dcall,what))
-
   for action, device in monitor:
     if action == 'add' and device.get('DEVTYPE') == 'partition':
       path = device.get('DEVNAME')
-      screen("Found partition {}".format(path))
-      os.popen('{} local_upgrade {}'.format(dcall, path))
+      dcall('local_upgrade', path)
 
