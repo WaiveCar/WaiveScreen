@@ -136,24 +136,7 @@ def next_ad(work = False):
             job_list.append(job)
             lib.job_store(job)
 
-        if 'task' in data:
-          for action, args in data['task']:
-            if action == 'upgrade':
-              lib.ping()
-
-            elif action == 'screenoff':
-              global _reading
-              _reading = arduino.do_sleep()
-
-            elif action == 'screenon':
-              arduino.do_awake(_reading)
-
-            elif action == 'brightness':
-              val = float(args)
-              arduino.set_backlight(val)
-              dcall('set_brightness', val, 'nopy')
-              # Here's where the args come in
-              pass
+        lib.task_ingest(data)
 
         return success(job_list)
       else:
