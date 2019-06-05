@@ -33,7 +33,7 @@ ix_hb = 0
 first = True
 
 format = '%(asctime)-15s %(message)s'
-level = logging.DEBUG if os.getenv('DEBUG') else logging.WARN
+level = logging.DEBUG if os.getenv('DEBUG') else logging.INFO
 logpath = '/var/log/screen/sensordaemon.log'
 
 try:
@@ -43,7 +43,7 @@ except:
   os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
   logging.basicConfig(filename=logpath, format=format, level=level)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 arduino.set_log(logger)
 
 def is_significant(totest):

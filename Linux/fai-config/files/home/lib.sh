@@ -309,7 +309,7 @@ git_waivescreen() {
 
 # This is used during the installation - don't touch it!
 pip_install() {
-  pip3 install $DEST/pip/*
+  pip3 -q install $DEST/pip/*
 }
 
 install() {
@@ -398,8 +398,8 @@ running() {
     line="-"
     {
       if [ -n "$pid" ]; then 
-        line=$(ps -o pid= -p $( cat $pidfile ))
-        if [ -n "$line"] ; then
+        line=$(ps -o command= -p $( cat $pidfile ))
+        if [ -n "$line" ] ; then
           running="UP"
         else
           running="??"
@@ -408,8 +408,8 @@ running() {
         pid="---"
         running="NA"
       fi
-    } > /dev/null
-    printf "%5s %s %s %s\n" $pid $running $pidfile $line
+    }
+    printf "%5s %s %13s %s\n" $pid $running $pidfile $line
   done
 }
 
