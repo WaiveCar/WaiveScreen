@@ -231,7 +231,11 @@ function screens() {
 }
 
 function update_campaign_completed($id) {
-  _query("update campaign set completed_seconds=(select sum(completed_seconds) from job where campaign_id=$id) where id=$id");
+  if(!$id) {
+    error_log("Not updating an invalid campaign: $id");
+  } else {
+    _query("update campaign set completed_seconds=(select sum(completed_seconds) from job where campaign_id=$id) where id=$id");
+  }
 }
   
 function sow($payload) {
