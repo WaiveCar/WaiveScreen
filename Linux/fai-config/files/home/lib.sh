@@ -395,9 +395,11 @@ running() {
   cd $EV
   for pidfile in $( ls ); do
     pid=$( cat $pidfile )
+    line="-"
     {
       if [ -n "$pid" ]; then 
-        if ps -o pid= -p $( cat $pidfile ); then
+        line=$(ps -o pid= -p $( cat $pidfile ))
+        if [ -n "$line"] ; then
           running="UP"
         else
           running="??"
@@ -407,7 +409,7 @@ running() {
         running="NA"
       fi
     } > /dev/null
-    printf "%5s %s %s\n" $pid $running $pidfile
+    printf "%5s %s %s %s\n" $pid $running $pidfile $line
   done
 }
 
@@ -456,7 +458,7 @@ local_upgrade() {
 
   [ -e $mountpoint ] || mkdir $mountpoint
 
-  $SUDO umount -l $mountpoint >& /dev/null
+  $SUDO umount $mountpoint >& /dev/null
 
   if $SUDO mount $dev $mountpoint; then
     if [ -e $package ]; then
