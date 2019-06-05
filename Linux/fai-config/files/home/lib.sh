@@ -281,13 +281,9 @@ screen_daemon() {
 }
 
 sensor_daemon() {
-  {
-    wait_for net
-    down sensor_daemon
-    $SUDO $BASE/ScreenDaemon/SensorDaemon.py &
-    set_event sensor_daemon
-  } &
-  set_wrap sensor_daemon
+  down sensor_daemon
+  $SUDO $BASE/ScreenDaemon/SensorDaemon.py &
+  set_event sensor_daemon
 }
 
 git_waivescreen() {
@@ -368,7 +364,6 @@ _screen_display_single() {
 }
 
 screen_display() {
-  down screen_display
   ix=0
   {
     while pgrep Xorg; do
@@ -376,6 +371,10 @@ screen_display() {
       while pgrep chromium; do
         (( ix ++ ))
         sleep 10
+        [ -e $EV/0_screen_display ] || return
+        if [ "$( cat $EV/0_screen_display )" != "$pid" ]; then
+          return
+        fi
         # We try to ping the remote here
         # in case our browser broke from
         # a botched upgrade.
@@ -387,8 +386,9 @@ screen_display() {
       _screen_display_single
     done
   } >> /tmp/screen_display.log &
+  local pid=$!
 
-  set_wrap screen_display
+  set_wrap screen_display $pid
 }
 
 running() {
@@ -409,7 +409,7 @@ running() {
         running="NA"
       fi
     }
-    printf "%5s %s %13s %s\n" $pid $running $pidfile $line
+    printf "%5s %s %-20s %s\n" $pid $running $pidfile "$line"
   done
 }
 
@@ -429,8 +429,8 @@ down() {
     fi
 
     if [ -e "$pidfile" ]; then
-      printf " \xE2\x9C\x97 $pidfile\n"
       local pid=$( cat $pidfile )
+      printf " X $pidfile ($pid) \n"
       # Anonymous events, like the net
       # need to stay triggered while
       # process dependent ones should
@@ -444,7 +444,7 @@ down() {
         $SUDO rm $pidfile
       fi
     else
-      printf " \xE2\x9d\x93$pidfile\n"
+      printf " ? $pidfile\n"
     fi
   done
 }
@@ -474,8 +474,9 @@ local_upgrade() {
       # this is needed to get the git version
       cd $BASE
       _announce "Upgraded to $(git describe) - restarting stack"
+      set -x
       pycall db.upgrade
-      stack_restart &
+      stack_restart 
     else
       _info "No upgrade found"
       $SUDO umount -l $mountpoint
@@ -486,27 +487,35 @@ local_upgrade() {
 }
 
 disk_monitor() {
-  down disk_monitor
-  pycall lib.disk_monitor &
-  set_event disk_monitor
-}
+  howmany=$( pgrep -f 'dcall disk_monitor' | wc -l )
+  if [ $howmany -lt 3 ]; then
+    {
+      while true; do
+        disk=$(pycall lib.disk_monitor)
+        local_upgrade $disk
+      done
+    } &
+  else
+    echo "kill the others first"
+  fi
 
+}
 
 stack_down() {
   # Now we take down the browser.
   $DEST/dcall down 
 
   # This stuff shouldn't be needed but right now it is.
-  echo lib.disk_monitor chromium start-x-stuff SensorDaemon ScreenDaemon | xargs -n 1 $SUDO pkill -f 
+  echo chromium start-x-stuff SensorDaemon ScreenDaemon | xargs -n 1 $SUDO pkill -f 
 }
 
 # This permits us to use a potentially new way
 # of starting up the tools
 stack_up() {
-  $DEST/dcall disk_monitor
-  $DEST/dcall screen_display 
-  $DEST/dcall sensor_daemon
-  $DEST/dcall screen_daemon
+  for i in screen_display sensor_daemon screen_daemon disk_monitor; do
+    $DEST/dcall $i &
+  done
+  # $DEST/dcall screen_display 
 }
 
 stack_restart() {
