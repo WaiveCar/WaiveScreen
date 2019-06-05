@@ -21,11 +21,17 @@ fi
 
 while [ 0 ]; do
 
+  cd $DIR
+
+  newname=WaiveScreen-$(date +%Y%m%d%H%m%S)-$(git describe)
+
   #sudo cp -pru $CODE/* /srv/fai/config
   sudo rsync -azvr $CODE/ /srv/fai/config
   #sudo rsync -azvr $CODE/ --delete /srv/fai/config
 
   [ -e $SRV_HOME/WaiveScreen ] || mkdir -p $SRV_HOME/WaiveScreen
+  realname=$(readlink -f $SRV_HOME/WaiveScreen)
+
   sudo rsync -azvr $GIT $SRV_HOME/WaiveScreen
   sudo chown -R root.root /srv/fai/config/scripts
 
@@ -46,6 +52,11 @@ while [ 0 ]; do
       -f lucidasanstypewriter-bold-14 &
 
   date +%s > /tmp/last-sync
+
+  cd $SRV_HOME
+  mv $realname $newname
+  [ -e WaiveScreen ] && unlink WaiveScreen
+  ln -s $newname WaiveScreen
 
   if [ ! "$LOOP" ]; then
     exit
