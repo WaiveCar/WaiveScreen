@@ -133,7 +133,7 @@ def get_gps():
 
 
 def task_ingest(data):
-  if 'task' in not data:
+  if 'task' not in data:
     return
 
   for action, args in data['task']:
