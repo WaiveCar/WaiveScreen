@@ -107,7 +107,7 @@ def pm_if_needed(reading):
 
   # TODO: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
   # triggered by either the door closing or the car starting to move.
-  if _sleeping and (reading['Voltage'] > VOLTAGE_WAKE or abs(_base - reading['Accel'][2]) > 1500):
+  if _sleeping and (reading['Voltage'] > VOLTAGE_WAKE or abs(_base - reading['Accel_z']) > 1500):
     do_awake(reading)
 
 
@@ -278,8 +278,12 @@ def arduino_read():
     'Fan': fan_speed,
     'Temp': temp_c,
     'Current': current,
-    'Accel': [ accel_x, accel_y, accel_z ],
-    'Gyro': [ gyro_x, gyro_y, gyro_z ],
+    'Accel_x': accel_x, 
+    'Accel_y': accel_y, 
+    'Accel_z': accel_z,
+    'Gyro_x': gyro_x, 
+    'Gyro_y': gyro_y, 
+    'Gyro_z': gyro_z,
     'Voltage': v_in,
     'Tread': therm_read,
     'Tres': therm_resistance,
@@ -297,9 +301,9 @@ def get_move_status(last_read, last_smooth):
   move_threshold = 250
   
   move_magnitude = {
-    'x': math.fabs(last_read['Accel'][0] - _first['Accel'][0]),
-    'y': math.fabs(last_read['Accel'][1] - _first['Accel'][1]),
-    'z': math.fabs(last_read['Accel'][2] - _first['Accel'][2])
+    'x': math.fabs(last_read['Accel_x'] - _first['Accel_x']),
+    'y': math.fabs(last_read['Accel_y'] - _first['Accel_y']),
+    'z': math.fabs(last_read['Accel_z'] - _first['Accel_z'])
   }
 
   smooth_move = {
