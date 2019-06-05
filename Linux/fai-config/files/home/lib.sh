@@ -368,6 +368,7 @@ _screen_display_single() {
 }
 
 screen_display() {
+  down screen_display
   ix=0
   {
     while pgrep Xorg; do
@@ -483,6 +484,7 @@ local_upgrade() {
 }
 
 disk_monitor() {
+  down disk_monitor
   pycall lib.disk_monitor &
   set_event disk_monitor
 }
@@ -493,7 +495,7 @@ stack_down() {
   $DEST/dcall down 
 
   # This stuff shouldn't be needed but right now it is.
-  echo lib.disk_monitor chromium start-x-stuff ScreenDaemon | xargs -n 1 $SUDO pkill -f 
+  echo lib.disk_monitor chromium start-x-stuff SensorDaemon ScreenDaemon | xargs -n 1 $SUDO pkill -f 
 }
 
 # This permits us to use a potentially new way
