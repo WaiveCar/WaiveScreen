@@ -63,8 +63,12 @@ def is_significant(totest):
   # triggering this.
   deltaMap = {
     'Temp': 5,
-    'Accel': [200, 200, 300],
-    'Gyro': [30, 30, 30],
+    'Accel_x': 200,
+    'Accel_y': 200,
+    'Accel_z': 200,
+    'Gyro_x': 30, 
+    'Gyro_y': 30, 
+    'Gyro_z': 30, 
     'Pitch': 0.8,
     'Roll': 0.8,
     'Yaw': 0.9,

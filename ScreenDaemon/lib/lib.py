@@ -186,10 +186,7 @@ def sensor_store(data):
     if k in data:
       data[k] = round(data[k], v)
 
-  toInsert = {
-    'raw': json.dumps(data)
-  }
-  return db.insert('sensor', toInsert)
+  return db.insert('sensor', data)
 
 def sensor_last(index = False):
   res = db.kv_get('sensor', index)
