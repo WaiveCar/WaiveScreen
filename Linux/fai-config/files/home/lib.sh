@@ -62,10 +62,6 @@ _error() {
   _onscreen "$*" red 90
 }
 
-who_am_i() {
-  _info $(get_uuid) $ENV
-}
-
 online_loop() {
   {
     cat > $DEST/online
