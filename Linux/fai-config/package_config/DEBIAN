@@ -18,6 +18,7 @@ notion
 fonts-freefont-ttf
 chromium chromium-sandbox
 xterm
+exfat-utils
 tmux
 modemmanager
 isc-dhcp-client
