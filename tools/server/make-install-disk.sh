@@ -6,36 +6,27 @@
 #
 ##
 
-if [ -z "$NODISK" ]; then
-  if [ $# -lt 1 ]; then
-    echo "You need to pass a disk dev entry to install to such as /dev/sdb"
-    exit
-  fi
-fi
-
 die() {
   echo $1
   exit 1
 }
+if [ -z "$NODISK" ]; then
+  [ $# -lt 1 ] && die "You need to pass a disk dev entry to install to such as /dev/sdb"
+  disk=$1
+  echo "Installing to $disk"
+  sudo fdisk -l $disk
+fi
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-disk=$1
 dir=$HOME/usb
 file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe).iso
-isopath=/srv/fai/config/files/home/WaiveScreen
-{
-  cd $isopath
-  toiso=$(git describe)
-}
 
-echo "Installing to $disk"
-sudo fdisk -l $disk
 
-echo "$current: current"
-echo "$toiso: $isopath"
 # Place the pip stuff there regardless every time.
 NONET=1 $DIR/syncer.sh pip || die "Can't sync"
 NONET=1 $DIR/syncer.sh force || die "Can't force an update"
+exit
 
 if [ "$NOMIRROR" ]; then
   echo "Skipping mirroring"

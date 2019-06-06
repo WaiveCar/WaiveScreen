@@ -30,10 +30,21 @@ while [ 0 ]; do
   sudo rsync -azvr $CODE/ /srv/fai/config
   #sudo rsync -azvr $CODE/ --delete /srv/fai/config
 
-  [ -e $SRV_HOME/WaiveScreen ] || mkdir -p $SRV_HOME/WaiveScreen
-  realname=$(readlink -f $SRV_HOME/WaiveScreen)
+  realname=$SRV_HOME/WaiveScreen
+  if [ ! -e $SRV_HOME/WaiveScreen ]; then
+    # It may be pointing nowhere
+    [ -h $SRV_HOME/WaiveScreen ] && unlink $SRV_HOME/WaiveScreen
+    fname=$SRV_HOME/WaiveScreen*
+    if [ -n "$fname" ]; then
+      realname=$fname
+    else
+      realname=$newname
+    fi
+  else    
+    realname=$(readlink -f $SRV_HOME/WaiveScreen)
+  fi
 
-  sudo rsync -azvr $GIT $SRV_HOME/WaiveScreen
+  sudo rsync -azvr $GIT $realname
   sudo chown -R root.root /srv/fai/config/scripts
 
   if [ ! "$NONET" ]; then
@@ -45,18 +56,20 @@ while [ 0 ]; do
   fi
     
   echo $fn| osd_cat \
-      -c white \
-      -p top -A right \
-      -l 1 \
-      -o 10 \
-      -d 1 \
-      -f lucidasanstypewriter-bold-14 &
+    -c white \
+    -p top -A right \
+    -l 1 \
+    -o 10 \
+    -d 1 \
+    -f lucidasanstypewriter-bold-14 &
 
   date +%s > /tmp/last-sync
 
   cd $SRV_HOME
-  mv $realname $newname
-  [ -e WaiveScreen ] && unlink WaiveScreen
+  [ $realname != $newname ] && mv $realname $newname
+
+  # not -e ... we expect this to be a broken linke now.
+  [ -h WaiveScreen ] && unlink WaiveScreen
   ln -s $newname WaiveScreen
 
   if [ ! "$LOOP" ]; then
