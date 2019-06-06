@@ -133,6 +133,7 @@ def get_gps():
 
 
 def set_autobright():
+  from . import arduino
   brightness_map = [
     0.20, 0.03, 0.03, 0.03,  # 4am
     0.10, 0.30, 0.70, 0.90,  # 8am
@@ -143,7 +144,8 @@ def set_autobright():
   ]
 
   level = brightness_map[time.localtime().tm_hour]
-  dcall('set_brightness', level, '1')
+  arduino.set_backlight(level)
+  #dcall('set_brightness', level, '1')
 
 
 def task_ingest(data):
