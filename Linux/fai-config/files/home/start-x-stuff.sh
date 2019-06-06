@@ -5,7 +5,7 @@
 date +%s > /tmp/startup
 
 export DISPLAY=$1
-local REALPPID=$2
+REALPPID=$2
 
 # I want to remove anything that I did previously so I can start fresh
 rm -fr $DEST/.notion/default-session--* 
