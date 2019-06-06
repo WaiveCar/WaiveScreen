@@ -21,7 +21,7 @@ chown -R $USERID.$USERID $DEST
 sed -i 's/auth_self_keep/yes/g' $FAI_ROOT/usr/share/polkit-1/actions/org.freedesktop.ModemManager1.policy 
 
 ASSETCACHE=$FAI_ROOT/var/cache/assets
-if [ ! -e $ASSSETCACHE ] ; then
+if [ ! -e $ASSETCACHE ] ; then
   # This is a cache for assets in case we go offline
   mkdir -p $ASSETCACHE
   chmod 0777 $ASSETCACHE
