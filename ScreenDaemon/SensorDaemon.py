@@ -97,6 +97,7 @@ def is_significant(totest):
     return True
 
 
+run = db.kv_get('runcount')
 while True:
   sensor = arduino.arduino_read()
   if first:
@@ -108,10 +109,10 @@ while True:
   # We can xref the net_time and system_time for now. Eventually this will
   # probably not be necessary but in the early stages (2019/05/09) this is
   # a sanity check.
-  all = {**location, **sensor} 
+  all = {**location, **sensor, 'run': run} 
 
   if first:
-    logging.info("Success, Main Loop")
+    logging.debug("Success, Main Loop")
     first = False
 
   if is_significant(all):
