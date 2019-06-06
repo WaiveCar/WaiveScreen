@@ -23,7 +23,7 @@ AGGREGATE_THRESHOLD = 10
 # This is the Heartbeat in seconds - we do
 # a reading in this frequency (in seconds) to state that
 # we're still alive.
-HB = 30
+HB = 120
 
 PERIOD = HB / FREQUENCY
 START = time.time()
@@ -64,12 +64,12 @@ def is_significant(totest):
   # triggering this.
   deltaMap = {
     'Temp': 5,
-    'Accel_x': 200,
-    'Accel_y': 200,
-    'Accel_z': 200,
-    'Gyro_x': 30, 
-    'Gyro_y': 30, 
-    'Gyro_z': 30, 
+    'Accel_x': 250,
+    'Accel_y': 250,
+    'Accel_z': 250,
+    'Gyro_x': 35, 
+    'Gyro_y': 35, 
+    'Gyro_z': 35, 
     'Pitch': 0.8,
     'Roll': 0.8,
     'Yaw': 0.9,
