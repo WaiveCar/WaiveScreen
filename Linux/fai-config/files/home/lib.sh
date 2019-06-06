@@ -479,8 +479,9 @@ disk_monitor() {
 }
 
 stack_down() {
-  # Now we take down the browser.
-  $DEST/dcall down 
+  for i in screen_daemon screen_display sensor_daemon; do
+    $DEST/dcall down $i
+  done
 
   # This stuff shouldn't be needed but right now it is.
   echo chromium start-x-stuff SensorDaemon ScreenDaemon | xargs -n 1 $SUDO pkill -f 
