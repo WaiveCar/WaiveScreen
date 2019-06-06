@@ -24,11 +24,6 @@ _PROCESSOR = {
       'pre': lambda x, row: json.dumps(x),
       'post': lambda x, row: json.loads(x)
     },
-  },
-  'sensor': {
-    'raw': {
-      'post': lambda x, row: json.loads(x)
-    }
   }
 }
 
