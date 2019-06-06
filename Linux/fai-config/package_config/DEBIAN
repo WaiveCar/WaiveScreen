@@ -47,7 +47,7 @@ git
 
 # to do a softupdate during testing
 fai-client
-nfs-common
+# nfs-common
 gpg
 
 # dev stuff
