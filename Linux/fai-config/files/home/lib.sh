@@ -458,7 +458,7 @@ disk_monitor() {
     {
       while true; do
         disk=$(pycall lib.disk_monitor)
-        [ -n "$disk" ] local_upgrade $disk
+        [ -n "$disk" ] && local_upgrade $disk
         sleep 3
       done
     } &
