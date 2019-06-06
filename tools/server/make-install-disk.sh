@@ -26,7 +26,6 @@ file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe).iso
 # Place the pip stuff there regardless every time.
 NONET=1 $DIR/syncer.sh pip || die "Can't sync"
 NONET=1 $DIR/syncer.sh force || die "Can't force an update"
-exit
 
 if [ "$NOMIRROR" ]; then
   echo "Skipping mirroring"
