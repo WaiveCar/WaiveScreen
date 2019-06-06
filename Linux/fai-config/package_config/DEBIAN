@@ -47,7 +47,7 @@ python3-setuptools
 git
 
 # to do a softupdate during testing
-fai-client
+# fai-client
 # nfs-common
 gpg
 
