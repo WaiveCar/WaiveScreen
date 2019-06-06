@@ -42,4 +42,4 @@ modem_connect
 ssh_hole
 sensor_daemon
 
-set_event xstartup $REALPPID
+#set_event xstartup $REALPPID
