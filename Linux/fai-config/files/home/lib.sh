@@ -120,9 +120,24 @@ modem_enable() {
       continue
     fi
 
+    # This bizarre magic actually works. We reliably
+    # get the GPS lat/lng to finally appear with this 
+    # nonsense. Why? I wish I had the time to investigate
+    enable_gps
+    $SUDO mmcli -m 0 -d
+    $SUDO mmcli -m 0 -e
+    enable_gps
+
     set_event modem_enable
     break
   done
+}
+
+enable_gps() {
+  $SUDO mmcli -m 0 \
+    --location-set-enable-signal \
+    --location-enable-gps-raw \
+    --location-enable-agps 
 }
 
 modem_connect() {
@@ -159,21 +174,6 @@ ENDL
 
   sleep 4
 
-  # You won't find these options in the manpage, they are from
-  # cli/mmcli-modem-location.c in the ModemManager source code
-  # over at https://www.freedesktop.org/software/ModemManager/
-  $SUDO mmcli -m 0 \
-    --location-set-enable-signal \
-    --location-enable-gps-raw \
-    --location-enable-agps 
-
-    #
-    # I don't quite know what this option does (but I didn't 
-    # study the code). Our Quectel 25A modems seem to not 
-    # understand it.
-    #
-    # --location-enable-gps-nmea \
-    # --location-enable-gps-unmanaged \
 
   if ping -c 1 -i 0.3 waivescreen.com; then
     _info "waivescreen.com found" 
