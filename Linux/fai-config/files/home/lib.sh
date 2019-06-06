@@ -136,8 +136,7 @@ modem_enable() {
 enable_gps() {
   $SUDO mmcli -m 0 \
     --location-set-enable-signal \
-    --location-enable-gps-raw \
-    --location-enable-agps 
+    --location-enable-gps-raw 
 }
 
 modem_connect() {
