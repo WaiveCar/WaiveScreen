@@ -24,6 +24,7 @@ isc-dhcp-client
 imagemagick
 ffmpeg
 unclutter
+redshift
 curl
 sudo
 locate
