@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import lib.lib as lib
+import lib.db as db
 import arduino.lib as arduino
 import logging
 import sys
