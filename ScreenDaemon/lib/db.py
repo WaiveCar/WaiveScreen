@@ -103,6 +103,7 @@ _SCHEMA = {
     ('Gyro_z', 'float default null'),
     ('Lat', 'float default null'),
     ('Lng', 'float default null'),
+    ('run', 'integer default null'),
     ('created_at', 'datetime default current_timestamp'),
   ]
 }
