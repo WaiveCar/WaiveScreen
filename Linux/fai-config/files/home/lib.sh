@@ -239,6 +239,7 @@ pycall() {
 }
 
 ssh_hole() {
+  rest=20
   event=ssh_hole
   {
     while [ 0 ]; do
@@ -254,14 +255,14 @@ ssh_hole() {
 
       elif [ -e $EV/$event ] && ps -o pid= -p $( cat $EV/$event ); then
         # this means we have an ssh open and life is fine
-        sleep 10
+        sleep $rest
 
       else
         ssh -NC -R bounce:$PORT:127.0.0.1:22 bounce &
         set_event $event
       fi
 
-      sleep 10
+      sleep $rest
     done
   } > /dev/null &
 
@@ -395,7 +396,11 @@ down() {
   if [ -n "$1" ]; then
     local list=$1
   else
-    local list=$( ls )
+    # We are going to not allow downing
+    # everything any more. It's too 
+    # much of a problem.
+    return
+    #local list=$( ls )
   fi
 
   for pidfile in $list; do
