@@ -88,7 +88,7 @@ def is_significant(totest):
         if diff > v[i]:
           ttl += (diff / v[i]) - 1
 
-    else:
+    elif k in totest:
       diff = abs(last_reading[k] - totest[k])
       if diff > v:
         ttl += (diff / v) - 1
