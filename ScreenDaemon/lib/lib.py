@@ -138,7 +138,7 @@ def task_ingest(data):
 
   for action, args in data['task']:
     if action == 'upgrade':
-      lib.ping()
+      ping()
 
     elif action == 'screenoff':
       global _reading
