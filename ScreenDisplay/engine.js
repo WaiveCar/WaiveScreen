@@ -223,6 +223,9 @@ var Engine = function(opts){
   // TODO: A circular buffer to try and navigate poor network
   // conditions.
   function remote(verb, url, what, onsuccess, onfail) {
+    onfail = onfail || function(a){
+      console.log(a);
+    }
     if(!_res.server) {
       onfail();
     }

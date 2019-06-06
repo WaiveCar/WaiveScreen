@@ -77,8 +77,8 @@ def next_ad(work = False):
   sensor = lib.sensor_last()
   payload = {
     'uid': lib.get_uuid(),
-    'lat': sensor['lat'],
-    'lng': sensor['lng']
+    'lat': sensor.get('Lat'),
+    'lng': sensor.get('Lng')
   }
 
   try:
