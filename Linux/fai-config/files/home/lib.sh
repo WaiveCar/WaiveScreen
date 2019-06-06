@@ -92,7 +92,7 @@ set_brightness() {
   nopy=$2
 
   shift=$(perl -e "print .5 * $level + .5")
-  revlevel=$(perl -e "print .75 * (1 - $level) + 1")
+  revlevel=$(perl -e "print .65 * (1 - $level) + .3")
 
   [ -z "$nopy" ] && pycall arduino.set_backlight $level
 
