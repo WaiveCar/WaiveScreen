@@ -104,6 +104,8 @@ def next_ad(work = False):
   # in the queue.
   db.insert('queue', {'data': json.dumps(payload)})
 
+  logging.debug(json.dumps(payload))
+
   try:
     for job in db.all('queue'):
       payload = json.loads(job['data'])
