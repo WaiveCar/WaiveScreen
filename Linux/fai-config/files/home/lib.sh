@@ -186,13 +186,23 @@ ENDL
     done
 
     hasip=$( ip addr show $wwan | grep inet | wc -l )
-    myphone=$( mmcli  -m 0 | grep own | awk ' { print $NF } ' )
+
+    # mmcli may not properly be reporting the phone number. T-mobile sends it to
+    # us in our first text so we try to work it from there.
+    if [ -z "$MYPHONE" ]; then
+      phone=$( mmcli -m 0 | grep own | awk ' { print $NF } ' )
+      if [ -z "$phone" ]; then
+        phone=$( mmcli -m 0 -s 0 | grep 'text:' | awk ' { print $NF } ' )
+      fi 
+      local_set MYPHONE $phone
+    fi
+
     if (( hasip > 0 )); then
       _warn "Data plan issues."
     else
       _warn "No IP assigned."
     fi
-    _error "$myphone"
+    _error "$MYPHONE"
   fi
 }
 
