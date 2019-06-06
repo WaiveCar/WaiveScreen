@@ -126,5 +126,5 @@ gousb() {
 }
 
 alias pycall=$HOME/WaiveScreen/ScreenDaemon/dcall
-PATH=$PATH:$HOME/.local/bin
+PATH=$PATH:$HOME/.local/bin:$HOME
 source $HOME/const.sh
