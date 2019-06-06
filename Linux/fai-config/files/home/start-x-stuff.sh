@@ -18,6 +18,10 @@ rm -fr $DEST/.notion/default-session--*
 
 _info $(get_uuid) $ENV
 
+screen_daemon
+screen_display 
+disk_monitor
+
 #
 # This delay is rather important because the
 # wwan modem loads asynchronously and if we 
@@ -25,13 +29,6 @@ _info $(get_uuid) $ENV
 # and running then it will break it and we 
 # need to start over.
 #
-# We could *potentially* show an ad prior
-# to this delay but let's put such streamlining
-# off to later.
-#
-disk_monitor
-screen_display 
-
 sleep 20
 
 #
@@ -44,6 +41,5 @@ modem_connect
 
 ssh_hole
 sensor_daemon
-screen_daemon
 
 set_event xstartup $REALPPID
