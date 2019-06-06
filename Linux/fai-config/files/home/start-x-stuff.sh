@@ -42,4 +42,6 @@ modem_connect
 ssh_hole
 sensor_daemon
 
+pycall set_autobright
+
 #set_event xstartup $REALPPID
