@@ -46,8 +46,9 @@ python3-pip
 python3-setuptools
 git
 
-# to do a softupdate during testing
-# fai-client
+# This is needed for ainsl which is used
+# in lib.sh
+fai-client
 # nfs-common
 gpg
 
