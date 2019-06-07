@@ -379,7 +379,7 @@ running() {
     line="-"
     {
       if [ -n "$pid" ]; then 
-        line=$(ps -o command= -p $( cat $pidfile ))
+        line=$(ps -o start=,command= -p $( cat $pidfile ))
         if [ -n "$line" ] ; then
           running="UP"
         else
