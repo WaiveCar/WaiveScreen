@@ -22,10 +22,16 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 dir=$HOME/usb
 file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe).iso
 
+die() {
+  echo $1
+  exit
+}
 
 # Place the pip stuff there regardless every time.
-NONET=1 $DIR/syncer.sh pip || die "Can't sync"
-NONET=1 $DIR/syncer.sh force || die "Can't force an update"
+if [ -z "$NOPIP" ]; then
+  NONET=1 $DIR/syncer.sh pip || die "Can't sync"
+  NONET=1 $DIR/syncer.sh force || die "Can't force an update"
+fi
 
 if [ "$NOMIRROR" ]; then
   echo "Skipping mirroring"
@@ -36,14 +42,19 @@ else
   fai-mirror -v -cDEBIAN $dir
 fi
 
+echo "Checking for the most common fai fail case"
+for i in aptcache  conf  db  dists  pool; do
+  [ -e $dir/$i ] || die "Nope nope nope. fai-cd will fail without $dir/$i existing"
+done
+
 echo "Creating a bootable iso named $file"
 sudo fai-cd -m $dir $file
 size=$(stat -c %s $file)
 
 if [ -z "$NODISK" ]; then
-  echo "Writing to $disk"
 
   if [ -e "$file" ]; then
+    echo "Writing to $disk"
     dd if=$file | pv -s $size | sudo dd of=$disk bs=2M
   else
     echo "$file does not exist, Bailing!"
