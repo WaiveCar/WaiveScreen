@@ -146,7 +146,7 @@ get_number() {
     phone=$( mmcli -m 0 | grep own | awk ' { print $NF } ' )
     if [ -z "$phone" ]; then
       # mmcli may not properly number the sms messages starting at 0 so we find the earliest
-      firstsms=$( mmcli -m 0 --messaging-list-sms | sort -nr | tail -1 | grep '(\d)* ' )
+      firstsms=$( mmcli -m 0 --messaging-list-sms | sort -nr | tail -1 | grep -Po '(\d)* ' )
       phone=$( mmcli -m 0 -s $firstsms | grep 'text:' | awk ' { print $NF } ' )
     fi 
     local_set MYPHONE $phone
