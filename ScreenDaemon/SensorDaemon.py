@@ -47,6 +47,8 @@ except:
 logger = logging.getLogger()
 arduino.set_log(logger)
 
+def derivative():
+
 def is_significant(totest):
   global last_reading, ix, ix_hb
 
