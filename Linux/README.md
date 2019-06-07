@@ -1,5 +1,13 @@
 This things uses FAI and will eventually be on a USB stick. The fai-config is where the screen install magic lives.
 
+### Installing fai
+This is mostly to make this part reproducible at a future date.
+
+```
+# fai-setup -v
+# fai-chboot -IFv -u nfs://faiserver/srv/fai/config screen
+... TODO ..
+```
 
 Network install notes:
 
