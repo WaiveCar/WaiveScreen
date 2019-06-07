@@ -8,8 +8,3 @@ Additional account called demo with password: fai, root password: fai
 All needed packages are already on the CD or USB stick.
 Classes: INSTALL FAIBASE DEBIAN DEMO
 
-Name: Sysinfo
-Description: Show defailed system information
-Short: Show detailed hardware and system  information
-Long: Execute a lot of commands for collecting system information
-Classes: SYSINFO
