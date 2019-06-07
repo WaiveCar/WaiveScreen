@@ -86,6 +86,9 @@ ainsl $CHDEST/.bashrc 'source $HOME/const.sh' 'const.sh'
 $ROOTCMD $CHDEST/dcall get_uuid
 $ROOTCMD $CHDEST/dcall pip_install
 
+# installing the brightness regulator
+fcopy -Miv /etc/cron.hourly/autobright
+
 # Make an ssh key for testing the validity of the ssh hole
 #ssh-keygen -t rsa -N '' -f $CHDEST/.ssh/check-key
 #cat $CHDEST/.ssh/check-key.pub >> $CHDEST/.ssh/authorized_keys
