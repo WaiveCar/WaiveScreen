@@ -16,7 +16,8 @@ xorg xserver-xorg-video-all xserver-xorg-input-all
 x11-xserver-utils
 notion
 fonts-freefont-ttf
-chromium chromium-sandbox
+chromium 
+#chromium-sandbox
 xterm
 exfat-utils
 uuidgen

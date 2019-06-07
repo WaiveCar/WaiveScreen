@@ -1,6 +1,0 @@
-PACKAGES install-norec DEBIAN
-xorg xserver-xorg-video-all xserver-xorg-input-all
-fonts-freefont-ttf
-xterm
-desktop-base
-
