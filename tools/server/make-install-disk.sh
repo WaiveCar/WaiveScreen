@@ -6,10 +6,11 @@
 #
 ##
 
-die() {
-  echo $1
-  exit 1
-}
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+dir=$HOME/usb
+file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe).iso
+backup=/home/chris/backup-test
 
 ddcmd() {
   size=$(stat -c %s $1)
@@ -22,15 +23,11 @@ if [ -z "$NODISK" ]; then
   echo "Installing to $disk"
   sudo fdisk -l $disk
   if [ -n "$ONLYDISK" ]; then
-    $(ddcmd $(ls -tr1 Wai*| tail -1) $disk)
+    eval $(ddcmd $(ls -tr1 $HOME/Wai*| tail -1) $disk)
+    exit
   fi
 fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-dir=$HOME/usb
-file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe).iso
-backup=/home/chris/backup-test
 
 die() {
   echo $1
@@ -76,7 +73,7 @@ if [ -z "$NODISK" ]; then
 
   if [ -e "$file" ]; then
     echo "Writing to $disk"
-    $(ddcmd $file $disk)
+    eval $(ddcmd $file $disk)
   else
     echo "$file does not exist, Bailing!"
   fi
