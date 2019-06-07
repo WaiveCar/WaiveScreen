@@ -20,7 +20,7 @@ chromium
 #chromium-sandbox
 xterm
 exfat-utils
-uuidgen
+uuid-runtime
 tmux
 modemmanager
 isc-dhcp-client
