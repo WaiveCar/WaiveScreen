@@ -12,27 +12,31 @@ dir=$HOME/usb
 file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe).iso
 backup=/home/chris/backup-test
 
+die() {
+  echo $1
+  exit
+}
+
 ddcmd() {
   size=$(stat -c %s $1)
   echo "dd if=$1 | pv -s $size | sudo dd of=$2 bs=2M"
 }
 
-if [ -z "$NODISK" ]; then
+if [ -z "$NODIllSK" ]; then
   [ $# -lt 1 ] && die "You need to pass a disk dev entry to install to such as /dev/sdb"
   disk=$1
+  [ -b $disk ] || die "Woops, $disk isn't a disk"
+
   echo "Installing to $disk"
   sudo fdisk -l $disk
+
   if [ -n "$ONLYDISK" ]; then
-    eval $(ddcmd $(ls -tr1 $HOME/Wai*| tail -1) $disk)
+    echo $(ddcmd $(ls -tr1 $HOME/Wai*| tail -1) $disk) | /bin/bash
     exit
   fi
 fi
 
 
-die() {
-  echo $1
-  exit
-}
 
 # Place the pip stuff there regardless every time.
 if [ -z "$NOPIP" ]; then
