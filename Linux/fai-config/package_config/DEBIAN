@@ -19,6 +19,7 @@ fonts-freefont-ttf
 chromium chromium-sandbox
 xterm
 exfat-utils
+uuidgen
 tmux
 modemmanager
 isc-dhcp-client
