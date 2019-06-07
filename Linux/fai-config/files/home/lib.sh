@@ -139,6 +139,21 @@ enable_gps() {
     --location-enable-gps-raw 
 }
 
+get_number() {
+  # mmcli may not properly be reporting the phone number. T-mobile sends it to
+  # us in our first text so we try to work it from there.
+  if [ -z "$MYPHONE" ]; then
+    phone=$( mmcli -m 0 | grep own | awk ' { print $NF } ' )
+    if [ -z "$phone" ]; then
+      # mmcli may not properly number the sms messages starting at 0 so we find the earliest
+      firstsms=$( mmcli -m 0 --messaging-list-sms | sort -nr | tail -1 | grep '(\d)* ' )
+      phone=$( mmcli -m 0 -s $firstsms | grep 'text:' | awk ' { print $NF } ' )
+    fi 
+    local_set MYPHONE $phone
+  fi
+  echo $MYPHONE
+}
+
 modem_connect() {
   for i in 1 4; do
     $SUDO mmcli -m 0 --set-allowed-modes='3g|4g' --set-preferred-mode=4g
@@ -186,22 +201,12 @@ ENDL
 
     hasip=$( ip addr show $wwan | grep inet | wc -l )
 
-    # mmcli may not properly be reporting the phone number. T-mobile sends it to
-    # us in our first text so we try to work it from there.
-    if [ -z "$MYPHONE" ]; then
-      phone=$( mmcli -m 0 | grep own | awk ' { print $NF } ' )
-      if [ -z "$phone" ]; then
-        phone=$( mmcli -m 0 -s 0 | grep 'text:' | awk ' { print $NF } ' )
-      fi 
-      local_set MYPHONE $phone
-    fi
-
     if (( hasip > 0 )); then
       _warn "Data plan issues."
     else
       _warn "No IP assigned."
     fi
-    _error "$MYPHONE"
+    _error $(get_number)
   fi
 }
 
