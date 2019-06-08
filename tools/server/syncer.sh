@@ -2,7 +2,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 CODE=$DIR/../../Linux/fai-config
-GIT=$DIR/../
+GIT=$DIR/../../
 LOCAL_HOME=$CODE/files/home
 SRV_HOME=/srv/fai/config/files/home
 
