@@ -85,15 +85,10 @@ def is_significant(totest):
     if k not in last_reading:
       continue
 
-    if type(v) is list:
-      for i in range(len(v)):
-        diff = abs(last_reading[k][i] - totest[k][i])
-        if diff > v[i]:
-          ttl += (diff / v[i]) - 1
-
-    elif k in totest:
+    if k in totest:
       diff = abs(last_reading[k] - totest[k])
       if diff > v:
+        logging.info("{} {}".format(k, diff/v))
         ttl += (diff / v) - 1
 
   if ttl > AGGREGATE_THRESHOLD:
