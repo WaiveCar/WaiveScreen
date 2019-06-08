@@ -49,7 +49,7 @@ oldrestart() {
     echo -n "$i..."
   done
   kill $sshpid
-  pcycle
+  $DIR/pcycle.js
 }
 
 restart() {
@@ -63,7 +63,7 @@ for i in $*; do
     sync|reload) reload ;;
     on) on.js ;;
     off) off.js ;;
-    force) pcycle ;;
+    force) $DIR/pcycle.js ;;
     restart|reboot|reset|pcycle) restart ;;
     *) 
       echo -e "Error: $1\nValid: sync|reload list off connect on restart|reboot"
