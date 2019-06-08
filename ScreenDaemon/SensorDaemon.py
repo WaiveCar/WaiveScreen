@@ -64,23 +64,25 @@ def is_significant(totest):
   # otherwise we could creep along below a threshold without ever
   # triggering this.
   deltaMap = {
-    'Temp': 5,
-    'Accel_x': 250,
-    'Accel_y': 250,
-    'Accel_z': 250,
-    'Gyro_x': 35, 
-    'Gyro_y': 35, 
-    'Gyro_z': 35, 
-    'Pitch': 0.8,
-    'Roll': 0.8,
-    'Yaw': 0.9,
-    'Voltage': 0.75,
-    'Current': 0.75,
+    'Temp': 2,
+    'Accel_x': 1000,
+    'Accel_y': 1000,
+    'Accel_z': 1000,
+    'Gyro_x': 150, 
+    'Gyro_y': 200, 
+    'Gyro_z': 150, 
+    'Pitch': 3.0,
+    'Roll': 3.0,
+    'Yaw': 4.5,
+    'Voltage': 0.05,
+    'Current': 0.05,
     'Lat': 0.01,
     'Lng': 0.01
   }
 
   ttl = 0
+  isFirst = True
+  buffer = []
   for k,v in deltaMap.items():
     if k not in last_reading:
       continue
@@ -88,10 +90,14 @@ def is_significant(totest):
     if k in totest:
       diff = abs(last_reading[k] - totest[k])
       if diff > v:
-        logging.info("{} {}".format(k, diff/v))
+        if isFirst:
+            buffer.append('-----')
+            isFirst = False
         ttl += (diff / v) - 1
+        buffer.append("{:10} {:3.4f} {:.4f} {:4.4f}->{:4.4f}".format(k, ttl, diff/v, last_reading[k], totest[k]))
 
   if ttl > AGGREGATE_THRESHOLD:
+    logging.info("\n".join(buffer))
     last_reading = totest
     return True
 
