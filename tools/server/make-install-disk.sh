@@ -15,12 +15,12 @@ backup=/home/chris/backup-test
 
 die() {
   echo $1
-  exit
+  exit 1
 }
 
 ddcmd() {
   size=$(stat -c %s $1)
-  echo "dd if=$1 | pv -s $size | sudo dd of=$2 bs=2M"
+  echo "sudo dd if=$1 of=$2 bs=1M"
 }
 
 if [ -z "$NODISK" ]; then
@@ -55,23 +55,6 @@ else
   mkdir -p $dir
   fai-mirror -v -cDEBIAN $dir
 fi
-
-echo "Checking for the most common fai fail case"
-for i in aptcache  conf  db  dists  pool; do
-  if [ ! -e $dir/$i ]; then
-    echo "Nope nope nope. fai-cd will fail without $dir/$i existing"
-    if [ -e $backup/$i ]; then
-      echo "Trying to be brilliant and copy over a backup - don't ask me, I only work here."
-      cp -r $backup/$i $dir
-    else
-      die "Can't find a backup either. Fuck all this."
-    fi
-  else 
-    echo "Making a new backup of $i for future fai failures!"
-    [ -e $backup/$i ] && rm -fr $backup/$i
-    cp -r $dir/$i $backup
-  fi
-done
 
 echo "Creating a bootable iso named $file"
 sudo fai-cd -m $dir $file
