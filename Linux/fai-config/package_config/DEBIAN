@@ -20,7 +20,6 @@ chromium
 #chromium-sandbox
 xterm
 exfat-utils
-uuid-runtime
 tmux
 modemmanager
 isc-dhcp-client
@@ -32,6 +31,7 @@ curl
 sudo
 locate
 vim
+powertop
 
 # wireless stuff
 iw
