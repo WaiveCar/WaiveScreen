@@ -14,6 +14,7 @@ from datetime import datetime
 # would take a reading every 0.2 seconds
 
 FREQUENCY = 0.1 if 'FREQUENCY' not in os.environ else os.environ['FREQUENCY']
+WINDOW_SIZE = int(4.0 / FREQUENCY)
 
 # If all the sensor deltas reach this percentage
 # (multiplied by 100) from the baseline, then we
@@ -102,6 +103,9 @@ def is_significant(totest):
 
 
 run = db.kv_get('runcount')
+window = []
+f = open ("/home/adorno/charge-record.txt", "a+")
+
 while True:
   sensor = arduino.arduino_read()
   if first:
@@ -119,9 +123,19 @@ while True:
     logging.debug("Success, Main Loop")
     first = False
 
+  window.append(all.get('Voltage'))
+  if len(window) > WINDOW_SIZE * 1.2:
+    window = window[-WINDOW_SIZE:]
+  avg = float(sum(window)) / len(window)
+
   if is_significant(all):
     lib.sensor_store(all)
 
+  ln="{} {} {} {}\n".format(time.strftime("%H:%M:%S"), all['Voltage'], all['Current'], avg)
+
+  f.write(ln)
+  if ix % 10 == 0:
+      f.flush()
   # If we need to go into/get out of a low power mode
   if sensor:
     arduino.pm_if_needed(sensor)
