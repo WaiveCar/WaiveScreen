@@ -132,7 +132,7 @@ while True:
   if is_significant(all):
     lib.sensor_store(all)
 
-  ln="{} {} {} {}\n".format(time.strftime("%H:%M:%S"), all['Voltage'], all['Current'], avg)
+  ln="{} {} {} {} {} {}\n".format(time.strftime("%H:%M:%S"), all['Voltage'], all['Current'], avg, db.kv_get('state'))
 
   f.write(ln)
   if ix % 10 == 0:
