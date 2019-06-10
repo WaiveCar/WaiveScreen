@@ -4,6 +4,7 @@
 # NONET     - Won't try to do internet stuff
 # NOMIRROR  - Won't do the mirroring
 # ONLYDISK  - Only creates a disk
+# NOPIP     - Skip over pip download
 #
 ##
 
