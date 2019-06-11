@@ -102,6 +102,7 @@ def do_awake():
   db.sess_set('power', 'awake')
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
   set_autobright()
+  set_fanauto()
 
 def do_sleep():
   global _sleeping
