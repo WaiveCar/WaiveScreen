@@ -36,7 +36,7 @@ NOMODEM=1 pycall set_autobright
 # and running then it will break it and we 
 # need to start over.
 #
-sleep 16
+sleep 17
 
 #
 # Get online first before anything in the 
