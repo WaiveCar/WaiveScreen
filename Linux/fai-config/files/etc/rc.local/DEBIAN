@@ -2,10 +2,18 @@
 
 export HOME=/root
 export PATH=$PATH:/bin:/usr/bin:/sbin:/usr/sbin
-#/home/demo/dcall dev_setup
+
+# This permits us to know how many times we've booted.
+# It allows us to (or not to) trust values in our db
+if [ ! -e /etc/bootcount ]; then
+  echo "1" > /etc/bootcount
+  chmod 0444 /etc/bootcount
+else
+  echo $(( $(cat /etc/bootcount) + 1 )) > /etc/bootcount
+fi
+
 XINITRC=/root/.xinitrc /usr/bin/xinit &
 
-# Allows a single way to drop all this stuff out
 
 power() {
   sleep 30
