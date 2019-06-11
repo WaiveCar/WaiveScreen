@@ -105,7 +105,8 @@ def is_significant(totest):
 
 run = db.kv_get('runcount')
 window = []
-f = open ("/home/adorno/charge-record.txt", "a+")
+
+# f = open ("/home/adorno/charge-record.txt", "a+")
 
 while True:
   sensor = arduino.arduino_read()
@@ -132,11 +133,11 @@ while True:
   if is_significant(all):
     lib.sensor_store(all)
 
-  ln="{} {} {} {} {} \n".format(time.strftime("%H:%M:%S"), all['Voltage'], all['Current'], avg, db.sess_get('power'))
-
-  f.write(ln)
-  if ix % 10 == 0:
-    f.flush()
+  #ln="{} {} {} {} {} \n".format(time.strftime("%H:%M:%S"), all['Voltage'], all['Current'], avg, db.sess_get('power'))
+  #
+  #f.write(ln)
+  #if ix % 10 == 0:
+  #  f.flush()
 
   # If we need to go into/get out of a low power mode
   if sensor:
