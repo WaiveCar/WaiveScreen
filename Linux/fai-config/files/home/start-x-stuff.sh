@@ -22,6 +22,13 @@ screen_daemon
 screen_display 
 disk_monitor
 
+# 
+# This nomodem shouldn't be necessary
+# but we are putting it in here to not
+# cause any problems
+#
+NOMODEM=1 pycall set_autobright
+
 #
 # This delay is rather important because the
 # wwan modem loads asynchronously and if we 
@@ -29,7 +36,7 @@ disk_monitor
 # and running then it will break it and we 
 # need to start over.
 #
-sleep 20
+sleep 16
 
 #
 # Get online first before anything in the 
@@ -41,7 +48,5 @@ modem_connect
 
 ssh_hole
 sensor_daemon
-
-pycall set_autobright
 
 #set_event xstartup $REALPPID
