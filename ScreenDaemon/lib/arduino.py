@@ -74,10 +74,7 @@ def get_arduino(stop_on_failure=True):
 def do_awake(reading = {}):
   global _sleeping, _base
   _sleeping = False
-  # The state_set makes sure that we aren't drawing conclusions
-  # from values set during a prior run.
-  db.kv_set('state', 'awake')
-  db.kv_set('state_set', db.kv_get('runcount'))
+  db.sess_set('power', 'awake')
 
   if _base and 'Light' in _base:
     set_backlight(_base['Light'])
@@ -86,8 +83,7 @@ def do_awake(reading = {}):
 
 def do_sleep(reading = False):
   global _sleeping, _base
-  db.kv_set('state', 'sleep')
-  db.kv_set('state_set', db.kv_get('runcount'))
+  db.sess_set('power', 'sleep')
   
   if not reading:
     reading = arduino_read()

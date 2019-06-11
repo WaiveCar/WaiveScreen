@@ -82,16 +82,17 @@ def next_ad(work = False):
   }
 
   try:
-    jobList = request.get_json()
+    if db.sess_get('power') != 'sleep':
+      jobList = request.get_json()
+
+      if type(jobList) is not list:
+        jobList = [ jobList ]
+
+      payload['jobs'] = jobList
+
     sensorList = [x['raw'] for x in db.range('sensor', jobList['start_time'], jobList['end_time'])]
-
-    if type(jobList) is not list:
-      jobList = [ jobList ]
-
-    payload.update({
-      'jobs': jobList,
-      'sensor': sensorList
-    })
+    payload['sensor'] = sensorList
+    payload['power'] = db.sess_get('power')
 
   except Exception as ex:
     logging.warning("Error in getting ranges: {}".format(ex))
