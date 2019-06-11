@@ -136,10 +136,11 @@ while True:
 
   f.write(ln)
   if ix % 10 == 0:
-      f.flush()
+    f.flush()
+
   # If we need to go into/get out of a low power mode
   if sensor:
-    arduino.pm_if_needed(sensor,avg)
+    arduino.pm_if_needed(avg)
 
   # Now you'd think that we just sleep on the frequency, that'd be wrong.
   # Thanks, try again. Instead we need to use the baseline time from start
