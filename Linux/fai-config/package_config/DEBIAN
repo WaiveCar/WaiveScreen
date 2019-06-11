@@ -17,7 +17,7 @@ x11-xserver-utils
 notion
 fonts-freefont-ttf
 chromium 
-#chromium-sandbox
+chromium-sandbox
 xterm
 exfat-utils
 tmux
@@ -31,7 +31,7 @@ curl
 sudo
 locate
 vim
-powertop
+#powertop
 
 # wireless stuff
 iw
@@ -41,7 +41,6 @@ wpasupplicant
 bluez
 
 # power management suite
-powertop
 acpitool
 ethtool
 

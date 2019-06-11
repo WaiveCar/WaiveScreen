@@ -12,6 +12,7 @@ else
   echo $(( $(cat /etc/bootcount) + 1 )) > /etc/bootcount
 fi
 
-powertop --auto-tune
+# I think this kills the modem
+# powertop --auto-tune
 
 XINITRC=/root/.xinitrc /usr/bin/xinit &
