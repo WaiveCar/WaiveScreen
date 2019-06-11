@@ -3,6 +3,7 @@ import lib.lib as lib
 import lib.db as db
 import lib.arduino as arduino
 import sys
+import re
 import json
 import os
 import logging
@@ -44,19 +45,23 @@ if len(sys.argv) > 1:
   fn = sys.argv[1]
   arg = ''
 
+  arg_new_list = []
   if len(sys.argv) > 2:
-    arg_raw = sys.argv[2]
-    # Try and see if we have a number here.
-    try:
-      arg = float(arg_raw)
-    except:
-      # Otherwise pass it in as a string
-      arg = '"{}"'.format(arg_raw)
+    arg_raw_list = sys.argv[2].split(',')
+
+    for arg_raw in arg_raw_list:
+      # Try and see if we have a number here.
+      if re.match('[^\d\.]', arg_raw) and '"' not in arg_raw:
+        arg = '"{}"'.format(arg_raw)
+      else:
+        arg = arg_raw
+
+      arg_new_list.append(arg)
 
   # Try to run it a number of ways
   baseList =  [ '', 'lib.', 'arduino.', 'db.'] if fn.find('.') == -1 else [ '' ]
   for base in baseList:
-    if tryit( "{}{}({})".format(base, fn, arg) ):
+    if tryit( "{}{}({})".format(base, fn, ','.join(arg_new_list)) ):
       break
 
   # if something succeeded then we try to 
