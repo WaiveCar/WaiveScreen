@@ -430,6 +430,10 @@ def get_bootcount():
 
   return _bootcount
 
+def sess_del(key):
+  kv_set(key, None)
+  kv_set("{}_bootnumber", None)
+
 def sess_set(key, value):
   kv_set(key, value)
   kv_set("{}_bootnumber".format(key), get_bootcount())

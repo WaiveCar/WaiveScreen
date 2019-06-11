@@ -93,6 +93,18 @@ def set_autobright():
   ]
 
   level = brightness_map[time.localtime().tm_hour]
+  
+  #
+  # The maximum brightness can be instructed to us
+  # on a per-boot-instance basis by a "brightnes" 
+  # task command. If we have that then we should
+  # observe that value and not auto-bright ourselves
+  # past it. (see #38 for discussion about this)
+  #
+  max_bright = db.sess_get('backlight')
+  if max_bright is not None:
+    level = min(max_bright, level)
+
   set_backlight(level)
   dcall('set_brightness', level, 'nopy')
 
