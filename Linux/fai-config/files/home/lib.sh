@@ -191,6 +191,8 @@ ENDL
 
   if ping -c 1 -i 0.3 waivescreen.com; then
     _info "waivescreen.com found" 
+    # setting the phone
+    pycall db.kv_set number,$(get_number)
   else
     _warn "waivescreen.com unresolvable!"
 
