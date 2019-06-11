@@ -155,10 +155,19 @@ def task_ingest(data):
     elif action == 'reboot':
       os.system('/usr/bin/sudo /sbin/reboot')
 
+    elif action == 'autobright':
+      db.sess_del('backlight')
+      arduino.set_autobright()
+
     elif action == 'brightness':
       val = float(args)
       arduino.set_backlight(val)
       dcall('set_brightness', val, 'nopy')
+
+      # This becomes a ceiling until either we
+      # call this again, call autobright (above)
+      # or reboot
+      db.sess_set('backlight', val)
 
 
 def get_modem_info():
