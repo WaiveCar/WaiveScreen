@@ -196,8 +196,12 @@ ENDL
   else
     _warn "waivescreen.com unresolvable!"
 
+    ix=0
     while ! mmcli -m 0; do
-      _info "Waiting for modem"
+      (( ix ++ ))
+      if (( ix < 4 )); then
+        _info "Waiting for modem"
+      fi
       sleep 9
     done
 
