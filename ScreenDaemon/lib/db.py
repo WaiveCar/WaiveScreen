@@ -422,8 +422,11 @@ def kv_set(key, value):
 def get_bootcount():
   global _bootcount
   if _bootcount == None:
-    with open('/etc/bootcount', 'r') as f:
-      _bootcount = f.read().strip()
+    try:
+      with open('/etc/bootcount', 'r') as f:
+        _bootcount = f.read().strip()
+    except:
+      _bootcount = 1
 
   return _bootcount
 
