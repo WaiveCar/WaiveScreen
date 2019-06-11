@@ -242,6 +242,7 @@ function sow($payload) {
   global $LASTCOMMIT, $VERSION;
   $server_response = [ 'res' => true ];
 
+  error_log(json_encode($payload));
   if(isset($payload['uid'])) {
     $uid = $payload['uid'];
   } else {
@@ -288,7 +289,7 @@ function sow($payload) {
       error_log("Couldn't update campaign");
     }
   }
-  error_log(json_encode($uniqueCampaignList));
+  // error_log(json_encode($uniqueCampaignList));
 	
   // Before we assign new jobs we want to make sure that the server
   // is up to date.  We need to make sure we continue to give it 
