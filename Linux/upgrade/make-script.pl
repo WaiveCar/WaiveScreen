@@ -45,9 +45,11 @@ print $fh qq{#!/bin/bash
 # use an eval
 
 upgradepre() {
+  # Currently ignored and not run.
 }
 
 upgradepost() {
+  # Put everything you need here.
 }
 
 rollback() {
