@@ -1,3 +1,4 @@
 #!/bin/bash
 
 /home/adorno/WaiveScreen/ScreenDaemon/dcall set_autobright
+/home/adorno/WaiveScreen/tools/client/sanity-check.sh
