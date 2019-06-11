@@ -12,34 +12,6 @@ else
   echo $(( $(cat /etc/bootcount) + 1 )) > /etc/bootcount
 fi
 
+powertop --auto-tune
+
 XINITRC=/root/.xinitrc /usr/bin/xinit &
-
-
-power() {
-  sleep 30
-  echo 'min_power' > '/sys/class/scsi_host/host0/link_power_management_policy'
-  echo '1500'      > '/proc/sys/vm/dirty_writeback_centisecs'
-  echo '0'         > '/proc/sys/kernel/nmi_watchdog'
-  echo 'min_power' > '/sys/class/scsi_host/host1/link_power_management_policy'
-  echo 'auto'   > '/sys/bus/i2c/devices/i2c-5/device/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:03:00.0/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:04:00.0/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:00:1b.0/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:00:1a.0/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:00:1c.1/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:00:13.0/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:00:1c.3/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:00:1f.0/power/control'
-  echo 'auto'   > '/sys/bus/usb/devices/2-3/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:00:00.0/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:00:12.0/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:00:1c.2/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:00:1c.0/power/control'
-  echo 'auto'   > '/sys/bus/pci/devices/0000:00:14.0/power/control'
-  echo 'auto'   > '/sys/bus/usb/devices/1-3/power/control'
-  echo 'auto'   > '/sys/bus/usb/devices/1-1.4/power/control'
-  echo 'auto'   > '/sys/bus/usb/devices/1-4.4/power/control'
-  #ethtool -s enp3s0 wol d
-}
-
-#power
