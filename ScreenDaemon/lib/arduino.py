@@ -10,13 +10,13 @@ import atexit
 
 _arduino = False
 _first = False
-_sleeping = False
+_sleeping = None
 _base = False
 _log = False
 
 # If the voltage drops below this we send it off to sleep
-VOLTAGE_SLEEP = 12.5
-VOLTAGE_WAKE = VOLTAGE_SLEEP + 1
+VOLTAGE_SLEEP = 11.3
+VOLTAGE_WAKE = 13.8
 if 'DISPLAY' in os.environ:
   DISPLAY = os.environ['DISPLAY']
 else:
@@ -108,13 +108,13 @@ def do_sleep(reading = False):
   # os.system("/usr/bin/sudo /usr/bin/acpitool -s")
   return reading
 
-def pm_if_needed(reading):
-  if not _sleeping and reading['Voltage'] < VOLTAGE_SLEEP and reading['Current'] < 1:
+def pm_if_needed(reading, avg):
+  if (_sleeping == None or _sleeping == False) and avg < VOLTAGE_SLEEP: # and reading['Current'] > 1:
     do_sleep(reading)
 
   # TODO: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
   # triggered by either the door closing or the car starting to move.
-  if _sleeping and (reading['Voltage'] > VOLTAGE_WAKE or abs(_base - reading['Accel_z']) > 1500):
+  if (_sleeping == None or _sleeping == True) and avg > VOLTAGE_WAKE: # or abs(_base - reading['Accel_z']) > 1500):
     do_awake(reading)
 
 
