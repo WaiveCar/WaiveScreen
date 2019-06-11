@@ -8,11 +8,16 @@ import dbus
 import time
 import logging
 import sys
+import glob
 from threading import Lock
 from pprint import pprint
 
 # This is needed for the git describe to succeed
 MYPATH = os.path.dirname(os.path.realpath(__file__))
+
+# We live in ScreenDaemon/lib so we go up 2
+ROOT = os.path.dirname(os.path.dirname(MYPATH))
+
 os.chdir(MYPATH)
 VERSION = os.popen("/usr/bin/git describe").read().strip()
 
@@ -349,6 +354,29 @@ def get_uuid():
         UUID = f.read().strip()
        
   return UUID
+
+def upgrades_to_run():
+  upgrade_glob = "{}/Linux/upgrade/*.script".format(ROOT)
+  last_upgrade_script = db.kv_get('last_upgrade')
+  pos = -1
+  upgrade_list = sorted(glob.glob(upgrade_glob))
+  if len(upgrade_list) == 0:
+    logging.warning("Woops, couldn't find anything at {}".format(upgrade_glob))
+
+  else:
+
+    try:
+      pos = upgrade_list.index(last_upgrade_script)
+    except Exception as ex:
+      pos = -1
+      
+    pos += 1
+
+    to_run = upgrade_list[pos:]
+    print(" ".join(to_run))
+    db.kv_set('last_upgrade', upgrade_list[-1])
+  
+  
 
 def disk_monitor(): 
   import pyudev
