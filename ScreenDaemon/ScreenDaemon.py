@@ -85,12 +85,12 @@ def next_ad(work = False):
     if db.sess_get('power') != 'sleep':
       jobList = request.get_json()
 
-      if type(jobList) is not list:
-        jobList = [ jobList ]
+      #if type(jobList) is not list:
+      #  jobList = [ jobList ]
 
       payload['jobs'] = jobList
 
-    sensorList = [x['raw'] for x in db.range('sensor', jobList['start_time'], jobList['end_time'])]
+    sensorList = [dict(x) for x in db.range('sensor', jobList['start_time'], jobList['end_time'])]
     payload['sensor'] = sensorList
     payload['power'] = db.sess_get('power')
 
