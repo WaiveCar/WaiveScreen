@@ -27,6 +27,8 @@ if [ -n "$RESET" ]; then
   [ -e $path ] && rm -fr $path
 fi
 
+[ -d $path ] || mkdir $path
+
 if [ -z "$NOCLONE" ]; then
   if [ -n "$LOCAL" ]; then
     echo "Using local code"
