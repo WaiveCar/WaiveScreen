@@ -247,6 +247,15 @@ def asset_cache(check):
       #
       open(name, 'wb').write(r.content)
 
+    else:
+      # This is equivalent to a "touch" - used for a cache cleaning 
+      # system
+      try:
+        with open(name, 'a'):
+          os.utime(name, None)
+      except:
+        pass
+
     res.append(name)
 
   check['asset'] = res
