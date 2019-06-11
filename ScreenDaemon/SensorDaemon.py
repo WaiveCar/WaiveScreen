@@ -14,7 +14,7 @@ from datetime import datetime
 # would take a reading every 0.2 seconds
 
 FREQUENCY = 0.1 if 'FREQUENCY' not in os.environ else os.environ['FREQUENCY']
-WINDOW_SIZE = int(4.0 / FREQUENCY)
+WINDOW_SIZE = int(12.0 / FREQUENCY)
 
 # If all the sensor deltas reach this percentage
 # (multiplied by 100) from the baseline, then we
@@ -132,14 +132,14 @@ while True:
   if is_significant(all):
     lib.sensor_store(all)
 
-  ln="{} {} {} {} {} \n".format(time.strftime("%H:%M:%S"), all['Voltage'], all['Current'], avg, db.kv_get('state', use_cache=False))
+  ln="{} {} {} {} {} \n".format(time.strftime("%H:%M:%S"), all['Voltage'], all['Current'], avg, db.sess_get('power'))
 
   f.write(ln)
   if ix % 10 == 0:
       f.flush()
   # If we need to go into/get out of a low power mode
   if sensor:
-    arduino.pm_if_needed(sensor)
+    arduino.pm_if_needed(sensor,avg)
 
   # Now you'd think that we just sleep on the frequency, that'd be wrong.
   # Thanks, try again. Instead we need to use the baseline time from start

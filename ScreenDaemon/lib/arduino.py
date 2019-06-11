@@ -15,8 +15,8 @@ _base = False
 _log = False
 
 # If the voltage drops below this we send it off to sleep
-VOLTAGE_SLEEP = 11.3
-VOLTAGE_WAKE = 13.8
+VOLTAGE_SLEEP = 11.9
+VOLTAGE_WAKE = 13.5
 if 'DISPLAY' in os.environ:
   DISPLAY = os.environ['DISPLAY']
 else:
