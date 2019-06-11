@@ -30,10 +30,10 @@ _onscreen() {
   if [ ! -e /tmp/offset ]; then
     offset=0
   else
-    offset=$( cat /tmp/offset )
+    offset=$(< /tmp/offset )
   fi
 
-  ts=$( printf "%03d" $(( $(date +%s) - $(cat /tmp/startup) )))
+  ts=$( printf "%03d" $(( $(date +%s) - $(< /tmp/startup) )))
   size=14
 
   #from=$( caller 1 | awk ' { print $2":"$1 } ' )
@@ -263,7 +263,7 @@ ssh_hole() {
         # _warn "Cannot contact the server for my port"
         /bin/true
 
-      elif [ -e $EV/$event ] && ps -o pid= -p $( cat $EV/$event ); then
+      elif [ -e $EV/$event ] && ps -o pid= -p $(< $EV/$event ); then
         # this means we have an ssh open and life is fine
         sleep $rest
 
@@ -312,7 +312,7 @@ get_uuid() {
     {
       # The MAC addresses are just SOOO similar we want more variation so let's md5sum
       cat /sys/class/net/enp3s0/address | md5sum | awk ' { print $1 } ' | xxd -r -p | base64 | sed -E 's/[=\/]//g' | $SUDO tee $UUID
-      hostname=bernays-$(cat $UUID)
+      hostname=bernays-$(< $UUID)
       echo $hostname | $SUDO tee /etc/hostname
       $SUDO ainsl /etc/hosts "127.0.0.1 $hostname"
     } > /dev/null
@@ -359,7 +359,7 @@ screen_display() {
         (( ix ++ ))
         sleep 10
         [ -e $EV/0_screen_display ] || return
-        if [ "$( cat $EV/0_screen_display )" != "$pid" ]; then
+        if [ "$(< $EV/0_screen_display )" != "$pid" ]; then
           return
         fi
         # We try to ping the remote here
@@ -381,11 +381,11 @@ screen_display() {
 running() {
   cd $EV
   for pidfile in $( ls ); do
-    pid=$( cat $pidfile )
+    pid=$(< $pidfile )
     line="-"
     {
       if [ -n "$pid" ]; then 
-        line=$(ps -o start=,command= -p $( cat $pidfile ))
+        line=$(ps -o start=,command= -p $(< $pidfile ))
         if [ -n "$line" ] ; then
           running="UP"
         else
@@ -420,7 +420,7 @@ down() {
     fi
 
     if [ -e "$pidfile" ]; then
-      local pid=$( cat $pidfile )
+      local pid=$(< $pidfile )
       printf " X $pidfile ($pid) \n"
       # Anonymous events, like the net
       # need to stay triggered while
@@ -468,6 +468,7 @@ local_upgrade() {
       set -x
       pycall db.upgrade
       stack_restart 
+      upgrade_scripts
     else
       _info "No upgrade found"
       $SUDO umount -l $mountpoint
@@ -516,11 +517,18 @@ stack_restart() {
   stack_up
 }
 
+upgrade_scripts() {
+  for script in $(pycall upgrades_to_run); do
+    $SUDO $script upgradepost
+  done
+}
+
 upgrade() {
   local_sync
   cd $BASE/ScreenDaemon
   $SUDO pip3 install -r requirements.txt
-  ./dcall db.upgrade
+  pycall db.upgrade
+  upgrade_scripts
   stack_restart
 }
 
