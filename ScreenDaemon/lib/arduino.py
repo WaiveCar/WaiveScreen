@@ -11,8 +11,14 @@ import atexit
 _arduino = False
 _first = False
 _sleeping = None
-_base = False
 _log = False
+
+if os.environ['USER'] == 'root':
+  # This tool probably shouldn't be run as root but we should
+  # know who we are talking about if it is
+  USER = 'adorno'
+else:
+  USER = os.environ['USER']
 
 # If the voltage drops below this we send it off to sleep
 VOLTAGE_SLEEP = 11.9
@@ -71,30 +77,42 @@ def get_arduino(stop_on_failure=True):
 
   return _arduino
 
-def do_awake(reading = {}):
-  global _sleeping, _base
+def dcall(*kvarg):
+  home = '/home/{}'.format(USER)
+  dcall = '{}/dcall'.format(home)
+  os.popen('{} {}'.format(dcall,' '.join([str(k) for k in kvarg])))
+
+def set_autobright():
+  brightness_map = [
+    0.20, 0.08, 0.08, 0.08,  # 4am
+    0.10, 0.30, 0.70, 0.90,  # 8am
+    1.00, 1.00, 1.00, 1.00,  # 12pm
+    1.00, 1.00, 1.00, 1.00,  # 4pm
+    1.00, 0.90, 0.80, 0.70,  # 8pm
+    0.50, 0.50, 0.40, 0.30,  # midnight
+  ]
+
+  level = brightness_map[time.localtime().tm_hour]
+  set_backlight(level)
+  dcall('set_brightness', level, 'nopy')
+
+def do_awake():
+  global _sleeping
   _sleeping = False
   db.sess_set('power', 'awake')
-
-  if _base and 'Light' in _base:
-    set_backlight(_base['Light'])
-
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
+  set_autobright()
 
-def do_sleep(reading = False):
-  global _sleeping, _base
+def do_sleep():
+  global _sleeping
   db.sess_set('power', 'sleep')
   
-  if not reading:
-    reading = arduino_read()
-
-  set_backlight(0)
-  set_fanspeed(0)
-
-  _base = reading
   _sleeping = True
   _log.info("Going to sleep")
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force suspend".format(DISPLAY))
+
+  set_backlight(0)
+  set_fanspeed(0)
   #
   # TODO: This will immediately turn back on thanks to our Quectel modem. See #8 at 
   # https://github.com/WaiveCar/WaiveScreen/issues/8 to follow this - we're going 
@@ -104,14 +122,14 @@ def do_sleep(reading = False):
   # os.system("/usr/bin/sudo /usr/bin/acpitool -s")
   return reading
 
-def pm_if_needed(reading, avg):
+def pm_if_needed(avg):
   if (_sleeping == None or _sleeping == False) and avg < VOLTAGE_SLEEP: # and reading['Current'] > 1:
-    do_sleep(reading)
+    do_sleep()
 
   # TODO: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
   # triggered by either the door closing or the car starting to move.
   if (_sleeping == None or _sleeping == True) and avg > VOLTAGE_WAKE: # or abs(_base - reading['Accel_z']) > 1500):
-    do_awake(reading)
+    do_awake()
 
 
 def clear():
