@@ -120,7 +120,6 @@ def do_sleep():
   # by doing some unnecessary shit and then turn immediately back on.
   #
   # os.system("/usr/bin/sudo /usr/bin/acpitool -s")
-  return reading
 
 def pm_if_needed(avg):
   if (_sleeping == None or _sleeping == False) and avg < VOLTAGE_SLEEP: # and reading['Current'] > 1:
