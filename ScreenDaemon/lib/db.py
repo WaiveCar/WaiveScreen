@@ -11,10 +11,11 @@ from datetime import timedelta
 from threading import Lock
 from pprint import pprint
 
-g_db_count = 0
-g_lock = Lock()
-g_params = {}
-g_instance = {}
+_dbcount = 0
+_lock = Lock()
+_params = {}
+_instance = {}
+_bootcount = None
 
 # This is a way to get the column names after grabbing everything
 # I guess it's also good practice
@@ -281,12 +282,12 @@ def connect(db_file=None):
   # A "singleton pattern" or some other fancy $10-world style of maintaining 
   # the database connection throughout the execution of the script.
   # Returns the database instance.
-  global g_db_count, g_instance
+  global _dbcount, _instance
 
   id = threading.get_ident()
 
-  if id in g_instance:
-    return g_instance[id] 
+  if id in _instance:
+    return _instance[id] 
 
   if 'DB' in os.environ:
     default_db = os.environ['DB']
@@ -306,7 +307,7 @@ def connect(db_file=None):
   # Really, just think about it ... it's totally irrelevant.
   #
 
-  g_instance[id] = {}
+  _instance[id] = {}
 
   if not os.path.exists(db_file):
     sys.stderr.write("Info: Creating db file %s\n" % db_file)
@@ -317,22 +318,22 @@ def connect(db_file=None):
   if 'DEBUG' in os.environ:
     conn.set_trace_callback(logging.debug)
 
-  g_instance[id].update({
+  _instance[id].update({
     'conn': conn,
     'c': conn.cursor()
   })
 
-  if db_file == default_db and g_db_count == 0: 
+  if db_file == default_db and _dbcount == 0: 
 
     for table, schema in list(_SCHEMA.items()):
       dfn = ','.join(["%s %s" % (key, klass) for key, klass in schema])
-      g_instance[id]['c'].execute("CREATE TABLE IF NOT EXISTS %s(%s)" % (table, dfn))
+      _instance[id]['c'].execute("CREATE TABLE IF NOT EXISTS %s(%s)" % (table, dfn))
 
-    g_instance[id]['conn'].commit()
+    _instance[id]['conn'].commit()
 
-  g_db_count += 1 
+  _dbcount += 1 
 
-  return g_instance[id]
+  return _instance[id]
 
 
 def incr(key, value=1):
@@ -353,16 +354,16 @@ def incr(key, value=1):
 def kv_get(key, expiry=0, use_cache=True, default=None):
   # Retrieves a value from the database, tentative on the expiry. 
   # If the cache is set to true then it retrieves it from in-memory if available, otherwise
-  # it goes out to the db. Other than directly hitting up the g_params parameter which is 
+  # it goes out to the db. Other than directly hitting up the _params parameter which is 
   # used internally, there is no way to invalidate the cache.
-  global g_params
+  global _params
 
   # only use the cache if the expiry is not set.
-  if use_cache and key in g_params and expiry == 0:
+  if use_cache and key in _params and expiry == 0:
     if default and type(default) is int: 
-      g_params[key] = int(g_params[key])
+      _params[key] = int(_params[key])
 
-    return g_params[key]
+    return _params[key]
 
   if expiry > 0:
     # If we let things expire, we first sweep for it
@@ -375,7 +376,7 @@ def kv_get(key, expiry=0, use_cache=True, default=None):
       res = list(res)
       res[0] = int(res[0])
 
-    g_params[key] = res[0]
+    _params[key] = res[0]
     return res[0]
 
   """
@@ -392,7 +393,7 @@ def kv_get(key, expiry=0, use_cache=True, default=None):
 def kv_set(key, value):
   # Sets (or replaces) a given key to a specific value.  
   # Returns the value that was sent.
-  global g_params
+  global _params
 
   try:
     if value is None:
@@ -414,10 +415,25 @@ def kv_set(key, value):
   except Exception as ex:
     logging.warning("Couldn't set {} to {}: {}".format(key, value, ex))
 
-  g_params[key] = value
+  _params[key] = value
 
   return value
 
+def get_bootcount():
+  global _bootcount
+  if _bootcount == None:
+    with open('/etc/bootcount', 'r') as f:
+      _bootcount = f.read().strip()
+
+  return _bootcount
+
+def sess_set(key, value):
+  kv_set(key, value)
+  kv_set("{}_bootnumber".format(key), get_bootcount())
+
+def sess_get(key):
+  if kv_get("{}_bootnumber".format(key)) == get_bootcount():
+    return kv_get(key, use_cache=False)
 
 def process(res, table, what):
   if table in _PROCESSOR:
@@ -467,16 +483,16 @@ def range(table, start, end, field='*'):
   #return [[x for x in record] for record in query.fetchall()]
 
 def run(query, args=None, with_last=False, db=None):
-  global g_lock
+  global _lock
   start = time.time()
   """
   if args is None:
-    print "%d: %s" % (g_db_count, query)
+    print "%d: %s" % (_dbcount, query)
   else:
-    $print "%d: %s (%s)" % (g_db_count, query, ', '.join([str(m) for m in args]))
+    $print "%d: %s (%s)" % (_dbcount, query, ', '.join([str(m) for m in args]))
   """
 
-  g_lock.acquire()
+  _lock.acquire()
   if db is None:
     db = connect()
 
@@ -499,7 +515,7 @@ def run(query, args=None, with_last=False, db=None):
     raise exc
 
   finally:
-    g_lock.release()
+    _lock.release()
 
   if with_last:
     return (res, last)
