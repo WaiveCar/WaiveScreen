@@ -186,6 +186,8 @@ def get_modem_info():
 
       if numberList:
         modem_info['phone'] = numberList[0]
+      else:
+        modem_info['phone'] = db.kv_get('number')
 
   return modem_info
 
