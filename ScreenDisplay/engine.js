@@ -192,12 +192,14 @@ var Engine = function(opts){
             var ratio = e.target.width / e.target.height;
             if(ratio > 1) {
               var maxHeight = e.target.width * _target.height / e.target.height;
-              e.target.style.height =  Math.min(_target.height, maxHeight, 1.2 * _target.width * ratio) + "px";
+              e.target.style.height =  Math.min(_target.height, maxHeight * 1.15) + "px";
               e.target.style.width = '100%';
+              console.log(e.target.style.height, maxHeight, e.target.width, e.target.height, e.target.src);
             } else { 
               var maxWidth = e.target.width * _target.ratio; 
-              e.target.style.width =  Math.min(_target.width, maxWidth, 1.2 * _target.height * ratio) + "px";
+              e.target.style.width =  Math.min(_target.width, maxWidth * 1.15) + "px";
               e.target.style.height = '100%';
+              e.target.style.opacity = '0.5';
             }
           }
           obj.active = true;
