@@ -116,9 +116,6 @@ while True:
   # Put data in if we have it
   location = {} if lib.NOMODEM else lib.get_gps()
 
-  # We can xref the net_time and system_time for now. Eventually this will
-  # probably not be necessary but in the early stages (2019/05/09) this is
-  # a sanity check.
   all = {**location, **sensor, 'run': run} 
 
   if first:
