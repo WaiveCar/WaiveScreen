@@ -196,10 +196,9 @@ var Engine = function(opts){
               e.target.style.width = '100%';
               console.log(e.target.style.height, maxHeight, e.target.width, e.target.height, e.target.src);
             } else { 
-              var maxWidth = e.target.width * _target.ratio; 
+              var maxWidth = e.target.height * _target.width / e.target.width;
               e.target.style.width =  Math.min(_target.width, maxWidth * 1.15) + "px";
               e.target.style.height = '100%';
-              e.target.style.opacity = '0.5';
             }
           }
           obj.active = true;
