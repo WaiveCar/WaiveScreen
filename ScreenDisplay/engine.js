@@ -118,7 +118,8 @@ var Engine = function(opts){
 
     vid.ondurationchange = function(e) {
       // This will only come if things are playable.
-      asset.duration = asset.duration || e.target.duration;
+      let vid = e.target;
+      asset.duration = asset.duration || vid.duration;
       asset.active = true;
       // if a video is really short then we force loop it.
       if(asset.duration < 0.8) {
@@ -127,7 +128,19 @@ var Engine = function(opts){
         console.log(asset.url + " is " + asset.duration + "s. Looping " + asset.cycles + " times");
         asset.duration *= asset.cycles;
       }
-
+      vid.muted = true;
+      if(vid.videoWidth) {
+        var ratio = vid.videoWidth / vid.videoHeight;
+        if(ratio < 1) {
+          var maxHeight = _target.width * vid.videoHeight / vid.videoWidth;
+          vid.style.height =  Math.min(_target.height, maxHeight * 1.2) + "px";
+          vid.style.width = _target.width + "px";
+        } else { 
+          var maxWidth = _target.height * vid.videoWidth / vid.videoHeight;
+          vid.style.width =  Math.min(_target.width, maxWidth * 1.2) + "px";
+          vid.style.height = _target.height + "px";
+        }
+      } 
       obj.duration += asset.duration;
       obj.active = true;
     }
@@ -304,7 +317,7 @@ var Engine = function(opts){
   remote.size = 5000;
   remote.ix = 0;
 
-  function sow(payload) {
+  function sow(payload, cb) {
     // no server is set
     if(!_res.server) {
       if(remote.ix == 0) {
@@ -319,6 +332,9 @@ var Engine = function(opts){
         res.data.forEach(function(row) {
           addJob(row);
         })
+      }
+      if(cb) {
+        cb();
       }
     });
   }
@@ -453,7 +469,8 @@ var Engine = function(opts){
     // In this model, a fair dice would show ad 2 80% of the time.
     //
     var 
-      activeList = Object.values(_res.db).filter(row => row.active),
+      maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0)),
+      activeList = Object.values(_res.db).filter(row => row.active),// && row.filter === maxPriority),
 
       // Here's the range of numbers, calculated by looking at all the remaining things we have to satisfy
       range = activeList.reduce( (a,b) => a + b.downweight * (b.goal - b.completed_seconds), 0),
@@ -462,6 +479,7 @@ var Engine = function(opts){
       // We do this "dice roll" to see 
       breakpoint = Math.random() * range;
 
+      console.log(maxPriority);
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
       console.log("Range < 0, using fallback");
@@ -592,9 +610,9 @@ var Engine = function(opts){
     }, 
     Start: function(){
       _res.container.classList.add('engine');
-      _res.SetFallback();
       // Try to initially contact the server
       sow();
+      _res.SetFallback();
       nextJob();
     },
     SetFallback: setFallback,
