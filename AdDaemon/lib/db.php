@@ -132,7 +132,7 @@ $SCHEMA = [
     // will be a common request - let's not make it expensive
     'screen_id' => 'integer',
     'lat' => 'float default null',
-    'lng' => 'float default null'
+    'lng' => 'float default null',
     'created_at' => 'datetime',
 
     // The rest here is kind of a copy and paste for now.
