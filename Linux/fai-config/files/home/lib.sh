@@ -513,6 +513,7 @@ stack_up() {
 
 stack_restart() {
   stack_down
+  sleep 1
   stack_up
 }
 

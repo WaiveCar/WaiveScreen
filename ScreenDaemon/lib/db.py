@@ -438,6 +438,11 @@ def sess_set(key, value):
   kv_set(key, value)
   kv_set("{}_bootnumber".format(key), get_bootcount())
 
+def sess_incr(key):
+  val = kv_get(key) or 0
+  sess_set(key, val + 1)
+  return val + 1
+
 def sess_get(key):
   if kv_get("{}_bootnumber".format(key)) == get_bootcount():
     return kv_get(key, use_cache=False)

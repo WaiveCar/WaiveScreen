@@ -9,7 +9,7 @@ export PATH=$DEST:$PATH
 
 check_ssh_hole() {
 
-  tomake=$(mktemp -u -p)
+  tomake=$(mktemp -u)
 
   [[ $USER = 'root' ]] && cmd="su adorno -c"
 
@@ -18,13 +18,20 @@ check_ssh_hole() {
 
   # If the file exists we are done, let's clean it up
   # otherwise our hole is down and we need to restart 
-  [ -e $tomake ] && rm $tomake || dcall ssh_hole 
+  if [ -e $tomake ]; then
+		echo "SSH Hole Running"
+	 	rm $tomake 
+	else
+		dcall ssh_hole 
+	fi
 }
 
 check_screen_daemon() {
-  if ! curl 127.1:4096/default; then
+  if ! curl -s 127.1:4096/default > /dev/null; then
     dcall screen_daemon
-  fi
+	else
+		echo "Screen Daemon Running"
+	fi
 }
 
 check_sensor_daemon() {
@@ -33,9 +40,20 @@ check_sensor_daemon() {
   # If nothing has been written in 15 minutes.
   if [ "$db_delta" -gt 900 ]; then
     dcall sensor_daemon
-  fi
+	else
+		echo "Sensor Daemon Running"
+	fi
+}
+
+check_screen_display() {
+	if ! pgrep chromium > /dev/null; then
+		dcall screen_display
+	else
+		echo "Chromium running"
+	fi
 }
 
 check_ssh_hole
 check_screen_daemon
 check_sensor_daemon
+check_screen_display
