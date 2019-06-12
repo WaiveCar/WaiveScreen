@@ -104,6 +104,7 @@ def next_ad(work = False):
 
   data = False
   data_raw = False
+  err = ''
 
   # This is a really retarded job queue system. Essentially we take our payload and always put it
   # in the queue.
@@ -123,8 +124,9 @@ def next_ad(work = False):
         # Let's celebrate this is done.
         db.delete('queue', job['id']) 
 
-  except:
+  except Exception as ex:
     data = False
+    err = ex
     if data_raw:
       logging.warning("Unable to parse {}".format(data_raw))
 
@@ -157,8 +159,7 @@ def next_ad(work = False):
 
 
   else:
-    # We just can't contact the server that's fine
-    pass
+    return failure('Error: {}'.format(ex))
 
 if __name__ == '__main__':
 
