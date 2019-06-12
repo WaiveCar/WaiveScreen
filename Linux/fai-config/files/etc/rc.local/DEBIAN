@@ -1,5 +1,17 @@
 #!/bin/bash
 
+modem_debug() {
+  {
+    while ! pgrep ModemManager; do
+      sleep 0.1
+    done
+    for i in $(seq 1 6); do
+      mmcli -G DEBUG
+      sleep 0.1
+    done
+  } &
+}
+
 export HOME=/root
 export PATH=$PATH:/bin:/usr/bin:/sbin:/usr/sbin
 
