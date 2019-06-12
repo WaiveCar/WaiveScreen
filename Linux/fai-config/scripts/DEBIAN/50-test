@@ -87,7 +87,7 @@ $ROOTCMD $CHDEST/dcall get_uuid
 $ROOTCMD $CHDEST/dcall pip_install
 
 # installing the brightness regulator
-fcopy -Miv /etc/cron.hourly/autobright
+fcopy -ivm root,root,0755 /etc/cron.hourly/autobright
 
 # Make an ssh key for testing the validity of the ssh hole
 #ssh-keygen -t rsa -N '' -f $CHDEST/.ssh/check-key
