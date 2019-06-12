@@ -190,19 +190,18 @@ var Engine = function(opts){
         img.onload = function(e) {
           if(e.target.width) {
             var ratio = e.target.width / e.target.height;
-            if(ratio > 1) {
-              var maxHeight = e.target.width * _target.height / e.target.height;
-              e.target.style.height =  Math.min(_target.height, maxHeight * 1.15) + "px";
-              e.target.style.width = '100%';
-              console.log(e.target.style.height, maxHeight, e.target.width, e.target.height, e.target.src);
+            if(ratio < 1) {
+              var maxHeight = _target.width * e.target.height / e.target.width;
+              e.target.style.height =  Math.min(_target.height, maxHeight * 1.2) + "px";
+              e.target.style.width = _target.width + "px";
             } else { 
-              var maxWidth = e.target.height * _target.width / e.target.width;
-              e.target.style.width =  Math.min(_target.width, maxWidth * 1.15) + "px";
-              e.target.style.height = '100%';
+              var maxWidth = _target.height * e.target.width / e.target.height;
+              e.target.style.width =  Math.min(_target.width, maxWidth * 1.2) + "px";
+              e.target.style.height = _target.height + "px";
             }
           }
-          obj.active = true;
           asset.active = true;
+          obj.active = true;
         }
         img.src = url;
 
