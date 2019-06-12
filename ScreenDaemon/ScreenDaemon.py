@@ -11,6 +11,7 @@ import logging
 import pprint
 import traceback
 import os
+import datetime
 from logging.handlers import RotatingFileHandler
 from pdb import set_trace as bp
 
@@ -85,13 +86,22 @@ def next_ad(work = False):
     if db.sess_get('power') != 'sleep':
       jobList = request.get_json()
 
-      #if type(jobList) is not list:
-      #  jobList = [ jobList ]
+      if type(jobList) is not list:
+        jobList = [ jobList ]
 
       payload['jobs'] = jobList
 
-    sensorList = [dict(x) for x in db.range('sensor', jobList['start_time'], jobList['end_time'])]
-    payload['sensor'] = sensorList
+      for i in range(len(jobList)):
+        job = jobList[i]
+
+        sensorList = [dict(x) for x in db.range('sensor', job['start_time'], job['end_time'])]
+        job['sensor'] = sensorList
+
+        # start_time and end_time are javascript epochs
+        # so they are in millisecond
+        job['start_time'] = datetime.datetime.utcfromtimestamp(int(job['start_time']/1000)).strftime('%c')
+        job['end_time'] = datetime.datetime.utcfromtimestamp(int(job['end_time']/1000)).strftime('%c')
+
     payload['power'] = db.sess_get('power')
 
   except Exception as ex:
@@ -100,6 +110,7 @@ def next_ad(work = False):
 
   data = False
   data_raw = False
+  err = ''
 
   # This is a really retarded job queue system. Essentially we take our payload and always put it
   # in the queue.
@@ -119,8 +130,9 @@ def next_ad(work = False):
         # Let's celebrate this is done.
         db.delete('queue', job['id']) 
 
-  except:
+  except Exception as ex:
     data = False
+    err = ex
     if data_raw:
       logging.warning("Unable to parse {}".format(data_raw))
 
@@ -153,18 +165,19 @@ def next_ad(work = False):
 
 
   else:
-    # We just can't contact the server that's fine
-    pass
+    return failure('Error: {}'.format(err))
 
 if __name__ == '__main__':
 
   level = logging.DEBUG if os.getenv('DEBUG') else logging.WARN
-  format='%(levelname)s@%(lineno)d:%(message)s'
-  logpath='/var/log/screen/screendaemon.log'
+  format = '%(levelname)s@%(lineno)d:%(message)s'
+  logpath = '/var/log/screen/screendaemon.log'
   try:
     logging.basicConfig(filename=logpath, format=format, level=level)
 
   except:
+    os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(os.path.dirname(logpath)))
+    os.system('/usr/bin/sudo /usr/bin/touch {}'.format(logpath))
     os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
     logging.basicConfig(filename=logpath, format=format, level=level)
 

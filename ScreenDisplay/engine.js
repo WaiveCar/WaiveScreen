@@ -55,12 +55,15 @@ var Engine = function(opts){
     _playCount = 0,
     _id = 0,
     _downweight = 0.7,
+    _target = { width: 1920, height: 675 },
     _firstRun = false,
     _nop = function(){},
     _isNetUp = true,
     _start = new Date(),
     _last_sow = [+_start, +_start],
     _fallback;
+
+  _target.ratio = _target.width / _target.height;
 
   function isString(obj) { 
     return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
@@ -115,7 +118,8 @@ var Engine = function(opts){
 
     vid.ondurationchange = function(e) {
       // This will only come if things are playable.
-      asset.duration = asset.duration || e.target.duration;
+      let vid = e.target;
+      asset.duration = asset.duration || vid.duration;
       asset.active = true;
       // if a video is really short then we force loop it.
       if(asset.duration < 0.8) {
@@ -124,7 +128,19 @@ var Engine = function(opts){
         console.log(asset.url + " is " + asset.duration + "s. Looping " + asset.cycles + " times");
         asset.duration *= asset.cycles;
       }
-
+      vid.muted = true;
+      if(vid.videoWidth) {
+        var ratio = vid.videoWidth / vid.videoHeight;
+        if(ratio > _target.ratio) {
+          var maxHeight = _target.width * vid.videoHeight / vid.videoWidth;
+          vid.style.height =  Math.min(_target.height, maxHeight * 1.2) + "px";
+          vid.style.width = _target.width + "px";
+        } else { 
+          var maxWidth = _target.height * vid.videoWidth / vid.videoHeight;
+          vid.style.width =  Math.min(_target.width, maxWidth * 1.2) + "px";
+          vid.style.height = _target.height + "px";
+        }
+      } 
       obj.duration += asset.duration;
       obj.active = true;
     }
@@ -173,6 +189,8 @@ var Engine = function(opts){
     obj.assetList = obj.url.map(function(url) {
       var asset = {url: url};
       var ext = url.split('.').pop();
+      var container = document.createElement('div');
+      container.classList.add('container');
 
       if(['mp4','ogv','mpeg','webm','flv','3gp','avi'].includes(ext.toLowerCase()) ) {
         asset = video(asset, obj);
@@ -182,9 +200,22 @@ var Engine = function(opts){
         img.onerror = function(e) {
           assetError(asset, e);
         }
-        img.onload = function() {
-          obj.active = true;
+        img.onload = function(e) {
+          if(e.target.width) {
+            var ratio = e.target.width / e.target.height;
+            if(ratio > _target.ratio) {
+              var maxHeight = _target.width * e.target.height / e.target.width;
+              e.target.style.height =  Math.min(_target.height, maxHeight * 1.2) + "px";
+              e.target.style.width = _target.width + "px";
+              //console.log(_target.width, e.target.height, e.target.width, e.target.src);
+            } else { 
+              var maxWidth = _target.height * e.target.width / e.target.height;
+              e.target.style.width =  Math.min(_target.width, maxWidth * 1.2) + "px";
+              e.target.style.height = _target.height + "px";
+            }
+          }
           asset.active = true;
+          obj.active = true;
         }
         img.src = url;
 
@@ -195,6 +226,8 @@ var Engine = function(opts){
         asset.run = _nop;
         asset.dom = img;
       }
+      asset.container = container;
+      asset.container.appendChild(asset.dom);
       return asset;
     });
         
@@ -231,12 +264,12 @@ var Engine = function(opts){
     }
     remote.ix = (remote.ix + 1) % remote.size;
 
-    if(remote.lock) {
-      console.log("Not connecting, locked on " + remote.lock);
+    if(remote.lock[url]) {
+      console.log("Not connecting, locked on " + remote.lock[url]);
       return false;
     }
     // Try to avoid a barrage of requests
-    remote.lock = remote.ix;
+    remote.lock[url] = remote.ix;
 
     var http = new XMLHttpRequest();
 
@@ -245,7 +278,7 @@ var Engine = function(opts){
 
     http.onreadystatechange = function() {
       if(http.readyState == 4) {
-        remote.lock = false;
+        remote.lock[url] = false;
         if( http.status == 200) {
           _isNetUp = true;
           var res = JSON.parse(http.responseText);
@@ -265,7 +298,7 @@ var Engine = function(opts){
       }
       // ehhh ... maybe we just can't contact things?
       _isNetUp = false;
-      remote.lock = false;
+      remote.lock[url] = false;
     }
     
     if(what) {
@@ -274,6 +307,8 @@ var Engine = function(opts){
       http.send();
     }
   }
+  remote.lock = {};
+
   function get(url, onsuccess, onfail) {
     return remote('GET', url, false, onsuccess, onfail);
   }
@@ -283,7 +318,7 @@ var Engine = function(opts){
   remote.size = 5000;
   remote.ix = 0;
 
-  function sow(payload) {
+  function sow(payload, cb) {
     // no server is set
     if(!_res.server) {
       if(remote.ix == 0) {
@@ -298,6 +333,9 @@ var Engine = function(opts){
         res.data.forEach(function(row) {
           addJob(row);
         })
+      }
+      if(cb) {
+        cb();
       }
     });
   }
@@ -365,15 +403,15 @@ var Engine = function(opts){
       // being more than likely just one.
       if(_last && (_current.position > 0 || _last.id !== _current.id)) {
         console.log(_current.position, _last.id, _current.id);
-        _last.shown.dom.classList.add('fadeOut');
+        _last.shown.container.classList.add('fadeOut');
 
         // This is NEEDED because by the time 
         // we come back around, _last.shown will be 
         // redefined.
         prev = _last.shown;
         setTimeout(function() {
-          prev.dom.classList.remove('fadeOut');
-          _res.container.removeChild(prev.dom);
+          prev.container.classList.remove('fadeOut');
+          _res.container.removeChild(prev.container);
         }, _res.fadeMs);
         doFade = true;
       }
@@ -385,12 +423,12 @@ var Engine = function(opts){
       console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
       
       if(doFade) {
-        _current.shown.dom.classList.add('fadeIn');
+        _current.shown.container.classList.add('fadeIn');
       } else {
-        _current.shown.dom.classList.remove('fadeIn');
+        _current.shown.container.classList.remove('fadeIn');
       }
       _current.shown.run();
-      _res.container.appendChild(_current.shown.dom);
+      _res.container.appendChild(_current.shown.container);
 
       // And we increment the position to show the next asset
       // when we come back around
@@ -432,7 +470,8 @@ var Engine = function(opts){
     // In this model, a fair dice would show ad 2 80% of the time.
     //
     var 
-      activeList = Object.values(_res.db).filter(row => row.active),
+      maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0)),
+      activeList = Object.values(_res.db).filter(row => row.active),// && row.filter === maxPriority),
 
       // Here's the range of numbers, calculated by looking at all the remaining things we have to satisfy
       range = activeList.reduce( (a,b) => a + b.downweight * (b.goal - b.completed_seconds), 0),
@@ -441,6 +480,7 @@ var Engine = function(opts){
       // We do this "dice roll" to see 
       breakpoint = Math.random() * range;
 
+      console.log(maxPriority);
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
       console.log("Range < 0, using fallback");
@@ -571,9 +611,9 @@ var Engine = function(opts){
     }, 
     Start: function(){
       _res.container.classList.add('engine');
-      _res.SetFallback();
       // Try to initially contact the server
       sow();
+      _res.SetFallback();
       nextJob();
     },
     SetFallback: setFallback,

@@ -242,7 +242,6 @@ function sow($payload) {
   global $LASTCOMMIT, $VERSION;
   $server_response = [ 'res' => true ];
 
-  error_log(json_encode($payload));
   if(isset($payload['uid'])) {
     $uid = $payload['uid'];
   } else {
