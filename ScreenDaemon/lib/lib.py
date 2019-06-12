@@ -248,6 +248,10 @@ def asset_cache(check):
   # USER variable
   #
   path = "/var/cache/assets"
+  if not os.path.exists(path):
+    os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(path))
+    os.system('/usr/bin/sudo /bin/chmod 0777 {}'.format(path))
+
 
   res = []
   for asset in check['asset']:

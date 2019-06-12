@@ -170,12 +170,14 @@ def next_ad(work = False):
 if __name__ == '__main__':
 
   level = logging.DEBUG if os.getenv('DEBUG') else logging.WARN
-  format='%(levelname)s@%(lineno)d:%(message)s'
-  logpath='/var/log/screen/screendaemon.log'
+  format = '%(levelname)s@%(lineno)d:%(message)s'
+  logpath = '/var/log/screen/screendaemon.log'
   try:
     logging.basicConfig(filename=logpath, format=format, level=level)
 
   except:
+    os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(os.path.dirname(logpath)))
+    os.system('/usr/bin/sudo /usr/bin/touch {}'.format(logpath))
     os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
     logging.basicConfig(filename=logpath, format=format, level=level)
 
