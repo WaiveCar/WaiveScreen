@@ -33,6 +33,7 @@ function selectLocation(what) {
 }
 
 function fakebuy() {
+  alert("Thanks!! That's it!!");
   create_campaign();
 }
 
