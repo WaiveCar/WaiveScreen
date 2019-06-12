@@ -131,7 +131,7 @@ var Engine = function(opts){
       vid.muted = true;
       if(vid.videoWidth) {
         var ratio = vid.videoWidth / vid.videoHeight;
-        if(ratio < 1) {
+        if(ratio > _target.ratio) {
           var maxHeight = _target.width * vid.videoHeight / vid.videoWidth;
           vid.style.height =  Math.min(_target.height, maxHeight * 1.2) + "px";
           vid.style.width = _target.width + "px";
@@ -203,10 +203,11 @@ var Engine = function(opts){
         img.onload = function(e) {
           if(e.target.width) {
             var ratio = e.target.width / e.target.height;
-            if(ratio < 1) {
+            if(ratio > _target.ratio) {
               var maxHeight = _target.width * e.target.height / e.target.width;
               e.target.style.height =  Math.min(_target.height, maxHeight * 1.2) + "px";
               e.target.style.width = _target.width + "px";
+              //console.log(_target.width, e.target.height, e.target.width, e.target.src);
             } else { 
               var maxWidth = _target.height * e.target.width / e.target.height;
               e.target.style.width =  Math.min(_target.width, maxWidth * 1.2) + "px";
