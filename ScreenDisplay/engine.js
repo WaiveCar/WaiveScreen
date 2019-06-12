@@ -55,12 +55,15 @@ var Engine = function(opts){
     _playCount = 0,
     _id = 0,
     _downweight = 0.7,
+    _target = { width: 1920, height: 675 },
     _firstRun = false,
     _nop = function(){},
     _isNetUp = true,
     _start = new Date(),
     _last_sow = [+_start, +_start],
     _fallback;
+
+  _target.ratio = _target.width / _target.height;
 
   function isString(obj) { 
     return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
@@ -173,6 +176,8 @@ var Engine = function(opts){
     obj.assetList = obj.url.map(function(url) {
       var asset = {url: url};
       var ext = url.split('.').pop();
+      var container = document.createElement('div');
+      container.classList.add('container');
 
       if(['mp4','ogv','mpeg','webm','flv','3gp','avi'].includes(ext.toLowerCase()) ) {
         asset = video(asset, obj);
@@ -182,7 +187,19 @@ var Engine = function(opts){
         img.onerror = function(e) {
           assetError(asset, e);
         }
-        img.onload = function() {
+        img.onload = function(e) {
+          if(e.target.width) {
+            var ratio = e.target.width / e.target.height;
+            if(ratio > 1) {
+              var maxHeight = e.target.width * _target.height / e.target.height;
+              e.target.style.height =  Math.min(_target.height, maxHeight, 1.2 * _target.width * ratio) + "px";
+              e.target.style.width = '100%';
+            } else { 
+              var maxWidth = e.target.width * _target.ratio; 
+              e.target.style.width =  Math.min(_target.width, maxWidth, 1.2 * _target.height * ratio) + "px";
+              e.target.style.height = '100%';
+            }
+          }
           obj.active = true;
           asset.active = true;
         }
@@ -195,6 +212,8 @@ var Engine = function(opts){
         asset.run = _nop;
         asset.dom = img;
       }
+      asset.container = container;
+      asset.container.appendChild(asset.dom);
       return asset;
     });
         
@@ -231,12 +250,12 @@ var Engine = function(opts){
     }
     remote.ix = (remote.ix + 1) % remote.size;
 
-    if(remote.lock) {
-      console.log("Not connecting, locked on " + remote.lock);
+    if(remote.lock[url]) {
+      console.log("Not connecting, locked on " + remote.lock[url]);
       return false;
     }
     // Try to avoid a barrage of requests
-    remote.lock = remote.ix;
+    remote.lock[url] = remote.ix;
 
     var http = new XMLHttpRequest();
 
@@ -245,7 +264,7 @@ var Engine = function(opts){
 
     http.onreadystatechange = function() {
       if(http.readyState == 4) {
-        remote.lock = false;
+        remote.lock[url] = false;
         if( http.status == 200) {
           _isNetUp = true;
           var res = JSON.parse(http.responseText);
@@ -265,7 +284,7 @@ var Engine = function(opts){
       }
       // ehhh ... maybe we just can't contact things?
       _isNetUp = false;
-      remote.lock = false;
+      remote.lock[url] = false;
     }
     
     if(what) {
@@ -274,6 +293,8 @@ var Engine = function(opts){
       http.send();
     }
   }
+  remote.lock = {};
+
   function get(url, onsuccess, onfail) {
     return remote('GET', url, false, onsuccess, onfail);
   }
@@ -365,15 +386,15 @@ var Engine = function(opts){
       // being more than likely just one.
       if(_last && (_current.position > 0 || _last.id !== _current.id)) {
         console.log(_current.position, _last.id, _current.id);
-        _last.shown.dom.classList.add('fadeOut');
+        _last.shown.container.classList.add('fadeOut');
 
         // This is NEEDED because by the time 
         // we come back around, _last.shown will be 
         // redefined.
         prev = _last.shown;
         setTimeout(function() {
-          prev.dom.classList.remove('fadeOut');
-          _res.container.removeChild(prev.dom);
+          prev.container.classList.remove('fadeOut');
+          _res.container.removeChild(prev.container);
         }, _res.fadeMs);
         doFade = true;
       }
@@ -385,12 +406,12 @@ var Engine = function(opts){
       console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
       
       if(doFade) {
-        _current.shown.dom.classList.add('fadeIn');
+        _current.shown.container.classList.add('fadeIn');
       } else {
-        _current.shown.dom.classList.remove('fadeIn');
+        _current.shown.container.classList.remove('fadeIn');
       }
       _current.shown.run();
-      _res.container.appendChild(_current.shown.dom);
+      _res.container.appendChild(_current.shown.container);
 
       // And we increment the position to show the next asset
       // when we come back around
