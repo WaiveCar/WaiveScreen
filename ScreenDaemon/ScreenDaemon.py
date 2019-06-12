@@ -159,7 +159,7 @@ def next_ad(work = False):
 
 
   else:
-    return failure('Error: {}'.format(ex))
+    return failure('Error: {}'.format(err))
 
 if __name__ == '__main__':
 
