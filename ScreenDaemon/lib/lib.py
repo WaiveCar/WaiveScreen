@@ -205,11 +205,14 @@ def sensor_store(data):
   return db.insert('sensor', data)
 
 def sensor_last(index = False):
-  res = db.kv_get('sensor', index)
-  # If we don't have a real sensor value then we just use 2102 pico in samo
+  res = db.run("select * from sensor order by id desc limit 1").fetchone()
+
   if not res:
-    return {'lat':False, 'lng':False}
+    return {'Lat':False, 'Lng':False}
+    # If we don't have a real sensor value then we just use 2102 pico in samo
     #return {'lat':34.019860, 'lng':-118.468477}
+
+  return dict(res)
 
 def campaign_store(data):
   return db.upsert('campaign', data)
