@@ -11,6 +11,7 @@ import logging
 import pprint
 import traceback
 import os
+import datetime
 from logging.handlers import RotatingFileHandler
 from pdb import set_trace as bp
 
@@ -95,6 +96,11 @@ def next_ad(work = False):
 
         sensorList = [dict(x) for x in db.range('sensor', job['start_time'], job['end_time'])]
         job['sensor'] = sensorList
+
+        # start_time and end_time are javascript epochs
+        # so they are in millisecond
+        job['start_time'] = datetime.datetime.utcfromtimestamp(job['start_time']).strftime('%c')
+        job['end_time'] = datetime.datetime.utcfromtimestamp(job['end_time']).strftime('%c')
 
     payload['power'] = db.sess_get('power')
 
