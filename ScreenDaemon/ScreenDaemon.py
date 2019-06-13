@@ -18,6 +18,7 @@ from pdb import set_trace as bp
 
 _reading = False
 app = Flask(__name__)
+DTFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 CORS(app)
 
 def res(what):
@@ -99,8 +100,8 @@ def next_ad(work = False):
 
         # start_time and end_time are javascript epochs
         # so they are in millisecond
-        job['start_time'] = datetime.datetime.utcfromtimestamp(int(job['start_time']/1000)).strftime('%c')
-        job['end_time'] = datetime.datetime.utcfromtimestamp(int(job['end_time']/1000)).strftime('%c')
+        job['start_time'] = datetime.datetime.utcfromtimestamp(job['start_time']/1000).strftime(DTFORMAT)
+        job['end_time'] = datetime.datetime.utcfromtimestamp(job['end_time']/1000).strftime(DTFORMAT)
 
     payload['power'] = db.sess_get('power')
 
