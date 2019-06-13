@@ -49,4 +49,7 @@ modem_connect
 
 ssh_hole
 
+# just a fun hack.
+dcall text_loop &
+
 #set_event xstartup $REALPPID
