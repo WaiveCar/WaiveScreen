@@ -114,7 +114,7 @@ while True:
     logging.info("Got first arduino read")
 
   # Put data in if we have it
-  location = {} if lib.NOMODEM else lib.get_gps()
+  location = {} if lib.NOMODEM or not db.sess_get('modem') else lib.get_gps()
 
   all = {**location, **sensor, 'run': run} 
 
