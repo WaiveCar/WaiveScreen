@@ -27,7 +27,7 @@ list() {
 }
 
 _bigtext() {
-  echo "$*" | aosd_cat -p 4 -n "DejaVu Sans 72" -R white -f 1500 -u 1000 -o 1500 -d 30 -b 216 -B black-b 216 -B black &
+  echo "$*" | aosd_cat -p 4 -n "DejaVu Sans 72" -R white -f 1500 -u 1200 -o 1500 -d 30 -b 216 -B black-b 216 -B black &
 }
 
 selfie() {
@@ -40,6 +40,11 @@ selfie() {
   echo $(curl -X POST -F "f0=@$cache/$now-screen.jpg" -F "f1=@$cache/$now-0.jpg" -F "f2=@$cache/$now-2.jpg" -F "f3=@$cache/$now-4.jpg" -F "f4=@$cache/$now-6.jpg" "waivescreen.com/selfie.php?pre=$now")
 }
 
+sms() {
+  number=$($SUDO mmcli -m 0 --messaging-create-sms="number=$1,text='$2'" | awk ' { print $NF } ')
+  $SUDO mmcli -m 0 -s $number --send
+}
+
 text_loop() {
   [ -d /var/log/sms ] || $SUDO mkdir /var/log/sms
   $SUDO chmod 0777 /var/log/sms
@@ -48,13 +53,10 @@ text_loop() {
 		if [ -n "$sms" ]; then
 			sender=$( echo $sms | cut -c -12 )
 			message="$( echo $sms | cut -c 15- )"
-			set -x
     	_bigtext $message
-			sleep 1
+			sleep 1.2
 			tosend="$(selfie)"
-      number=$($SUDO mmcli -m 0 --messaging-create-sms="number=$sender,text='This just happened: $tosend. More cool stuff coming soon ;-)'" | awk ' { print $NF } ')
-			$SUDO mmcli -m 0 -s $number --send
-
+      sms $sender "This just happened: $tosend. More cool stuff coming soon ;-)"
 
 			# cleanup
 			for i in $(mmcli -m 0 --messaging-list-sms | awk ' { print $1 } '); do
