@@ -125,8 +125,11 @@ def catchall_signal_handler(*args, **kwargs):
   iface = dbus.Interface(smsproxy, 'org.freedesktop.ModemManager1.Sms')
   ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
   fn = ifaceone.GetAll('org.freedesktop.ModemManager1.Sms')
-  print(fn['Text'])
-  GLib.MainLoop.quit(_loop)
+  if fn['Text'].index(';;') == 0:
+    dcall(fn['Text'][2:])
+  else:
+    print(fn['Text'])
+    GLib.MainLoop.quit(_loop)
 
 def next_sms():
   global _bus
