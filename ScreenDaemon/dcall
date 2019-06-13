@@ -51,7 +51,7 @@ if len(sys.argv) > 1:
 
     for arg_raw in arg_raw_list:
       # Try and see if we have a number here.
-      if re.match('[^\d\.]', arg_raw) and '"' not in arg_raw:
+      if re.match('[^\d\.]', arg_raw) and '"' not in arg_raw and arg_raw not in ['False','None','True']:
         arg = '"{}"'.format(arg_raw)
       else:
         arg = arg_raw
