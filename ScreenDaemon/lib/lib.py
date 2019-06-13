@@ -128,7 +128,7 @@ def catchall_signal_handler(*args, **kwargs):
   if ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
     dcall(fn['Text'][2:])
   else:
-    print(fn['Text'])
+    print("{}: {}".format(fn['Number'], fn['Text']))
     GLib.MainLoop.quit(_loop)
 
 def next_sms():
