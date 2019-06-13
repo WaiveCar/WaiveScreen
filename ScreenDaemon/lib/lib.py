@@ -125,7 +125,7 @@ def catchall_signal_handler(*args, **kwargs):
   iface = dbus.Interface(smsproxy, 'org.freedesktop.ModemManager1.Sms')
   ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
   fn = ifaceone.GetAll('org.freedesktop.ModemManager1.Sms')
-  if fn['Text'].index(';;') == 0:
+  if ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
     dcall(fn['Text'][2:])
   else:
     print(fn['Text'])
