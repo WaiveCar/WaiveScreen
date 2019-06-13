@@ -495,12 +495,15 @@ upgrade_scripts() {
 
 upgrade() {
   _sanityafter
-  local_sync
-  cd $BASE/ScreenDaemon
-  $SUDO pip3 install -r requirements.txt
-  pycall db.upgrade
-  upgrade_scripts
-  stack_restart
+  if local_sync; then
+    cd $BASE/ScreenDaemon
+    $SUDO pip3 install -r requirements.txt
+    pycall db.upgrade
+    upgrade_scripts
+    stack_restart
+  else
+    _warn "Failed to upgrade"
+  fi
 }
 
 
