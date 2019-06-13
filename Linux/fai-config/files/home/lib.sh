@@ -31,10 +31,16 @@ _bigtext() {
 }
 
 text_loop() {
+  $SUDO mkdir /var/log/sms
   while [ 0 ]; do
     sms=$(pycall next_sms)
     _bigtext sms
-    sleep 3
+    # cleanup
+    for i in $(mmcli -m 0 --messaging-list-sms | awk ' { print $1 } '); do
+      num=$( basename $i )
+      mmcli -m 0 -s $i | $SUDO tee /var/log/sms/$num
+      $SUDO mmcli -m 0 -s --messaging-delete-sms=$i
+    done
   done
 }
 
