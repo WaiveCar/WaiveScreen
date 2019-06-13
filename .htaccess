@@ -5,7 +5,7 @@ Header set Access-Control-Allow-Origin "*"
 
 RewriteRule ^$ MadisonAve/static/index.html
 RewriteRule "^api/(.*)$" "AdDaemon/lib/ep.php?func=$1&%{QUERY_STRING}" [L]
+RewriteRule "gallery/(.*)$" "MadisonAve/static/gallery.php?id=$1" [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule "^gallery/(.*)$" "MadisonAve/static/gallery.php?id=$1" [L]
 RewriteRule ^(.*)$ MadisonAve/static/$1 [L]
