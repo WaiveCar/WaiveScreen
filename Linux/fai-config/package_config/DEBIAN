@@ -9,6 +9,7 @@ time
 procinfo
 #nullmailer
 aosd-cat
+fonts-noto-color-emoji
 # eject
 locales
 console-setup kbd
