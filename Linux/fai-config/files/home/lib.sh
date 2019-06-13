@@ -27,19 +27,19 @@ list() {
 }
 
 _bigtext() {
-  echo "$*" | aosd_cat -p 4 -n "DejaVu Sans 72" -R white -f 4000 -u 1500 -o 4000 -d 30 -b 216 -B black-b 216 -B black &
+  echo "$*" | aosd_cat -p 4 -n "DejaVu Sans 72" -R white -f 1500 -u 1000 -o 1500 -d 30 -b 216 -B black-b 216 -B black &
 }
 
 text_loop() {
-  $SUDO mkdir /var/log/sms
+  [ -d /var/log/sms ] || $SUDO mkdir /var/log/sms
   while [ 0 ]; do
     sms=$(pycall next_sms)
-    _bigtext sms
+    _bigtext $sms
     # cleanup
     for i in $(mmcli -m 0 --messaging-list-sms | awk ' { print $1 } '); do
       num=$( basename $i )
       mmcli -m 0 -s $i | $SUDO tee /var/log/sms/$num
-      $SUDO mmcli -m 0 -s --messaging-delete-sms=$i
+      $SUDO mmcli -m 0 --messaging-delete-sms=$i
     done
   done
 }
