@@ -7,7 +7,7 @@ less
 openssh-client openssh-server
 time
 procinfo
-nullmailer
+#nullmailer
 # eject
 locales
 console-setup kbd
