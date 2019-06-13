@@ -251,7 +251,13 @@ pycall() {
 ssh_hole() {
   rest=20
   event=ssh_hole
-  {
+
+	if (( $(pgrep -cf dcall\ ssh_hole ) > 1 )); then
+		echo "Nope, kill the others first"
+		exit 0
+	fi
+
+  (
     while [ 0 ]; do
       if [ ! "$PORT" ]; then
         local_set PORT "$($SUDO $BASE/ScreenDaemon/dcall get_port)"
@@ -274,7 +280,7 @@ ssh_hole() {
 
       sleep $rest
     done
-  } > /dev/null &
+  )  &
 
   # The 0 makes sure that the wrapper is killed before
   # the client 
@@ -508,8 +514,8 @@ upgrade() {
 
 
 disk_monitor() {
-  howmany=$( pgrep -f 'dcall disk_monitor' | wc -l )
-  if [ $howmany -lt 3 ]; then
+  howmany=$( pgrep -cf 'dcall disk_monitor' )
+  if [ $howmany -lt 2 ]; then
     {
       while true; do
         disk=$(pycall lib.disk_monitor)
