@@ -40,6 +40,7 @@ text_loop() {
     for i in $(mmcli -m 0 --messaging-list-sms | awk ' { print $1 } '); do
       num=$( basename $i )
       mmcli -m 0 -s $i > /var/log/sms/$num
+      mmcli -m 0 -s $i --create-file-with-data=/var/log/sms/${num}.raw
       $SUDO mmcli -m 0 --messaging-delete-sms=$i
     done
   done
