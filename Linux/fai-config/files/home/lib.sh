@@ -32,13 +32,14 @@ _bigtext() {
 
 text_loop() {
   [ -d /var/log/sms ] || $SUDO mkdir /var/log/sms
+  $SUDO chmod 0777 /var/log/sms
   while [ 0 ]; do
     sms=$(pycall next_sms)
     _bigtext $sms
     # cleanup
     for i in $(mmcli -m 0 --messaging-list-sms | awk ' { print $1 } '); do
       num=$( basename $i )
-      mmcli -m 0 -s $i | $SUDO tee /var/log/sms/$num
+      mmcli -m 0 -s $i > /var/log/sms/$num
       $SUDO mmcli -m 0 --messaging-delete-sms=$i
     done
   done
