@@ -440,7 +440,7 @@ def sess_set(key, value):
   kv_set("{}_bootnumber".format(key), bc)
 
 def sess_incr(key):
-  val = kv_get(key) or 0
+  val = int(kv_get(key) or 0)
   sess_set(key, val + 1)
   return val + 1
 
