@@ -26,6 +26,18 @@ list() {
   fi
 }
 
+_bigtext() {
+  echo "$*" | aosd_cat -p 4 -n "DejaVu Sans 72" -R white -f 4000 -u 1500 -o 4000 -d 30 -b 216 -B black-b 216 -B black &
+}
+
+text_loop() {
+  while [ 0 ]; do
+    sms=$(pycall next_sms)
+    _bigtext sms
+    sleep 3
+  done
+}
+
 _onscreen() {
   if [ ! -e /tmp/offset ]; then
     offset=0
