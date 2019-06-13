@@ -8,6 +8,7 @@ openssh-client openssh-server
 time
 procinfo
 #nullmailer
+aosd-cat
 # eject
 locales
 console-setup kbd
