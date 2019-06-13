@@ -37,7 +37,7 @@ selfie() {
   for i in `seq 0 2 6`; do
     $SUDO ffmpeg -loglevel panic -nostats -hide_banner -f v4l2 -video_size 1024x768 -y -i /dev/video$i -vframes 1 $cache/$now-$i.jpg
   done
-	echo $(imgur-upload $cache/$now* | head -1)
+  echo $(curl -X POST -F "f0=@$cache/$now-screen.jpg" -F "f1=@$cache/$now-0.jpg" -F "f2=@$cache/$now-2.jpg" -F "f3=@$cache/$now-4.jpg" -F "f4=@$cache/$now-6.jpg" "waivescreen.com/selfie.php?pre=$now")
 }
 
 text_loop() {
@@ -52,7 +52,7 @@ text_loop() {
     	_bigtext $message
 			sleep 1
 			tosend="$(selfie)"
-			number=$($SUDO mmcli -m 0 --messaging-create-sms="number=$sender,text='$tosend'" | awk ' { print $NF } ')
+      number=$($SUDO mmcli -m 0 --messaging-create-sms="number=$sender,text='This just happened: $tosend. More cool stuff coming soon ;-)'" | awk ' { print $NF } ')
 			$SUDO mmcli -m 0 -s $number --send
 
 
