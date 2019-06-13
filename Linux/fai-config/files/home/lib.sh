@@ -214,6 +214,7 @@ ENDL
     fi
     _error $(get_number)
   fi
+  pycall db.sess_set modem,1 
 }
 
 # This tries to see if it can find a wireless network
