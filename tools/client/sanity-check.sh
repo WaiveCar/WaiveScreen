@@ -53,6 +53,12 @@ check_screen_display() {
 	fi
 }
 
+check_online() {
+  if ! ping -c 1 -i 0.3 waivescreen.com; then
+    /bin/true
+  fi
+}
+
 check_ssh_hole
 check_screen_daemon
 check_sensor_daemon
