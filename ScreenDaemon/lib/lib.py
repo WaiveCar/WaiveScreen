@@ -25,7 +25,6 @@ VERSION = os.popen("/usr/bin/git describe").read().strip()
 VERSIONDATE = os.popen("/usr/bin/git log -1 --format='%at'").read().strip()
 
 UUID = False
-BUS = dbus.SystemBus()
 
 _pinglock = Lock()
 
@@ -62,11 +61,14 @@ modem_iface = False
 modem_ix = 0
 modem_max = 4
 modem_info = {}
-def get_modem(try_again=False):
+def get_modem(try_again=False, BUS=False):
   if NOMODEM:
     return {}
 
   global modem_iface, modem_ix
+
+  if not BUS:
+    BUS = dbus.SystemBus()
   
   # If we've found it previously than don't
   # worry looking.
@@ -93,6 +95,7 @@ def get_modem(try_again=False):
       modem_iface = {
         'proxy': proxy,
         'modem': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem'),
+        'sms': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Messaging'),
         'device': dbus.Interface(proxy, dbus_interface='org.freedesktop.DBus.Properties'),
         'location': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Location'),
         'time': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Time')
@@ -110,6 +113,35 @@ def get_modem(try_again=False):
 
   return modem_iface
 
+
+_bus = False
+_loop = False
+def catchall_signal_handler(*args, **kwargs):
+  from gi.repository import GLib
+  global _bus
+  global _loop
+  proxy = args[0]
+  smsproxy = _bus.get_object('org.freedesktop.ModemManager1',str(proxy))
+  iface = dbus.Interface(smsproxy, 'org.freedesktop.ModemManager1.Sms')
+  ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
+  fn = ifaceone.GetAll('org.freedesktop.ModemManager1.Sms')
+  print(fn['Text'])
+  GLib.MainLoop.quit(_loop)
+
+def next_sms():
+  global _bus
+  global _loop
+  from gi.repository import GLib
+  import dbus.mainloop.glib
+  myloop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+  _bus = dbus.SystemBus()
+  proxy = _bus.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/Modem/{}'.format(0))
+  sms = dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Messaging')
+  sms.connect_to_signal('Added', catchall_signal_handler)
+
+  _loop = GLib.MainLoop()
+  _loop.run()
 
 def dcall(*kvarg):
   home = '/home/{}'.format(USER)
