@@ -30,6 +30,16 @@ _bigtext() {
   echo "$*" | aosd_cat -p 4 -n "DejaVu Sans 72" -R white -f 1500 -u 1000 -o 1500 -d 30 -b 216 -B black-b 216 -B black &
 }
 
+selfie() {
+  cache=/var/cache/assets/
+  now=`date +%Y%m%d%H%M%S`
+  import -window root $cache/$now-screen.jpg
+  for i in `seq 0 2 8`; do
+    ffmpeg -loglevel panic -nostats -hide_banner -f v4l2 -video_size 640x480 -y -i /dev/video$i $cache/$now-$i.jpg
+  done
+  imgur-upload $cache/$now*
+}
+
 text_loop() {
   [ -d /var/log/sms ] || $SUDO mkdir /var/log/sms
   $SUDO chmod 0777 /var/log/sms
