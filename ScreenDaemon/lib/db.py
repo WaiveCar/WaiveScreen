@@ -351,7 +351,7 @@ def incr(key, value=1):
       pass
 
 
-def kv_get(key, expiry=0, use_cache=True, default=None):
+def kv_get(key, expiry=0, use_cache=False, default=None):
   # Retrieves a value from the database, tentative on the expiry. 
   # If the cache is set to true then it retrieves it from in-memory if available, otherwise
   # it goes out to the db. Other than directly hitting up the _params parameter which is 
@@ -446,7 +446,7 @@ def sess_incr(key):
 
 def sess_get(key):
   if kv_get("{}_bootnumber".format(key)) == get_bootcount():
-    return kv_get(key, use_cache=False)
+    return kv_get(key)
 
 def process(res, table, what):
   if table in _PROCESSOR:
