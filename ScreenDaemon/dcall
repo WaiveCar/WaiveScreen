@@ -12,7 +12,7 @@ import sys
 DEBUG = 'DEBUG' in os.environ
 
 FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT, level=logging.DEBUG, stream=sys.stderr)
+logging.basicConfig(format=FORMAT, level=logging.DEBUG if DEBUG else logging.INFO, stream=sys.stderr)
 logger = logging.getLogger(__name__)
 arduino.set_log(logger)
 
