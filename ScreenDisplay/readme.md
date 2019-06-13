@@ -21,4 +21,4 @@ The api here matches the AdDaemon api for sow, refer to it for the information.
   The screen display then reports back whenever it changes the ad.
 
 
-Note : subslice video ffmpeg -i input.mp4 -c copy -map 0 -segment_time 00:20:00 -reset_timestamps 1 -f segment output%03d.mp4
+Note : subslice video ffmpeg -i input.mp4 -c copy -map 0 -segment_time 00:00:05 -reset_timestamps 1 -f segment output%03d.mp4

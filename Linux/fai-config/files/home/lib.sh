@@ -191,7 +191,6 @@ ENDL
 
   if ping -c 1 -i 0.3 waivescreen.com; then
     _info "waivescreen.com found" 
-    # setting the phone
     pycall db.kv_set number,$(get_number)
   else
     _warn "waivescreen.com unresolvable!"
@@ -442,6 +441,14 @@ down() {
 }
 
 
+_sanityafter() {
+  delay=${1:-30}
+  {
+     sleep $delay
+     $SUDO $BASE/tools/client/sanity-check.sh
+  } &
+}
+
 # This is for upgrading over USB
 local_upgrade() {
   local dev=$1
@@ -454,6 +461,7 @@ local_upgrade() {
 
   if $SUDO mount $dev $mountpoint; then
     if [ -e $package ]; then
+      _sanityafter
       _info "Found upgrade package - installing"
       tar xf $package -C $BASE
       $SUDO umount -l $mountpoint
@@ -478,6 +486,23 @@ local_upgrade() {
     _info "Failed to mount $dev"
   fi
 }
+
+upgrade_scripts() {
+  for script in $(pycall upgrades_to_run); do
+    $SUDO $script upgradepost
+  done
+}
+
+upgrade() {
+  _sanityafter
+  local_sync
+  cd $BASE/ScreenDaemon
+  $SUDO pip3 install -r requirements.txt
+  pycall db.upgrade
+  upgrade_scripts
+  stack_restart
+}
+
 
 disk_monitor() {
   howmany=$( pgrep -f 'dcall disk_monitor' | wc -l )
@@ -515,23 +540,8 @@ stack_up() {
 
 stack_restart() {
   stack_down
-  sleep 1
+  sleep 2
   stack_up
-}
-
-upgrade_scripts() {
-  for script in $(pycall upgrades_to_run); do
-    $SUDO $script upgradepost
-  done
-}
-
-upgrade() {
-  local_sync
-  cd $BASE/ScreenDaemon
-  $SUDO pip3 install -r requirements.txt
-  pycall db.upgrade
-  upgrade_scripts
-  stack_restart
 }
 
 get_location() {
