@@ -34,10 +34,10 @@ selfie() {
   cache=/var/cache/assets/
   now=`date +%Y%m%d%H%M%S`
   import -window root $cache/$now-screen.jpg
-  for i in `seq 0 2 8`; do
-    ffmpeg -loglevel panic -nostats -hide_banner -f v4l2 -video_size 640x480 -y -i /dev/video$i $cache/$now-$i.jpg
+  for i in `seq 0 2 6`; do
+    $SUDO ffmpeg -loglevel panic -nostats -hide_banner -f v4l2 -video_size 1024x768 -y -i /dev/video$i -vframes 1 $cache/$now-$i.jpg
   done
-  imgur-upload $cache/$now*
+	echo $(imgur-upload $cache/$now* | head -1)
 }
 
 text_loop() {
@@ -45,14 +45,25 @@ text_loop() {
   $SUDO chmod 0777 /var/log/sms
   while [ 0 ]; do
     sms=$(pycall next_sms)
-    _bigtext $sms
-    # cleanup
-    for i in $(mmcli -m 0 --messaging-list-sms | awk ' { print $1 } '); do
-      num=$( basename $i )
-      mmcli -m 0 -s $i > /var/log/sms/$num
-      mmcli -m 0 -s $i --create-file-with-data=/var/log/sms/${num}.raw
-      $SUDO mmcli -m 0 --messaging-delete-sms=$i
-    done
+		if [ -n "$sms" ]; then
+			sender=$( echo $sms | cut -c -12 )
+			message="$( echo $sms | cut -c 15- )"
+			set -x
+    	_bigtext $message
+			sleep 1
+			tosend="$(selfie)"
+			number=$($SUDO mmcli -m 0 --messaging-create-sms="number=$sender,text='$tosend'" | awk ' { print $NF } ')
+			$SUDO mmcli -m 0 -s $number --send
+
+
+			# cleanup
+			for i in $(mmcli -m 0 --messaging-list-sms | awk ' { print $1 } '); do
+				num=$( basename $i )
+				mmcli -m 0 -s $i > /var/log/sms/$num
+				mmcli -m 0 -s $i --create-file-with-data=/var/log/sms/${num}.raw
+				$SUDO mmcli -m 0 --messaging-delete-sms=$i
+			done
+		fi
   done
 }
 
