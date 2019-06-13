@@ -186,13 +186,17 @@ get_number() {
   # mmcli may not properly be reporting the phone number. T-mobile sends it to
   # us in our first text so we try to work it from there.
   if [ -z "$MYPHONE" ]; then
-    phone=$( mmcli -m 0 | grep own | awk ' { print $NF } ' )
+    phone=$( pycall db.kv_get number )
     if [ -z "$phone" ]; then
       # mmcli may not properly number the sms messages starting at 0 so we find the earliest
-      firstsms=$( mmcli -m 0 --messaging-list-sms | sort -nr | tail -1 | grep -Po '(\d)* ' )
-      phone=$( mmcli -m 0 -s $firstsms | grep 'text:' | awk ' { print $NF } ' )
+      sms 8559248355 '\;\;echo'
+      # wait for our echo service to set the variable
+      sleep 4
+      phone=$( pycall db.kv_get number )
     fi 
-    local_set MYPHONE $phone
+    if [ -z "$phone" ]; then
+      local_set MYPHONE $phone
+    fi
   fi
   echo $MYPHONE
 }
