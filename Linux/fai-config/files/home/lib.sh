@@ -194,7 +194,7 @@ get_number() {
       sleep 4
       phone=$( pycall db.kv_get number )
     fi 
-    if [ -z "$phone" ]; then
+    if [ -n "$phone" ]; then
       local_set MYPHONE $phone
     fi
   fi
