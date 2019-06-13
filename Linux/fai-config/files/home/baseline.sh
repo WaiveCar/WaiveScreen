@@ -50,10 +50,13 @@ local_sync() {
   # We make sure that local changes (there shouldn't be any)
   # get tossed aside and pull down the new code.
   _git stash
-  _git pull
+  if _git pull; then
 
-  # If there's script updates we try to pull those down
-  # as well - we can use our pre-existing sync script
-  # to deal with it.
-  sync_scripts $BASE/Linux/fai-config/files/home/
+    # If there's script updates we try to pull those down
+    # as well - we can use our pre-existing sync script
+    # to deal with it.
+    sync_scripts $BASE/Linux/fai-config/files/home/
+    return 0
+  fi
+  return 1
 }
