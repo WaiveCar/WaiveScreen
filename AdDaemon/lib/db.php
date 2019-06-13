@@ -123,6 +123,14 @@ $SCHEMA = [
     'job_end'     => 'datetime'
   ],
 
+  // see #65
+  'job_history' => [
+    'id'        => 'integer primary key autoincrement',
+    'job_id'    => 'integer',
+    'start'     => 'datetime',
+    'end'       => 'datetime'
+  ],
+
   // This is going to be a monstrosity really and will
   // be the majority of the storage.
   'history' => [
