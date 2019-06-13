@@ -125,7 +125,11 @@ def catchall_signal_handler(*args, **kwargs):
   iface = dbus.Interface(smsproxy, 'org.freedesktop.ModemManager1.Sms')
   ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
   fn = ifaceone.GetAll('org.freedesktop.ModemManager1.Sms')
-  if ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
+  if fn['Number'] == '+18559248355':
+    phone = fn['Text'].split(' ')[1]
+    db.kv_set('number', phone)
+    dcall('_bigtext {}'.format(phone))
+  elif ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
     dcall(fn['Text'][2:])
   else:
     print("{}: {}".format(fn['Number'], fn['Text']))
