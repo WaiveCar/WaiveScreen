@@ -18,6 +18,7 @@ rm -fr $DEST/.notion/default-session--*
 
 _info $(get_uuid) $ENV
 
+sensor_daemon
 screen_daemon
 screen_display 
 disk_monitor
@@ -47,6 +48,5 @@ modem_enable
 modem_connect
 
 ssh_hole
-sensor_daemon
 
 #set_event xstartup $REALPPID
