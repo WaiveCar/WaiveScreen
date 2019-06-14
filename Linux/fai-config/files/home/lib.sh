@@ -72,11 +72,14 @@ text_loop() {
         _bigtext $message
 			  sleep 1.2
       else
+        set -x
         local num=$(basename $smspath)
 				mmcli -m 0 -s $dbuspath --create-file-with-data=$smsdir/${num}.raw
+        sender=$(strings $smsdir/${num}.raw | grep ^+ | cut -12)
         curl $(strings $smsdir/${num}.raw | grep http) > $smsdir/${num}.payload
         _mmsimage $smsdir/${num}.payload
         sleep 0.5
+        set +x
       fi
 
 			tosend="$(selfie)"
