@@ -62,7 +62,7 @@ modem_ix = 0
 modem_max = 4
 modem_info = {}
 def get_modem(try_again=False, BUS=False):
-  if NOMODEM:
+  if NOMODEM or not db.sess_get('modem'):
     return {}
 
   global modem_iface, modem_ix
@@ -164,7 +164,8 @@ def get_gps():
 
       gps = location.get(2)
       if not gps:
-        return { }
+        return {}
+
       else:
         return {
           'Lat': gps['latitude'],
@@ -337,7 +338,8 @@ def ping():
   payload = {
     'uid': get_uuid(),
     'version': VERSION,
-    **get_modem_info()
+    **get_modem_info(),
+    **get_gps()
   }
 
   try: 
