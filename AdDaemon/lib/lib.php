@@ -148,7 +148,7 @@ function ping($data) {
     $DEFAULT_CAMPAIGN_ID,
     $LASTCOMMIT;
 
-  //error_log(json_encode($data));
+  error_log(json_encode($data));
 
   if(!isset($data['uid'])) {
     return doError("You need to pass in a UID");
@@ -158,9 +158,11 @@ function ping($data) {
 
   $screen = Get::screen(['uid' => $uid]);
   $obj = [ 'last_seen' => 'current_timestamp' ];
-  foreach(['imei','version','phone'] as $key) {
+  foreach(['imei','version','phone','Lat','Lng'] as $key) {
     if(isset($data[$key])) {
-      $obj[$key] = db_string(aget($data, $key));
+      // NOTICE: WE ARE DOING STRTOLOWER HERE IN GOING
+      // FROM ONE DB TO THE OTHER
+      $obj[strtolower($key)] = db_string(aget($data, $key));
     }
   }
 
