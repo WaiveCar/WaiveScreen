@@ -41,28 +41,52 @@ selfie() {
 }
 
 sms() {
-  number=$($SUDO mmcli -m 0 --messaging-create-sms="number=$1,text='$2'" | awk ' { print $NF } ')
+  phnumber=$1
+  shift
+  number=$($SUDO mmcli -m 0 --messaging-create-sms="number=$phnumber,text='$*'" | awk ' { print $NF } ')
   $SUDO mmcli -m 0 -s $number --send
 }
 
+_mmsimage() {
+  file=$1
+  cmd="convert - -resize 450x -background black -gravity center -extent 450x450"
+  dd skip=1 bs=$(( $(grep -abPo '(JFIF.*)' $file | awk -F : ' { print $1 }') - 6 )) if=$file | $cmd $file.jpg
+  if [ -s $file ]; then
+    echo '' | aosd_cat -n "FreeSans 0" -o 3000 -p 7 -d 225 -f 0 -o 0 &
+    sleep 0.05
+    display -window $(xwininfo -root -tree | grep aosd | head -1 | awk ' { print $1 } ') $file.jpg &
+  fi
+}
+
 text_loop() {
-  [ -d /var/log/sms ] || $SUDO mkdir /var/log/sms
-  $SUDO chmod 0777 /var/log/sms
+  smsdir=/var/log/sms 
+  [ -d $smsdir ] || $SUDO mkdir $smsdir
+  $SUDO chmod 0777 $smsdir
+
   while [ 0 ]; do
     sms=$(pycall next_sms)
 		if [ -n "$sms" ]; then
-			sender=$( echo $sms | cut -c -12 )
-			message="$( echo $sms | cut -c 15- )"
-    	_bigtext $message
-			sleep 1.2
+      eval $sms
+
+      if [ -n "$message" ]; then
+        _bigtext $message
+			  sleep 1.2
+      else
+        local num=$(basename $smspath)
+				mmcli -m 0 -s $dbuspath --create-file-with-data=$smsdir/${num}.raw
+        curl $(strings $smsdir/${num}.raw | grep http) > $smsdir/${num}.payload
+        _mmsimage $smsdir/${num}.payload
+        sleep 0.5
+      fi
+
 			tosend="$(selfie)"
       sms $sender "This just happened: $tosend. More cool stuff coming soon ;-)"
 
 			# cleanup
 			for i in $(mmcli -m 0 --messaging-list-sms | awk ' { print $1 } '); do
 				num=$( basename $i )
-				mmcli -m 0 -s $i > /var/log/sms/$num
-				mmcli -m 0 -s $i --create-file-with-data=/var/log/sms/${num}.raw
+				mmcli -m 0 -s $i > $smsdir/$num
+				mmcli -m 0 -s $i --create-file-with-data=$smsdir/${num}.raw >& /dev/null
 				$SUDO mmcli -m 0 --messaging-delete-sms=$i
 			done
 		fi
@@ -226,7 +250,7 @@ modem_connect() {
   $SUDO ip route add default via $gateway dev $wwan
 
   cat << ENDL | sed 's/^\s*//' | $SUDO tee /etc/resolv.conf
-$(perl << EPERL
+$(perl -l << EPERL
   @lines=split(/, /, '$dns');
   print 'nameserver ', @lines[0];
   print 'nameserver ', @lines[1];
