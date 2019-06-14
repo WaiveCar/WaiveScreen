@@ -132,7 +132,7 @@ def catchall_signal_handler(*args, **kwargs):
   elif ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
     dcall(fn['Text'][2:])
   else:
-    print("sender={};message={};dbuspath={}".format(fn['Number'], fn['Text'], proxy))
+    print("sender={};message='{}';dbuspath={}".format(fn['Number'], fn['Text'], proxy))
     GLib.MainLoop.quit(_loop)
 
 def next_sms():
