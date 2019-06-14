@@ -120,8 +120,8 @@ def catchall_signal_handler(*args, **kwargs):
   from gi.repository import GLib
   global _bus
   global _loop
-  proxy = args[0]
-  smsproxy = _bus.get_object('org.freedesktop.ModemManager1',str(proxy))
+  proxy = str(args[0])
+  smsproxy = _bus.get_object('org.freedesktop.ModemManager1', proxy)
   iface = dbus.Interface(smsproxy, 'org.freedesktop.ModemManager1.Sms')
   ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
   fn = ifaceone.GetAll('org.freedesktop.ModemManager1.Sms')
@@ -132,7 +132,7 @@ def catchall_signal_handler(*args, **kwargs):
   elif ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
     dcall(fn['Text'][2:])
   else:
-    print("{}: {}".format(fn['Number'], fn['Text']))
+    print("sender={};message={};dbuspath={}".format(fn['Number'], fn['Text'], proxy))
     GLib.MainLoop.quit(_loop)
 
 def next_sms():
