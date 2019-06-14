@@ -219,15 +219,19 @@ modem_connect() {
   #$SUDO dhclient $wwan &
 
   # Show the config | find ipv4 | drop the LHS | replace the colons with equals | drop the whitespace | put everything on one line
-  eval `mmcli -b 0 | grep -A 3 IPv4 | awk -F '|' ' { print $2 } ' | sed s'/: /=/' | sed -E s'/\s+//' | tr '\n' ';'`
+  eval `mmcli -b 0 | grep -A 4 IPv4 | awk -F '|' ' { print $2 } ' | sed -E s'/: (.*)/="\1"/' | sed -E s'/\s+//' | tr '\n' ';'`
 
   $SUDO ifconfig $wwan up
   $SUDO ip addr add $address/$prefix dev $wwan
   $SUDO ip route add default via $gateway dev $wwan
 
   cat << ENDL | sed 's/^\s*//' | $SUDO tee /etc/resolv.conf
-  nameserver 8.8.8.8
-  nameserver 4.2.2.1
+$(perl << EPERL
+  @lines=split(/, /, '$dns');
+  print 'nameserver ', @lines[0];
+  print 'nameserver ', @lines[1];
+EPERL
+)
   nameserver 2001:4860:4860::8888 
   nameserver 2001:4860:4860::8844
 ENDL
