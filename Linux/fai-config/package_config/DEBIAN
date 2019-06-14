@@ -41,6 +41,7 @@ wpasupplicant
 
 # and ble
 bluez
+v4l-utils
 
 # power management suite
 acpitool
