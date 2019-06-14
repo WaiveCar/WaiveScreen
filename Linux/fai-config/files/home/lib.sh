@@ -52,8 +52,8 @@ _mmsimage() {
   cmd="convert - -resize 450x -background black -gravity center -extent 450x450"
   dd skip=1 bs=$(( $(grep -abPo '(JFIF.*)' $file | awk -F : ' { print $1 }') - 6 )) if=$file | $cmd $file.jpg
   if [ -s $file ]; then
-    echo '' | aosd_cat -n "FreeSans 0" -o 3000 -p 7 -d 225 -f 0 -o 0 &
-    sleep 0.05
+    echo '' | aosd_cat -n "FreeSans 0" -u 4000 -p 7 -d 225 -f 0 -o 0 &
+    sleep 0.03
     display -window $(xwininfo -root -tree | grep aosd | head -1 | awk ' { print $1 } ') $file.jpg &
   fi
 }
@@ -72,14 +72,14 @@ text_loop() {
         _bigtext $message
 			  sleep 1.2
       else
-        set -x
-        local num=$(basename $smspath)
+				# Wait a while for the image to come in
+				sleep 1.4
+        local num=$(basename $dbuspath)
 				mmcli -m 0 -s $dbuspath --create-file-with-data=$smsdir/${num}.raw
-        sender=$(strings $smsdir/${num}.raw | grep ^+ | cut -12)
+        sender=$(strings $smsdir/${num}.raw | grep ^+ | cut -c -12 )
         curl $(strings $smsdir/${num}.raw | grep http) > $smsdir/${num}.payload
         _mmsimage $smsdir/${num}.payload
         sleep 0.5
-        set +x
       fi
 
 			tosend="$(selfie)"
