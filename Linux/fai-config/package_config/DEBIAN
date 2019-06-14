@@ -41,12 +41,14 @@ wpasupplicant
 
 # and ble
 bluez
+v4l-utils
 
 # power management suite
 acpitool
 ethtool
 
 python3-pip
+python3-gi
 python3-setuptools
 git
 
