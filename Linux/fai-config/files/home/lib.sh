@@ -30,25 +30,35 @@ _bigtext() {
 }
 
 selfie() {
-  cache=/var/cache/assets/
-  now=`date +%Y%m%d%H%M%S`
+  local cache=/var/cache/assets/
+  local now=`date +%Y%m%d%H%M%S`
+  local opts=''
+  local num=0
+
   import -window root $cache/$now-screen.jpg
   for i in `seq 0 2 6`; do
     $SUDO ffmpeg -loglevel panic -nostats -hide_banner -f v4l2 -video_size 1024x768 -y -i /dev/video$i -vframes 1 $cache/$now-$i.jpg
   done
-  echo $(curl -X POST -F "f0=@$cache/$now-screen.jpg" -F "f1=@$cache/$now-0.jpg" -F "f2=@$cache/$now-2.jpg" -F "f3=@$cache/$now-4.jpg" -F "f4=@$cache/$now-6.jpg" "waivescreen.com/selfie.php?pre=$now")
+
+  for i in $cache/$now-screen.jpg $cache/$now-0.jpg $cache/$now-2.jpg $cache/$now-4.jpg $cache/$now-6.jpg; do
+    if [ -e "$i" ]; then
+      opts="$opts -F \"f$num=@$i\""
+      (( num ++ ))
+    fi
+  done
+  echo $(curl -X POST $opts "waivescreen.com/selfie.php?pre=$now")
 }
 
 sms() {
-  phnumber=$1
+  local phnumber=$1
   shift
-  number=$($SUDO $MM --messaging-create-sms="number=$phnumber,text='$*'" | awk ' { print $NF } ')
+  local number=$($SUDO $MM --messaging-create-sms="number=$phnumber,text='$*'" | awk ' { print $NF } ')
   $SUDO $MM -s $number --send
 }
 
 _mmsimage() {
-  file=$1
-  cmd="convert - -resize 450x -background black -gravity center -extent 450x450"
+  local file=$1
+  local cmd="convert - -resize 450x -background black -gravity center -extent 450x450"
   dd skip=1 bs=$(( $(grep -abPo '(JFIF.*)' $file | awk -F : ' { print $1 }') - 6 )) if=$file | $cmd $file.jpg
   if [ -s $file ]; then
     echo '' | aosd_cat -n "FreeSans 0" -u 4000 -p 7 -d 225 -f 0 -o 0 &
@@ -574,6 +584,11 @@ upgrade() {
   fi
 }
 
+make_patch() {
+  git diff > /tmp/patch
+  curl -X POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php"
+}
+
 
 disk_monitor() {
   howmany=$( pgrep -cf 'dcall disk_monitor' )
@@ -588,7 +603,6 @@ disk_monitor() {
   else
     echo "kill the others first"
   fi
-
 }
 
 stack_down() {
