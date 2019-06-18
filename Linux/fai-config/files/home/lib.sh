@@ -65,34 +65,34 @@ text_loop() {
 
   while [ 0 ]; do
     sms=$(pycall next_sms)
-		if [ -n "$sms" ]; then
+    if [ -n "$sms" ]; then
       eval $sms
 
       if [ -n "$message" ]; then
         _bigtext $message
-			  sleep 1.2
+        sleep 1.2
       else
-				# Wait a while for the image to come in
-				sleep 1.4
+        # Wait a while for the image to come in
+        sleep 1.4
         local num=$(basename $dbuspath)
-				mmcli -m 0 -s $dbuspath --create-file-with-data=$smsdir/${num}.raw
+        mmcli -m 0 -s $dbuspath --create-file-with-data=$smsdir/${num}.raw
         sender=$(strings $smsdir/${num}.raw | grep ^+ | cut -c -12 )
         curl $(strings $smsdir/${num}.raw | grep http) > $smsdir/${num}.payload
         _mmsimage $smsdir/${num}.payload
         sleep 0.5
       fi
 
-			tosend="$(selfie)"
+      tosend="$(selfie)"
       sms $sender "This just happened: $tosend. More cool stuff coming soon ;-)"
 
-			# cleanup
-			for i in $(mmcli -m 1 --messaging-list-sms | awk ' { print $1 } '); do
-				num=$( basename $i )
-				mmcli -m 0 -s $i > $smsdir/$num
-				mmcli -m 0 -s $i --create-file-with-data=$smsdir/${num}.raw >& /dev/null
-				$SUDO mmcli -m 0 --messaging-delete-sms=$i
-			done
-		fi
+      # cleanup
+      for i in $(mmcli -m 1 --messaging-list-sms | awk ' { print $1 } '); do
+        num=$( basename $i )
+        mmcli -m 0 -s $i > $smsdir/$num
+        mmcli -m 0 -s $i --create-file-with-data=$smsdir/${num}.raw >& /dev/null
+        $SUDO mmcli -m 0 --messaging-delete-sms=$i
+      done
+    fi
   done
 }
 
@@ -330,10 +330,10 @@ ssh_hole() {
   rest=20
   event=ssh_hole
 
-	if (( $(pgrep -cf dcall\ ssh_hole ) > 1 )); then
-		echo "Nope, kill the others first"
-		exit 0
-	fi
+  if (( $(pgrep -cf dcall\ ssh_hole ) > 1 )); then
+    echo "Nope, kill the others first"
+    exit 0
+  fi
 
   (
     while [ 0 ]; do
