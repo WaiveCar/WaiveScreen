@@ -4,7 +4,7 @@ use warnings;
 
 sub install_list {
   my $ix = 0;
-  open(my $fh, '<:encoding(UTF-8)', 'Linux/fai-config/package_config/DEBIAN') or die '';
+  open(my $fh, '<:encoding(UTF-8)', '/home/adorno/WaiveScreen/Linux/fai-config/package_config/DEBIAN') or die '';
 
   my @all = qw//;
   while (my $row = <$fh>) {
