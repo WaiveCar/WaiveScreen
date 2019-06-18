@@ -7,6 +7,9 @@ date +%s > /tmp/startup
 export DISPLAY=$1
 REALPPID=$2
 
+# Force a UUID update if needed
+get_uuid 1
+
 # I want to remove anything that I did previously so I can start fresh
 rm -fr $DEST/.notion/default-session--* 
 /usr/bin/notion &
