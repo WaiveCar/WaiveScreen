@@ -187,6 +187,7 @@ function ping($data) {
 }
 
 function create_job($campaignId, $screenId) {
+  $job_id = false;
   $ttl = get_campaign_remaining($campaignId);
   if($ttl < 0) {
     return false;
