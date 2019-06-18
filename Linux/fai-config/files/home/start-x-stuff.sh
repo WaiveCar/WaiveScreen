@@ -16,7 +16,7 @@ rm -fr $DEST/.notion/default-session--*
 # Everything above is stuff we can run every time we start X
 (( $( pgrep start-x-stuff | wc -l ) > 2 )) && exit -1
 
-_info $(get_uuid) $ENV
+_info $(get_uuid) $MYPHONE $ENV
 
 sensor_daemon
 screen_daemon
