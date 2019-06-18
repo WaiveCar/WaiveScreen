@@ -1,12 +1,10 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-LOCALS=$DIR/locals.sh
 MM="mmcli -m 0"
 
 . $DIR/const.sh
 . $DIR/baseline.sh
-. $LOCALS
 
 pkill osd_cat
 
@@ -213,20 +211,15 @@ enable_gps() {
 get_number() {
   # mmcli may not properly be reporting the phone number. T-mobile sends it to
   # us in our first text so we try to work it from there.
-  if [ -z "$MYPHONE" ]; then
+  phone=$( pycall db.kv_get number )
+  if [ -z "$phone" ]; then
+    # mmcli may not properly number the sms messages starting at 0 so we find the earliest
+    sms 8559248355 ';;echo'
+    # wait for our echo service to set the variable
+    sleep 4
     phone=$( pycall db.kv_get number )
-    if [ -z "$phone" ]; then
-      # mmcli may not properly number the sms messages starting at 0 so we find the earliest
-      sms 8559248355 ';;echo'
-      # wait for our echo service to set the variable
-      sleep 4
-      phone=$( pycall db.kv_get number )
-    fi 
-    if [ -n "$phone" ]; then
-      local_set MYPHONE $phone
-    fi
-  fi
-  echo $MYPHONE
+  fi 
+  echo $phone
 }
 
 modem_connect() {
@@ -308,21 +301,6 @@ try_wireless() {
   set_event wireless_dhclient
 }
 
-local_set() {
-  # First remove it
-  sed -i "s/^$1=.*//" $LOCALS
-
-  # Now get rid of excess newlines created
-  # by the above process.
-  sed -ni '/./p' $LOCALS
-
-  # Then put it back in
-  echo $1=$2 >> $LOCALS
-  
-  # And re-read it
-  source $LOCALS
-}
-
 pycall() {
   $BASE/ScreenDaemon/dcall $*
 }
@@ -338,11 +316,9 @@ ssh_hole() {
 
   (
     while [ 0 ]; do
-      if [ ! "$PORT" ]; then
-        local_set PORT "$($SUDO $BASE/ScreenDaemon/dcall get_port)"
-      fi
+      port=$(pycall get_port)
       
-      if [ ! "$PORT" ]; then
+      if [ -z "$port" ]; then
         # This will cycle on a screen that's not properly
         # installed. That's kinda unnecessary
         # _warn "Cannot contact the server for my port"
@@ -353,7 +329,7 @@ ssh_hole() {
         sleep $rest
 
       else
-        ssh -NC -R bounce:$PORT:127.0.0.1:22 bounce &
+        ssh -NC -R bounce:$port:127.0.0.1:22 bounce &
         set_event $event
       fi
 
