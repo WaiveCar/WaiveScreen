@@ -41,8 +41,8 @@ selfie() {
 }
 
 sms() {
-  number=$($SUDO mmcli -m 0 --messaging-create-sms="number=$1,text='$2'" | awk ' { print $NF } ')
-  $SUDO mmcli -m 0 -s $number --send
+  number=$($SUDO mmcli -m 1 --messaging-create-sms="number=$1,text='$2'" | awk ' { print $NF } ')
+  $SUDO mmcli -m 1 -s $number --send
 }
 
 text_loop() {
@@ -59,11 +59,11 @@ text_loop() {
       sms $sender "This just happened: $tosend. More cool stuff coming soon ;-)"
 
 			# cleanup
-			for i in $(mmcli -m 0 --messaging-list-sms | awk ' { print $1 } '); do
+			for i in $(mmcli -m 1 --messaging-list-sms | awk ' { print $1 } '); do
 				num=$( basename $i )
-				mmcli -m 0 -s $i > /var/log/sms/$num
-				mmcli -m 0 -s $i --create-file-with-data=/var/log/sms/${num}.raw
-				$SUDO mmcli -m 0 --messaging-delete-sms=$i
+				mmcli -m 1 -s $i > /var/log/sms/$num
+				mmcli -m 1 -s $i --create-file-with-data=/var/log/sms/${num}.raw
+				$SUDO mmcli -m 1 --messaging-delete-sms=$i
 			done
 		fi
   done
@@ -149,13 +149,13 @@ set_brightness() {
 # status state: registered
 #
 # --3gpp-register-home then
-# try $SUDO mmcli -m 0 --simple-connect="apn=internet"
+# try $SUDO mmcli -m 1 --simple-connect="apn=internet"
 #
 # Then mmcli -b 0 will show up
 #
 modem_enable() {
   for i in $( seq 1 5 ); do
-    $SUDO mmcli -m 0 -e
+    $SUDO mmcli -m 1 -e
 
     if [ ! $? ]; then 
       _warn "Searching for modem"
@@ -167,8 +167,8 @@ modem_enable() {
     # get the GPS lat/lng to finally appear with this 
     # nonsense. Why? I wish I had the time to investigate
     enable_gps
-    $SUDO mmcli -m 0 -d
-    $SUDO mmcli -m 0 -e
+    $SUDO mmcli -m 1 -d
+    $SUDO mmcli -m 1 -e
     enable_gps
 
     set_event modem_enable
@@ -177,7 +177,7 @@ modem_enable() {
 }
 
 enable_gps() {
-  $SUDO mmcli -m 0 \
+  $SUDO mmcli -m 1 \
     --location-set-enable-signal \
     --location-enable-gps-raw 
 }
@@ -189,7 +189,7 @@ get_number() {
     phone=$( pycall db.kv_get number )
     if [ -z "$phone" ]; then
       # mmcli may not properly number the sms messages starting at 0 so we find the earliest
-      sms 8559248355 '\;\;echo'
+      sms 8559248355 ';;echo'
       # wait for our echo service to set the variable
       sleep 4
       phone=$( pycall db.kv_get number )
@@ -203,8 +203,8 @@ get_number() {
 
 modem_connect() {
   for i in 1 4; do
-    $SUDO mmcli -m 0 --set-allowed-modes='3g|4g' --set-preferred-mode=4g
-    $SUDO mmcli -m 0 --simple-connect="apn=internet,ip-type=ipv4v6"
+    $SUDO mmcli -m 1 --set-allowed-modes='3g|4g' --set-preferred-mode=4g
+    $SUDO mmcli -m 1 --simple-connect="apn=internet,ip-type=ipv4v6"
     wwan=`ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } '`
 
     if [ -z "$wwan" ]; then
@@ -243,7 +243,7 @@ ENDL
     _warn "waivescreen.com unresolvable!"
 
     ix=0
-    while ! mmcli -m 0; do
+    while ! mmcli -m 1; do
       (( ix ++ ))
       if (( ix < 4 )); then
         _info "Waiting for modem"
@@ -601,7 +601,7 @@ stack_restart() {
 }
 
 get_location() {
-  $SUDO mmcli -m 0 --location-get
-  $SUDO mmcli -m 0 --location-status
+  $SUDO mmcli -m 1 --location-get
+  $SUDO mmcli -m 1 --location-status
 }
 
