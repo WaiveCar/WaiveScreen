@@ -351,7 +351,7 @@ def incr(key, value=1):
       pass
 
 
-def kv_get(key, expiry=0, use_cache=False, default=None):
+def kv_get(key=None, expiry=0, use_cache=False, default=None):
   # Retrieves a value from the database, tentative on the expiry. 
   # If the cache is set to true then it retrieves it from in-memory if available, otherwise
   # it goes out to the db. Other than directly hitting up the _params parameter which is 
@@ -364,6 +364,9 @@ def kv_get(key, expiry=0, use_cache=False, default=None):
       _params[key] = int(_params[key])
 
     return _params[key]
+
+  if key is None:
+    return run("select key,value from kv").fetchall()
 
   if expiry > 0:
     # If we let things expire, we first sweep for it
@@ -378,15 +381,6 @@ def kv_get(key, expiry=0, use_cache=False, default=None):
 
     _params[key] = res[0]
     return res[0]
-
-  """
-  else:
-    # It's ok if this doesn't exist. SQLite likes to throw an error here
-    try:
-      run("delete from kv where key = '%s' and created_at < datetime(current_timestamp, '-%d second')" % (key, expiry))
-    except Exception as inst:
-      pass
-  """
 
   return default
 
