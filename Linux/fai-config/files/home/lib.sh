@@ -395,7 +395,7 @@ get_uuid() {
   if [ -n "$1" -o ! -e $UUID ] ; then
     {
       # The MAC addresses are just SOOO similar we want more variation so let's md5sum
-      cat /sys/class/net/enp3s0/address | md5sum | awk ' { print $1 } ' | xxd -r -p | base64 | sed -E 's/[=\/]//g' | $SUDO tee $UUID
+      cat /sys/class/net/enp3s0/address | md5sum | awk ' { print $1 } ' | xxd -r -p | base64 | sed -E 's/[=\/\+]//g' | $SUDO tee $UUID
       hostname=bernays-$(< $UUID)
       echo $hostname | $SUDO tee /etc/hostname
       $SUDO ainsl /etc/hosts "127.0.0.1 $hostname"
