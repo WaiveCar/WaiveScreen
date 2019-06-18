@@ -366,7 +366,7 @@ def kv_get(key=None, expiry=0, use_cache=False, default=None):
     return _params[key]
 
   if key is None:
-    return run("select key,value from kv").fetchall()
+    return "\n".join(["{}='{}'".format(x['key'],x['value']) for x in run("select key,value from kv").fetchall()])
 
   if expiry > 0:
     # If we let things expire, we first sweep for it
