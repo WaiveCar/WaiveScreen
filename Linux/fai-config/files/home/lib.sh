@@ -368,17 +368,24 @@ install() {
 }
 
 get_uuid() {
-  UUID=/etc/UUID
-  if [ -n "$1" -o ! -e $UUID ] ; then
+  UUIDfile=/etc/UUID
+  if [ -n "$1" -o ! -e $UUIDfile -o $# -gt 1 ]; then
     {
       # The MAC addresses are just SOOO similar we want more variation so let's md5sum
-      cat /sys/class/net/enp3s0/address | md5sum | awk ' { print $1 } ' | xxd -r -p | base64 | sed -E 's/[=\/\+]//g' | $SUDO tee $UUID
-      hostname=bernays-$(< $UUID)
-      echo $hostname | $SUDO tee /etc/hostname
-      $SUDO ainsl /etc/hosts "127.0.0.1 $hostname"
+      uuid_old=$(< $UUIDfile )
+      uuid=$(cat /sys/class/net/enp3s0/address | md5sum | awk ' { print $1 } ' | xxd -r -p | base64 | sed -E 's/[=\/\+]//g')
+
+      if [ "$uuid" != "$uuid_old" ]; then
+        _info "New UUID $uuid_old -> $uuid"
+        echo $uuid_old | $SUDO tee -a $UUIDfile.bak
+        echo $uuid | $SUDO tee $UUIDfile
+        hostname=bernays-$uuid
+        echo $hostname | $SUDO tee /etc/hostname
+        $SUDO ainsl /etc/hosts "127.0.0.1 $hostname"
+      fi
     } > /dev/null
   fi
-  cat $UUID
+  cat $UUIDfile
 }
 
 wait_for() {
