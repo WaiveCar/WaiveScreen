@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+sub install_list {
+  my $ix = 0;
+  open(my $fh, '<:encoding(UTF-8)', 'Linux/fai-config/package_config/DEBIAN') or die '';
+
+  my @all = qw//;
+  while (my $row = <$fh>) {
+    chomp $row;
+
+    # Remove comments
+    $row =~ s/#.*//ig;
+
+    # Skip empty lines
+    next if $row =~ /^$/;
+
+    # Only use the first set
+    if ( $row =~ /^PACKAGES/ ) {
+      last if $ix++ == 1;
+
+    } else {
+      push(@all, split(/\s+/, $row));
+    }
+  }
+  qx(sudo rm /tmp/to-install /tmp/already-installed);
+  open(my $fhout, '>', '/tmp/to-install');
+  print $fhout join "\n", sort(@all);
+  close $fhout;
+  qx(dpkg-query -l | grep '^ii'| awk '{ print \$2 }' | sort > /tmp/already-installed);
+  return qx(comm -13 /tmp/already-installed /tmp/to-install);
+}
+
+print eval "${ARGV[0]}()" if $#ARGV >= 0;
