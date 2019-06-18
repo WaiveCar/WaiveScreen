@@ -632,7 +632,7 @@ stack_restart() {
 }
 
 get_location() {
-  $SUDO mmcli -m 1 --location-get
-  $SUDO mmcli -m 1 --location-status
+  $SUDO mmcli -m 0 --location-get
+  $SUDO mmcli -m 0 --location-status
 }
 
