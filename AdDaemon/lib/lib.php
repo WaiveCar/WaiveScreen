@@ -167,7 +167,9 @@ function ping($data) {
   }
 
   if(!$screen) {
+    error_log("Can't find screen. Making one");
     $screen = create_screen($uid, $obj);
+    error_log(json_encode($screen));
   } else {
     $obj['pings'] = intval($screen['pings']) + 1;
     db_update('screen', $screen['id'], $obj);
