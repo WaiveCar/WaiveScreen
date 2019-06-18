@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LOCALS=$DIR/locals.sh
-MM=mmcli -m 0
+MM="mmcli -m 0"
 
 . $DIR/const.sh
 . $DIR/baseline.sh
