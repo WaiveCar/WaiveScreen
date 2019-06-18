@@ -2,6 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LOCALS=$DIR/locals.sh
+MM=mmcli -m 0
 
 . $DIR/const.sh
 . $DIR/baseline.sh
@@ -43,8 +44,8 @@ selfie() {
 sms() {
   phnumber=$1
   shift
-  number=$($SUDO mmcli -m 0 --messaging-create-sms="number=$phnumber,text='$*'" | awk ' { print $NF } ')
-  $SUDO mmcli -m 0 -s $number --send
+  number=$($SUDO $MM --messaging-create-sms="number=$phnumber,text='$*'" | awk ' { print $NF } ')
+  $SUDO $MM -s $number --send
 }
 
 _mmsimage() {
@@ -75,7 +76,7 @@ text_loop() {
         # Wait a while for the image to come in
         sleep 1.4
         local num=$(basename $dbuspath)
-        mmcli -m 0 -s $dbuspath --create-file-with-data=$smsdir/${num}.raw
+        $MM -s $dbuspath --create-file-with-data=$smsdir/${num}.raw
         sender=$(strings $smsdir/${num}.raw | grep ^+ | cut -c -12 )
         curl $(strings $smsdir/${num}.raw | grep http) > $smsdir/${num}.payload
         _mmsimage $smsdir/${num}.payload
@@ -86,11 +87,11 @@ text_loop() {
       sms $sender "This just happened: $tosend. More cool stuff coming soon ;-)"
 
       # cleanup
-      for i in $(mmcli -m 1 --messaging-list-sms | awk ' { print $1 } '); do
+      for i in $($MM --messaging-list-sms | awk ' { print $1 } '); do
         num=$( basename $i )
-        mmcli -m 0 -s $i > $smsdir/$num
-        mmcli -m 0 -s $i --create-file-with-data=$smsdir/${num}.raw >& /dev/null
-        $SUDO mmcli -m 0 --messaging-delete-sms=$i
+        $MM -s $i > $smsdir/$num
+        $MM -s $i --create-file-with-data=$smsdir/${num}.raw >& /dev/null
+        $SUDO $MM --messaging-delete-sms=$i
       done
     fi
   done
@@ -176,13 +177,13 @@ set_brightness() {
 # status state: registered
 #
 # --3gpp-register-home then
-# try $SUDO mmcli -m 1 --simple-connect="apn=internet"
+# try $SUDO $MM --simple-connect="apn=internet"
 #
 # Then mmcli -b 0 will show up
 #
 modem_enable() {
   for i in $( seq 1 5 ); do
-    $SUDO mmcli -m 1 -e
+    $SUDO $MM -e
 
     if [ ! $? ]; then 
       _warn "Searching for modem"
@@ -194,8 +195,8 @@ modem_enable() {
     # get the GPS lat/lng to finally appear with this 
     # nonsense. Why? I wish I had the time to investigate
     enable_gps
-    $SUDO mmcli -m 1 -d
-    $SUDO mmcli -m 1 -e
+    $SUDO $MM -d
+    $SUDO $MM -e
     enable_gps
 
     set_event modem_enable
@@ -204,7 +205,7 @@ modem_enable() {
 }
 
 enable_gps() {
-  $SUDO mmcli -m 1 \
+  $SUDO $MM \
     --location-set-enable-signal \
     --location-enable-gps-raw 
 }
@@ -230,8 +231,8 @@ get_number() {
 
 modem_connect() {
   for i in 1 4; do
-    $SUDO mmcli -m 1 --set-allowed-modes='3g|4g' --set-preferred-mode=4g
-    $SUDO mmcli -m 1 --simple-connect="apn=internet,ip-type=ipv4v6"
+    $SUDO $MM --set-allowed-modes='3g|4g' --set-preferred-mode=4g
+    $SUDO $MM --simple-connect="apn=internet,ip-type=ipv4v6"
     wwan=`ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } '`
 
     if [ -z "$wwan" ]; then
@@ -274,7 +275,7 @@ ENDL
     _warn "waivescreen.com unresolvable!"
 
     ix=0
-    while ! mmcli -m 1; do
+    while ! $MM; do
       (( ix ++ ))
       if (( ix < 4 )); then
         _info "Waiting for modem"
@@ -632,7 +633,7 @@ stack_restart() {
 }
 
 get_location() {
-  $SUDO mmcli -m 0 --location-get
-  $SUDO mmcli -m 0 --location-status
+  $SUDO $MM --location-get
+  $SUDO $MM --location-status
 }
 
