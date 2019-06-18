@@ -28,6 +28,7 @@ UUID = False
 
 _pinglock = Lock()
 
+ME=os.environ['USER']
 if os.environ['USER'] == 'root':
   # This tool probably shouldn't be run as root but we should
   # know who we are talking about if it is
@@ -61,8 +62,9 @@ modem_iface = False
 modem_ix = 0
 modem_max = 4
 modem_info = {}
+
 def get_modem(try_again=False, BUS=False):
-  if NOMODEM or not db.sess_get('modem'):
+  if NOMODEM or not db.sess_get('modem') or ME != 'root':
     return {}
 
   global modem_iface, modem_ix
