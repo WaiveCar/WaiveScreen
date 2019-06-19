@@ -112,8 +112,8 @@ _onscreen() {
     offset=$(< /tmp/offset )
   fi
 
-  ts=$( printf "%03d" $(( $(date +%s) - $(< /tmp/startup) )))
-  size=14
+  local ts=$( printf "%03d" $(( $(date +%s) - $(< /tmp/startup) )))
+  local size=14
 
   #from=$( caller 1 | awk ' { print $2":"$1 } ' )
   echo $1 "$ts" | osd_cat \
@@ -155,7 +155,7 @@ online_loop() {
 }
 
 set_wrap() {
-  pid=${2:-$!}
+  local pid=${2:-$!}
   [ -e $EV/0_$1 ] && $SUDO rm $EV/0_$1
   echo -n $pid > $EV/0_$1
 }
@@ -316,17 +316,17 @@ pycall() {
 }
 
 ssh_hole() {
-  rest=20
-  event=ssh_hole
+  local rest=20
+  local event=ssh_hole
 
   if (( $(pgrep -cf dcall\ ssh_hole ) > 1 )); then
     echo "Nope, kill the others first"
     exit 0
   fi
 
-  (
+  {
     while [ 0 ]; do
-      port=$(pycall get_port)
+      local port=$(pycall get_port)
       
       if [ -z "$port" ]; then
         # This will cycle on a screen that's not properly
@@ -345,7 +345,7 @@ ssh_hole() {
 
       sleep $rest
     done
-  )  &
+  } > /dev/null &
 
   # The 0 makes sure that the wrapper is killed before
   # the client 
