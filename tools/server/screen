@@ -43,6 +43,9 @@ restart() {
 for i in $*; do
   case $1 in
     list) list ;;
+    patch) 
+      curl -s http://waivescreen.com/patchfile | git apply -
+      ;;
     connect) connect $1 ;;
     sync|reload) reload ;;
     on) on.js ;;
