@@ -71,7 +71,7 @@ if [ -z "$NODISK" ]; then
   if sudo mount $disk $mount; then
     sudo cp -v $package $mount
     sudo umount $mount
-  else
-    echo "Can't mount $disk on $mount - fix this and then rerun with the NOCLONE=1 env variable to skip the cloning"
+    exit
   fi
+  echo "Can't mount $disk on $mount - fix this and then rerun with the NOCLONE=1 env variable to skip the cloning"
 fi
