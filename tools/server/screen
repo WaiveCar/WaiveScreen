@@ -1,13 +1,12 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-
 list() {
   curl -s waivescreen.com/api/screens | python -mjson.tool
 }
 
 connect() {
-  ssh -i $DIR/../Linux/keys/ScreenAccess adorno@waivescreen.com -p 7000
+  ssh -i $DIR/../Linux/keys/ScreenAccess adorno@waivescreen.com -p $1
 }
 
 reload() {
@@ -35,23 +34,10 @@ reload() {
   rm $LOCK
 }
 
-# This was a version of restart before we
-# got power management working, which
-# we do by setting the following up in bios
+# To get power management working, setthe following up in bios
 #
 # Advanced ▷ LPSS & SCC Configuration ▷ OS Selection ▷ Android
 #
-oldrestart() {
-  restart
-  sshpid=$!
-  for i in `seq 3 -1 1`; do
-    sleep 1
-    echo -n "$i..."
-  done
-  kill $sshpid
-  $DIR/pcycle.js
-}
-
 restart() {
   ssh screen "sudo reboot"&
 }
