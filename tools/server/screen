@@ -24,9 +24,7 @@ reload() {
     | osd_cat \
       -c white \
       -S darkgray \
-      -s 2 \
-      -o 10 \
-      -d 30 \
+      -s 2 -o 10 -d 30 \
       -f lucidasanstypewriter-bold-24 &
 
   ssh screen "./reload"
