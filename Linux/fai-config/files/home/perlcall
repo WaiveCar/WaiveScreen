@@ -24,7 +24,7 @@ sub install_list {
       push(@all, split(/\s+/, $row));
     }
   }
-  qx(sudo rm /tmp/to-install /tmp/already-installed);
+  qx(sudo rm -f /tmp/to-install /tmp/already-installed);
   open(my $fhout, '>', '/tmp/to-install');
   print $fhout join "\n", sort(@all);
   close $fhout;
