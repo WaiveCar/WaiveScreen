@@ -277,7 +277,7 @@ modem_connect() {
   #$SUDO dhclient $wwan &
 
   # Show the config | find ipv4 | drop the LHS | replace the colons with equals | drop the whitespace | put everything on one line
-  eval `mmcli -b 0 | grep -A 4 IPv4 | awk -F '|' ' { print $2 } ' | sed -E s'/: (.*)/="\1"/' | sed -E s'/\s+//' | tr '\n' ';'`
+  eval `mmcli -b 0 | grep -A 4 IPv4 | awk -F '|' ' { print $2 } ' | sed -E s'/: (.*)/="\1"/' | sed -E "s/[\' +]//g" | tr '\n' ';'`
 
   $SUDO ifconfig $wwan up
   $SUDO ip addr add $address/$prefix dev $wwan
@@ -285,7 +285,7 @@ modem_connect() {
 
   cat << ENDL | sed 's/^\s*//' | $SUDO tee /etc/resolv.conf
 $(perl -l << EPERL
-  @lines=split(/, /, '$dns');
+  @lines=split(/,\s*/, '$DNS');
   print 'nameserver ', @lines[0];
   print 'nameserver ', @lines[1];
 EPERL
