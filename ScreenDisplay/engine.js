@@ -5,6 +5,17 @@
 // If you're reading this and it's like 2022 or something, then go ahead and reconsider it,
 // it'll probably be fine by then.
 //
+
+
+// 2 mutually exclusive ways to timeline:
+//
+// be stupid and have the timeline feed the next job - this makes scrubbing hard
+//   * Any scrubbing solution will involve moving an offset around a datastructure with
+//     computed timestamps ... that makes it a timeline.
+//
+// be entirely timeline based and have the next job put something on the timeline - this creates latency problems.
+//   * A "discard future" option will fix the latency issue
+//
 var Engine = function(opts){
   // Support {
 
@@ -60,6 +71,7 @@ var Engine = function(opts){
     _nop = function(){},
     _isNetUp = true,
     _start = new Date(),
+    _timeline = [],
     _last_sow = [+_start, +_start],
     _fallback;
 
@@ -77,6 +89,15 @@ var Engine = function(opts){
     console.log("Making " + obj.url + " inactive");
   }
 
+  function iframe(asset, obj) {
+    var dom = document.createElement('iframe');
+    dom.src = asset.url;
+    asset.dom = dom;
+    asset.run = function() {
+      _playCount ++;
+    }
+  }
+  
   function video(asset, obj) {
     var vid = document.createElement('video');
     var src = document.createElement('source');
@@ -192,7 +213,9 @@ var Engine = function(opts){
       var container = document.createElement('div');
       container.classList.add('container');
 
-      if(['mp4','ogv','mpeg','webm','flv','3gp','avi'].includes(ext.toLowerCase()) ) {
+      if(['html'].includes(ext.toLowerCase()) ) {
+        asset = iframe(asset, obj);
+      } else if(['mp4','ogv','mpeg','webm','flv','3gp','avi'].includes(ext.toLowerCase()) ) {
         asset = video(asset, obj);
       } else {
 
@@ -537,50 +560,19 @@ var Engine = function(opts){
     _last_sow[1] = +new Date();
 
     nextAsset();
-
   }
 
   function setFallback (url) {
     // We look for a system default
     if(!_res.fallback && !url) {
-      /*
-      function trylocal(){
-        // For some unknown stupid fucked up completely mysterious reason
-        // a local document when running locally and talking to local resources
-        // can't have permission to access the local storage, you know, because
-        // somehow that should be a more secure, less trusted context then 
-        // running random fucking code from the wild internet. Unbelievable.
-        //
-        // Fuck google and fuck permissions.
-        //
-        var fuck_google;
-        try {
-          fuck_google = localStorage['default'];
-        } catch (ex) { }
-
-        if(fuck_google) {
-          _fallback = makeJob(JSON.parse(fuck_google));
-        } else if (_res.server) {
-          // If we have a server defined and we have yet to succeed
-          // to get our default then we should probably try it again
-          // until we get it
-          setTimeout(function(){setFallback()}, _res.duration * 1000);
-        }
-      }
-      */
-
       // If we have a server we can get it from there
       get('/default', function(res) {
         _fallback = makeJob(res.data);
-        /*
-        try {
-          localStorage['default'] = JSON.stringify(res.data);
-          trylocal();
-        } catch (ex) { 
-          _fallback = makeJob(res.data);
-        }
-        */
-      }, function(){ setTimeout(function(){setFallback()}, _res.duration * 1000) });
+      }, function() { 
+        setTimeout(function() {
+          setFallback();
+        }, _res.duration * 1000);
+      });
 
     } else {
       _res.fallback = _res.fallback || url;

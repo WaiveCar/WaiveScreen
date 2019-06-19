@@ -55,12 +55,10 @@ while [ 0 ]; do
     fi
   fi
     
-  echo $fn| osd_cat \
+  echo $fn | osd_cat \
     -c white \
     -p top -A right \
-    -l 1 \
-    -o 10 \
-    -d 1 \
+    -l 1 -o 10 -d 1 \
     -f lucidasanstypewriter-bold-14 &
 
   date +%s > /tmp/last-sync

@@ -2,10 +2,6 @@ dopath("cfg_debian")
 --META="Mod1+"
 --ALTMETA=""
 
--- Terminal emulator
---XTERM="xterm"
-
--- Some basic settings
 ioncore.set{
     -- Maximum delay between clicks in milliseconds to be considered a
     -- double click.
@@ -16,8 +12,6 @@ ioncore.set{
     -- the resize in case of non-opaque move).
     --kbresize_delay=1500,
 
-    -- Opaque resize?
-    --opaque_resize=false,
 
     -- Movement commands warp the pointer to frames instead of just
     -- changing focus. Enabled by default.
@@ -39,12 +33,6 @@ ioncore.set{
 }
 
 
--- Load default settings. The file cfg_defaults loads all the files
--- commented out below, except mod_dock. If you do not want to load
--- something, comment out this line, and uncomment the lines corresponding
--- the the modules or configuration files that you want, below.
--- The modules' configuration files correspond to the names of the 
--- modules with 'mod' replaced by 'cfg'.
 dopath("cfg_defaults")
 
 -- Load configuration of the Notion 'core'. Most bindings are here.
@@ -55,11 +43,4 @@ dopath("cfg_notioncore")
 
 -- Define some layouts. 
 --dopath("cfg_layouts")
-
--- Load some modules. Bindings and other configuration specific to modules
--- are in the files cfg_modulename.lua.
---dopath("mod_query")
---dopath("mod_menu")
---dopath("mod_tiling")
---dopath("mod_sp")
 
