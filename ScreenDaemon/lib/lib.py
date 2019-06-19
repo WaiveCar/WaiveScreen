@@ -129,6 +129,7 @@ def catchall_signal_handler(*args, **kwargs):
   iface = dbus.Interface(smsproxy, 'org.freedesktop.ModemManager1.Sms')
   ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
   fn = ifaceone.GetAll('org.freedesktop.ModemManager1.Sms')
+
   if fn['Number'] == '+18559248355':
     phone = fn['Text'].split(' ')[1]
     db.kv_set('number', phone)
@@ -138,7 +139,8 @@ def catchall_signal_handler(*args, **kwargs):
     res = dcall(fn['Text'][2:])
     dcall("sms {} '{}'".format( fn['Number'], res))
 
-  elif fn['Number'] != mynumber:
+  # Makes sure that we are not reporting our own text
+  elif fn['PduType'] != 2:
     print("sender={};message='{}';dbuspath={}".format(fn['Number'], fn['Text'], proxy))
     GLib.MainLoop.quit(_loop)
 
