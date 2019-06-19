@@ -60,7 +60,7 @@ selfie() {
       (( num ++ ))
     fi
   done
-  eval curl -X POST $opts "waivescreen.com/selfie.php?pre=$now"
+  eval curl -sX POST $opts "waivescreen.com/selfie.php?pre=$now"
 }
 
 sms() {
@@ -615,7 +615,7 @@ upgrade() {
 
 make_patch() {
   git diff > /tmp/patch
-  curl -X POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php"
+  curl -sX POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php"
 }
 
 
