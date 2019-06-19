@@ -85,6 +85,12 @@ sms_cleanup() {
   # cleanup
   for i in $($MM --messaging-list-sms | grep "received" | awk ' { print $1 } '); do
     local num=$( kv_incr sms )
+
+    # Try to make sure we aren't overwriting
+    while [ -e $SMSDIR/$num ]; do
+      num=$(kv_incr sms)
+    done
+
     $MM -s $i > $SMSDIR/$num
     $MM -s $i --create-file-with-data=$SMSDIR/${num}.raw >& /dev/null
     $SUDO $MM --messaging-delete-sms=$i
