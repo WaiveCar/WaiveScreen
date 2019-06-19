@@ -158,7 +158,7 @@ def next_sms():
 def dcall(*kvarg):
   home = '/home/{}'.format(USER)
   dcall = '{}/dcall'.format(home)
-  os.popen('{} {}'.format(dcall,' '.join([str(k) for k in kvarg])))
+  return os.popen('{} {}'.format(dcall,' '.join([str(k) for k in kvarg])))
 
 def get_gps():
   modem = get_modem()
