@@ -172,6 +172,10 @@ function db_connect() {
       touch($dbPath);
     }
     $_db = new SQLite3($dbPath);
+    $_db->busyTimeout(5000);
+    // WAL mode has better control over concurrency.
+    // Source: https://www.sqlite.org/wal.html
+    $_db->exec('PRAGMA journal_mode = wal;');
   }
   return $_db;
 }
