@@ -553,7 +553,7 @@ local_upgrade() {
       cd $BASE
       _info "Upgraded to $(git describe) - restarting stack"
       set -x
-      perlcall install_list | xargs $SUDO apt install
+      perlcall install_list | xargs $SUDO apt -y install
       pycall db.upgrade
       stack_restart 
       upgrade_scripts
@@ -577,7 +577,7 @@ upgrade() {
   if local_sync; then
     cd $BASE/ScreenDaemon
     $SUDO pip3 install -r requirements.txt
-    perlcall install_list | xargs $SUDO apt install
+    perlcall install_list | xargs $SUDO apt -y install
     pycall db.upgrade
     upgrade_scripts
     stack_restart
