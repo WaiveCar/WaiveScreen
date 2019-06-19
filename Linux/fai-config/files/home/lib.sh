@@ -267,7 +267,7 @@ get_number() {
   phone=$( pycall _raw "re.sub('[^\d]','',db.kv_get('number'))" )
   if [ -z "$phone" ]; then
     # mmcli may not properly number the sms messages starting at 0 so we find the earliest
-    sms 8559248355 ';;echo'
+    sms 8559248355 '__echo__'
     # wait for our echo service to set the variable
     sleep 4
     phone=$( kv_get number )
