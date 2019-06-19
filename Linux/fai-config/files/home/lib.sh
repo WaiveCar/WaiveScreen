@@ -49,10 +49,14 @@ selfie() {
   local opts=''
   local num=0
 
-  import -window root $cache/$now-screen.jpg
   for i in `seq 0 2 6`; do
-    $SUDO ffmpeg -loglevel panic -nostats -hide_banner -f v4l2 -video_size 1024x768 -y -i /dev/video$i -vframes 1 $cache/$now-$i.jpg
+    $SUDO ffmpeg -loglevel panic -nostats -hide_banner -f v4l2 -video_size 1280x720 -y -i /dev/video$i -vframes 1 $cache/$now-$i.jpg 
   done
+
+  if [ -n "$1" ]; then
+     sms_cleanup &
+  fi
+  import -window root $cache/$now-screen.jpg
 
   for i in $cache/$now-screen.jpg $cache/$now-0.jpg $cache/$now-2.jpg $cache/$now-4.jpg $cache/$now-6.jpg; do
     if [ -e "$i" ]; then
@@ -60,7 +64,13 @@ selfie() {
       (( num ++ ))
     fi
   done
-  eval curl -sX POST $opts "waivescreen.com/selfie.php?pre=$now"
+  res=$(eval curl -sX POST $opts "waivescreen.com/selfie.php?pre=$now")
+  if [ -n "$1" ]; then
+    sms $sender "This just happened: $res. More cool stuff coming soon ;-)"
+    #t sms-after
+  else
+    echo $res
+  fi
 }
 
 sms() {
@@ -99,32 +109,39 @@ sms_cleanup() {
   done
 }
 
+t() {
+  echo $(date +%s.%N) $*
+}
+
 text_loop() {
   [ -d $SMSDIR ] || $SUDO mkdir $SMSDIR
   $SUDO chmod 0777 $SMSDIR
 
   while [ 0 ]; do
     sms=$(pycall next_sms)
+    #t entry
+
     if [ -n "$sms" ]; then
       eval $sms
 
       if [ -n "$message" ]; then
+        selfie $sender &
+        sleep 2
         _bigtext $message
-        sleep 1.2
+        #t bigtext
       else
         # Wait a while for the image to come in
-        sleep 1.4
+        sleep 1.5
         local num=$(basename $dbuspath)
         $MM -s $dbuspath --create-file-with-data=$SMSDIR/${num}.raw
         sender=$(strings $SMSDIR/${num}.raw | grep ^+ | cut -c -12 )
         curl -s $(strings $SMSDIR/${num}.raw | grep http) > $SMSDIR/${num}.payload
+        selfie $sender &
         _mmsimage $SMSDIR/${num}.payload
         sleep 0.5
       fi
 
-      local tosend="$(selfie)"
-      sms_cleanup
-      sms $sender "This just happened: $tosend. More cool stuff coming soon ;-)"
+      #t selfie-after
     fi
   done
 }
