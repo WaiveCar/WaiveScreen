@@ -125,7 +125,12 @@ while True:
   window.append(all.get('Voltage'))
   if len(window) > WINDOW_SIZE * 1.2:
     window = window[-WINDOW_SIZE:]
-  avg = float(sum(window)) / len(window)
+
+  try:
+    avg = float(sum(window)) / len(window)
+  except:
+    avg = 0
+
 
   if is_significant(all):
     lib.sensor_store(all)
