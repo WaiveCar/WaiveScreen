@@ -240,6 +240,8 @@ modem_enable() {
 enable_gps() {
   $SUDO $MM \
     --location-set-enable-signal \
+    --location-set-enable-agps \
+    --location-set-enable-nmea \
     --location-enable-gps-raw 
 }
 
