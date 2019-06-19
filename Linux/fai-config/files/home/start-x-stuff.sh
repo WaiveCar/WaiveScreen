@@ -21,6 +21,13 @@ rm -fr $DEST/.notion/default-session--*
 
 _warn $(get_uuid) $MYPHONE $ENV
 
+#
+# If the hostname is changed via UUID, then
+# this lock will prevent chromium from starting 
+# up again and will just present a dialog box.
+# 
+rm -f $DEST/.config/chromium/Singleton*
+
 sensor_daemon
 screen_daemon
 screen_display 
