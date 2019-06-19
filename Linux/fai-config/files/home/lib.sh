@@ -60,7 +60,7 @@ selfie() {
       (( num ++ ))
     fi
   done
-  echo $(curl -X POST $opts "waivescreen.com/selfie.php?pre=$now")
+  eval curl -X POST $opts "waivescreen.com/selfie.php?pre=$now"
 }
 
 sms() {
@@ -73,7 +73,9 @@ sms() {
 _mmsimage() {
   local file=$1
   local cmd="convert - -resize 450x -background black -gravity center -extent 450x450"
+
   dd skip=1 bs=$(( $(grep -abPo '(JFIF.*)' $file | awk -F : ' { print $1 }') - 6 )) if=$file | $cmd $file.jpg
+
   if [ -s $file ]; then
     echo '' | aosd_cat -n "FreeSans 0" -u 4000 -p 7 -d 225 -f 0 -o 0 &
     sleep 0.03
@@ -120,7 +122,7 @@ text_loop() {
         sleep 0.5
       fi
 
-      tosend="$(selfie)"
+      local tosend="$(selfie)"
       sms $sender "This just happened: $tosend. More cool stuff coming soon ;-)"
 
       sms_cleanup
@@ -190,11 +192,11 @@ set_event() {
 }
 
 set_brightness() {
-  level=$1
-  nopy=$2
+  local level=$1
+  local nopy=$2
 
-  shift=$(perl -e "print .5 * $level + .5")
-  revlevel=$(perl -e "print .7 * $level + .3")
+  local shift=$(perl -e "print .5 * $level + .5")
+  local revlevel=$(perl -e "print .7 * $level + .3")
 
   [ -z "$nopy" ] && pycall arduino.set_backlight $level
 
