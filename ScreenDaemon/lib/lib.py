@@ -115,7 +115,6 @@ def get_modem(try_again=False, BUS=False):
 
   return modem_iface
 
-
 _bus = False
 _loop = False
 def catchall_signal_handler(*args, **kwargs):
@@ -130,17 +129,22 @@ def catchall_signal_handler(*args, **kwargs):
   ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
   fn = ifaceone.GetAll('org.freedesktop.ModemManager1.Sms')
 
-  if fn['Number'] == '+18559248355':
+  # pprint(json.dumps(fn))
+  if fn['PduType'] == 2:
+    iface.Send()
+
+  elif fn['Number'] == '+18559248355':
     phone = fn['Text'].split(' ')[1]
     db.kv_set('number', phone)
     dcall('_bigtext {}'.format(phone))
 
   elif ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
     res = dcall(fn['Text'][2:])
-    dcall("sms {} '{}'".format( fn['Number'], res))
+    modem = get_modem()
+    modem['sms'].Create({'number': fn['Number'], 'text': res})
 
   # Makes sure that we are not reporting our own text
-  elif fn['PduType'] != 2:
+  else:
     print("sender={};message='{}';dbuspath={}".format(fn['Number'], fn['Text'], proxy))
     GLib.MainLoop.quit(_loop)
 
