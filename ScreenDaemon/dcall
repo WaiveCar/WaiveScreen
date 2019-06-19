@@ -39,7 +39,7 @@ def tryit(fn):
 
 def dumpfailure():
   for row in _attemptList:
-    logging.warning("{:24}- {}".format(row[0], row[1]))
+    logging.warning("{:32}- {}".format(row[0], row[1]))
 
 
 if len(sys.argv) > 1:
