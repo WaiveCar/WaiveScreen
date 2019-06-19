@@ -658,6 +658,10 @@ stack_restart() {
   stack_up
 }
 
+_raw() {
+  eval "$*"
+}
+
 get_location() {
   $SUDO $MM --location-get
   $SUDO $MM --location-status
