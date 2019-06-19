@@ -126,5 +126,6 @@ gousb() {
 }
 
 alias pycall=$HOME/WaiveScreen/ScreenDaemon/dcall
+alias perlcall=$HOME/WaiveScreen/perlcall
 PATH=$PATH:$HOME/.local/bin:$HOME
 source $HOME/const.sh

@@ -115,24 +115,36 @@ def get_modem(try_again=False, BUS=False):
 
   return modem_iface
 
-
 _bus = False
 _loop = False
 def catchall_signal_handler(*args, **kwargs):
   from gi.repository import GLib
   global _bus
   global _loop
+
+  mynumber = "+{}".format( db.kv_get('number').strip('+'))
   proxy = str(args[0])
   smsproxy = _bus.get_object('org.freedesktop.ModemManager1', proxy)
   iface = dbus.Interface(smsproxy, 'org.freedesktop.ModemManager1.Sms')
   ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
   fn = ifaceone.GetAll('org.freedesktop.ModemManager1.Sms')
-  if fn['Number'] == '+18559248355':
+
+  # pprint(json.dumps(fn))
+  if fn['PduType'] == 2:
+    iface.Send()
+
+  elif fn['Number'] == '+18559248355':
     phone = fn['Text'].split(' ')[1]
     db.kv_set('number', phone)
     dcall('_bigtext {}'.format(phone))
+
   elif ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
-    dcall(fn['Text'][2:])
+    res = dcall(fn['Text'][2:])
+    modem = get_modem()
+    if modem:
+      modem['sms'].Create({'number': fn['Number'], 'text': res})
+
+  # Makes sure that we are not reporting our own text
   else:
     print("sender={};message='{}';dbuspath={}".format(fn['Number'], fn['Text'], proxy))
     GLib.MainLoop.quit(_loop)
@@ -155,7 +167,12 @@ def next_sms():
 def dcall(*kvarg):
   home = '/home/{}'.format(USER)
   dcall = '{}/dcall'.format(home)
-  os.popen('{} {}'.format(dcall,' '.join([str(k) for k in kvarg])))
+  res = ''
+  with os.popen('{} {}'.format(dcall,' '.join([str(k) for k in kvarg]))) as fh:
+    res = fh.read()
+
+  return res
+
 
 def get_gps():
   modem = get_modem()

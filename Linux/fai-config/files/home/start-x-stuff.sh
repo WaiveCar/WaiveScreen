@@ -7,6 +7,9 @@ date +%s > /tmp/startup
 export DISPLAY=$1
 REALPPID=$2
 
+# Force a UUID update if needed
+get_uuid 1
+
 # I want to remove anything that I did previously so I can start fresh
 rm -fr $DEST/.notion/default-session--* 
 /usr/bin/notion &
@@ -17,6 +20,13 @@ rm -fr $DEST/.notion/default-session--*
 (( $( pgrep start-x-stuff | wc -l ) > 2 )) && exit -1
 
 _warn $(get_uuid) $MYPHONE $ENV
+
+#
+# If the hostname is changed via UUID, then
+# this lock will prevent chromium from starting 
+# up again and will just present a dialog box.
+# 
+rm -f $DEST/.config/chromium/Singleton*
 
 sensor_daemon
 screen_daemon

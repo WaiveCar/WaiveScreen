@@ -1,12 +1,12 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-LOCALS=$DIR/locals.sh
 MM="mmcli -m 0"
+SMSDIR=/var/log/sms 
+DB=/var/db/config.db
 
 . $DIR/const.sh
 . $DIR/baseline.sh
-. $LOCALS
 
 pkill osd_cat
 
@@ -14,6 +14,18 @@ if [ ! -d $EV ]; then
   mkdir -p $EV 
   chmod 0777 $EV
 fi
+
+kv_get() {
+  echo $(sqlite3 $DB "select value from kv where key='$1'")
+}
+
+kv_incr() {
+  local curval=$(kv_get $1)
+  [ -z "$curval" ] && curval=0
+  curval=$(( curval + 1 ))
+  sqlite3 $DB "update kv set value=$curval where key='$1'";
+  echo $curval
+}
 
 list() {
   # just show the local fuctions
@@ -32,26 +44,48 @@ _bigtext() {
 }
 
 selfie() {
-  cache=/var/cache/assets/
-  now=`date +%Y%m%d%H%M%S`
-  import -window root $cache/$now-screen.jpg
+  local cache=/var/cache/assets/
+  local now=`date +%Y%m%d%H%M%S`
+  local opts=''
+  local num=0
+
   for i in `seq 0 2 6`; do
-    $SUDO ffmpeg -loglevel panic -nostats -hide_banner -f v4l2 -video_size 1024x768 -y -i /dev/video$i -vframes 1 $cache/$now-$i.jpg
+    $SUDO ffmpeg -loglevel panic -nostats -hide_banner -f v4l2 -video_size 1280x720 -y -i /dev/video$i -vframes 1 $cache/$now-$i.jpg 
   done
-  echo $(curl -X POST -F "f0=@$cache/$now-screen.jpg" -F "f1=@$cache/$now-0.jpg" -F "f2=@$cache/$now-2.jpg" -F "f3=@$cache/$now-4.jpg" -F "f4=@$cache/$now-6.jpg" "waivescreen.com/selfie.php?pre=$now")
+
+  if [ -n "$1" ]; then
+     sms_cleanup &
+  fi
+  import -window root $cache/$now-screen.jpg
+
+  for i in $cache/$now-screen.jpg $cache/$now-0.jpg $cache/$now-2.jpg $cache/$now-4.jpg $cache/$now-6.jpg; do
+    if [ -e "$i" ]; then
+      opts="$opts -F \"f$num=@$i\""
+      (( num ++ ))
+    fi
+  done
+  res=$(eval curl -sX POST $opts "waivescreen.com/selfie.php?pre=$now")
+  if [ -n "$1" ]; then
+    sms $sender "This just happened: $res. More cool stuff coming soon ;-)"
+    #t sms-after
+  else
+    echo $res
+  fi
 }
 
 sms() {
-  phnumber=$1
+  local phnumber=$1
   shift
-  number=$($SUDO $MM --messaging-create-sms="number=$phnumber,text='$*'" | awk ' { print $NF } ')
-  $SUDO $MM -s $number --send
+  local number=$($SUDO $MM --messaging-create-sms="number=$phnumber,text='$*'" | awk ' { print $NF } ')
+  # $SUDO $MM -s $number --send
 }
 
 _mmsimage() {
-  file=$1
-  cmd="convert - -resize 450x -background black -gravity center -extent 450x450"
+  local file=$1
+  local cmd="convert - -resize 450x -background black -gravity center -extent 450x450"
+
   dd skip=1 bs=$(( $(grep -abPo '(JFIF.*)' $file | awk -F : ' { print $1 }') - 6 )) if=$file | $cmd $file.jpg
+
   if [ -s $file ]; then
     echo '' | aosd_cat -n "FreeSans 0" -u 4000 -p 7 -d 225 -f 0 -o 0 &
     sleep 0.03
@@ -59,40 +93,55 @@ _mmsimage() {
   fi
 }
 
+sms_cleanup() {
+  # cleanup
+  for i in $($MM --messaging-list-sms | awk ' { print $1 } '); do
+    local num=$( kv_incr sms )
+
+    # Try to make sure we aren't overwriting
+    while [ -e $SMSDIR/$num ]; do
+      num=$(kv_incr sms)
+    done
+
+    $MM -s $i > $SMSDIR/$num
+    $MM -s $i --create-file-with-data=$SMSDIR/${num}.raw >& /dev/null
+    $SUDO $MM --messaging-delete-sms=$i
+  done
+}
+
+t() {
+  echo $(date +%s.%N) $*
+}
+
 text_loop() {
-  smsdir=/var/log/sms 
-  [ -d $smsdir ] || $SUDO mkdir $smsdir
-  $SUDO chmod 0777 $smsdir
+  [ -d $SMSDIR ] || $SUDO mkdir $SMSDIR
+  $SUDO chmod 0777 $SMSDIR
 
   while [ 0 ]; do
     sms=$(pycall next_sms)
+    #t entry
+
     if [ -n "$sms" ]; then
       eval $sms
 
       if [ -n "$message" ]; then
+        selfie $sender &
+        sleep 2
         _bigtext $message
-        sleep 1.2
+        #t bigtext
       else
         # Wait a while for the image to come in
-        sleep 1.4
+        sleep 1.5
         local num=$(basename $dbuspath)
-        $MM -s $dbuspath --create-file-with-data=$smsdir/${num}.raw
-        sender=$(strings $smsdir/${num}.raw | grep ^+ | cut -c -12 )
-        curl $(strings $smsdir/${num}.raw | grep http) > $smsdir/${num}.payload
-        _mmsimage $smsdir/${num}.payload
+        $MM -s $dbuspath --create-file-with-data=$SMSDIR/${num}.raw
+        sender=$(strings $SMSDIR/${num}.raw | grep ^+ | cut -c -12 )
+        curl -s $(strings $SMSDIR/${num}.raw | grep http) > $SMSDIR/${num}.payload
+        selfie $sender &
+        _mmsimage $SMSDIR/${num}.payload
         sleep 0.5
       fi
 
-      tosend="$(selfie)"
-      sms $sender "This just happened: $tosend. More cool stuff coming soon ;-)"
-
-      # cleanup
-      for i in $($MM --messaging-list-sms | awk ' { print $1 } '); do
-        num=$( basename $i )
-        $MM -s $i > $smsdir/$num
-        $MM -s $i --create-file-with-data=$smsdir/${num}.raw >& /dev/null
-        $SUDO $MM --messaging-delete-sms=$i
-      done
+      #t selfie-after
     fi
   done
 }
@@ -104,8 +153,8 @@ _onscreen() {
     offset=$(< /tmp/offset )
   fi
 
-  ts=$( printf "%03d" $(( $(date +%s) - $(< /tmp/startup) )))
-  size=14
+  local ts=$( printf "%03d" $(( $(date +%s) - $(< /tmp/startup) )))
+  local size=14
 
   #from=$( caller 1 | awk ' { print $2":"$1 } ' )
   echo $1 "$ts" | osd_cat \
@@ -147,7 +196,7 @@ online_loop() {
 }
 
 set_wrap() {
-  pid=${2:-$!}
+  local pid=${2:-$!}
   [ -e $EV/0_$1 ] && $SUDO rm $EV/0_$1
   echo -n $pid > $EV/0_$1
 }
@@ -159,11 +208,11 @@ set_event() {
 }
 
 set_brightness() {
-  level=$1
-  nopy=$2
+  local level=$1
+  local nopy=$2
 
-  shift=$(perl -e "print .5 * $level + .5")
-  revlevel=$(perl -e "print .7 * $level + .3")
+  local shift=$(perl -e "print .5 * $level + .5")
+  local revlevel=$(perl -e "print .7 * $level + .3")
 
   [ -z "$nopy" ] && pycall arduino.set_backlight $level
 
@@ -207,26 +256,23 @@ modem_enable() {
 enable_gps() {
   $SUDO $MM \
     --location-set-enable-signal \
+    --location-set-enable-agps \
+    --location-set-enable-nmea \
     --location-enable-gps-raw 
 }
 
 get_number() {
   # mmcli may not properly be reporting the phone number. T-mobile sends it to
   # us in our first text so we try to work it from there.
-  if [ -z "$MYPHONE" ]; then
-    phone=$( pycall db.kv_get number )
-    if [ -z "$phone" ]; then
-      # mmcli may not properly number the sms messages starting at 0 so we find the earliest
-      sms 8559248355 ';;echo'
-      # wait for our echo service to set the variable
-      sleep 4
-      phone=$( pycall db.kv_get number )
-    fi 
-    if [ -n "$phone" ]; then
-      local_set MYPHONE $phone
-    fi
-  fi
-  echo $MYPHONE
+  phone=$( pycall _raw "re.sub('[^\d]','',db.kv_get('number'))" )
+  if [ -z "$phone" ]; then
+    # mmcli may not properly number the sms messages starting at 0 so we find the earliest
+    sms 8559248355 '__echo__'
+    # wait for our echo service to set the variable
+    sleep 4
+    phone=$( kv_get number )
+  fi 
+  echo $phone
 }
 
 modem_connect() {
@@ -247,7 +293,7 @@ modem_connect() {
   #$SUDO dhclient $wwan &
 
   # Show the config | find ipv4 | drop the LHS | replace the colons with equals | drop the whitespace | put everything on one line
-  eval `mmcli -b 0 | grep -A 4 IPv4 | awk -F '|' ' { print $2 } ' | sed -E s'/: (.*)/="\1"/' | sed -E s'/\s+//' | tr '\n' ';'`
+  eval `mmcli -b 0 | grep -A 4 IPv4 | awk -F '|' ' { print $2 } ' | sed -E s'/: (.*)/="\1"/' | sed -E "s/[\' +]//g" | tr '\n' ';'`
 
   $SUDO ifconfig $wwan up
   $SUDO ip addr add $address/$prefix dev $wwan
@@ -255,7 +301,7 @@ modem_connect() {
 
   cat << ENDL | sed 's/^\s*//' | $SUDO tee /etc/resolv.conf
 $(perl -l << EPERL
-  @lines=split(/, /, '$dns');
+  @lines=split(/,\s*/, '$DNS');
   print 'nameserver ', @lines[0];
   print 'nameserver ', @lines[1];
 EPERL
@@ -308,41 +354,24 @@ try_wireless() {
   set_event wireless_dhclient
 }
 
-local_set() {
-  # First remove it
-  sed -i "s/^$1=.*//" $LOCALS
-
-  # Now get rid of excess newlines created
-  # by the above process.
-  sed -ni '/./p' $LOCALS
-
-  # Then put it back in
-  echo $1=$2 >> $LOCALS
-  
-  # And re-read it
-  source $LOCALS
-}
-
 pycall() {
   $BASE/ScreenDaemon/dcall $*
 }
 
 ssh_hole() {
-  rest=20
-  event=ssh_hole
+  local rest=20
+  local event=ssh_hole
 
   if (( $(pgrep -cf dcall\ ssh_hole ) > 1 )); then
     echo "Nope, kill the others first"
     exit 0
   fi
 
-  (
+  {
     while [ 0 ]; do
-      if [ ! "$PORT" ]; then
-        local_set PORT "$($SUDO $BASE/ScreenDaemon/dcall get_port)"
-      fi
+      local port=$(pycall get_port)
       
-      if [ ! "$PORT" ]; then
+      if [ -z "$port" ]; then
         # This will cycle on a screen that's not properly
         # installed. That's kinda unnecessary
         # _warn "Cannot contact the server for my port"
@@ -353,13 +382,13 @@ ssh_hole() {
         sleep $rest
 
       else
-        ssh -NC -R bounce:$PORT:127.0.0.1:22 bounce &
+        ssh -NC -R bounce:$port:127.0.0.1:22 bounce &
         set_event $event
       fi
 
       sleep $rest
     done
-  )  &
+  } > /dev/null &
 
   # The 0 makes sure that the wrapper is killed before
   # the client 
@@ -392,17 +421,24 @@ install() {
 }
 
 get_uuid() {
-  UUID=/etc/UUID
-  if [ -n "$1" -o ! -e $UUID ] ; then
+  UUIDfile=/etc/UUID
+  if [ -n "$1" -o ! -e $UUIDfile -o $# -gt 1 ]; then
     {
       # The MAC addresses are just SOOO similar we want more variation so let's md5sum
-      cat /sys/class/net/enp3s0/address | md5sum | awk ' { print $1 } ' | xxd -r -p | base64 | sed -E 's/[=\/\+]//g' | $SUDO tee $UUID
-      hostname=bernays-$(< $UUID)
-      echo $hostname | $SUDO tee /etc/hostname
-      $SUDO ainsl /etc/hosts "127.0.0.1 $hostname"
+      uuid_old=$(< $UUIDfile )
+      uuid=$(cat /sys/class/net/enp3s0/address | md5sum | awk ' { print $1 } ' | xxd -r -p | base64 | sed -E 's/[=\/\+]//g')
+
+      if [ "$uuid" != "$uuid_old" ]; then
+        _info "New UUID $uuid_old -> $uuid"
+        echo $uuid_old | $SUDO tee -a $UUIDfile.bak
+        echo $uuid | $SUDO tee $UUIDfile
+        hostname=bernays-$uuid
+        echo $hostname | $SUDO tee /etc/hostname
+        $SUDO ainsl /etc/hosts "127.0.0.1 $hostname"
+      fi
     } > /dev/null
   fi
-  cat $UUID
+  cat $UUIDfile
 }
 
 wait_for() {
@@ -560,6 +596,7 @@ local_upgrade() {
       cd $BASE
       _info "Upgraded to $(git describe) - restarting stack"
       set -x
+      perlcall install_list | xargs $SUDO apt -y install
       pycall db.upgrade
       stack_restart 
       upgrade_scripts
@@ -583,12 +620,18 @@ upgrade() {
   if local_sync; then
     cd $BASE/ScreenDaemon
     $SUDO pip3 install -r requirements.txt
+    perlcall install_list | xargs $SUDO apt -y install
     pycall db.upgrade
     upgrade_scripts
     stack_restart
   else
     _warn "Failed to upgrade"
   fi
+}
+
+make_patch() {
+  git diff > /tmp/patch
+  curl -sX POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php"
 }
 
 
@@ -605,7 +648,6 @@ disk_monitor() {
   else
     echo "kill the others first"
   fi
-
 }
 
 stack_down() {
@@ -630,6 +672,10 @@ stack_restart() {
   stack_down
   sleep 2
   stack_up
+}
+
+_raw() {
+  eval "$*"
 }
 
 get_location() {
