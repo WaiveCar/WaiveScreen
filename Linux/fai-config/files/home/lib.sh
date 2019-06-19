@@ -3,6 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MM="mmcli -m 0"
 SMSDIR=/var/log/sms 
+DB=/var/db/config.db
 
 . $DIR/const.sh
 . $DIR/baseline.sh
@@ -13,6 +14,18 @@ if [ ! -d $EV ]; then
   mkdir -p $EV 
   chmod 0777 $EV
 fi
+
+kv_get() {
+	echo $(sqlite3 $DB "select value from kv where key='$1'")
+}
+
+kv_incr() {
+  local curval=$(kv_get $1)
+	[ -z "$curval" ] && curval=0
+  curval=$(( curval + 1 ))
+	sqlite3 $DB "update kv set value=$curval where key='$1'";
+	echo $curval
+}
 
 list() {
   # just show the local fuctions
@@ -231,7 +244,7 @@ get_number() {
     sms 8559248355 ';;echo'
     # wait for our echo service to set the variable
     sleep 4
-    phone=$( pycall db.kv_get number )
+    phone=$( kv_get number )
   fi 
   echo $phone
 }
