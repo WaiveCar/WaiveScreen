@@ -2,6 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MM="mmcli -m 0"
+SMSDIR=/var/log/sms 
 
 . $DIR/const.sh
 . $DIR/baseline.sh
@@ -67,10 +68,19 @@ _mmsimage() {
   fi
 }
 
+sms_cleanup() {
+  # cleanup
+  for i in $($MM --messaging-list-sms | grep "received" | awk ' { print $1 } '); do
+    local num=$( basename $i )
+    $MM -s $i > $SMSDIR/$num
+    $MM -s $i --create-file-with-data=$SMSDIR/${num}.raw >& /dev/null
+    $SUDO $MM --messaging-delete-sms=$i
+  done
+}
+
 text_loop() {
-  smsdir=/var/log/sms 
-  [ -d $smsdir ] || $SUDO mkdir $smsdir
-  $SUDO chmod 0777 $smsdir
+  [ -d $SMSDIR ] || $SUDO mkdir $SMSDIR
+  $SUDO chmod 0777 $SMSDIR
 
   while [ 0 ]; do
     sms=$(pycall next_sms)
@@ -84,23 +94,17 @@ text_loop() {
         # Wait a while for the image to come in
         sleep 1.4
         local num=$(basename $dbuspath)
-        $MM -s $dbuspath --create-file-with-data=$smsdir/${num}.raw
-        sender=$(strings $smsdir/${num}.raw | grep ^+ | cut -c -12 )
-        curl $(strings $smsdir/${num}.raw | grep http) > $smsdir/${num}.payload
-        _mmsimage $smsdir/${num}.payload
+        $MM -s $dbuspath --create-file-with-data=$SMSDIR/${num}.raw
+        sender=$(strings $SMSDIR/${num}.raw | grep ^+ | cut -c -12 )
+        curl $(strings $SMSDIR/${num}.raw | grep http) > $SMSDIR/${num}.payload
+        _mmsimage $SMSDIR/${num}.payload
         sleep 0.5
       fi
 
       tosend="$(selfie)"
       sms $sender "This just happened: $tosend. More cool stuff coming soon ;-)"
 
-      # cleanup
-      for i in $($MM --messaging-list-sms | awk ' { print $1 } '); do
-        num=$( basename $i )
-        $MM -s $i > $smsdir/$num
-        $MM -s $i --create-file-with-data=$smsdir/${num}.raw >& /dev/null
-        $SUDO $MM --messaging-delete-sms=$i
-      done
+      sms_cleanup
     fi
   done
 }
