@@ -141,7 +141,8 @@ def catchall_signal_handler(*args, **kwargs):
   elif ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
     res = dcall(fn['Text'][2:])
     modem = get_modem()
-    modem['sms'].Create({'number': fn['Number'], 'text': res})
+    if modem:
+      modem['sms'].Create({'number': fn['Number'], 'text': res})
 
   # Makes sure that we are not reporting our own text
   else:
