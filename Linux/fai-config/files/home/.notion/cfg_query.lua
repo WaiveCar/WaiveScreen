@@ -9,8 +9,6 @@
 
 defbindings("WEdln", {
     bdoc("Move one character forward/backward."),
-    kpress("Control+F", "WEdln.forward(_)"),
-    kpress("Control+B", "WEdln.back(_)"),
     kpress("Right", "WEdln.forward(_)"),
     kpress("Left", "WEdln.back(_)"),
     

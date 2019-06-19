@@ -236,10 +236,6 @@ defbindings("WMoveresMode", {
     kpress(META.."Right", "WMoveresMode.move(_, 1, 0)"),
     kpress(META.."Up",    "WMoveresMode.move(_, 0,-1)"),
     kpress(META.."Down",  "WMoveresMode.move(_, 0, 1)"),
-    kpress(META.."F",     "WMoveresMode.move(_,-1, 0)"),
-    kpress(META.."B",     "WMoveresMode.move(_, 1, 0)"),
-    kpress(META.."P",     "WMoveresMode.move(_, 0,-1)"),
-    kpress(META.."N",     "WMoveresMode.move(_, 0, 1)"),
 })
 
 
