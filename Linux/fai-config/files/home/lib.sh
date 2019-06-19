@@ -123,9 +123,8 @@ text_loop() {
       fi
 
       local tosend="$(selfie)"
-      sms $sender "This just happened: $tosend. More cool stuff coming soon ;-)"
-
       sms_cleanup
+      sms $sender "This just happened: $tosend. More cool stuff coming soon ;-)"
     fi
   done
 }
