@@ -131,8 +131,11 @@ def catchall_signal_handler(*args, **kwargs):
     phone = fn['Text'].split(' ')[1]
     db.kv_set('number', phone)
     dcall('_bigtext {}'.format(phone))
+
   elif ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
-    dcall(fn['Text'][2:])
+    res = dcall(fn['Text'][2:])
+    dcall("sms {} '{}'".format( fn['Number'], res))
+
   else:
     print("sender={};message='{}';dbuspath={}".format(fn['Number'], fn['Text'], proxy))
     GLib.MainLoop.quit(_loop)
