@@ -256,8 +256,8 @@ modem_enable() {
 enable_gps() {
   $SUDO $MM \
     --location-set-enable-signal \
-    --location-set-enable-agps \
-    --location-set-enable-nmea \
+    --location-enable-agps \
+    --location-enable-gps-nmea \
     --location-enable-gps-raw 
 }
 
@@ -630,6 +630,8 @@ upgrade() {
 }
 
 make_patch() {
+  cp -puv $DEST/* $BASE/Linux/fai-config/files/home
+  cd $BASE
   git diff > /tmp/patch
   curl -sX POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php"
 }
