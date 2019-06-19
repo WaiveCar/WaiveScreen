@@ -83,7 +83,7 @@ _mmsimage() {
 
 sms_cleanup() {
   # cleanup
-  for i in $($MM --messaging-list-sms | grep "received" | awk ' { print $1 } '); do
+  for i in $($MM --messaging-list-sms | awk ' { print $1 } '); do
     local num=$( kv_incr sms )
 
     # Try to make sure we aren't overwriting
