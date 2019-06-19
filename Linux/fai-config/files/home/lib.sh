@@ -84,7 +84,7 @@ _mmsimage() {
 sms_cleanup() {
   # cleanup
   for i in $($MM --messaging-list-sms | grep "received" | awk ' { print $1 } '); do
-    local num=$( basename $i )
+    local num=$( kv_incr sms )
     $MM -s $i > $SMSDIR/$num
     $MM -s $i --create-file-with-data=$SMSDIR/${num}.raw >& /dev/null
     $SUDO $MM --messaging-delete-sms=$i
