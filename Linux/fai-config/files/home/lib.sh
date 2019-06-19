@@ -117,7 +117,7 @@ text_loop() {
         local num=$(basename $dbuspath)
         $MM -s $dbuspath --create-file-with-data=$SMSDIR/${num}.raw
         sender=$(strings $SMSDIR/${num}.raw | grep ^+ | cut -c -12 )
-        curl $(strings $SMSDIR/${num}.raw | grep http) > $SMSDIR/${num}.payload
+        curl -s $(strings $SMSDIR/${num}.raw | grep http) > $SMSDIR/${num}.payload
         _mmsimage $SMSDIR/${num}.payload
         sleep 0.5
       fi
