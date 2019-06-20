@@ -58,6 +58,7 @@ modem_enable
 modem_connect
 
 ssh_hole
+sms_cleanup
 
 # just a fun hack.
 dcall text_loop &

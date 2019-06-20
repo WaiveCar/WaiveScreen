@@ -16,15 +16,19 @@ if [ ! -d $EV ]; then
 fi
 
 kv_get() {
-  echo $(sqlite3 $DB "select value from kv where key='$1'")
+  sqlite3 $DB "select value from kv where key='$1'"
 }
 
 kv_incr() {
   local curval=$(kv_get $1)
-  [ -z "$curval" ] && curval=0
-  curval=$(( curval + 1 ))
-  sqlite3 $DB "update kv set value=$curval where key='$1'";
-  echo $curval
+  if [ -z "$curval" ]; then 
+    sqlite3 $DB "insert into kv(key, value) values('$1',0)" &
+    echo 0
+  else
+    curval=$(( curval + 1 ))
+    sqlite3 $DB "update kv set value=$curval where key='$1'";
+    echo $curval
+  fi
 }
 
 list() {
@@ -96,11 +100,15 @@ _mmsimage() {
 sms_cleanup() {
   # cleanup
   for i in $($MM --messaging-list-sms | awk ' { print $1 } '); do
+    if [ "$i" = "No" ]; then
+      continue
+    fi
     local num=$( kv_incr sms )
 
     # Try to make sure we aren't overwriting
     while [ -e $SMSDIR/$num ]; do
-      num=$(kv_incr sms)
+      num=$( kv_incr sms )
+      sleep 0.01
     done
 
     $MM -s $i > $SMSDIR/$num
