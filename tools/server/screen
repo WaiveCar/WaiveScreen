@@ -6,7 +6,7 @@ list() {
 }
 
 connect() {
-  ssh -i $DIR/../Linux/keys/ScreenAccess adorno@waivescreen.com -p $1
+  ssh -i $DIR/../../Linux/keys/ScreenAccess adorno@waivescreen.com -p $1
 }
 
 reload() {
@@ -46,7 +46,7 @@ for i in $*; do
     patch) 
       curl -s http://waivescreen.com/patchfile | git apply -
       ;;
-    connect) connect $1 ;;
+    connect) connect $2 ;;
     sync|reload) reload ;;
     on) on.js ;;
     off) off.js ;;
