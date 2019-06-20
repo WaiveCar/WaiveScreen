@@ -309,7 +309,7 @@ modem_connect() {
 
   cat << ENDL | sed 's/^\s*//' | $SUDO tee /etc/resolv.conf
 $(perl -l << EPERL
-  @lines=split(/,\s*/, '$DNS');
+  @lines=split(/,\s*/, '$dns');
   print 'nameserver ', @lines[0];
   print 'nameserver ', @lines[1];
 EPERL
