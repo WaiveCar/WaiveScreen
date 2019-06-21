@@ -123,7 +123,14 @@ $SCHEMA = [
     'job_end'     => 'datetime'
   ],
 
-  // see #65
+  // #47
+  'screen_tag' => [
+    'id'        => 'integer primary key autoincrement',
+    'screen_id' => 'integer',
+    'tag'       => 'text not null'
+  ],
+
+  // #65
   'job_history' => [
     'id'        => 'integer primary key autoincrement',
     'job_id'    => 'integer',
