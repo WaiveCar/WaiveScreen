@@ -1,21 +1,4 @@
-#!/usr/bin/perl
-
-use strict; 
-use warnings;
-
-sub trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
-if ($#ARGV < 0) {
-  die "You need to name your script";
-}
-
-my $ref = trim(`/usr/bin/git log -1 --format='%at'`);
-my @matchList = glob "'${ref}*'";
-my $count = $#matchList + 2;
-my $num = sprintf("%02d", $count);
-my $name = "$ref$num-$ARGV[0].script";
-
-open (my $fh, ">", $name) or die "Can't open $name";
-print $fh qq{#!/bin/bash
+#!/bin/bash
 #
 # ^ Replace with your scripting language of choice
 # The screen has:
@@ -43,26 +26,22 @@ print $fh qq{#!/bin/bash
 #
 # In the example below we are very cheap and
 # use an eval
-# 
-# The git base directory is the PWD at the
-# start. You have root permissions.
-#
 
 upgradepre() {
   # Currently ignored and not run.
 }
 
 upgradepost() {
-  # Put everything you need here.
+  local dir=/etc/polkit-1/localauthority/50-local.d
+  local file=modemmanager.pkla
+  set -x
+  mkdir -p $dir
+  cp -puv Linux/fai-config/files/$dir/$file/DEBIAN $dir/$file
+  reboot
 }
 
 rollback() {
 }
 
-eval \$1
+eval $1
 
-};
-close $fh;
-
-chmod 0755, $name;
-print "Template $name created. Now you need to edit it\n";
