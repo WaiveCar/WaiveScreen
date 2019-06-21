@@ -47,6 +47,7 @@ NOMODEM=1 pycall set_autobright
 # and running then it will break it and we 
 # need to start over.
 #
+sudo service ModemManager start &
 sleep 17
 
 #
