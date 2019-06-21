@@ -29,6 +29,7 @@
 
 upgradepre() {
   # Currently ignored and not run.
+  /bin/true
 }
 
 upgradepost() {
@@ -41,6 +42,7 @@ upgradepost() {
 }
 
 rollback() {
+  /bin/true
 }
 
 eval $1

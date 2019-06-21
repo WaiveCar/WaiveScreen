@@ -50,13 +50,16 @@ print $fh qq{#!/bin/bash
 
 upgradepre() {
   # Currently ignored and not run.
+  /bin/true
 }
 
 upgradepost() {
   # Put everything you need here.
+  /bin/true
 }
 
 rollback() {
+  /bin/true
 }
 
 eval \$1
