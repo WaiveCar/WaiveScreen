@@ -398,8 +398,6 @@ ssh_hole() {
     done
   } > /dev/null &
 
-  # The 0 makes sure that the wrapper is killed before
-  # the client 
   set_wrap ssh_hole
 }
 
