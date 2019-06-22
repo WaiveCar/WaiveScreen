@@ -3,7 +3,6 @@
 DEST=/home/adorno/
 
 . $DEST/const.sh
-. $DEST/locals.sh
 
 export PATH=$DEST:$PATH
 
@@ -50,12 +49,31 @@ check_screen_display() {
 		dcall screen_display
 	else
 		echo "Chromium running"
+    # we also have to make sure it hasn't just 
+    # straight up crashed. Time is in seconds
+    if (( $(date +%s) - $(dcall kv_get last_sow) > 600 )); then
+      dcall down screen_display
+      pkill chromium
+      dcall screen_display
+    fi
 	fi
 }
 
 check_online() {
   if ! ping -c 1 -i 0.3 waivescreen.com; then
-    /bin/true
+    # we try to do a one-shot reconnection thing
+    dcall modem_enable
+
+    # if things still suck
+    if ! ping -c 1 -i 0.3 waivescreen.com; then
+      # if we fail to do multiple times
+      if (( $(pycall sess_incr ping-fail) > 1 )); then
+        # shrug our shoulders and just try to reboot, I dunno
+        sudo reboot
+      fi
+    fi
+  else
+    pycall sess_set ping-fail,0
   fi
 }
 
@@ -63,3 +81,4 @@ check_ssh_hole
 check_screen_daemon
 check_sensor_daemon
 check_screen_display
+check_online
