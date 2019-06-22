@@ -229,38 +229,6 @@ set_brightness() {
   done
 }
 
-#
-# --3gpp-scan
-# status state: registered
-#
-# --3gpp-register-home then
-# try $SUDO $MM --simple-connect="apn=internet"
-#
-# Then mmcli -b 0 will show up
-#
-modem_enable() {
-  for i in $( seq 1 5 ); do
-    $SUDO $MM -e
-
-    if [ ! $? ]; then 
-      _warn "Searching for modem"
-      sleep 1
-      continue
-    fi
-
-    # This bizarre magic actually works. We reliably
-    # get the GPS lat/lng to finally appear with this 
-    # nonsense. Why? I wish I had the time to investigate
-    enable_gps
-    $SUDO $MM -d
-    $SUDO $MM -e
-    enable_gps
-
-    set_event modem_enable
-    break
-  done
-}
-
 enable_gps() {
   $SUDO $MM \
     --location-set-enable-signal \
@@ -283,8 +251,37 @@ get_number() {
   echo $phone
 }
 
+#
+# --3gpp-scan
+# status state: registered
+#
+# --3gpp-register-home then
+# try $SUDO $MM --simple-connect="apn=internet"
+#
+# Then mmcli -b 0 will show up
+#
 modem_connect() {
-  for i in 1 4; do
+  for i in $( seq 1 5 ); do
+    $SUDO $MM -e
+
+    if [ ! $? ]; then 
+      _warn "Searching for modem"
+      sleep 1
+      continue
+    fi
+
+    # This bizarre magic actually works. We reliably
+    # get the GPS lat/lng to finally appear with this 
+    # nonsense. Why? I wish I had the time to investigate
+    enable_gps
+    $SUDO $MM -d
+    $SUDO $MM -e
+    enable_gps
+
+    break
+  done
+
+  for i in $( seq 1 5 ); do
     $SUDO $MM --set-allowed-modes='3g|4g' --set-preferred-mode=4g
     $SUDO $MM --simple-connect="apn=internet,ip-type=ipv4v6"
     wwan=`ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } '`
@@ -309,9 +306,10 @@ modem_connect() {
 
   cat << ENDL | sed 's/^\s*//' | $SUDO tee /etc/resolv.conf
 $(perl -l << EPERL
-  @lines=split(/,\s*/, '$dns');
-  print 'nameserver ', @lines[0];
-  print 'nameserver ', @lines[1];
+  @lines = split(/,\s*/, '$dns');
+  foreach( @lines ) {
+    print 'nameserver ', \$_;
+  }
 EPERL
 )
   nameserver 2001:4860:4860::8888 
