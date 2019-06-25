@@ -11,7 +11,9 @@ if [ $# -gt 0 ]; then
     pip)
       cd $DIR/../../ScreenDaemon
       mkdir -p $LOCAL_HOME/pip
+      rm -f $LOCAL_HOME/pip/*
       pip3 download -d $LOCAL_HOME/pip -r requirements.txt
+      ls $LOCAL_HOME/pip/
       exit
       ;;
     loop)
@@ -61,7 +63,7 @@ while [ 0 ]; do
     -l 1 -o 10 -d 1 \
     -f lucidasanstypewriter-bold-14 &
 
-  date +%s > /tmp/last-sync
+  date +%s | sudo tee /tmp/last-sync
 
   cd $SRV_HOME
   [ $realname != $newname ] && mv $realname $newname
