@@ -435,7 +435,7 @@ def ping():
     return False
 
 def acceptance_test():
-  dcall("_warn 'phone:{}'".format(db.kv_get('number'))
+  dcall("_warn 'phone:{}'".format(db.kv_get('number')))
   arduino.test('fb')
   dcall('_warn camera:{}'.format( dcall('capture_all_cameras') ))
 
