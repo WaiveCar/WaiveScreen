@@ -1,8 +1,10 @@
 #!/bin/sh
 
 composer() {
+  sudo apt install -y curl
   curl -s https://getcomposer.org/installer | php
   sudo mv composer.phar /usr/local/bin/composer
+  composer install
 }
 sshuser() {
   useradd -m sshbounce
