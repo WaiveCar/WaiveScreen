@@ -434,6 +434,10 @@ def ping():
 
     return False
 
+def acceptance_test():
+  mynumber = db.kv_get('number')
+  dcall("_bigtext 'phone:{}'".format(mynumber))
+  arduino_test()
 
 def feature_detect():
   videoList = glob.glob("/dev/video*")
