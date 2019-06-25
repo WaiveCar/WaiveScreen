@@ -443,7 +443,7 @@ def feature_detect():
     'modem'   : os.path.exists("/dev/cdc-wdm0"),
     'arduino' : os.path.exists("/dev/ttyACM0"),
     'cameras' : len(videoList) / 2,
-    'wifi'    : os.pathexists("/proc/sys/net/ipv4/conf/wlp1s0"),
+    'wifi'    : os.path.exists("/proc/sys/net/ipv4/conf/wlp1s0"),
     'sim'     : hasSim,
     'size'    : os.popen('df -m --output=size / | tail -1').read().strip()
   }
