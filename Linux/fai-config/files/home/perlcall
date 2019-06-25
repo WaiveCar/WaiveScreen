@@ -1,7 +1,8 @@
 #!/usr/bin/perl
-#
+
 use strict;
 use warnings;
+use Scalar::Util qw/reftype/;
 
 sub install_list {
   my $ix = 0;
@@ -33,26 +34,57 @@ sub install_list {
   return qx(comm -13 /tmp/already-installed /tmp/to-install);
 }
 
+sub capture_all_cameras {
+  my @videoList = glob("/dev/video*");
+
+  for(my $ix = 0; $ix < $#videoList; $ix += 2) {
+    unlink "/tmp/video${ix}.mp4";
+    qx(ffmpeg -i /dev/video$ix -an -t 5 -y /tmp/video${ix}.mp4 &);
+  }
+  sleep 8;
+
+  my @outlist = glob("/tmp/video*.mp4");
+
+  return $#outlist;
+}
+
 # see #73
 sub detect_features {
-  # Check for /dev or /sys entries
-  # of things like 
-  #  
-  # * modem
-  # * arduino
-  # * number of cameras
-  # * wifi/btle
-  # * sim card
-  # * disk size/type
-  #
+  my @videoList = glob("/dev/video*");
+  my $hasSim = qx(mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l);
+
+  # * btle - todo
+  my %features = (
+    modem => -e "/dev/cdc-wdm0",
+    arduino => -e "/dev/ttyACM0",
+    camera_count => $#videoList / 2,
+    wifi => -e "/proc/sys/net/ipv4/conf/wlp1s0",
+    sim => $hasSim,
+    size => qx(df -m --output=size / | tail -1)
+  );
+  return %features;
 }
 
 sub acceptance_test {
-  # Make sure gps has actual lat/lng
-  # Check to make sure we have access to sensors
-  # Make sure we can get online
-  # Check for wifi/btle
-  # Number of cameras/bus isolation
+  my %results = {
+    # Make sure gps has actual lat/lng
+    'gps' => qx(mmcli -m 0 --location-get --output-keyvalue | grep longitude | grep -v -- -- | wc -l),
+
+    # Check to make sure we have access to sensors
+    'sensor' => qx(pycall sensor_last | wc -c) > 200,
+
+    # Make sure we can get online-- todo
+    
+    # Number of cameras/bus isolation
+    'cameras' => capture_all_cameras
+  };
 }
 
-print eval "${ARGV[0]}()" if $#ARGV >= 0;
+if ($#ARGV >= 0) {
+ my $res = eval "${ARGV[0]}()";
+ if (ref $res eq ref {}) {
+   print "hash";
+ } else {
+   print $res;
+ }
+}
