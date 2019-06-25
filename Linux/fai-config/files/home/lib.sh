@@ -240,7 +240,7 @@ enable_gps() {
 get_number() {
   # mmcli may not properly be reporting the phone number. T-mobile sends it to
   # us in our first text so we try to work it from there.
-  phone=$( pycall _raw "re.sub('[^\d]','',db.kv_get('number'))" )
+  phone=$( pycall lib.get_number )
   if [ -z "$phone" ]; then
     # mmcli may not properly number the sms messages starting at 0 so we find the earliest
     sms 8559248355 '__echo__'
@@ -281,29 +281,6 @@ modem_connect() {
     break
   done
 
-enable_gps() {
-  $SUDO $MM \
-    --location-set-enable-signal \
-    --location-enable-agps \
-    --location-enable-gps-nmea \
-    --location-enable-gps-raw 
-}
-
-get_number() {
-  # mmcli may not properly be reporting the phone number. T-mobile sends it to
-  # us in our first text so we try to work it from there.
-  phone=$( pycall lib.get_number )
-  if [ -z "$phone" ]; then
-    # mmcli may not properly number the sms messages starting at 0 so we find the earliest
-    sms 8559248355 '__echo__'
-    # wait for our echo service to set the variable
-    sleep 4
-    phone=$( kv_get number )
-  fi 
-  echo $phone
-}
-
-modem_connect() {
   for i in $( seq 1 5 ); do
     $SUDO $MM --set-allowed-modes='3g|4g' --set-preferred-mode=4g
     $SUDO $MM --simple-connect="apn=internet,ip-type=ipv4v6"
