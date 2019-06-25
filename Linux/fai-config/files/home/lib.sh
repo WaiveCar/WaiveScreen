@@ -4,6 +4,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MM="mmcli -m 0"
 SMSDIR=/var/log/sms 
 DB=/var/db/config.db
+FFMPEG="ffmpeg -loglevel panic -nostats -hide_banner -y -an"
 
 . $DIR/const.sh
 . $DIR/baseline.sh
@@ -54,7 +55,7 @@ selfie() {
   local num=0
 
   for i in $( seq 0 2 6 ); do
-    $SUDO ffmpeg -loglevel panic -nostats -hide_banner -f v4l2 -video_size 1280x720 -y -i /dev/video$i -vframes 1 $cache/$now-$i.jpg 
+    $SUDO $FFMPEG -f v4l2 -video_size 1280x720 -i /dev/video$i -vframes 1 $cache/$now-$i.jpg 
   done
 
   if [ -n "$1" ]; then
@@ -235,6 +236,17 @@ enable_gps() {
     --location-enable-agps \
     --location-enable-gps-nmea \
     --location-enable-gps-raw 
+}
+
+capture_all_cameras() {
+  for $ix in $(seq 0 2 8); do
+    $SUDO rm "/tmp/video${ix}.mp4";
+    $SUDO $FFMPEG -i /dev/video$ix -t 4 /tmp/video${ix}.mp4 &
+  done
+
+  sleep 7
+
+  ls -l /tmp/video*
 }
 
 get_number() {
