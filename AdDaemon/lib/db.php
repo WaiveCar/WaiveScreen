@@ -174,7 +174,7 @@ $_db = false;
 function db_connect() {
   global $_db;
   if(!$_db) {
-    $dbPath = __DIR__ . "/../../db/main.db";
+    $dbPath = "/var/db/waivescreen/main.db";
     if(!file_exists($dbPath)) {
       touch($dbPath);
     }
