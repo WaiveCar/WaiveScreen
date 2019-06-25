@@ -51,6 +51,12 @@ The SERVER parts:
     * FUTURE: Permits a user to change the terms of a contract, talking to the Ad daemon.
     * Sends out reports at the end of a contract on whether it's completed or failed. 
 
+There's furthermore 4 systems:
+
+  * @ & www.waivescreen.com - The user-facing portal to buy ads and see a dashboard of current/past campaigns
+  * admin.waivescreen.com - The administrative end to see things like screens/campaigns etc
+  * api.waivescreen.com - The way that the screens themselves communicate with the backend through some kind of REST protocol (described in the tickets)
+  * reflectXX.waivescreen.com - A way to ssh into the screens if they are up and running using the port assigned by their registration.  The XX part allows for many hosts to exist to extend beyond the 2^16 port limitation by TCP.
 
 The DASHBOARD part (not done/not started):
   * Shows what ads had played where
