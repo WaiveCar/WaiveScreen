@@ -442,7 +442,7 @@ def feature_detect():
   return {
     'modem'   : os.path.exists("/dev/cdc-wdm0"),
     'arduino' : os.path.exists("/dev/ttyACM0"),
-    'cameras' : len(videoList) / 2,
+    'cameras' : int(len(videoList) / 2),
     'wifi'    : os.path.exists("/proc/sys/net/ipv4/conf/wlp1s0"),
     'sim'     : hasSim > 0,
     'size'    : int(os.popen('df -m --output=size / | tail -1').read().strip())
