@@ -3,6 +3,7 @@ from . import db
 import configparser
 import os
 import requests
+import re
 import json
 import dbus
 import time
@@ -298,6 +299,8 @@ def get_port():
 
   return port
 
+def get_number():
+  return re.sub('[^\d]', '', db.kv_get('number') or '')
 
 def asset_cache(check):
   #
