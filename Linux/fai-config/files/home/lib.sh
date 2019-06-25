@@ -239,14 +239,17 @@ enable_gps() {
 }
 
 capture_all_cameras() {
-  for $ix in $(seq 0 2 8); do
-    $SUDO rm "/tmp/video${ix}.mp4";
-    $SUDO $FFMPEG -i /dev/video$ix -t 4 /tmp/video${ix}.mp4 &
-  done
+  # This makes sure that the wiring is good
+  {
+    for ix in $(seq 0 2 6); do
+      $SUDO rm -f "/tmp/video${ix}.mp4";
+      $SUDO $FFMPEG -i /dev/video$ix -t 4 /tmp/video${ix}.mp4 &
+    done
 
-  sleep 7
+    sleep 7
+  } > /dev/null &
 
-  ls -l /tmp/video*
+  echo /tmp/video*mp4 | wc -w
 }
 
 get_number() {
