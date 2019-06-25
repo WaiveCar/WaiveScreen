@@ -2,7 +2,7 @@
 #
 # NODISK    - Won't do disk things 
 # NONET     - Won't try to do internet stuff
-# NOMIRROR  - Won't do the mirroring
+# MIRROR    - Will (re)do the mirroring
 # ONLYDISK  - Only creates a disk
 # NOPIP     - Skip over pip download
 #
@@ -48,9 +48,7 @@ if [ -z "$NOPIP" ]; then
   NONET=1 $DIR/syncer.sh force || die "Can't force an update"
 fi
 
-if [ "$NOMIRROR" ]; then
-  echo "Skipping mirroring"
-else
+if [ "$MIRROR" -o ! -e $dir ]; then
   echo "Using $dir - some serious space is probably needed"
   # [ -e $dir ] && rm -rf $dir
   mkdir -p $dir
