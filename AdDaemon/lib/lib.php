@@ -4,7 +4,6 @@ use Aws\S3\S3Client;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
-
 include_once('const.php');
 include_once('db.php');
 include_once('email.php');
