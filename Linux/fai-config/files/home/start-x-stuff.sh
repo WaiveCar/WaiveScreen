@@ -55,7 +55,6 @@ sleep 17
 # stack spoils our beautiful virgin modem
 # (it gets confused very easily apparently)
 #
-modem_enable
 modem_connect
 
 ssh_hole
