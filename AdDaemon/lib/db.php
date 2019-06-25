@@ -235,7 +235,7 @@ function setup() {
 }
 
 function truncate() {
-  $dbPath = "${_SERVER['DOCUMENT_ROOT']}/db/main.db";
+  $dbPath = "/var/db/waivescreen/main.db";
   if (!unlink($dbPath)) {
     return [
       'res' => false,
