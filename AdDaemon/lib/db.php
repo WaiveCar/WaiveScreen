@@ -53,6 +53,7 @@ $SCHEMA = [
     # what it is that dissappeared so we can check
     'imei'        => 'text',
     'phone'       => 'text',
+    'car'         => 'text',
 
     'lat'         => 'float default null',
     'lng'         => 'float default null',
