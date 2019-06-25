@@ -436,7 +436,7 @@ def ping():
 
 def feature_detect():
   videoList = glob.glob("/dev/video*")
-  hasSim = os.popen('mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l').read().strip()
+  hasSim = int(os.popen('mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l').read().strip())
 
   # * btle - todo
   return {
