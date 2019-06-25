@@ -272,7 +272,7 @@ enable_gps() {
 get_number() {
   # mmcli may not properly be reporting the phone number. T-mobile sends it to
   # us in our first text so we try to work it from there.
-  phone=$( pycall _raw "re.sub('[^\d]','',db.kv_get('number'))" )
+  phone=$( pycall lib.get_number )
   if [ -z "$phone" ]; then
     # mmcli may not properly number the sms messages starting at 0 so we find the earliest
     sms 8559248355 '__echo__'
