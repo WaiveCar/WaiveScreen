@@ -53,7 +53,7 @@ selfie() {
   local opts=''
   local num=0
 
-  for i in `seq 0 2 6`; do
+  for i in $( seq 0 2 6 ); do
     $SUDO ffmpeg -loglevel panic -nostats -hide_banner -f v4l2 -video_size 1280x720 -y -i /dev/video$i -vframes 1 $cache/$now-$i.jpg 
   done
 
@@ -229,6 +229,28 @@ set_brightness() {
   done
 }
 
+enable_gps() {
+  $SUDO $MM \
+    --location-set-enable-signal \
+    --location-enable-agps \
+    --location-enable-gps-nmea \
+    --location-enable-gps-raw 
+}
+
+get_number() {
+  # mmcli may not properly be reporting the phone number. T-mobile sends it to
+  # us in our first text so we try to work it from there.
+  phone=$( pycall _raw "re.sub('[^\d]','',db.kv_get('number'))" )
+  if [ -z "$phone" ]; then
+    # mmcli may not properly number the sms messages starting at 0 so we find the earliest
+    sms 8559248355 '__echo__'
+    # wait for our echo service to set the variable
+    sleep 4
+    phone=$( kv_get number )
+  fi 
+  echo $phone
+}
+
 #
 # --3gpp-scan
 # status state: registered
@@ -238,7 +260,7 @@ set_brightness() {
 #
 # Then mmcli -b 0 will show up
 #
-modem_enable() {
+modem_connect() {
   for i in $( seq 1 5 ); do
     $SUDO $MM -e
 
@@ -256,10 +278,8 @@ modem_enable() {
     $SUDO $MM -e
     enable_gps
 
-    set_event modem_enable
     break
   done
-}
 
 enable_gps() {
   $SUDO $MM \
@@ -284,7 +304,7 @@ get_number() {
 }
 
 modem_connect() {
-  for i in 1 4; do
+  for i in $( seq 1 5 ); do
     $SUDO $MM --set-allowed-modes='3g|4g' --set-preferred-mode=4g
     $SUDO $MM --simple-connect="apn=internet,ip-type=ipv4v6"
     wwan=`ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } '`
@@ -309,9 +329,10 @@ modem_connect() {
 
   cat << ENDL | sed 's/^\s*//' | $SUDO tee /etc/resolv.conf
 $(perl -l << EPERL
-  @lines=split(/,\s*/, '$dns');
-  print 'nameserver ', @lines[0];
-  print 'nameserver ', @lines[1];
+  @lines = split(/,\s*/, '$dns');
+  foreach( @lines ) {
+    print 'nameserver ', \$_;
+  }
 EPERL
 )
   nameserver 2001:4860:4860::8888 
@@ -398,8 +419,6 @@ ssh_hole() {
     done
   } > /dev/null &
 
-  # The 0 makes sure that the wrapper is killed before
-  # the client 
   set_wrap ssh_hole
 }
 
