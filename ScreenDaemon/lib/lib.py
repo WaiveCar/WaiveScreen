@@ -434,6 +434,20 @@ def ping():
     return False
 
 
+def feature_detect():
+  videoList = glob.glob("/dev/video*")
+  hasSim = os.popen('mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l').read().strip()
+
+  # * btle - todo
+  return {
+    'modem'   : os.path.exist("/dev/cdc-wdm0"),
+    'arduino' : os.path.exists("/dev/ttyACM0"),
+    'cameras' : len(videoList) / 2,
+    'wifi'    : os.pathexists("/proc/sys/net/ipv4/conf/wlp1s0"),
+    'sim'     : hasSim,
+    'size'    : os.popen('df -m --output=size / | tail -1').read().strip()
+  }
+
 def get_uuid():
   global UUID
   
