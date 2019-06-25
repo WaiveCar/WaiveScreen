@@ -445,7 +445,7 @@ def feature_detect():
     'cameras' : len(videoList) / 2,
     'wifi'    : os.path.exists("/proc/sys/net/ipv4/conf/wlp1s0"),
     'sim'     : hasSim > 0,
-    'size'    : os.popen('df -m --output=size / | tail -1').read().strip()
+    'size'    : int(os.popen('df -m --output=size / | tail -1').read().strip())
   }
 
 def get_uuid():
