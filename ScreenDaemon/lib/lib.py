@@ -123,7 +123,8 @@ def catchall_signal_handler(*args, **kwargs):
   global _bus
   global _loop
 
-  mynumber = "+{}".format( db.kv_get('number').strip('+'))
+  raw_number = db.kv_get('number') or ''
+  mynumber = "+{}".format( raw_number.strip('+') )
   proxy = str(args[0])
   smsproxy = _bus.get_object('org.freedesktop.ModemManager1', proxy)
   iface = dbus.Interface(smsproxy, 'org.freedesktop.ModemManager1.Sms')

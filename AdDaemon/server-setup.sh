@@ -6,6 +6,8 @@ composer() {
   sudo mv composer.phar /usr/local/bin/composer
   composer install
   sudo phpenmod sqlite3
+  sudo a2enmod php7.3
+  sudo apachectl restart
 }
 sshuser() {
   useradd -m sshbounce
