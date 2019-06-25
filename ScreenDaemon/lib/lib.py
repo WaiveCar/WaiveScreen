@@ -361,9 +361,12 @@ def ping():
   payload = {
     'uid': get_uuid(),
     'version': VERSION,
+    **feature_detect(),
     **get_modem_info(),
-    **get_gps()
+    **get_gps(),
   }
+
+  pprint.pprint(payload)
 
   try: 
     with requests.post(urlify('ping'), verify=False, json=payload) as response:
