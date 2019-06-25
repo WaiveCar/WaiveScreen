@@ -5,6 +5,7 @@ composer() {
   curl -s https://getcomposer.org/installer | php
   sudo mv composer.phar /usr/local/bin/composer
   composer install
+  sudo phpenmod sqlite3
 }
 sshuser() {
   useradd -m sshbounce
