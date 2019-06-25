@@ -440,7 +440,7 @@ def feature_detect():
 
   # * btle - todo
   return {
-    'modem'   : os.path.exist("/dev/cdc-wdm0"),
+    'modem'   : os.path.exists("/dev/cdc-wdm0"),
     'arduino' : os.path.exists("/dev/ttyACM0"),
     'cameras' : len(videoList) / 2,
     'wifi'    : os.pathexists("/proc/sys/net/ipv4/conf/wlp1s0"),
