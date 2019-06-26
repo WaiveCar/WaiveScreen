@@ -3,25 +3,18 @@
 CP="cp -pvu"
 USER=adorno
 
-# This is predictable
 USERID=1000
 CHDEST=/home/$USER
 DEST=$FAI_ROOT$CHDEST
 
 cp -vuTr --preserve=mode,timestamps ../files/home $DEST
 chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
-[ -e $DEST/.env-saveme ] && mv $DEST/.env-saveme $DEST/.env
 chown -R $USERID.$USERID $DEST
 
-ASSETCACHE=$FAI_ROOT/var/cache/assets
-if [ ! -e $ASSETCACHE ] ; then
-  # This is a cache for assets in case we go offline
-  mkdir -p $ASSETCACHE
-  chmod 0777 $ASSETCACHE
-fi
-
-# Allow any user to create a logfile.
-chmod 0777 $FAI_ROOT/var/log
+for path in /var/cache/assets /var/log/screen /var/db /var/log; do
+  [ -e $FAI_ROOT$path ] || mkdir -p $FAI_ROOT$path
+  chmod 0777 $FAI_ROOT$path
+done
 
 # This shouldn't be necessary, but permissions seem to
 # want to just snap back after the above thing is done.
@@ -64,10 +57,6 @@ ainsl -a /etc/modprobe.d/blacklist.conf 'blacklist pcspkr'
 # This allows a dev mount
 ainsl /etc/fuse.conf "^user_allow_other"
 
-for path in /var/log/screen /var/db/; do
-  mkdir -p $FAI_ROOT$path
-  chmod 0777 $FAI_ROOT$path
-done
 
 # Gives the user perms for arduino
 ainsl /etc/group "dialout:x:20:adorno"
