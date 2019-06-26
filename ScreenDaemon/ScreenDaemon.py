@@ -123,8 +123,8 @@ def next_ad(work = False):
   logging.debug(json.dumps(payload))
 
   try:
-    for job in db.all('queue'):
-      payload = json.loads(job['data'])
+    for queuejob in db.all('queue'):
+      payload = json.loads(queuejob['data'])
       with requests.post(lib.urlify('sow'), verify=False, json=payload) as response:
         data_raw = response.text
 
@@ -132,7 +132,7 @@ def next_ad(work = False):
         data = json.loads(data_raw)
 
         # Let's celebrate this is done.
-        db.delete('queue', job['id']) 
+        db.delete('queue', queuejob['id']) 
 
   except Exception as ex:
     data = False

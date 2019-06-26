@@ -398,11 +398,12 @@ var Engine = function(opts){
         sow({
           start_time: _last_sow[0],
           end_time: _last_sow[1],
-          id: _last.id, 
+          job_id: _last.job_id,
+          campaign_id: _last.campaign_id, 
           completed_seconds: _last.completed_seconds
         });
 
-        if(_last.id !== _current.id) {
+        if(_last.job_id !== _current.job_id) {
           // we reset the downweight -- it can come back
           _last.downweight = 1;
         }
