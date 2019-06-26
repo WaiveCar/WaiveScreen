@@ -1,10 +1,11 @@
-/var/log/screen
+/var/log/screen/*.log
 {
+  su adorno adorno
 	rotate 180
 	daily
 	missingok
 	dateext
-	dateformat %Y%m%d
+	dateformat -%Y%m%d
 	notifempty
 	delaycompress
 	compress
