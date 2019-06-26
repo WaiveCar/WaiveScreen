@@ -417,16 +417,13 @@ ssh_hole() {
 
 screen_daemon() {
   down screen_daemon
-  # TODO: We need to use some polkit thing so we can
-  # access the modem here and not run this as root in the future
-  FLASK_ENV=$ENV DEBUG=1 $SUDO $BASE/ScreenDaemon/ScreenDaemon.py |& $SUDO tee -a $LOG/daemon.log &
-
+  FLASK_ENV=$ENV DEBUG=1 $BASE/ScreenDaemon/ScreenDaemon.py &
   set_event screen_daemon
 }
 
 sensor_daemon() {
   down sensor_daemon
-  $SUDO $BASE/ScreenDaemon/SensorDaemon.py |& $SUDO tee -a $LOG/daemon.log &
+  $SUDO $BASE/ScreenDaemon/SensorDaemon.py &
   set_event sensor_daemon
 }
 
