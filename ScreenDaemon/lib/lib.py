@@ -435,9 +435,10 @@ def ping():
     return False
 
 def acceptance_test():
+  import arduino
   dcall("_warn 'phone:{}'".format(db.kv_get('number')))
   arduino.test('fb')
-  dcall('_warn camera:{}'.format( dcall('capture_all_cameras') ))
+  #dcall('_warn camera:{}'.format( dcall('capture_all_cameras') ))
 
 def feature_detect():
   videoList = glob.glob("/dev/video*")
