@@ -123,10 +123,14 @@ def next_ad(work = False):
 
   logging.debug(json.dumps(payload))
 
+  headers = {
+   'User-Agent': lib.get_uuid()
+  }
+
   try:
     for queuejob in db.all('queue'):
       payload = json.loads(queuejob['data'])
-      with requests.post(lib.urlify('sow'), verify=False, json=payload) as response:
+      with requests.post(lib.urlify('sow'), verify=False, headers=headers, json=payload) as response:
         data_raw = response.text
 
         # we really only care about the last job ... 
