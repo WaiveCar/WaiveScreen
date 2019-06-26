@@ -168,11 +168,8 @@ _onscreen() {
 
   #from=$( caller 1 | awk ' { print $2":"$1 } ' )
   echo $1 "$ts" | osd_cat \
-    -c $2 \
-    -u black \
-    -A right \
-    -O 1 \
-    -o $offset \
+    -c $2 -u black  -A right \
+    -O 1 -o $offset \
     -d $3 \
     -f lucidasanstypewriter-bold-$size &
 
@@ -417,7 +414,7 @@ ssh_hole() {
 
 screen_daemon() {
   down screen_daemon
-  FLASK_ENV=$ENV DEBUG=1 $BASE/ScreenDaemon/ScreenDaemon.py &
+  FLASK_ENV=$ENV $BASE/ScreenDaemon/ScreenDaemon.py &
   set_event screen_daemon
 }
 
@@ -438,11 +435,11 @@ install() {
 }
 
 get_uuid() {
-  UUIDfile=/etc/UUID
+  local UUIDfile=/etc/UUID
   if [ -n "$1" -o ! -e $UUIDfile -o $# -gt 1 ]; then
     {
       # The MAC addresses are just SOOO similar we want more variation so let's md5sum
-      uuid_old=$(< $UUIDfile )
+      local uuid_old=$(< $UUIDfile )
       uuid=$(cat /sys/class/net/enp3s0/address | md5sum | awk ' { print $1 } ' | xxd -r -p | base64 | sed -E 's/[=\/\+]//g')
 
       if [ "$uuid" != "$uuid_old" ]; then
@@ -497,9 +494,8 @@ screen_display() {
         (( ix ++ ))
         sleep 10
         [ -e $EV/0_screen_display ] || return
-        if [ "$(< $EV/0_screen_display )" != "$pid" ]; then
-          return
-        fi
+        [ "$(< $EV/0_screen_display )" != "$pid" ] && return
+        
         # We try to ping the remote here
         # in case our browser broke from
         # a botched upgrade.
@@ -544,8 +540,7 @@ down() {
   if [ -n "$1" ]; then
     local list=$1
   else
-    # We are going to not allow downing
-    # everything any more. It's too 
+    # We are going to not allow downing everything any more. It's too 
     # much of a problem.
     return
     #local list=$( ls )
@@ -560,10 +555,8 @@ down() {
     if [ -e "$pidfile" ]; then
       local pid=$(< $pidfile )
       printf " X $pidfile ($pid) \n"
-      # Anonymous events, like the net
-      # need to stay triggered while
-      # process dependent ones should
-      # go away
+      # Anonymous events, like the net need to stay triggered while
+      # process dependent ones should go away
       if [ -n "$pid" ]; then
         {
           if ps -o pid= -p $pid; then
@@ -577,7 +570,6 @@ down() {
     fi
   done
 }
-
 
 _sanityafter() {
   delay=${1:-30}
@@ -653,7 +645,6 @@ make_patch() {
   git diff origin/master > /tmp/patch
   curl -sX POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php"
 }
-
 
 disk_monitor() {
   howmany=$( pgrep -cf 'dcall disk_monitor' )
