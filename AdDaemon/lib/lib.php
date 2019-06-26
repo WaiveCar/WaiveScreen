@@ -157,11 +157,19 @@ function ping($data) {
 
   $screen = Get::screen(['uid' => $uid]);
   $obj = [ 'last_seen' => 'current_timestamp' ];
-  foreach(['imei','version','phone','Lat','Lng'] as $key) {
-    if(isset($data[$key])) {
-      // NOTICE: WE ARE DOING STRTOLOWER HERE IN GOING
-      // FROM ONE DB TO THE OTHER
-      $obj[strtolower($key)] = db_string(aget($data, $key));
+
+  // features/modem/gps
+  foreach([
+    'version', // consistent
+    'imei', 'phone', 'Lat', 'Lng', // old version
+    'modem.imei', 'modem.phone', 'gps.lat', 'gps.lng' // new version (~v0.2-Bakeneko-347-g277611a)
+  ] as $key) {
+    $val = aget($data, $key);
+
+    if($val) {
+      $parts = explode('.', $key);
+      $base = array_pop($parts);
+      $obj[$base] = db_string($val);
     }
   }
 
