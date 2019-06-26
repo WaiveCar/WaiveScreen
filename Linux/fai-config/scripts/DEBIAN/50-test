@@ -64,6 +64,7 @@ cpfile() {
 cpfile /etc/modprobe.d/blacklist.conf
 cpfile /etc/udev/rules.d/45-arduino.rules
 cpfile /etc/logrotate.d/screen.log
+$ROOTCMD chown root.root /etc/logrotate.d/screen.log
 
 ainsl -a /etc/modprobe.d/blacklist.conf 'blacklist pcspkr'
 
