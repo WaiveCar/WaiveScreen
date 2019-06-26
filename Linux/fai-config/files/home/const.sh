@@ -9,6 +9,7 @@ export UPGRADE=$BASE.new
 export VID=$DEST/capture
 export EV=/tmp/event
 export DISPLAY=${DISPLAY:-:0}
+export LOG=/var/log/screen/
 #
 # Valid values are "production" and "development"
 #
