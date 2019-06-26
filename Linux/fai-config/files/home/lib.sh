@@ -45,7 +45,13 @@ list() {
 }
 
 _bigtext() {
-  echo "$*" | aosd_cat -p 4 -n "DejaVu Sans 72" -R white -f 1500 -u 1200 -o 1500 -d 30 -b 216 -B black-b 216 -B black &
+  if [ "$B64" ]; then
+    middle="base64 -d"
+    unset B64
+  else
+    middle="cat"
+  fi
+  echo "$*" | $middle | aosd_cat -p 4 -n "DejaVu Sans 72" -R white -f 1500 -u 1200 -o 1500 -d 30 -b 216 -B black &
 }
 
 selfie() {
@@ -72,7 +78,6 @@ selfie() {
   res=$(eval curl -sX POST $opts "waivescreen.com/selfie.php?pre=$now")
   if [ -n "$1" ]; then
     sms $sender "This just happened: $res. More cool stuff coming soon ;-)"
-    #t sms-after
   else
     echo $res
   fi
@@ -128,7 +133,6 @@ text_loop() {
 
   while [ 0 ]; do
     sms=$(pycall next_sms)
-    #t entry
 
     if [ -n "$sms" ]; then
       eval $sms
@@ -136,8 +140,7 @@ text_loop() {
       if [ -n "$message" ]; then
         selfie $sender &
         sleep 2
-        _bigtext $message
-        #t bigtext
+        B64=1 _bigtext $message
       else
         # Wait a while for the image to come in
         sleep 1.5
@@ -149,8 +152,6 @@ text_loop() {
         _mmsimage $SMSDIR/${num}.payload
         sleep 0.5
       fi
-
-      #t selfie-after
     fi
   done
 }
@@ -247,7 +248,7 @@ capture_all_cameras() {
     done
 
     sleep 7
-  } > /dev/null &
+  } >& /dev/null 
 
   echo /tmp/video*mp4 | wc -w
 }
@@ -652,7 +653,7 @@ upgrade() {
 make_patch() {
   cp -puv $DEST/* $BASE/Linux/fai-config/files/home
   cd $BASE
-  git diff > /tmp/patch
+  git diff origin/master > /tmp/patch
   curl -sX POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php"
 }
 
