@@ -1,7 +1,7 @@
 /var/log/screen/*.log
 {
-  su adorno adorno
-	rotate 180
+	su adorno adorno
+	rotate 120
 	daily
 	missingok
 	dateext
