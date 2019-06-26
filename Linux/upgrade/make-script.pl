@@ -68,4 +68,5 @@ eval \$1
 close $fh;
 
 chmod 0755, $name;
-print "Template $name created. Now you need to edit it\n";
+print "Template $name created";
+exec "$ENV{'EDITOR'} $name";
