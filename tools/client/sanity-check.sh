@@ -16,8 +16,9 @@ check_ssh_hole() {
 
   [[ $USER = 'root' ]] && cmd="su adorno -c"
 
+  port=$( pycall db.kv_get port )
   # Next we try to create this remotely using su if we need to.
-  echo "ssh -o ConnectTimeout=10 adorno@bounce -p $PORT touch $tomake" | $cmd /bin/bash
+  echo "ssh -o ConnectTimeout=10 adorno@bounce -p $port touch $tomake" | $cmd /bin/bash
 
   # If the file exists we are done, let's clean it up
   # otherwise our hole is down and we need to restart 
