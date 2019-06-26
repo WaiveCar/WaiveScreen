@@ -8,17 +8,10 @@ USERID=1000
 CHDEST=/home/$USER
 DEST=$FAI_ROOT$CHDEST
 
-[ -e $DEST/.env ] && cp -p $DEST/.env $DEST/.env-saveme
 cp -vuTr --preserve=mode,timestamps ../files/home $DEST
 chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
 [ -e $DEST/.env-saveme ] && mv $DEST/.env-saveme $DEST/.env
 chown -R $USERID.$USERID $DEST
-
-# This is to allow non-root users to get the modem info (and
-# everything else, but let's ignore that)
-#
-# TODO: This doesn't fix it ... I don't know why
-sed -i 's/auth_self_keep/yes/g' $FAI_ROOT/usr/share/polkit-1/actions/org.freedesktop.ModemManager1.policy 
 
 ASSETCACHE=$FAI_ROOT/var/cache/assets
 if [ ! -e $ASSETCACHE ] ; then
@@ -76,8 +69,6 @@ for path in /var/log/screen /var/db/; do
   chmod 0777 $FAI_ROOT$path
 done
 
-# apt purge -y rpcbind
-
 # Gives the user perms for arduino
 ainsl /etc/group "dialout:x:20:adorno"
 ainsl /etc/group- "dialout:x:20:adorno"
@@ -89,7 +80,5 @@ $ROOTCMD $CHDEST/dcall pip_install
 
 # installing the brightness regulator
 fcopy -ivm root,root,0755 /etc/cron.hourly/autobright
+fcopy -iM /etc/polkit-1/localauthority/50-local.d
 
-# Make an ssh key for testing the validity of the ssh hole
-#ssh-keygen -t rsa -N '' -f $CHDEST/.ssh/check-key
-#cat $CHDEST/.ssh/check-key.pub >> $CHDEST/.ssh/authorized_keys
