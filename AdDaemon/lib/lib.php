@@ -141,6 +141,15 @@ function find_unfinished_job($campaignId, $screenId) {
   return $res;
 }
 
+function tag_update($screen) {
+}
+
+function tag($data) {
+  $tagList = Many::tag(['screen_id' => $data['id']]);
+  $toadd = aget($data, 'add');
+  $todel = aget($data, 'del');
+}
+
 function ping($data) {
   global 
     $VERSION, 

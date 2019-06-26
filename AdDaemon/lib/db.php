@@ -124,11 +124,13 @@ $SCHEMA = [
     'job_end'     => 'datetime'
   ],
 
-  // #47
+  // #47 - the screen_id/tag is the unique constraint. There's
+  // probably a nice way to do it
   'screen_tag' => [
     'id'        => 'integer primary key autoincrement',
     'screen_id' => 'integer',
-    'tag'       => 'text not null'
+    'tag'       => 'text not null',
+    'value'     => 'text'
   ],
 
   // #65
@@ -398,6 +400,19 @@ function db_all($qstr, $table = false) {
     } 
   }
   return $rowList;
+}
+
+function db_delete($table, $kv) {
+  $fields = [];
+
+  foreach($kv as $k => $v) {
+    $fields[] = "$k=$v";
+  } 
+
+  $fieldString = implode(' and ', $fields);
+
+  $qstr = "delete from $table where $fieldString";
+  return _query($qstr);
 }
 
 function db_insert($table, $kv) {

@@ -32,6 +32,9 @@ try {
   else if(array_search($func, ['jobs', 'campaigns', 'screens']) !== false) {
     jemit(show(rtrim($func, 's')));
   }
+  else if($func == 'tag') {
+    jemit(tag($all));
+  }
   else if($func == 'ping') {
     jemit(ping($all));
   }
