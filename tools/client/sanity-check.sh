@@ -6,6 +6,10 @@ DEST=/home/adorno/
 
 export PATH=$DEST:$PATH
 
+pycall() {
+  $BASE/ScreenDaemon/dcall $*
+}
+
 check_ssh_hole() {
 
   local tomake=$(mktemp -u)
@@ -18,16 +22,16 @@ check_ssh_hole() {
   # If the file exists we are done, let's clean it up
   # otherwise our hole is down and we need to restart 
   if [ -e $tomake ]; then
-	 	rm $tomake 
-	else
-		dcall ssh_hole 
-	fi
+     rm $tomake 
+  else
+    dcall ssh_hole 
+  fi
 }
 
 check_screen_daemon() {
   if ! curl -s 127.1:4096/default > /dev/null; then
     dcall screen_daemon
-	fi
+  fi
 }
 
 check_sensor_daemon() {
@@ -36,13 +40,13 @@ check_sensor_daemon() {
   # If nothing has been written in 15 minutes.
   if [ "$db_delta" -gt 900 ]; then
     dcall sensor_daemon
-	fi
+  fi
 }
 
 check_screen_display() {
-	if ! pgrep chromium > /dev/null; then
-		dcall screen_display
-	else
+  if ! pgrep chromium > /dev/null; then
+    dcall screen_display
+  else
     # we also have to make sure it hasn't just 
     # straight up crashed. Time is in seconds
     if (( $(date +%s) - $(dcall kv_get last_sow) > 600 )); then
@@ -50,7 +54,7 @@ check_screen_display() {
       pkill chromium
       dcall screen_display
     fi
-	fi
+  fi
 }
 
 check_online() {
