@@ -1,36 +1,4 @@
 #!/bin/bash
-#
-# ^ Replace with your scripting language of choice
-# The screen has:
-#   
-#   /usr/bin/perl    5.28
-#   /usr/bin/python3 3.7.3rc1
-#   /usr/bin/bash    5.0.3
-#   /usr/bin/dash    0.5.10.2-5
-#
-# These will be run as root and will inherit the 
-# environment variables defined in const.sh
-#
-# Here's the important thing.
-#
-# There's a few possible command line parameters
-# that will come in. You need to account for them:
-#  
-#   - upgradepre   : run prior to the new stack starting
-#   - upgradepost  : run after the new stack starting
-#   - rollback     : a way to undo the command
-#
-# The upgrade should do the incremental changes 
-# needed and the rollback should undo them if it
-# fails.
-#
-# In the example below we are very cheap and
-# use an eval
-
-upgradepre() {
-  # Currently ignored and not run.
-  /bin/true
-}
 
 upgradepost() {
   local dir=/etc/polkit-1/localauthority/50-local.d
@@ -39,10 +7,6 @@ upgradepost() {
   mkdir -p $dir
   cp -puv Linux/fai-config/files/$dir/$file/DEBIAN $dir/$file
   reboot
-}
-
-rollback() {
-  /bin/true
 }
 
 eval $1
