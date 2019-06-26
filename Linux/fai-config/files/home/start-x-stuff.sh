@@ -5,7 +5,6 @@
 date +%s > /tmp/startup
 
 export DISPLAY=$1
-REALPPID=$2
 
 # Force a UUID update if needed
 get_uuid 1
@@ -14,19 +13,16 @@ get_uuid 1
 rm -fr $DEST/.notion/default-session--* 
 /usr/bin/notion &
 
-[ -e $DEST/screen-splash.png ] && display -window root $DEST/screen-splash.png
+_warn $(get_uuid) $(kv_get number) $ENV
+
+# If the hostname is changed via UUID, then
+# this lock will prevent chromium from starting 
+# up again and will just present a dialog box.
+rm -f $DEST/.config/chromium/Singleton*
 
 # Everything above is stuff we can run every time we start X
 (( $( pgrep start-x-stuff | wc -l ) > 2 )) && exit -1
 
-_warn $(get_uuid) $MYPHONE $ENV
-
-#
-# If the hostname is changed via UUID, then
-# this lock will prevent chromium from starting 
-# up again and will just present a dialog box.
-# 
-rm -f $DEST/.config/chromium/Singleton*
 
 sensor_daemon
 screen_daemon
@@ -62,5 +58,3 @@ sms_cleanup
 
 # just a fun hack.
 dcall text_loop &
-
-#set_event xstartup $REALPPID

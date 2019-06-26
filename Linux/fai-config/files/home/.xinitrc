@@ -4,7 +4,6 @@ resize() {
   xrandr --addmode HDMI-2 "1920x675_60.00"
   xrandr --output HDMI-1 --mode "1920x675_60.00"
   xrandr --output HDMI-2 --mode "1920x675_60.00"
-
   xrandr --output HDMI-1 --same-as HDMI-2
 }
 
