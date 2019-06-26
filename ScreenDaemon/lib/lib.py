@@ -10,6 +10,8 @@ import time
 import logging
 import sys
 import glob
+import base64
+import subprocess
 from threading import Lock
 from pprint import pprint
 
@@ -148,7 +150,7 @@ def catchall_signal_handler(*args, **kwargs):
 
   # Makes sure that we are not reporting our own text
   else:
-    print("sender={};message='{}';dbuspath={}".format(fn['Number'], fn['Text'], proxy))
+    print("sender={};message='{}';dbuspath={}".format(fn['Number'], base64.b64encode((fn['Text']).encode('ascii')).decode(), proxy))
     GLib.MainLoop.quit(_loop)
 
 def next_sms():
@@ -166,12 +168,16 @@ def next_sms():
   _loop = GLib.MainLoop()
   _loop.run()
 
-def dcall(*kvarg):
+def dcall(*kvarg, method='popen'):
   home = '/home/{}'.format(USER)
   dcall = '{}/dcall'.format(home)
   res = ''
-  with os.popen('{} {}'.format(dcall,' '.join([str(k) for k in kvarg]))) as fh:
-    res = fh.read()
+
+  if method == 'subprocess':
+    subprocess.call([dcall] + [str(k) for k in kvarg])
+  else: 
+    with os.popen('{} {}'.format(dcall,' '.join([str(k) for k in kvarg]))) as fh:
+      res = fh.read()
 
   return res
 
@@ -203,6 +209,8 @@ def task_ingest(data):
     return
 
   for action, args in data['task']:
+    from . import arduino
+
     if action == 'upgrade':
       ping()
 
@@ -435,10 +443,10 @@ def ping():
     return False
 
 def acceptance_test():
-  import arduino
-  dcall("_warn 'phone:{}'".format(db.kv_get('number')))
+  from . import arduino
   arduino.test('fb')
-  #dcall('_warn camera:{}'.format( dcall('capture_all_cameras') ))
+  dcall('_warn', 'phone:{}'.format( db.kv_get('number')), method='subprocess')
+  dcall('_warn', 'camera:{}'.format( dcall('capture_all_cameras') ), method='subprocess')
 
 def feature_detect():
   videoList = glob.glob("/dev/video*")
