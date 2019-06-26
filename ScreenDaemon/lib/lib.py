@@ -374,8 +374,12 @@ def ping():
     'gps': get_gps(),
   }
 
+  headers = {
+   'User-Agent': get_uuid()
+  }
+
   try: 
-    with requests.post(urlify('ping'), verify=False, json=payload) as response:
+    with requests.post(urlify('ping'), verify=False, headers=headers, json=payload) as response:
       data_raw = response.text
       try:
         data = json.loads(data_raw)
