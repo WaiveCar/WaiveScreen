@@ -107,6 +107,7 @@ def next_ad(work = False):
         job['end_time'] = datetime.datetime.utcfromtimestamp(job['end_time']/1000).strftime(DTFORMAT)
 
     payload['power'] = db.sess_get('power')
+    payload['uid'] = lib.get_uuid()
 
   except Exception as ex:
     logging.warning("Error in getting ranges: {}".format(ex))
