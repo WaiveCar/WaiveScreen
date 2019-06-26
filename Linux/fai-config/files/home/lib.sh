@@ -419,14 +419,14 @@ screen_daemon() {
   down screen_daemon
   # TODO: We need to use some polkit thing so we can
   # access the modem here and not run this as root in the future
-  FLASK_ENV=$ENV DEBUG=1 $SUDO $BASE/ScreenDaemon/ScreenDaemon.py &
+  FLASK_ENV=$ENV DEBUG=1 $SUDO $BASE/ScreenDaemon/ScreenDaemon.py |& $SUDO tee -a $LOG/daemon.log &
 
   set_event screen_daemon
 }
 
 sensor_daemon() {
   down sensor_daemon
-  $SUDO $BASE/ScreenDaemon/SensorDaemon.py &
+  $SUDO $BASE/ScreenDaemon/SensorDaemon.py |& $SUDO tee -a $LOG/daemon.log &
   set_event sensor_daemon
 }
 
