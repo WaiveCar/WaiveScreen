@@ -24,7 +24,11 @@ try {
     }
   }
   else if($func == 'screens') {
-    jemit(screens($all));
+    if($verb == 'GET') {
+      jemit(screens($all));
+    } elseif ($verb == 'POST' || $verb == 'PUT') {
+      jemit(screen_edit($all));
+    }
   } 
   else if($func == 'sow') {
     jemit(sow($all));

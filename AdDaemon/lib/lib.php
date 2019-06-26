@@ -148,7 +148,15 @@ function tag($data) {
   $tagList = Many::tag(['screen_id' => $data['id']]);
   $toadd = aget($data, 'add');
   $todel = aget($data, 'del');
+  foreach($todel as $key) {
+
 }
+
+function screen_edit($data) {
+  $screen = Get::screen($data['id']);
+  return $screen;
+}
+
 
 function ping($data) {
   global 
