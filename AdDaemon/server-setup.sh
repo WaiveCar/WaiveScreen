@@ -15,6 +15,7 @@ sshuser() {
   mkdir ~sshbounce/.ssh
   chown sshbounce.sshbounce -R ~sshbounce/.ssh
   cat ../Linux/keys/KeyBounce.pub >> ~sshbounce/.ssh/authorized_keys
+  echo "Set GatewayPorts Yes in sshd_config"
 }
 
 sudo mkdir -p /var/db/waivescreen
