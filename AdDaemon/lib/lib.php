@@ -182,13 +182,18 @@ function ping($data) {
 
     if($val) {
       $parts = explode('.', $key);
-      $base = array_pop($parts);
+      $base = strtolower(array_pop($parts));
       if(is_array($val)) {
         $obj[$base] = $val;
       } else {
         $obj[$base] = db_string($val);
       }
     }
+  }
+
+  if(!$obj['lat']) {
+    unset($obj['lat']);
+    unset($obj['lng']);
   }
 
   if(!$screen) {
@@ -312,7 +317,7 @@ function sow($payload) {
   }
 
   $data = ['last_seen' => 'current_timestamp'];
-  if(!empty($payload['lat'])) {
+  if(!empty($payload['lat']) && floatval($payload['lat'])) {
     $data['lat'] = floatval($payload['lat']);
     $data['lng'] = floatval($payload['lng']);
   }
