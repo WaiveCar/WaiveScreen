@@ -1,5 +1,6 @@
 <?
 include('../MadisonAve/lib/lib.php');
+include('../AdDaemon/lib/const.php');
 include('lib.php');
 
 $screenList = get('screens');
@@ -17,7 +18,11 @@ for($ix = 0; $ix < count($screenList); $ix++){
   } else {
     $screenList[$ix]['addr'] = 'unknown';
   }
-  $screenList[$ix]['last_local'] = time() - strtotime(str_replace(' ', 'T', $screenList[$ix]['last_seen'] . 'Z'));
+  foreach(['first','last'] as $key) {
+    $screenList[$ix]["{$key}_local"] = strtotime(str_replace(' ', 'T', $screenList[$ix]["{$key}_seen"] . 'Z'));
+  }
+  $screenList[$ix]['last_local'] = time() -  $screenList[$ix]['last_local'];
+  $screenList[$ix]['first_local'] = date("Y-m-d H:i:s", $screenList[$ix]['first_local']);
 }
 
 $fieldList = [
@@ -26,7 +31,8 @@ $fieldList = [
   'location' => 'addr',
   'phone' => 'phone',
   'version' => 'version',
-  'last' => 'last_local'
+  'last' => 'last_local',
+  'first' => 'first_local'
 ];
 ?>
 <!doctype html>
@@ -45,7 +51,7 @@ $fieldList = [
     .id,.version { font-family: monospace}
   </style>
   <body>
-   <h2>screens</h2>
+  <h2>screens <span class='id'><?= $VERSION?></span></h2>
   <table class="table">
     <thead>
       <tr>
