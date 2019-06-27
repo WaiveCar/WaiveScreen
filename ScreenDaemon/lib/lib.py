@@ -373,6 +373,7 @@ def ping():
   payload = {
     'uid': get_uuid(),
     'version': VERSION,
+    'version_time': VERSIONDATE,
     'features': feature_detect(),
     'modem': get_modem_info(),
     'gps': get_gps(),
