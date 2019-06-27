@@ -404,11 +404,8 @@ def kv_set(key, value):
       if not res:
         run('insert into kv (key, value) values(?, ?)', (key, value))
 
-      else:
-        if res[0] == str(value):
-          logging.debug("{} already set to {}".format(key, value))
-        else:
-          run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
+      elif res[0] != str(value):
+        run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
 
   except Exception as ex:
     logging.warning("Couldn't set {} to {}: {}".format(key, value, ex))
