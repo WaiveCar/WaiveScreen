@@ -367,6 +367,16 @@ def ping_if_needed():
   if not last_ping or int(db.kv_get('runcount')) > int(last_ping):
     ping()
 
+def get_uptime():
+  # There's a few ways to do this.
+  # We have a /tmp/startup that happens
+  # when the machine comes up but we
+  # also have an incrementing number in
+  # /proc/uptime we can get - that's what
+  # I'll do for now ... maybe something else
+  # later
+  return float(open('/proc/uptime').read().split(' ')[0])
+  
 def ping():
   global _pinglock
 
@@ -375,6 +385,7 @@ def ping():
 
   payload = {
     'uid': get_uuid(),
+    'uptime': get_uptime(),
     'version': VERSION,
     'version_time': VERSIONDATE,
     'features': feature_detect(),
