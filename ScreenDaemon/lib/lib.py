@@ -65,12 +65,15 @@ modem_iface = False
 modem_ix = 0
 modem_max = 4
 modem_info = {}
+modem_ison = False
 
 def get_modem(try_again=False, BUS=False):
-  if NOMODEM or not db.sess_get('modem') or ME != 'root':
-    return {}
+  global modem_ison, modem_iface, modem_ix
 
-  global modem_iface, modem_ix
+  modem_ison = db.sess_get('modem') if not modem_ison
+
+  if NOMODEM or not modem_ison or ME != 'root':
+    return {}
 
   if not BUS:
     BUS = dbus.SystemBus()
