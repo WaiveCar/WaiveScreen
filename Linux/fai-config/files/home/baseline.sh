@@ -5,7 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # this copies over the .sh scripts and infrastructure
 sync_scripts() {
-  source=${1:-$DEV/Linux/fai-config/files/home/}
+  local source=${1:-$DEV/Linux/fai-config/files/home/}
 
   if [ ! -e $source ]; then
     echo "Warning: $source doesn't exist."
@@ -19,7 +19,6 @@ dev_setup() {
   #
   # Note: this usually runs as normal user
   #
-  # echo development > $DEST/.env
   $SUDO pkill dhclient
   oldroute=$(ip route show | grep default | awk ' { print $1" "$2" "$3 }')
   [ -n "$oldroute" ] && $SUDO ip route delete $oldroute
@@ -32,12 +31,9 @@ dev_setup() {
 }
 
 _as_user() {
-  if [ $USER = 'root' ]; then
-    su $WHO -c "$*"
-  else
-    eval $*
-  fi
+  [ $USER = 'root' ] && su $WHO -c "$*" || eval $*
 }
+
 _git() {
   _as_user git $*
 }

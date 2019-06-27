@@ -5,24 +5,14 @@ export DEST=/home/$WHO
 export PATH=/usr/bin:/usr/sbin:$PATH:$DEST
 export BASE=$DEST/WaiveScreen
 export DEV=$BASE.sshfs
-export UPGRADE=$BASE.new
-export VID=$DEST/capture
 export EV=/tmp/event
 export DISPLAY=${DISPLAY:-:0}
-export LOG=/var/log/screen/
-#
-# Valid values are "production" and "development"
-#
-# These are used for things like flask so you really
-# shouldn't be lazy and shorten them unless you want
-# to somehow accomodate for that fact.
-#
-if [ -e $DEST/.env ]; then
-  export ENV=$( cat $DEST/.env )
-else
-  export ENV=production
-fi
+export VID=/var/capture
+export LOG=/var/log/screen
+export DB=/var/db/config.db
+export ENV=production
 
-[[ $ENV = 'development' ]] && export BASE=$DEV
 [[ $USER = 'root' ]] && SUDO= || SUDO=/usr/bin/sudo
 
+# Local overrides to the above 
+[ -e $DEST/overrides ] && . $DEST/overrides
