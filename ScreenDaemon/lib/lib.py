@@ -70,7 +70,8 @@ modem_ison = False
 def get_modem(try_again=False, BUS=False):
   global modem_ison, modem_iface, modem_ix
 
-  modem_ison = db.sess_get('modem') if not modem_ison
+  if not modem_ison:
+    modem_ison = db.sess_get('modem') 
 
   if NOMODEM or not modem_ison or ME != 'root':
     return {}
