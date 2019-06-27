@@ -16,33 +16,19 @@ for path in /var/cache/assets /var/log/screen /var/db /var/log; do
   chmod 0777 $FAI_ROOT$path
 done
 
-# This shouldn't be necessary, but permissions seem to
-# want to just snap back after the above thing is done.
-touch $FAI_ROOT/var/log/screendaemon.log
-$ROOTCMD chown $USERID.$USERID /var/log/screendaemon.log
-
-# xinit is going to be at a root level
-$CP ../files/home/.xinitrc $FAI_ROOT/root
-rm $DEST/.xinitrc
+# xinit is going to be for root's home
+mv ../files/home/.xinitrc $FAI_ROOT/root
 
 # The overly user-hostile version of sudo needs to be fixed
 ainsl /etc/sudoers "$USER ALL=NOPASSWD: ALL" "$USER"
 
-# The retarded default bell thing in bash to do nothing
-# on tab complete needs to go
+# The retarded bell in bash to do nothing on tab complete needs to go
 sed -i '/^# set bell-style none/s/^# //' $FAI_ROOT/etc/inputrc
 
-# This stupid smarmy "plan your install" crap needs to go.
+# The stupid smarmy "plan your install" crap needs to go
 [ -e $FAI_ROOT/etc/motd ] && rm -f $FAI_ROOT/etc/motd   
 
 cpfile() {
-
-  if [ ! -e "../files"$1 ]; then
-    echo "FAILURE! CANNOT FIND $1"
-  else
-    echo "Copying $1"
-  fi
-
   $CP "../files"$1 $FAI_ROOT$1
 }
 
@@ -56,7 +42,6 @@ ainsl -a /etc/modprobe.d/blacklist.conf 'blacklist pcspkr'
 
 # This allows a dev mount
 ainsl /etc/fuse.conf "^user_allow_other"
-
 
 # Gives the user perms for arduino
 ainsl /etc/group "dialout:x:20:adorno"
