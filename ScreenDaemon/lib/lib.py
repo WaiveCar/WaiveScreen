@@ -411,7 +411,7 @@ def ping():
 
         db.kv_set('lastping', db.kv_get('runcount')) 
 
-        if data['version_date'] <= VERSIONDATE:
+        if int(data['version_date']) <= int(VERSIONDATE):
           logging.debug("Us: {} {}, server: {} {}".format(VERSION, VERSIONDATE, data['version'], data['version_date']))
         else:
           logging.warning("This is {} but {} is available".format(VERSION, data['version']))
