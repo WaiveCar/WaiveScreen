@@ -174,9 +174,10 @@ function ping($data) {
   // features/modem/gps
   foreach([
     'version', // consistent
-    'imei', 'phone', 'Lat', 'Lng',                     // old version
+    'imei', 'phone', 'Lat', 'Lng',                     // <v0.2-Bakeneko-347-g277611a
     'modem.imei', 'modem.phone', 'gps.lat', 'gps.lng', // >v0.2-Bakeneko-347-g277611a
-    'version_time'                                     // >v0.2-Bakeneko-378-gf6697e1
+    'version_time',                                    // >v0.2-Bakeneko-378-gf6697e1
+    'uptime'                                           // >v0.2-Bakeneko-384-g4e32e37
   ] as $key) {
     $val = aget($data, $key);
 
