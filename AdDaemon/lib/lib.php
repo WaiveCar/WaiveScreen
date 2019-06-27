@@ -247,6 +247,23 @@ function update_job($jobId, $completed_seconds) {
 
 }
 
+function task_master($screen, $last_task = 0) {
+  $scope = "id:${screen['uid']}";
+
+  // The crazy date math there is the simplest way I can get 
+  // this thing to work, I know I know, it looks excessive.
+  //
+  // If you think you can do better crack open an sqlite3 shell
+  // and start hacking.
+  //
+  return db_all("
+    select * from task where 
+      id > $last_task and
+      strftime('%s', create_time) + expiry_sec - strftime('%s', current_timestamp) > 0 and
+      scope = '$scope'
+  ");
+}
+
 // ----
 //
 // end points
@@ -274,6 +291,7 @@ function update_campaign_completed($id) {
 function sow($payload) {
   global $LASTCOMMIT, $VERSION;
   $server_response = [ 'res' => true ];
+  error_log(json_encode($payload));
 
   if(isset($payload['uid'])) {
     $uid = $payload['uid'];
@@ -305,7 +323,6 @@ function sow($payload) {
 
     if(!isset($job['campaign_id'])) {
       $job = Get::job($job_id);
-      error_log(json_encode($job));
     }
     if(isset( $job['campaign_id'] )) {
       $campaignsToUpdateList[] = $job['campaign_id'];

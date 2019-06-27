@@ -135,6 +135,16 @@ $SCHEMA = [
     'value'     => 'text'
   ],
 
+  // #39
+  'task' => [
+    'id'           => 'integer primary key autoincrement',
+    'create_time'  => 'datetime default current_timestamp',
+    'expiry_sec'   => 'integer default 172800',
+    'scope'        => 'text',
+    'command'      => 'text',
+    'args'         => 'text'
+  ],
+
   // #65
   'job_history' => [
     'id'        => 'integer primary key autoincrement',
