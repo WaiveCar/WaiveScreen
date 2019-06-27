@@ -332,7 +332,6 @@ ENDL
 
   sleep 4
 
-
   if ping -c 1 -i 0.3 waivescreen.com; then
     _info "waivescreen.com found" 
     pycall db.kv_set number,$(get_number)
@@ -388,7 +387,7 @@ ssh_hole() {
 
   {
     while [ 0 ]; do
-      local port=$(pycall get_port)
+      local port=$(kv_get port)
       
       if [ -z "$port" ]; then
         # This will cycle on a screen that's not properly
@@ -472,10 +471,8 @@ wait_for() {
 
 _screen_display_single() {
   export DISPLAY=${DISPLAY:-:0}
-
-  [[ $ENV = 'development' ]] && wait_for net
-
   local app=$BASE/ScreenDisplay/display.html 
+
   if [ -e $app ]; then
     _as_user chromium --no-first-run --non-secure --default-background-color='#000' --app=file://$app &
     set_event screen_display
@@ -486,22 +483,19 @@ _screen_display_single() {
 }
 
 screen_display() {
-  ix=0
+  local ix=0
   {
     while pgrep Xorg; do
-
       while pgrep chromium; do
-        (( ix ++ ))
         sleep 10
-        [ -e $EV/0_screen_display ] || return
-        [ "$(< $EV/0_screen_display )" != "$pid" ] && return
-        
+
         # We try to ping the remote here
         # in case our browser broke from
         # a botched upgrade.
-        if (( ix % 30 == 0 )); then
-          pycall lib.ping
-        fi
+        (( ++ix % 30 == 0 )) && pycall lib.ping
+
+        [ -e $EV/0_screen_display ] || return
+        [ "$(< $EV/0_screen_display )" != "$pid" ] && return
       done
 
       _screen_display_single
@@ -515,16 +509,12 @@ screen_display() {
 running() {
   cd $EV
   for pidfile in $( ls ); do
-    pid=$(< $pidfile )
-    line="-"
+    local pid=$(< $pidfile )
+    local line="-"
     {
       if [ -n "$pid" ]; then 
         line=$(ps -o start=,command= -p $(< $pidfile ))
-        if [ -n "$line" ] ; then
-          running="UP"
-        else
-          running="??"
-        fi
+        [ -n "$line" ] && running="UP" || running="??"
       else
         pid="---"
         running="NA"
@@ -647,11 +637,11 @@ make_patch() {
 }
 
 disk_monitor() {
-  howmany=$( pgrep -cf 'dcall disk_monitor' )
+  local howmany=$( pgrep -cf 'dcall disk_monitor' )
   if [ $howmany -lt 2 ]; then
     {
       while true; do
-        disk=$(pycall lib.disk_monitor)
+        local disk=$(pycall lib.disk_monitor)
         [ -n "$disk" ] && local_upgrade $disk
         sleep 3
       done
