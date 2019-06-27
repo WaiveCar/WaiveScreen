@@ -396,7 +396,11 @@ def kv_set(key, value):
     else:
       # Let's just do two calls. Nobody else is accessing it right here I think
       # this is atomic enough.
-      res = run('select id,value from kv where key = ?', (key, )).fetchone()
+      if key in _params:
+        res = [_params[key]]
+      else:
+        res = run('select id,value from kv where key = ?', (key, )).fetchone()
+
       if not res:
         run('insert into kv (key, value) values(?, ?)', (key, value))
 
