@@ -375,7 +375,7 @@ def get_uptime():
   # /proc/uptime we can get - that's what
   # I'll do for now ... maybe something else
   # later
-  return float(open('/proc/uptime').read().split(' ')[0])
+  return int(float(open('/proc/uptime').read().split(' ')[0]))
   
 def ping():
   global _pinglock
