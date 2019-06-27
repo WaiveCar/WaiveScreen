@@ -13,6 +13,7 @@ The directory layout:
     * Arduino code
     * Power management
     * Cronjobs and etc scripts
+  * Admin - The web-based front-end administration, interfaces the AdDaemon
   * ScreenDaemon - see below
   * ScreenDisplay - see below
   * AdDaemon - see below
@@ -22,16 +23,14 @@ The SCREEN parts:
   * Screen display 
     * Displays advertisements on the screen. 
     * Records when and how long a display was shown to report back to the screen daemon.
-  * Time daemon
-    * Syncs timestamps and records the last time it was sync'd via an incrementing counter stored on disk. Should be simple
-  * Screen sensor 
+  * Sensor Daemon
     * Records the DoF, temperature, accelerometer, GPS, and video data from the screen and stores it in appropriate ways so that arbitrary timeslices can be reconstituted.  
     * Responsible for making sure it doesn't store too much historical data that it eats up the disk space and is responsible for knowing what historical records it has.
     * Shares a schema with the Sceen Daemon
-  * Power daemon 
-    * Makes sure that the screen and various power systems are either off or on depending on a variety of factors. 
-    * Knows whether the car is plugged in, the ignition is on, and what strategies to execute based on the power draw, which it talks to the screen sensor to get.
-    * It's also responsible for recording these states in a timestamped way so that they can be retrieved later.
+    * Power daemon 
+      * Makes sure that the screen and various power systems are either off or on depending on a variety of factors. 
+      * Knows whether the car is plugged in, the ignition is on, and what strategies to execute based on the power draw, which it talks to the screen sensor to get.
+      * It's also responsible for recording these states in a timestamped way so that they can be retrieved later.
   * Screen daemon
     * In charge of making sure it has the assets to display cached and has the content on the screen that it's been told to display.
     * Works with the Screen Sensor to pass readings over the network.
