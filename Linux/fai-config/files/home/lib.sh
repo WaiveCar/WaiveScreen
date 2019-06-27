@@ -3,7 +3,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MM="mmcli -m 0"
 SMSDIR=/var/log/sms 
-DB=/var/db/config.db
 FFMPEG="ffmpeg -loglevel panic -nostats -hide_banner -y -an"
 
 . $DIR/const.sh
@@ -189,19 +188,6 @@ _error() {
   _onscreen "$*" red 90
 }
 
-online_loop() {
-  {
-    cat > $DEST/online
-
-    ONLINE=0
-    while [ 0 ]; do
-      if ping -c 1 waivecreen.com; then
-        echo 'ONLINE=1' > $DEST/online
-      fi
-    done
-  }&
-}
-
 set_wrap() {
   local pid=${2:-$!}
   [ -e $EV/0_$1 ] && $SUDO rm $EV/0_$1
@@ -265,9 +251,7 @@ get_number() {
 }
 
 #
-# --3gpp-scan
-# status state: registered
-#
+# --3gpp-scan  -> status state: registered
 # --3gpp-register-home then
 # try $SUDO $MM --simple-connect="apn=internet"
 #
