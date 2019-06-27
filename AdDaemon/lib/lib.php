@@ -149,12 +149,8 @@ function tag($data) {
   $toadd = aget($data, 'add');
   $todel = aget($data, 'del');
   foreach($todel as $key) {
+  }
 
-}
-
-function screen_edit($data) {
-  $screen = Get::screen($data['id']);
-  return $screen;
 }
 
 
@@ -178,8 +174,9 @@ function ping($data) {
   // features/modem/gps
   foreach([
     'version', // consistent
-    'imei', 'phone', 'Lat', 'Lng', // old version
-    'modem.imei', 'modem.phone', 'gps.lat', 'gps.lng' // new version (~v0.2-Bakeneko-347-g277611a)
+    'imei', 'phone', 'Lat', 'Lng',                     // old version
+    'modem.imei', 'modem.phone', 'gps.lat', 'gps.lng', // >v0.2-Bakeneko-347-g277611a
+    'version_time'                                     // >v0.2-Bakeneko-378-gf6697e1
   ] as $key) {
     $val = aget($data, $key);
 
@@ -259,6 +256,12 @@ function screens() {
   return show('screen');
 }
 
+function screen_edit($data) {
+  $screen = Get::screen($data['id']);
+  return $screen;
+}
+
+
 function update_campaign_completed($id) {
   if(!$id) {
     error_log("Not updating an invalid campaign: $id");
@@ -291,20 +294,20 @@ function sow($payload) {
 
   db_update('screen', db_string($uid), $data);
 
-  $jobList = aget($payload, 'jobs');
+  $jobList = aget($payload, 'jobs', []);
   $campaignsToUpdateList = [];
 
-  if($jobList) {
-    foreach($jobList as $job) {
-      if(!empty($job['id'])) {
-        update_job($job['id'], $job['completed_seconds']);
-        if(!isset($job['campaign_id'])) {
-          error_log(json_encode([]));
-          $job = Get::job($job['id']);
-          error_log(json_encode($job));
-        }
-        $campaignsToUpdateList[] = $job['campaign_id'];
-      }
+  foreach($jobList as $job) {
+
+    $job_id = aget($job, 'job_id', aget($job, 'id'));
+    update_job($job_id, $job['completed_seconds']);
+
+    if(!isset($job['campaign_id'])) {
+      $job = Get::job($job_id);
+      error_log(json_encode($job));
+    }
+    if(isset( $job['campaign_id'] )) {
+      $campaignsToUpdateList[] = $job['campaign_id'];
     }
   }
 
@@ -322,7 +325,11 @@ function sow($payload) {
   // Before we assign new jobs we want to make sure that the server
   // is up to date.  We need to make sure we continue to give it 
   // tasks in case the server is failing to upgrade.
-  if($screen['version'] != $VERSION) {
+  if($screen['version_time']) {
+    if($screen['version_time'] < $LASTCOMMIT) {
+      $server_response['task'] = [['upgrade',false]];
+    }
+  } else if($screen['version'] != $VERSION) {
     $server_response['task'] = [['upgrade',false]];
   }
 
