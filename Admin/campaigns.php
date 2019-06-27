@@ -1,5 +1,5 @@
 <?
-include('../lib/lib.php');
+include('../MadisonAve/lib/lib.php');
 
 function get($ep) {
   return json_decode(file_get_contents("http://waivescreen.com/api/$ep"), true);
@@ -43,7 +43,7 @@ for($ix = 0; $ix < count($campaignList); $ix++){
       $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
 ?>
       <div class="card" style="width: 18rem;">
-        <img src="http://waivecar-prod.s3.amazonaws.com/<?= $campaign['asset'] ?>" class="card-img-top">
+        <img src="<?= $campaign['asset'][0] ?>" class="card-img-top">
         <div class="card-body">
           <div class="progress">
             <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
@@ -52,13 +52,12 @@ for($ix = 0; $ix < count($campaignList); $ix++){
           <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a><br/>
           Radius: <?= $campaign['radius'] ?>m</p>
 
-          Start: <?= $campaign['start_time'] ?>
+          Start: <?= $campaign['start_time'] ?><br>
           End: <?= $campaign['end_time'] ?>
 
 
 user
   
-          <h5 class="card-title">Card title</h5>
           <p class="card-text">user</p>
           <a href="#" class="btn btn-primary">Disable</a>
         </div>
