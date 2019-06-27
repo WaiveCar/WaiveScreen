@@ -3,11 +3,13 @@ date_default_timezone_set('UTC');
 
 $RULES = [
   'campaign' => [ 
-    'asset' => function($v) {
-      return array_map(function($m) {
-        return 'http://waivecar-prod.s3.amazonaws.com/' . $m;
-      }, json_decode($v, true));
-     }
+    'asset' => [
+      'post' => function($v) {
+         return array_map(function($m) {
+           return 'http://waivecar-prod.s3.amazonaws.com/' . $m;
+         }, json_decode($v, true));
+       }
+     ]
    ]
 ];
 
@@ -301,8 +303,8 @@ class Get {
     global $RULES;
     $res = _query($qstr, 'querySingle');
     if($res) {
-      if($table && isset($RULES[$table])) {
-        $ruleTable = $RULES[$table];
+      if($table && aget($RULES,"$table.post")) {
+        $ruleTable = $RULES[$table]['post'];
         foreach($ruleTable as $key => $processor) {
           $res[$key] = $processor($res[$key]);
         }
@@ -396,8 +398,8 @@ function sql_kv($hash, $operator = '=', $quotes = "'", $intList = []) {
 function db_all($qstr, $table = false) {
   global $RULES;
   $ruleTable = false;
-  if($table && isset($RULES[$table])) {
-    $ruleTable = $RULES[$table];
+  if($table && aget($RULES,"$table.post")) {
+    $ruleTable = $RULES[$table]['post'];
   }
 
   $rowList = [];
