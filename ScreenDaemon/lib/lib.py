@@ -232,6 +232,9 @@ def task_ingest(data):
       db.sess_del('backlight')
       arduino.set_autobright()
 
+    elif action == 'raw':
+      dcall(val)
+
     elif action == 'brightness':
       val = float(args)
       arduino.set_backlight(val)
