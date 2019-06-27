@@ -399,13 +399,13 @@ def kv_set(key, value):
       if key in _params:
         res = [_params[key]]
       else:
-        res = run('select id,value from kv where key = ?', (key, )).fetchone()
+        res = run('select value from kv where key = ?', (key, )).fetchone()
 
       if not res:
         run('insert into kv (key, value) values(?, ?)', (key, value))
 
       else:
-        if res[1] == str(value):
+        if res[0] == str(value):
           logging.debug("{} already set to {}".format(key, value))
         else:
           run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
