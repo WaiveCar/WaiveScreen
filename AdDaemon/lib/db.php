@@ -145,6 +145,14 @@ $SCHEMA = [
     'args'         => 'text'
   ],
 
+  'task_response' => [
+    'id'          => 'integer primary key autoincrement',
+    'task_id'     => 'integer',
+    'screen_id'   => 'integer',
+    'response'    => 'text',
+    'created_at'  => 'datetime default current_timestamp',
+  ],
+    
   // #65
   'job_history' => [
     'id'        => 'integer primary key autoincrement',

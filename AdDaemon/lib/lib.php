@@ -279,6 +279,11 @@ function screen_edit($data) {
   return $screen;
 }
 
+// After a screen runs a task it's able to respond... kind of 
+// have a dialog if you will.
+function task_response($screen, $id, $response) {
+
+}
 
 function update_campaign_completed($id) {
   if(!$id) {
