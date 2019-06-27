@@ -153,7 +153,6 @@ function tag($data) {
 
 }
 
-
 function ping($data) {
   global 
     $VERSION, 
@@ -177,21 +176,24 @@ function ping($data) {
     'imei', 'phone', 'Lat', 'Lng',                     // <v0.2-Bakeneko-347-g277611a
     'modem.imei', 'modem.phone', 'gps.lat', 'gps.lng', // >v0.2-Bakeneko-347-g277611a
     'version_time',                                    // >v0.2-Bakeneko-378-gf6697e1
-    'uptime'                                           // >v0.2-Bakeneko-384-g4e32e37
+    'uptime', 'features'                               // >v0.2-Bakeneko-384-g4e32e37
   ] as $key) {
     $val = aget($data, $key);
 
     if($val) {
       $parts = explode('.', $key);
       $base = array_pop($parts);
-      $obj[$base] = db_string($val);
+      if(is_array($val)) {
+        $obj[$base] = $val;
+      } else {
+        $obj[$base] = db_string($val);
+      }
     }
   }
 
   if(!$screen) {
     error_log("Can't find screen. Making one");
     $screen = create_screen($uid, $obj);
-    error_log(json_encode($screen));
   } else {
     $obj['pings'] = intval($screen['pings']) + 1;
     db_update('screen', $screen['id'], $obj);
@@ -296,7 +298,6 @@ function update_campaign_completed($id) {
 function sow($payload) {
   global $LASTCOMMIT, $VERSION;
   $server_response = [ 'res' => true ];
-  error_log(json_encode($payload));
 
   if(isset($payload['uid'])) {
     $uid = $payload['uid'];

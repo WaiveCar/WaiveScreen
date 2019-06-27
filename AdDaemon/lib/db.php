@@ -7,10 +7,17 @@ $RULES = [
       'post' => function($v) {
          return array_map(function($m) {
            return 'http://waivecar-prod.s3.amazonaws.com/' . $m;
-         }, json_decode($v, true));
-       }
-     ]
-   ]
+        }, json_decode($v, true));
+      }
+    ]
+  ],
+  'screen' => [
+    'features' => [
+      'pre' => function($v) { return db_string(json_encode($v)); },
+      'post' => function($v) { return json_decode($v, true); }
+    ]
+  ]
+  
 ];
 
 $SCHEMA = [
@@ -65,6 +72,7 @@ $SCHEMA = [
     'pings'       => 'integer default 0',
     'port'        => 'integer', 
     'active'      => 'boolean default true',
+    'features'    => 'text',
     'first_seen'  => 'datetime', 
     'last_seen'   => 'datetime'
   ],
@@ -300,17 +308,8 @@ function get_campaign_completion($id) {
 
 class Get {
   public static function doquery($qstr, $table) {
-    global $RULES;
     $res = _query($qstr, 'querySingle');
-    if($res) {
-      if($table && aget($RULES,"$table.post")) {
-        $ruleTable = $RULES[$table]['post'];
-        foreach($ruleTable as $key => $processor) {
-          $res[$key] = $processor($res[$key]);
-        }
-      }
-    }
-    return $res;
+    return process($table, $res, 'post');
   }
 
   public static function __callStatic($name, $argList) {
@@ -349,20 +348,28 @@ class Many extends Get {
   }
 };
 
+function process($table, $obj, $what) {
+  global $RULES;
+  if($obj && $table && isset($RULES[$table])) {
+    foreach($RULES[$table] as $key => $processor) {
+      if(isset($obj[$key]) && isset($processor[$what])) {
+        $obj[$key] = $processor[$what]($obj[$key], $obj);
+      }
+    }
+  }
+  return $obj;
+}
 
 function db_update($table, $id, $kv) {
   $fields = [];
+
+  $kv = process($table, $kv, 'pre');
 
   foreach($kv as $k => $v) {
     $fields[] = "$k=$v";
   } 
 
   $fields = implode(',', $fields);
-  /*
-  if(!is_integer($id)) {
-    $id = db_string($id);
-  }
-   */
 
   $qstr = "update $table set $fields where id = $id";
   return _query($qstr);
@@ -398,8 +405,8 @@ function sql_kv($hash, $operator = '=', $quotes = "'", $intList = []) {
 function db_all($qstr, $table = false) {
   global $RULES;
   $ruleTable = false;
-  if($table && aget($RULES,"$table.post")) {
-    $ruleTable = $RULES[$table]['post'];
+  if($table && isset($RULES[$table])) {
+    $ruleTable = $RULES[$table];
   }
 
   $rowList = [];
@@ -414,9 +421,7 @@ function db_all($qstr, $table = false) {
   if($res) {
     while( $row = $res->fetchArray(SQLITE3_ASSOC) ) {
       if($ruleTable) {
-        foreach($ruleTable as $key => $processor) {
-          $row[$key] = $processor($row[$key]);
-        }
+        $row = process($table, $row, 'post');
       }
       $rowList[] = $row;
     } 
@@ -442,6 +447,7 @@ function db_insert($table, $kv) {
   $values = [];
 
   $db = db_connect();
+  $kv = process($table, $kv, 'pre');
 
   foreach($kv as $k => $v) {
     $fields[] = $k;
