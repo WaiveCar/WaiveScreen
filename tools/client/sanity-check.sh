@@ -1,8 +1,6 @@
 #!/bin/bash
 
-DEST=/home/adorno/
-
-. $DEST/const.sh
+. /home/adorno/const.sh
 
 export PATH=$DEST:$PATH
 
@@ -11,7 +9,6 @@ pycall() {
 }
 
 check_ssh_hole() {
-
   local tomake=$(mktemp -u)
 
   [[ $USER = 'root' ]] && cmd="su adorno -c"
@@ -22,26 +19,16 @@ check_ssh_hole() {
 
   # If the file exists we are done, let's clean it up
   # otherwise our hole is down and we need to restart 
-  if [ -e $tomake ]; then
-     rm $tomake 
-  else
-    dcall ssh_hole 
-  fi
+  [ -e $tomake ] && rm $tomake || dcall ssh_hole 
 }
 
 check_screen_daemon() {
-  if ! curl -s 127.1:4096/default > /dev/null; then
-    dcall screen_daemon
-  fi
+  curl -s 127.1:4096/default > /dev/null || dcall screen_daemon
 }
 
 check_sensor_daemon() {
   db_delta=$(( $(date +%s) - $(stat -c %Y /var/db/config.db) ))
-
-  # If nothing has been written in 15 minutes.
-  if [ "$db_delta" -gt 900 ]; then
-    dcall sensor_daemon
-  fi
+  [ "$db_delta" -gt 900 ] && dcall sensor_daemon
 }
 
 check_screen_display() {
