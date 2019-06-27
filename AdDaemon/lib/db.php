@@ -59,6 +59,7 @@ $SCHEMA = [
     'lng'         => 'float default null',
     'version'     => 'text',
     'version_time'=> 'integer',
+    'uptime'      => 'integer',
     'pings'       => 'integer default 0',
     'port'        => 'integer', 
     'active'      => 'boolean default true',
