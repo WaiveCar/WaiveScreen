@@ -9,7 +9,6 @@
 ##
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 dir=$HOME/usb
 file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe).iso
 backup=/home/chris/backup-test
@@ -20,7 +19,7 @@ die() {
 }
 
 ddcmd() {
-  size=$(stat -c %s $1)
+  local size=$(stat -c %s $1)
   echo "sudo dd if=$1 of=$2 bs=1M"
 }
 
@@ -30,8 +29,6 @@ if [ -z "$NODISK" ]; then
   [ -b $disk ] || die "Woops, $disk isn't a disk"
   [ $(stat -c %T $disk) -eq 11 ] && die "Woah, $disk is a PARTITION. I need the whole disk."
 
-
-  echo "Installing to $disk"
   sudo fdisk -l $disk
 
   if [ -n "$ONLYDISK" ]; then
@@ -40,17 +37,12 @@ if [ -z "$NODISK" ]; then
   fi
 fi
 
-
-
-# Place the pip stuff there regardless every time.
 if [ -z "$NOPIP" ]; then
   NONET=1 $DIR/syncer.sh pip || die "Can't sync"
   NONET=1 $DIR/syncer.sh force || die "Can't force an update"
 fi
 
 if [ "$MIRROR" -o ! -e $dir ]; then
-  echo "Using $dir - some serious space is probably needed"
-  # [ -e $dir ] && rm -rf $dir
   mkdir -p $dir
   fai-mirror -v -cDEBIAN $dir
 fi
@@ -59,13 +51,8 @@ echo "Creating a bootable iso named $file"
 sudo fai-cd -m $dir $file
 
 if [ -z "$NODISK" ]; then
-
-  if [ -e "$file" ]; then
-    echo "Writing to $disk"
-    eval $(ddcmd $file $disk)
-  else
-    echo "$file does not exist, Bailing!"
-  fi
+  [ -e "$file" ] || die "$file does not exist, Bailing!"
+  eval $(ddcmd $file $disk)
 else 
   echo $(ddcmd $file $disk)
 fi
