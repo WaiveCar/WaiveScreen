@@ -105,9 +105,7 @@ _mmsimage() {
 sms_cleanup() {
   # cleanup
   for i in $($MM --messaging-list-sms | awk ' { print $1 } '); do
-    if [ "$i" = "No" ]; then
-      continue
-    fi
+    [ "$i" = "No" ] && continue
     local num=$( kv_incr sms )
 
     # Try to make sure we aren't overwriting
@@ -156,11 +154,7 @@ text_loop() {
 }
 
 _onscreen() {
-  if [ ! -e /tmp/offset ]; then
-    offset=0
-  else
-    offset=$(< /tmp/offset )
-  fi
+  [ -e /tmp/offset ] && offset=$(< /tmp/offset ) || offset=0
 
   local ts=$( printf "%03d" $(( $(date +%s) - $(< /tmp/startup) )))
   local size=14
@@ -522,9 +516,7 @@ down() {
 
   for pidfile in $list; do
     # kill the wrapper first
-    if [ -e "0_$pidfile" ]; then
-      down "0_$pidfile"
-    fi
+    [ -e "0_$pidfile" ] && down "0_$pidfile"
 
     if [ -e "$pidfile" ]; then
       local pid=$(< $pidfile )
