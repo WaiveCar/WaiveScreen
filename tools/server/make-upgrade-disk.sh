@@ -32,10 +32,15 @@ fi
 if [ -z "$NOCLONE" ]; then
   if [ -n "$LOCAL" ]; then
     echo "Using local code"
-    cp -puvr $DIR/../* $path
+    cp -puvr $DIR/../../* $path
   elif [ -e $path ]; then
     cd $path
-    git pull
+    if ! git pull; then
+      cd /tmp
+      rm -fr $path
+      git clone git@github.com:WaiveCar/WaiveScreen.git $path
+      cd $path
+    fi
     [ -z "$NOPIP" ] && pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
   else
     mkdir $path
