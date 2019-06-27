@@ -11,5 +11,5 @@ last_commit=$(git log -1 --format="%at")
 cat > $DIR/../../AdDaemon/lib/const.php << ENDL
 <?php
 \$VERSION="$ver";
-\$LASTCOMMIT="$last_commit";
+\$LASTCOMMIT=$last_commit;
 ENDL
