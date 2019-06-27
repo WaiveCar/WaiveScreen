@@ -3,11 +3,13 @@ date_default_timezone_set('UTC');
 
 $RULES = [
   'campaign' => [ 
-    'asset' => function($v) {
-      return array_map(function($m) {
-        return 'http://waivecar-prod.s3.amazonaws.com/' . $m;
-      }, json_decode($v, true));
-     }
+    'asset' => [
+      'post' => function($v) {
+         return array_map(function($m) {
+           return 'http://waivecar-prod.s3.amazonaws.com/' . $m;
+         }, json_decode($v, true));
+       }
+     ]
    ]
 ];
 
@@ -135,6 +137,24 @@ $SCHEMA = [
     'value'     => 'text'
   ],
 
+  // #39
+  'task' => [
+    'id'           => 'integer primary key autoincrement',
+    'create_time'  => 'datetime default current_timestamp',
+    'expiry_sec'   => 'integer default 172800',
+    'scope'        => 'text',
+    'command'      => 'text',
+    'args'         => 'text'
+  ],
+
+  'task_response' => [
+    'id'          => 'integer primary key autoincrement',
+    'task_id'     => 'integer',
+    'screen_id'   => 'integer',
+    'response'    => 'text',
+    'created_at'  => 'datetime default current_timestamp',
+  ],
+    
   // #65
   'job_history' => [
     'id'        => 'integer primary key autoincrement',
@@ -283,8 +303,8 @@ class Get {
     global $RULES;
     $res = _query($qstr, 'querySingle');
     if($res) {
-      if($table && isset($RULES[$table])) {
-        $ruleTable = $RULES[$table];
+      if($table && aget($RULES,"$table.post")) {
+        $ruleTable = $RULES[$table]['post'];
         foreach($ruleTable as $key => $processor) {
           $res[$key] = $processor($res[$key]);
         }
@@ -378,8 +398,8 @@ function sql_kv($hash, $operator = '=', $quotes = "'", $intList = []) {
 function db_all($qstr, $table = false) {
   global $RULES;
   $ruleTable = false;
-  if($table && isset($RULES[$table])) {
-    $ruleTable = $RULES[$table];
+  if($table && aget($RULES,"$table.post")) {
+    $ruleTable = $RULES[$table]['post'];
   }
 
   $rowList = [];
