@@ -54,32 +54,29 @@ _bigtext() {
 }
 
 selfie() {
-  local cache=/var/cache/assets/
   local now=`date +%Y%m%d%H%M%S`
   local opts=''
   local num=0
 
   for i in $( seq 0 2 6 ); do
-    $SUDO $FFMPEG -f v4l2 -video_size 1280x720 -i /dev/video$i -vframes 1 $cache/$now-$i.jpg 
+    $SUDO $FFMPEG -f v4l2 -video_size 1280x720 -i /dev/video$i -vframes 1 $CACHE/$now-$i.jpg 
   done
 
-  if [ -n "$1" ]; then
-    sms_cleanup &
-  fi
-  import -window root $cache/$now-screen.jpg
+  # the above code is a built-in delay so that
+  # we can *guess* that the asset is on the screen
+  # by the time we get here.
+  import -window root $CACHE/$now-screen.jpg
 
-  for i in $cache/$now-screen.jpg $cache/$now-0.jpg $cache/$now-2.jpg $cache/$now-4.jpg $cache/$now-6.jpg; do
+  for i in $CACHE/$now-screen.jpg $CACHE/$now-0.jpg $CACHE/$now-2.jpg $CACHE/$now-4.jpg $CACHE/$now-6.jpg; do
     if [ -e "$i" ]; then
       opts="$opts -F \"f$num=@$i\""
       (( num ++ ))
     fi
   done
+
   res=$(eval curl -sX POST $opts "waivescreen.com/selfie.php?pre=$now")
-  if [ -n "$1" ]; then
-    sms $sender "This just happened: $res. More cool stuff coming soon ;-)"
-  else
-    echo $res
-  fi
+  [ -n "$1" ] && sms $sender "This just happened: $res. More cool stuff coming soon ;-)"
+  echo $res
 }
 
 sms() {
@@ -104,7 +101,8 @@ _mmsimage() {
 
 sms_cleanup() {
   # cleanup
-  for i in $($MM --messaging-list-sms | awk ' { print $1 } '); do
+  [ -n "$1" ] && list=$1 || list=$($MM --messaging-list-sms | awk ' { print $1 } ')
+  for i in $list; do
     [ "$i" = "No" ] && continue
     local num=$( kv_incr sms )
 
@@ -135,7 +133,7 @@ text_loop() {
       eval $sms
 
       if [ -n "$message" ]; then
-        selfie $sender &
+        { selfie $sender; sms_cleanup $dbuspath } &
         sleep 2
         B64=1 _bigtext $message
       else
@@ -145,7 +143,7 @@ text_loop() {
         $MM -s $dbuspath --create-file-with-data=$SMSDIR/${num}.raw
         sender=$(strings $SMSDIR/${num}.raw | grep ^+ | cut -c -12 )
         curl -s $(strings $SMSDIR/${num}.raw | grep http) > $SMSDIR/${num}.payload
-        selfie $sender &
+        { selfie $sender; sms_cleanup $dbuspath } &
         _mmsimage $SMSDIR/${num}.payload
         sleep 0.5
       fi

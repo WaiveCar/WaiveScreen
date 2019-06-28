@@ -124,14 +124,13 @@ def get_modem(try_again=False, BUS=False):
 
 _bus = False
 _loop = False
-def catchall_signal_handler(*args, **kwargs):
-  from gi.repository import GLib
+def get_message(dbus_path):
   global _bus
-  global _loop
 
   raw_number = db.kv_get('number') or ''
   mynumber = "+{}".format( raw_number.strip('+') )
-  proxy = str(args[0])
+  proxy = str(dbus_path)
+  smsindex = proxy.split('/')[-1]
   smsproxy = _bus.get_object('org.freedesktop.ModemManager1', proxy)
   iface = dbus.Interface(smsproxy, 'org.freedesktop.ModemManager1.Sms')
   ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
@@ -141,11 +140,6 @@ def catchall_signal_handler(*args, **kwargs):
   if fn['PduType'] == 2:
     iface.Send()
 
-  elif fn['Number'] == '+18559248355':
-    phone = fn['Text'].split(' ')[1]
-    db.kv_set('number', phone)
-    dcall('_bigtext {}'.format(phone))
-
   elif ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
     res = dcall(fn['Text'][2:])
     modem = get_modem()
@@ -154,7 +148,22 @@ def catchall_signal_handler(*args, **kwargs):
 
   # Makes sure that we are not reporting our own text
   else:
-    print("sender={};message='{}';dbuspath={}".format(fn['Number'], base64.b64encode((fn['Text']).encode('ascii')).decode(), proxy))
+    if fn['Number'] == '+18559248355':
+      message = fn['Text'].split(' ')[1]
+      db.kv_set('number', message)
+
+    else:
+      message = fn['Text']
+
+    print("sender={};message='{}';dbuspath={}".format(fn['Number'], base64.b64encode(message.encode('ascii')).decode(), proxy))
+    return False
+
+  return True
+
+def catchall_signal_handler(*args, **kwargs):
+  from gi.repository import GLib
+  global _loop
+  if not get_message(args[0]):
     GLib.MainLoop.quit(_loop)
 
 def next_sms():
@@ -165,9 +174,19 @@ def next_sms():
   myloop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
   _bus = dbus.SystemBus()
-  proxy = _bus.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/Modem/{}'.format(0))
+  proxy = _bus.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/Modem/0')
   sms = dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Messaging')
   sms.connect_to_signal('Added', catchall_signal_handler)
+
+  manager_proxy = _bus.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1')
+  manager_iface = dbus.Interface(manager_proxy, dbus_interface='org.freedesktop.DBus.ObjectManager')
+  obj = manager_iface.GetManagedObjects()
+  service_dict = list(obj.values())[0]
+  sms_list = service_dict.get('org.freedesktop.ModemManager1.Modem.Messaging').get('Messages')
+  
+  if len(sms_list) > 0:
+    get_message(sms_list[-1])
+    sys.exit(0)
 
   _loop = GLib.MainLoop()
   _loop.run()
