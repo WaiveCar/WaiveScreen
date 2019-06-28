@@ -16,7 +16,7 @@ for($ix = 0; $ix < count($screenList); $ix++){
   if($addrList[$ix]) {
     $screenList[$ix]['addr'] = "<a href=//maps.google.com/?q={$screenList[ix]['lat']},{$screenList[ix]['lng']}>{$addrList[$ix]}</a>";
   } else {
-    $screenList[$ix]['addr'] = 'unknown';
+    $screenList[$ix]['addr'] = '<em>unknown</em>';
   }
   foreach(['first','last'] as $key) {
     $screenList[$ix]["{$key}_local"] = strtotime(str_replace(' ', 'T', $screenList[$ix]["{$key}_seen"] . 'Z'));
@@ -48,9 +48,11 @@ $editable = ['car', 'phone'];
     <title>Admin panel</title>
   </head>
   <style>
+    body,* { color: #000 }
     .id,.version { font-family: monospace}
     .edit { color: #999; cursor: pointer; }
     .last { text-align: right; }
+    em { color: #555 }'
     .edit:hover { color: #000 }
   </style>
   <body>
