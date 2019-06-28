@@ -282,8 +282,13 @@ function screens() {
 }
 
 function screen_edit($data) {
-  $screen = Get::screen($data['id']);
-  return $screen;
+  $whitelist = ['car', 'phone'];
+  $update = [];
+  foreach(array_intersect($whitelist, array_keys($data)) as $key) {
+    $update[$key] = db_string($data[$key]);
+  }
+  db_update('screen', $data['id'], $update);
+  return Get::screen($data['id']);
 }
 
 // After a screen runs a task it's able to respond... kind of 
