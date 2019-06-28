@@ -133,7 +133,7 @@ text_loop() {
       eval $sms
 
       if [ -n "$message" ]; then
-        { selfie $sender; sms_cleanup $dbuspath } &
+        ( selfie $sender; sms_cleanup $dbuspath ) &
         sleep 2
         B64=1 _bigtext $message
       else
@@ -143,7 +143,7 @@ text_loop() {
         $MM -s $dbuspath --create-file-with-data=$SMSDIR/${num}.raw
         sender=$(strings $SMSDIR/${num}.raw | grep ^+ | cut -c -12 )
         curl -s $(strings $SMSDIR/${num}.raw | grep http) > $SMSDIR/${num}.payload
-        { selfie $sender; sms_cleanup $dbuspath } &
+        ( selfie $sender; sms_cleanup $dbuspath ) &
         _mmsimage $SMSDIR/${num}.payload
         sleep 0.5
       fi
@@ -530,10 +530,7 @@ down() {
 
 _sanityafter() {
   delay=${1:-30}
-  {
-     sleep $delay
-     $SUDO $BASE/tools/client/sanity-check.sh
-  } &
+  ( sleep $delay; $SUDO $BASE/tools/client/sanity-check.sh ) &
 }
 
 # This is for upgrading over USB
@@ -633,7 +630,6 @@ stack_up() {
   for i in screen_display sensor_daemon screen_daemon disk_monitor; do
     $DEST/dcall $i &
   done
-  # $DEST/dcall screen_display 
 }
 
 stack_restart() {
