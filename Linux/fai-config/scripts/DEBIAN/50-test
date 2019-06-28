@@ -52,7 +52,5 @@ ainsl $CHDEST/.bashrc 'source $HOME/const.sh' 'const.sh'
 $ROOTCMD $CHDEST/dcall get_uuid
 $ROOTCMD $CHDEST/dcall pip_install
 
-# installing the brightness regulator
 fcopy -ivm root,root,0755 /etc/cron.hourly/autobright
-fcopy -iM /etc/polkit-1/localauthority/50-local.d
-
+fcopy -ivM /etc/polkit-1/localauthority/50-local.d/modemmanager.pkla
