@@ -64,7 +64,7 @@ selfie() {
   done
 
   if [ -n "$1" ]; then
-     sms_cleanup &
+    sms_cleanup &
   fi
   import -window root $cache/$now-screen.jpg
 
@@ -312,26 +312,19 @@ ENDL
 
   if ping -c 1 -i 0.3 waivescreen.com; then
     _info "waivescreen.com found" 
-    pycall db.kv_set number,$(get_number)
+    get_number
   else
     _warn "waivescreen.com unresolvable!"
 
-    ix=0
+    local ix=0
     while ! $MM; do
-      (( ix ++ ))
-      if (( ix < 4 )); then
-        _info "Waiting for modem"
-      fi
+      (( ++ix < 4 )) && _info "Waiting for modem"
       sleep 9
     done
 
     hasip=$( ip addr show $wwan | grep inet | wc -l )
 
-    if (( hasip > 0 )); then
-      _warn "Data plan issues."
-    else
-      _warn "No IP assigned."
-    fi
+    (( hasip > 0 )) && _warn "Data plan issues." || "No IP assigned."
     _error $(get_number)
   fi
   pycall db.sess_set modem,1 
@@ -659,4 +652,3 @@ get_location() {
   $SUDO $MM --location-get
   $SUDO $MM --location-status
 }
-
