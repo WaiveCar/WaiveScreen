@@ -21,7 +21,9 @@ for($ix = 0; $ix < count($screenList); $ix++){
   foreach(['first','last'] as $key) {
     $screenList[$ix]["{$key}_local"] = strtotime(str_replace(' ', 'T', $screenList[$ix]["{$key}_seen"] . 'Z'));
   }
-  $screenList[$ix]['last_local'] = time() -  $screenList[$ix]['last_local'];
+
+  $sec =  time() - $screenList[$ix]['last_local'];
+  $screenList[$ix]['last_local'] = sprintf("%d:%02d:%02d", floor($sec / 60 / 60), floor($sec/60) % 60, $sec %60);
   $screenList[$ix]['first_local'] = date("Y-m-d H:i:s", $screenList[$ix]['first_local']);
 }
 
@@ -34,7 +36,7 @@ $fieldList = [
   'last' => 'last_local',
   'first' => 'first_local'
 ];
-$editable = ['car'];
+$editable = ['car', 'phone'];
 ?>
 <!doctype html>
 <html lang="en">
@@ -47,6 +49,9 @@ $editable = ['car'];
   </head>
   <style>
     .id,.version { font-family: monospace}
+    .edit { color: #999; cursor: pointer; }
+    .last { text-align: right; }
+    .edit:hover { color: #000 }
   </style>
   <body>
   <h2>screens <span class='id'><?= $VERSION?></span></h2>
@@ -54,7 +59,7 @@ $editable = ['car'];
     <thead>
       <tr>
       <? foreach($fieldList as $key => $value) { ?>
-        <th scope="col"><?= $key ?></th>
+        <th scope="col" class="<?= $key ?>"><?= $key ?></th>
       <? } ?>
       </tr>
     </thead>
@@ -63,9 +68,9 @@ $editable = ['car'];
       <tr>
         <? foreach($fieldList as $name => $key) { ?>
           <td class="<?= $name?>">
-            <?= $screen[$key] ?>
+            <span><?= $screen[$key] ?></span>
 						<? if (array_search($key, $editable) !== false) { ?>
-							<a onclick="change(<?=$screen['id']?>,'<?=$key?>')"><i class="fa fa-pencil"></i></a>
+							<a onclick="change(<?=$screen['id']?>,'<?=$key?>',this)"><i class="edit fa fa-pencil"></i></a>
 						<? } ?>
           </td>
       <? } ?>
