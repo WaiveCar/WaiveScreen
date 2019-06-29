@@ -112,7 +112,7 @@ sms_cleanup() {
     done
 
     $MM -s $i > $SMSDIR/$num
-    $MM -s $i --create-file-with-data=$SMSDIR/${num}.raw >& /dev/null
+    grep -i "class: 1" $SMSDIR/$num > /dev/null && $MM -s $i --create-file-with-data=$SMSDIR/${num}.raw 
     $SUDO $MM --messaging-delete-sms=$i
   done
 }
