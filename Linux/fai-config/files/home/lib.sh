@@ -138,7 +138,8 @@ text_loop() {
       fi
 
       if [[ -n "$message" ]]; then
-        ( selfie $sender; sms_cleanup $dbuspath ) &
+        sms_cleanup $dbuspath
+        selfie $sender &
         sleep 2
         B64=1 _bigtext $message
       else
