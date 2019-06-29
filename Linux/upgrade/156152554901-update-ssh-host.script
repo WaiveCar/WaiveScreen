@@ -1,8 +1,0 @@
-#!/bin/bash
-
-upgradepost() {
-  . /home/adorno/baseline.sh
-  _as_user ssh-keygen -f "/home/adorno/.ssh/known_hosts" -R "reflect.waivescreen.com"
-}
-
-eval $1
