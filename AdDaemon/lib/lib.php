@@ -191,7 +191,8 @@ function ping($data) {
     }
   }
 
-  if(!$obj['lat']) {
+  // I don't want to override real values with nulls
+  if(isset($obj['lat']) && $obj['lat']) {
     unset($obj['lat']);
     unset($obj['lng']);
   }
