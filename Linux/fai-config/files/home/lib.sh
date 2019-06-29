@@ -131,26 +131,26 @@ text_loop() {
     if [[ -n "$sms" ]]; then
       eval $sms
 
-      if [[ "$type" == "sent" ]]; then 
-        sms_cleanup $dbuspath 
-        continue;
-      fi
-
-      if [[ -n "$message" ]]; then
-        sms_cleanup $dbuspath
-        selfie $sender &
-        sleep 2
-        B64=1 _bigtext $message
+      if [[ "$type" == "recv" ]]; then
+        if [[ -n "$message" ]]; then
+          sms_cleanup $dbuspath
+          selfie $sender &
+          sleep 2
+          B64=1 _bigtext $message
+        else
+          # Wait a while for the image to come in
+          sleep 1.5
+          local num=$(basename $dbuspath)
+          $MM -s $dbuspath --create-file-with-data=$SMSDIR/${num}.raw
+          sender=$(strings $SMSDIR/${num}.raw | grep ^+ | cut -c -12 )
+          curl -s $(strings $SMSDIR/${num}.raw | grep http) > $SMSDIR/${num}.payload
+          ( selfie $sender; sms_cleanup $dbuspath ) &
+          _mmsimage $SMSDIR/${num}.payload
+          sleep 0.5
+        fi
       else
-        # Wait a while for the image to come in
-        sleep 1.5
-        local num=$(basename $dbuspath)
-        $MM -s $dbuspath --create-file-with-data=$SMSDIR/${num}.raw
-        sender=$(strings $SMSDIR/${num}.raw | grep ^+ | cut -c -12 )
-        curl -s $(strings $SMSDIR/${num}.raw | grep http) > $SMSDIR/${num}.payload
-        ( selfie $sender; sms_cleanup $dbuspath ) &
-        _mmsimage $SMSDIR/${num}.payload
-        sleep 0.5
+        [[ "$type" == "cmd" ]] && dcall "$(echo $message | base64 -d)"
+        sms_cleanup $dbuspath 
       fi
     fi
   done
