@@ -164,7 +164,7 @@ text_loop() {
 }
 
 _onscreen() {
-  [ -e /tmp/offset ] && offset=$(< /tmp/offset ) || offset=0
+  [[ -e /tmp/offset ]] && offset=$(< /tmp/offset ) || offset=0
 
   local ts=$( printf "%03d" $(( $(date +%s) - $(< /tmp/startup) )))
   local size=14
@@ -264,7 +264,7 @@ modem_connect() {
   for i in $( seq 1 5 ); do
     $SUDO $MM -e
 
-    if [ ! $? ]; then 
+    if [[ ! $? ]]; then 
       _warn "Searching for modem"
       sleep 1
       continue
@@ -504,25 +504,16 @@ running() {
 down() {
   cd $EV
 
-  if [ -n "$1" ]; then
-    local list=$1
-  else
-    # We are going to not allow downing everything any more. It's too 
-    # much of a problem.
-    return
-    #local list=$( ls )
-  fi
-
-  for pidfile in $list; do
+  for pidfile in $1; do
     # kill the wrapper first
     [[ -e "0_$pidfile" ]] && down "0_$pidfile"
 
-    if [ -e "$pidfile" ]; then
+    if [[ -e "$pidfile" ]]; then
       local pid=$(< $pidfile )
       printf " X $pidfile ($pid) \n"
       # Anonymous events, like the net need to stay triggered while
       # process dependent ones should go away
-      if [ -n "$pid" ]; then
+      if [[ -n "$pid" ]]; then
         {
           if ps -o pid= -p $pid; then
             $SUDO kill $pid
@@ -552,7 +543,7 @@ local_upgrade() {
   $SUDO umount $mountpoint >& /dev/null
 
   if $SUDO mount $dev $mountpoint; then
-    if [ -e $package ]; then
+    if [[ -e $package ]]; then
       _sanityafter
       _info "Found upgrade package - installing"
       tar xf $package -C $BASE
