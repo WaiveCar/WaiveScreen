@@ -21,7 +21,7 @@ kv_get() {
 
 kv_incr() {
   local curval=$(kv_get $1)
-  if [ -z "$curval" ]; then 
+  if [[ -z "$curval" ]]; then 
     sqlite3 $DB "insert into kv(key, value) values('$1',0)" &
     echo 0
   else
@@ -68,7 +68,7 @@ selfie() {
   import -window root $CACHE/$now-screen.jpg
 
   for i in $CACHE/$now-screen.jpg $CACHE/$now-0.jpg $CACHE/$now-2.jpg $CACHE/$now-4.jpg $CACHE/$now-6.jpg; do
-    if [ -e "$i" ]; then
+    if [[ -e "$i" ]]; then
       opts="$opts -F \"f$num=@$i\""
       (( num ++ ))
     fi
@@ -100,14 +100,13 @@ _mmsimage() {
 }
 
 sms_cleanup() {
-  # cleanup
-  [ -n "$1" ] && list=$1 || list=$($MM --messaging-list-sms | awk ' { print $1 } ')
+  [[ -n "$1" ]] && list=$1 || list=$($MM --messaging-list-sms | awk ' { print $1 } ')
   for i in $list; do
-    [ "$i" = "No" ] && continue
+    [[ "$i" = "No" ]] && continue
     local num=$( kv_incr sms )
 
     # Try to make sure we aren't overwriting
-    while [ -e $SMSDIR/$num ]; do
+    while [[ -e $SMSDIR/$num ]]; do
       num=$( kv_incr sms )
       sleep 0.01
     done
@@ -163,7 +162,6 @@ _onscreen() {
   local ts=$( printf "%03d" $(( $(date +%s) - $(< /tmp/startup) )))
   local size=14
 
-  #from=$( caller 1 | awk ' { print $2":"$1 } ' )
   echo $1 "$ts" | osd_cat \
     -c $2 -u black  -A right \
     -O 1 -o $offset \
