@@ -14,7 +14,7 @@ $addrList = get_addressList(array_map(function($row) {
 
 for($ix = 0; $ix < count($screenList); $ix++){
   if($addrList[$ix]) {
-    $screenList[$ix]['addr'] = "<a href=//maps.google.com/?q={$screenList[$ix]['lat']},{$screenList[$ix]['lng']}>{$addrList[$ix]}</a>";
+    $screenList[$ix]['addr'] = "<a _target=blank href=//maps.google.com/?q={$screenList[$ix]['lat']},{$screenList[$ix]['lng']}>{$addrList[$ix]}</a>";
   } else {
     $screenList[$ix]['addr'] = '<em>unknown</em>';
   }
