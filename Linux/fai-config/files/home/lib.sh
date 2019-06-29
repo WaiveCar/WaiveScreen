@@ -41,8 +41,8 @@ kv_incr() {
 
 list() {
   # just show the local fuctions
-  if [ $# -gt 0 ]; then
-    while [ $# -gt 0 ]; do
+  if [[ $# -gt 0 ]]; then
+    while [[ $# -gt 0 ]]; do
       declare -f $1
       shift
     done
@@ -52,7 +52,7 @@ list() {
 }
 
 _bigtext() {
-  if [ "$B64" ]; then
+  if [[ "$B64" ]]; then
     middle="base64 -d"
     unset B64
   else
@@ -199,7 +199,7 @@ set_wrap() {
 
 set_event() {
   pid=${2:-$!}
-  [ -e $EV/$1 ] || _info Event:$1
+  [[ -e $EV/$1 ]] || _info Event:$1
   echo -n $pid > $EV/$1
 }
 
@@ -210,7 +210,7 @@ set_brightness() {
   local shift=$(perl -e "print .5 * $level + .5")
   local revlevel=$(perl -e "print .7 * $level + .3")
 
-  [ -z "$nopy" ] && pycall arduino.set_backlight $level
+  [[ -z "$nopy" ]] && pycall arduino.set_backlight $level
 
   for display in HDMI-1 HDMI-2; do
     DISPLAY=:0 xrandr --output $display --gamma 1:1:$shift --brightness $revlevel
@@ -243,7 +243,7 @@ get_number() {
   # mmcli may not properly be reporting the phone number. T-mobile sends it to
   # us in our first text so we try to work it from there.
   phone=$( pycall lib.get_number )
-  if [ -z "$phone" ]; then
+  if [[ -z "$phone" ]]; then
     # mmcli may not properly number the sms messages starting at 0 so we find the earliest
     sms 8559248355 '__echo__'
     # wait for our echo service to set the variable
@@ -286,7 +286,7 @@ modem_connect() {
     $SUDO $MM --simple-connect="apn=internet,ip-type=ipv4v6"
     wwan=`ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } '`
 
-    if [ -z "$wwan" ]; then
+    if [[ -z "$wwan" ]]; then
       _warn  "No modem found. Trying again"
       sleep 4
     else
@@ -375,7 +375,7 @@ ssh_hole() {
         # _warn "Cannot contact the server for my port"
         /bin/true
 
-      elif [ -e $EV/$event ] && ps -o pid= -p $(< $EV/$event ); then
+      elif [[ -e $EV/$event ]] && ps -o pid= -p $(< $EV/$event ); then
         # this means we have an ssh open and life is fine
         sleep $rest
 
@@ -415,13 +415,13 @@ install() {
 
 get_uuid() {
   local UUIDfile=/etc/UUID
-  if [ -n "$1" -o ! -e $UUIDfile -o $# -gt 1 ]; then
+  if [[ -n "$1" -o ! -e $UUIDfile -o $# -gt 1 ]]; then
     {
       # The MAC addresses are just SOOO similar we want more variation so let's md5sum
       local uuid_old=$(< $UUIDfile )
       uuid=$(cat /sys/class/net/enp3s0/address | md5sum | awk ' { print $1 } ' | xxd -r -p | base64 | sed -E 's/[=\/\+]//g')
 
-      if [ "$uuid" != "$uuid_old" ]; then
+      if [[ "$uuid" != "$uuid_old" ]]; then
         _info "New UUID $uuid_old -> $uuid"
         echo $uuid_old | $SUDO tee -a $UUIDfile.bak
         echo $uuid | $SUDO tee $UUIDfile
@@ -491,7 +491,7 @@ running() {
     {
       if [[ -n "$pid" ]]; then 
         line=$(ps -o start=,command= -p $(< $pidfile ))
-        [ -n "$line" ] && running="UP" || running="??"
+        [[ -n "$line" ]] && running="UP" || running="??"
       else
         pid="---"
         running="NA"
@@ -515,7 +515,7 @@ down() {
 
   for pidfile in $list; do
     # kill the wrapper first
-    [ -e "0_$pidfile" ] && down "0_$pidfile"
+    [[ -e "0_$pidfile" ]] && down "0_$pidfile"
 
     if [ -e "$pidfile" ]; then
       local pid=$(< $pidfile )
