@@ -15,6 +15,11 @@ if [ ! -d $EV ]; then
   chmod 0777 $EV
 fi
 
+die() {
+  _error "$*"
+  exit
+}
+
 kv_get() {
   sqlite3 $DB "select value from kv where key='$1'"
 }
@@ -430,9 +435,9 @@ get_uuid() {
 wait_for() {
   path=${2:-$EV}/$1
 
-  if [ ! -e "$path" ]; then
+  if [[ ! -e "$path" ]]; then
     echo `date +%R:%S` WAIT $1
-    until [ -e "$path" ]; do
+    until [[ -e "$path" ]]; do
       sleep 0.5
     done
 
@@ -446,13 +451,10 @@ _screen_display_single() {
   export DISPLAY=${DISPLAY:-:0}
   local app=$BASE/ScreenDisplay/display.html 
 
-  if [ -e $app ]; then
-    _as_user chromium --no-first-run --non-secure --default-background-color='#000' --app=file://$app &
-    set_event screen_display
-  else
-    _error "Can't find $app. Exiting"
-    exit 
-  fi
+  [[ -e $app ]] || die "Can't find $app. Exiting"
+
+  _as_user chromium --no-first-run --non-secure --default-background-color='#000' --app=file://$app &
+  set_event screen_display
 }
 
 screen_display() {
@@ -467,8 +469,8 @@ screen_display() {
         # a botched upgrade.
         (( ++ix % 30 == 0 )) && pycall lib.ping
 
-        [ -e $EV/0_screen_display ] || return
-        [ "$(< $EV/0_screen_display )" != "$pid" ] && return
+        [[ -e $EV/0_screen_display ]] || return
+        [[ "$(< $EV/0_screen_display )" != "$pid" ]] && return
       done
 
       _screen_display_single
@@ -485,7 +487,7 @@ running() {
     local pid=$(< $pidfile )
     local line="-"
     {
-      if [ -n "$pid" ]; then 
+      if [[ -n "$pid" ]]; then 
         line=$(ps -o start=,command= -p $(< $pidfile ))
         [ -n "$line" ] && running="UP" || running="??"
       else
