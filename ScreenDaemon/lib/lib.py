@@ -145,13 +145,13 @@ def get_message(dbus_path):
       pass
 
     print("type=sent;dbuspath={}".format(proxy))
-    return True
 
   elif ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
     res = dcall(fn['Text'][2:])
     modem = get_modem()
     if modem:
       modem['sms'].Create({'number': fn['Number'], 'text': res})
+    return True
 
   # Makes sure that we are not reporting our own text
   else:
@@ -163,9 +163,7 @@ def get_message(dbus_path):
       message = fn['Text']
 
     print("type=recv;sender={};message='{}';dbuspath={}".format(fn['Number'], base64.b64encode(message.encode('ascii')).decode(), proxy))
-    return False
 
-  return True
 
 def catchall_signal_handler(*args, **kwargs):
   from gi.repository import GLib
