@@ -20,9 +20,12 @@ _warn $(get_uuid) $(kv_get number) $ENV
 # up again and will just present a dialog box.
 rm -f $DEST/.config/chromium/Singleton*
 
+# Honestly I don't care if there's some miraculous DNS spoofing. I can't
+# have this fail when I move the host around.
+ssh-keygen -f "/home/adorno/.ssh/known_hosts" -R "reflect.waivescreen.com"
+
 # Everything above is stuff we can run every time we start X
 (( $( pgrep start-x-stuff | wc -l ) > 2 )) && exit -1
-
 
 sensor_daemon
 screen_daemon
