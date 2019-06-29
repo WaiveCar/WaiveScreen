@@ -415,7 +415,7 @@ install() {
 
 get_uuid() {
   local UUIDfile=/etc/UUID
-  if [[ -n "$1" -o ! -e $UUIDfile -o $# -gt 1 ]]; then
+  if [ -n "$1" -o ! -e $UUIDfile -o $# -gt 1 ]; then
     {
       # The MAC addresses are just SOOO similar we want more variation so let's md5sum
       local uuid_old=$(< $UUIDfile )
