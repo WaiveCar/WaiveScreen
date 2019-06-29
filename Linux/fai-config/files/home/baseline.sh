@@ -45,7 +45,7 @@ local_sync() {
   # get tossed aside and pull down the new code.
   _git stash
   if _git pull; then
-    _get checkout $sha1
+    _git checkout $sha1
 
     # If there's script updates we try to pull those down
     # as well - we can use our pre-existing sync script
