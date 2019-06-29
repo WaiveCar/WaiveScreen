@@ -63,7 +63,6 @@ rollback() {
 }
 
 eval \$1
-
 };
 close $fh;
 
