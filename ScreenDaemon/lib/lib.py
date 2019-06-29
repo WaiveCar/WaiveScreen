@@ -243,7 +243,7 @@ def task_ingest(data):
     from . import arduino
 
     if action == 'upgrade':
-      ping()
+      upgrade()
 
     elif action == 'screenoff':
       global _reading
@@ -394,6 +394,12 @@ def ping_if_needed():
   if not last_ping or int(db.kv_get('runcount')) > int(last_ping):
     ping()
 
+def upgrade():
+  # Now we ask the shell to do the upgrade
+  # a bunch of assumptions are being done here.
+  os.chdir('/home/{}'.format(USER))
+  os.system('./dcall upgrade &')
+
 def get_uptime():
   # There's a few ways to do this.
   # We have a /tmp/startup that happens
@@ -476,10 +482,7 @@ def ping():
             db.kv_set('version_date', data['version_date'])
             logging.info("Upgrading from {} to {}. So long.".format(VERSION, data['version']))
 
-            # Now we ask the shell to do the upgrade
-            # a bunch of assumptions are being done here.
-            os.chdir('/home/{}'.format(USER))
-            os.system('./dcall upgrade &')
+            upgrade()
 
         task_ingest(data)
 
