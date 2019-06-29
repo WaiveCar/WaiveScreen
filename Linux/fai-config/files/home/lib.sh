@@ -75,7 +75,7 @@ selfie() {
   done
 
   res=$(eval curl -sX POST $opts "waivescreen.com/selfie.php?pre=$now")
-  [ -n "$1" ] && sms $sender "This just happened: $res. More cool stuff coming soon ;-)"
+  [[ -n "$1" ]] && sms $sender "This just happened: $res. More cool stuff coming soon ;-)"
   echo $res
 }
 
@@ -92,7 +92,7 @@ _mmsimage() {
 
   dd skip=1 bs=$(( $(grep -abPo '(JFIF.*)' $file | awk -F : ' { print $1 }') - 6 )) if=$file | $cmd $file.jpg
 
-  if [ -s $file ]; then
+  if [[ -s $file ]]; then
     echo '' | aosd_cat -n "FreeSans 0" -u 4000 -p 7 -d 225 -f 0 -o 0 &
     sleep 0.03
     display -window $(xwininfo -root -tree | grep aosd | head -1 | awk ' { print $1 } ') $file.jpg &
@@ -359,10 +359,10 @@ ssh_hole() {
   fi
 
   {
-    while [ 0 ]; do
+    while true; do
       local port=$(kv_get port)
       
-      if [ -z "$port" ]; then
+      if [[ -z "$port" ]]; then
         # This will cycle on a screen that's not properly
         # installed. That's kinda unnecessary
         # _warn "Cannot contact the server for my port"
