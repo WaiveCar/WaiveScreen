@@ -135,6 +135,7 @@ def get_message(dbus_path):
   iface = dbus.Interface(smsproxy, 'org.freedesktop.ModemManager1.Sms')
   ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
   fn = ifaceone.GetAll('org.freedesktop.ModemManager1.Sms')
+  message = ''
 
   # pprint(json.dumps(fn))
   if fn['PduType'] == 2:
