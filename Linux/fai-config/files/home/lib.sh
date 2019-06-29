@@ -156,7 +156,6 @@ text_loop() {
           sleep 0.5
         fi
       else
-        [[ "$type" == "cmd" ]] && dcall "$(echo $message | base64 -d)"
         sms_cleanup $dbuspath 
       fi
     fi
