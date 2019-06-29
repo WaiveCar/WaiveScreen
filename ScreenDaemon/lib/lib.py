@@ -146,30 +146,28 @@ def get_message(dbus_path):
 
     print("type=sent;dbuspath={}".format(proxy))
 
-  elif ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
-    res = dcall(fn['Text'][2:])
-    modem = get_modem()
-    if modem:
-      modem['sms'].Create({'number': fn['Number'], 'text': res})
-    return True
-
-  # Makes sure that we are not reporting our own text
   else:
-    if fn['Number'] == '+18559248355':
-      message = fn['Text'].split(' ')[1]
-      db.kv_set('number', message)
+    if ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
+      klass='cmd'
 
+    # Makes sure that we are not reporting our own text
     else:
-      message = fn['Text']
+      klass='recv'
+      if fn['Number'] == '+18559248355':
+        message = fn['Text'].split(' ')[1]
+        db.kv_set('number', message)
 
-    print("type=recv;sender={};message='{}';dbuspath={}".format(fn['Number'], base64.b64encode(message.encode('ascii')).decode(), proxy))
+      else:
+        message = fn['Text']
+
+    print("type={};sender={};message='{}';dbuspath={}".format(klass, fn['Number'], base64.b64encode(message.encode('ascii')).decode(), proxy))
 
 
 def catchall_signal_handler(*args, **kwargs):
   from gi.repository import GLib
   global _loop
-  if not get_message(args[0]):
-    GLib.MainLoop.quit(_loop)
+  get_message(args[0])
+  GLib.MainLoop.quit(_loop)
 
 def next_sms():
   global _bus
