@@ -7,4 +7,5 @@ set shiftwidth=2
 set softtabstop=0 
 set expandtab 
 set smarttab
+autocmd FileType python setlocal shiftwidth=2 softtabstop=2 expandtab
 
