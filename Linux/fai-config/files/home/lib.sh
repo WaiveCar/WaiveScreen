@@ -10,10 +10,13 @@ FFMPEG="ffmpeg -loglevel panic -nostats -hide_banner -y -an"
 
 pkill osd_cat
 
-if [ ! -d $EV ]; then 
-  mkdir -p $EV 
-  chmod 0777 $EV
-fi
+_mkdir() {
+  [[ -d $1 ]] && return
+  $SUDO mkdir -p $1 
+  $SUDO chmod 0777 $1
+}
+
+_mkdir $EV
 
 die() {
   _error "$*"
@@ -127,8 +130,7 @@ t() {
 }
 
 text_loop() {
-  [[ -d $SMSDIR ]] || $SUDO mkdir $SMSDIR
-  $SUDO chmod 0777 $SMSDIR
+  _mkdir $SMSDIR
 
   while true; do
     sms=$(pycall lib.next_sms)
@@ -545,7 +547,7 @@ local_upgrade() {
   local mountpoint='/tmp/upgrade'
   local package=$mountpoint/upgrade.package
 
-  [ -e $mountpoint ] || mkdir $mountpoint
+  _mkdir $mountpoint
 
   $SUDO umount $mountpoint >& /dev/null
 
@@ -607,18 +609,14 @@ make_patch() {
 }
 
 disk_monitor() {
-  local howmany=$( pgrep -cf 'dcall disk_monitor' )
-  if [ $howmany -lt 2 ]; then
-    {
-      while true; do
-        local disk=$(pycall lib.disk_monitor)
-        [ -n "$disk" ] && local_upgrade $disk
-        sleep 3
-      done
-    } &
-  else
-    echo "kill the others first"
-  fi
+  (( $( pgrep -cf 'dcall disk_monitor' ) < 1 )) || die "kill the others first"
+  {
+    while true; do
+      local disk=$(pycall lib.disk_monitor)
+      [[ -n "$disk" ]] && local_upgrade $disk
+      sleep 3
+    done
+  } &
 }
 
 stack_down() {
