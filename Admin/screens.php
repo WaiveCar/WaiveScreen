@@ -32,6 +32,7 @@ $fieldList = [
   'car' => 'car',
   'location' => 'addr',
   'phone' => 'phone',
+  'port' => 'port',
   'version' => 'version',
   'last' => 'last_local',
   'first' => 'first_local'
