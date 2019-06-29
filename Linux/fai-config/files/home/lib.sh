@@ -123,16 +123,21 @@ t() {
 }
 
 text_loop() {
-  [ -d $SMSDIR ] || $SUDO mkdir $SMSDIR
+  [[ -d $SMSDIR ]] || $SUDO mkdir $SMSDIR
   $SUDO chmod 0777 $SMSDIR
 
-  while [ 0 ]; do
-    sms=$(pycall next_sms)
+  while true; do
+    sms=$(pycall lib.next_sms)
 
-    if [ -n "$sms" ]; then
+    if [[ -n "$sms" ]]; then
       eval $sms
 
-      if [ -n "$message" ]; then
+      if [[ "$type" == "sent" ]]; then 
+        sms_cleanup $dbuspath 
+        continue;
+      fi
+
+      if [[ -n "$message" ]]; then
         ( selfie $sender; sms_cleanup $dbuspath ) &
         sleep 2
         B64=1 _bigtext $message
@@ -182,7 +187,7 @@ _error() {
 
 set_wrap() {
   local pid=${2:-$!}
-  [ -e $EV/0_$1 ] && $SUDO rm $EV/0_$1
+  [[ -e $EV/0_$1 ]] && $SUDO rm $EV/0_$1
   echo -n $pid > $EV/0_$1
 }
 

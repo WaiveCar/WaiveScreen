@@ -138,7 +138,14 @@ def get_message(dbus_path):
 
   # pprint(json.dumps(fn))
   if fn['PduType'] == 2:
-    iface.Send()
+    try:
+      iface.Send()
+
+    except:
+      pass
+
+    print("type=sent;dbuspath={}".format(proxy))
+    return True
 
   elif ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
     res = dcall(fn['Text'][2:])
@@ -155,7 +162,7 @@ def get_message(dbus_path):
     else:
       message = fn['Text']
 
-    print("sender={};message='{}';dbuspath={}".format(fn['Number'], base64.b64encode(message.encode('ascii')).decode(), proxy))
+    print("type=recv;sender={};message='{}';dbuspath={}".format(fn['Number'], base64.b64encode(message.encode('ascii')).decode(), proxy))
     return False
 
   return True
