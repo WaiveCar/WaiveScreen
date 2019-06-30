@@ -394,12 +394,6 @@ def ping_if_needed():
   if not last_ping or int(db.kv_get('runcount')) > int(last_ping):
     ping()
 
-def upgrade():
-  # Now we ask the shell to do the upgrade
-  # a bunch of assumptions are being done here.
-  os.chdir('/home/{}'.format(USER))
-  os.system('./dcall upgrade &')
-
 def get_uptime():
   # There's a few ways to do this.
   # We have a /tmp/startup that happens
@@ -462,7 +456,7 @@ def ping():
           logging.debug("Us: {} {}, server: {} {}".format(VERSION, VERSIONDATE, data['version'], data['version_date']))
         else:
           logging.warning("This is {} but {} is available".format(VERSION, data['version']))
-          # This means we can upgrade.
+          # This means we can .
           #
           # We need to make sure that a failed
           # upgrade doesn't send us in some kind
@@ -482,7 +476,7 @@ def ping():
             db.kv_set('version_date', data['version_date'])
             logging.info("Upgrading from {} to {}. So long.".format(VERSION, data['version']))
 
-            upgrade()
+            dcall("upgrade &")
 
         task_ingest(data)
 
