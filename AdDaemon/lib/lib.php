@@ -153,22 +153,32 @@ function tag($data) {
 
 }
 
-function ping($data) {
-  global 
-    $VERSION, 
-    $DEFAULT_CAMPAIGN_ID,
-    $LASTCOMMIT;
+// Whenever we get some communication we know
+// the screen is on and we may have things like
+// lat/lng if we're lucky so let's try to gleam
+// that.
+function upsert_screen($screen_uid, $payload) {
+  $screen = Get::screen(['uid' => $screen_uid]);
 
-  error_log(json_encode($data));
-
-  if(!isset($data['uid'])) {
-    return doError("You need to pass in a UID");
+  if(!$screen) {
+    $screen = create_screen($screen_uid);
   }
 
-  $uid = $data['uid'];
+  $data = ['last_seen' => 'current_timestamp'];
+  if(!empty($payload['lat']) && floatval($payload['lat'])) {
+    $data['lat'] = floatval($payload['lat']);
+    $data['lng'] = floatval($payload['lng']);
+  }
 
-  $screen = Get::screen(['uid' => $uid]);
-  $obj = [ 'last_seen' => 'current_timestamp' ];
+  db_update('screen', db_string($uid), $data);
+
+  return array_merge($screen, $data);
+}
+
+function ping($payload) {
+  global $DEFAULT_CAMPAIGN_ID;
+
+  error_log(json_encode($payload));
 
   // features/modem/gps
   foreach([
@@ -178,7 +188,7 @@ function ping($data) {
     'version_time',                                    // >v0.2-Bakeneko-378-gf6697e1
     'uptime', 'features'                               // >v0.2-Bakeneko-384-g4e32e37
   ] as $key) {
-    $val = aget($data, $key);
+    $val = aget($payload, $key);
 
     if($val) {
       $parts = explode('.', $key);
@@ -191,29 +201,25 @@ function ping($data) {
     }
   }
 
-  // I don't want to override real values with nulls
-  if(isset($obj['lat']) && $obj['lat']) {
-    unset($obj['lat']);
-    unset($obj['lng']);
+  if(isset($payload['uid'])) {
+    $screen = upsert_screen($payload['uid'], $obj);
+  } else {
+    return doError("UID needs to be set before continuing");
   }
 
-  if(!$screen) {
-    error_log("Can't find screen. Making one");
-    $screen = create_screen($uid, $obj);
-  } else {
-    $obj['pings'] = intval($screen['pings']) + 1;
-    db_update('screen', $screen['id'], $obj);
-  }
+  $obj['pings'] = intval($screen['pings']) + 1;
+  db_update('screen', $screen['id'], $obj);
 
   // We return the definition for the default campaign
   // The latest version of the software
   // and the definition of the screen.
-  return [
+  $res = [
     'version' => $VERSION,
     'version_date' => $LASTCOMMIT,
     'screen' => $screen,
     'default' => Get::campaign($DEFAULT_CAMPAIGN_ID)
   ];
+  return task_inject($screen, $res);
 }
 
 function create_job($campaignId, $screenId) {
@@ -298,6 +304,30 @@ function task_response($screen, $id, $response) {
 
 }
 
+// we need to find out if the screen has tasks we need
+// to inject and then do so
+//
+// Why are we calling by reference like a weirdo? 
+// We want the key to be empty if there's nothing
+// that satisfies it.
+function task_inject($screen, $res) {
+  // before we assign new jobs we want to make sure that the server
+  // is up to date. 
+  global 
+    $VERSION, 
+    $LASTCOMMIT;
+
+  if($screen['version_time']) {
+    if($screen['version_time'] < $LASTCOMMIT) {
+      $res['task'] = [['upgrade',false]];
+    }
+  } else if($screen['version'] != $VERSION) {
+    $res['task'] = [['upgrade',false]];
+  }
+  return $res;
+}
+
+
 function update_campaign_completed($id) {
   if(!$id) {
     error_log("Not updating an invalid campaign: $id");
@@ -307,28 +337,11 @@ function update_campaign_completed($id) {
 }
   
 function sow($payload) {
-  global $LASTCOMMIT, $VERSION;
-  $server_response = [ 'res' => true ];
-
   if(isset($payload['uid'])) {
-    $uid = $payload['uid'];
+    $screen = upsert_screen($payload['uid'], $payload);
   } else {
     return doError("UID needs to be set before continuing");
   }
-
-  $screen = Get::screen(['uid' => $uid]);
-
-  if(!$screen) {
-    $screen = create_screen($uid);
-  }
-
-  $data = ['last_seen' => 'current_timestamp'];
-  if(!empty($payload['lat']) && floatval($payload['lat'])) {
-    $data['lat'] = floatval($payload['lat']);
-    $data['lng'] = floatval($payload['lng']);
-  }
-
-  db_update('screen', db_string($uid), $data);
 
   $jobList = aget($payload, 'jobs', []);
   $campaignsToUpdateList = [];
@@ -357,17 +370,6 @@ function sow($payload) {
   }
   // error_log(json_encode($uniqueCampaignList));
 	
-  // Before we assign new jobs we want to make sure that the server
-  // is up to date.  We need to make sure we continue to give it 
-  // tasks in case the server is failing to upgrade.
-  if($screen['version_time']) {
-    if($screen['version_time'] < $LASTCOMMIT) {
-      $server_response['task'] = [['upgrade',false]];
-    }
-  } else if($screen['version'] != $VERSION) {
-    $server_response['task'] = [['upgrade',false]];
-  }
-
   $active = active_campaigns();
   // If we didn't get lat/lng from the sensor then we just any ad
   if(empty($payload['lat'])) {
@@ -386,7 +388,8 @@ function sow($payload) {
 
   // so if we have existing outstanding jobs with the
   // screen id and campaign then we can just re-use them.
-  $job_list = array_map(function($campaign) use ($screen) {
+  $server_response = task_inject($screen, ['res' => true]);
+  $server_response['data'] = array_map(function($campaign) use ($screen) {
     $jobList = find_unfinished_job($campaign['id'], $screen['id']);
     if(!$jobList) {
       $jobList = [ create_job($campaign['id'], $screen['id']) ];
@@ -403,8 +406,6 @@ function sow($payload) {
     }
   }, $nearby_campaigns);
   
-  $server_response['data'] = $job_list;
-  // error_log(json_encode($job_list));
   return $server_response; 
 }
 
@@ -429,6 +430,7 @@ function get_available_slots($start_query, $duration) {
 
 
 function upload_s3($file) {
+  // lol we deploy this line of code with every screen. what awesome.
 	$credentials = new Aws\Credentials\Credentials('AKIAIL6YHEU5IWFSHELQ', 'q7Opcl3BSveH8TU9MR1W27pWuczhy16DqRg3asAd');
 
   // this means there was an error uploading the file
