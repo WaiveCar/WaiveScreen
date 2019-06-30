@@ -8,8 +8,8 @@
 #
 ##
 
-if [ -z "$NODISK" ]; then
-  if [ $# -lt 1 ]; then
+if [[ -z "$NODISK" ]]; then
+  if [[ $# -lt 1 ]]; then
     echo "You need to pass a dev entry for it such as /dev/sdb1"
     exit
   fi
@@ -23,16 +23,14 @@ package=/tmp/upgrade.package
 mount=/tmp/mount
 dest_home=$path/Linux/fai-config/files/home
 
-if [ -n "$RESET" ]; then
-  [ -e $path ] && rm -fr $path
-fi
-
-[ -d $path ] || mkdir $path
+[ -n "$RESET" -a -e $path ] && rm -fr $path
+[[ -d $path ]] || mkdir $path
 
 if [ -z "$NOCLONE" ]; then
   if [ -n "$LOCAL" ]; then
     echo "Using local code"
     cp -puvr $DIR/../../* $path
+
   elif [ -e $path ]; then
     cd $path
     if ! git pull; then
@@ -41,12 +39,13 @@ if [ -z "$NOCLONE" ]; then
       git clone git@github.com:WaiveCar/WaiveScreen.git $path
       cd $path
     fi
-    [ -z "$NOPIP" ] && pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
+    [[ -z "$NOPIP" ]] && pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
+    
   else
     mkdir $path
     git clone git@github.com:WaiveCar/WaiveScreen.git $path
     mkdir -p $dest_home/pip
-    [ -z "$NOPIP"] && pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
+    [[ -z "$NOPIP" ]] && pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
     cd $path
   fi
 
@@ -70,7 +69,7 @@ if [ -z "$NODISK" ]; then
     exit
   fi
 
-  [ -e $mount ] || mkdir $mount
+  [[ -e $mount ]] || mkdir $mount
   sudo umount $mount >& /dev/null 
 
   if sudo mount $disk $mount; then
