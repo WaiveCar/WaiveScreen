@@ -7,9 +7,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 sync_scripts() {
   local source=${1:-$DEV/Linux/fai-config/files/home/}
 
-  if [[ ! -e $source ]]; then
-    echo "Warning: $source doesn't exist."
-  else
+  if [[ -e $source ]]; then
     rsync --exclude=.xinitrc,locals.sh -aqzr $source $DEST
     chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
   fi
