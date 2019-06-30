@@ -12,8 +12,7 @@ export LOG=/var/log/screen
 export DB=/var/db/config.db
 export CACHE=/var/cache/assets
 export ENV=production
-
-[[ $USER = 'root' ]] && SUDO= || SUDO=/usr/bin/sudo
+[[ $USER != 'root' ]] && SUDO=/usr/bin/sudo
 
 # Local overrides to the above 
-[ -e $DEST/overrides ] && . $DEST/overrides
+[[ -e $DEST/overrides ]] && . $DEST/overrides
