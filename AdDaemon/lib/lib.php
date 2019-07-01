@@ -170,7 +170,7 @@ function upsert_screen($screen_uid, $payload) {
     $data['lng'] = floatval($payload['lng']);
   }
 
-  db_update('screen', db_string($uid), $data);
+  db_update('screen', db_string($screen_uid), $data);
 
   return array_merge($screen, $data);
 }
