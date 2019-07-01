@@ -23,21 +23,21 @@ ddcmd() {
   echo "sudo dd if=$1 of=$2 bs=1M"
 }
 
-if [ -z "$NODISK" ]; then
-  [ $# -lt 1 ] && die "You need to pass a disk dev entry to install to such as /dev/sdb"
+if [[ -z "$NODISK" ]]; then
+  [[ $# -lt 1 ]] && die "You need to pass a disk dev entry to install to such as /dev/sdb"
   disk=$1
-  [ -b $disk ] || die "Woops, $disk isn't a disk"
-  [ $(stat -c %T $disk) -eq 11 ] && die "Woah, $disk is a PARTITION. I need the whole disk."
+  [[ -b $disk ]] || die "Woops, $disk isn't a disk"
+  [[ $(stat -c %T $disk) -eq 11 ]] && die "Woah, $disk is a PARTITION. I need the whole disk."
 
   sudo fdisk -l $disk
 
-  if [ -n "$ONLYDISK" ]; then
-    echo $(ddcmd $(ls -tr1 $HOME/Wai*| tail -1) $disk) | /bin/bash
+  if [[ -n "$ONLYDISK" ]]; then
+    eval $(ddcmd $(ls -tr1 $HOME/Wai*| tail -1) $disk) 
     exit
   fi
 fi
 
-if [ -z "$NOPIP" ]; then
+if [[ -z "$NOPIP" ]]; then
   NONET=1 $DIR/syncer.sh pip || die "Can't sync"
   NONET=1 $DIR/syncer.sh force || die "Can't force an update"
 fi
@@ -50,8 +50,8 @@ fi
 echo "Creating a bootable iso named $file"
 sudo fai-cd -m $dir $file
 
-if [ -z "$NODISK" ]; then
-  [ -e "$file" ] || die "$file does not exist, Bailing!"
+if [[ -z "$NODISK" ]]; then
+  [[ -e "$file" ]] || die "$file does not exist, Bailing!"
   eval $(ddcmd $file $disk)
 else 
   echo $(ddcmd $file $disk)
