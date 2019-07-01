@@ -526,6 +526,7 @@ def upgrades_to_run():
   last_upgrade_script = db.kv_get('last_upgrade')
   pos = -1
   upgrade_list = sorted(glob.glob(upgrade_glob))
+
   if len(upgrade_list) == 0:
     logging.warning("Woops, couldn't find anything at {}".format(upgrade_glob))
 
@@ -540,7 +541,6 @@ def upgrades_to_run():
 
     to_run = upgrade_list[pos:]
     print(" ".join(to_run))
-    db.kv_set('last_upgrade', upgrade_list[-1])
   
   
 
