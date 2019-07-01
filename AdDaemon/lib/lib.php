@@ -337,6 +337,7 @@ function update_campaign_completed($id) {
 }
   
 function sow($payload) {
+  error_log(json_encode($payload));
   if(isset($payload['uid'])) {
     $screen = upsert_screen($payload['uid'], $payload);
   } else {
