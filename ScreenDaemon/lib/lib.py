@@ -239,8 +239,22 @@ def task_ingest(data):
   if 'task' not in data:
     return
 
-  for action, args in data['task']:
-    from . import arduino
+  from . import arduino
+  last_task = db.kv_get('last_task') or 0
+
+  for task in data['task']:
+
+    id = task['id']
+
+    if id <= last_task:
+      continue
+
+    db.kv_set('last_task', id)
+
+    ## TODO: expiry check
+
+    action = task['action']
+    args = task['args']
 
     if action == 'upgrade':
       upgrade()
