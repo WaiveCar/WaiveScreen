@@ -175,6 +175,13 @@ function upsert_screen($screen_uid, $payload) {
   return array_merge($screen, $data);
 }
 
+function command($payload) {
+  return db_insert('task', [
+    'scope' => "id:{$payload['id']}",
+    'command' => db_string($payload['cmd'])
+  });
+}
+
 function ping($payload) {
   global 
     $DEFAULT_CAMPAIGN_ID,

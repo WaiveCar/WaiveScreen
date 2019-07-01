@@ -30,23 +30,14 @@ try {
       jemit(screen_edit($all));
     }
   } 
-  else if($func == 'sow') {
-    jemit(sow($all));
-  }
   else if(array_search($func, ['jobs', 'campaigns', 'screens']) !== false) {
     jemit(show(rtrim($func, 's')));
   }
-  else if($func == 'tag') {
-    jemit(tag($all));
-  }
-  else if($func == 'ping') {
-    jemit(ping($all));
+  else if(array_search($func, ['sow', 'tag', 'ping', 'command']) !== false) { 
+    jemit($func($all));
   }
   else if($func == 'setup') {
     jemit(setup($_POST));
-  }
-  else if($func == 'reset') {
-    jemit(truncate());
   } else {
     jemit([
       'res' => false,
