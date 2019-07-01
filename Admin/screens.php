@@ -50,10 +50,10 @@ $editable = ['car', 'phone'];
   </head>
   <style>
     body,* { color: #000 }
-    .id,.version { font-family: monospace}
-    .edit { color: #999; cursor: pointer; }
-    .last { text-align: right; }
-    em { color: #555 }'
+    .id,.version { font-family: monospace }
+    .edit { color: #999; cursor: pointer }
+    .last { text-align: right }
+    em { color: #555 }
     .edit:hover { color: #000 }
   </style>
   <body>
