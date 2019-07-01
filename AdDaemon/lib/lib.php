@@ -176,7 +176,10 @@ function upsert_screen($screen_uid, $payload) {
 }
 
 function ping($payload) {
-  global $DEFAULT_CAMPAIGN_ID;
+  global 
+    $DEFAULT_CAMPAIGN_ID,
+    $VERSION, 
+    $LASTCOMMIT;
 
   error_log(json_encode($payload));
 
