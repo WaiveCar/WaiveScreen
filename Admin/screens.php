@@ -64,6 +64,7 @@ $editable = ['car', 'phone'];
       <? foreach($fieldList as $key => $value) { ?>
         <th scope="col" class="<?= $key ?>"><?= $key ?></th>
       <? } ?>
+      <th scope="col">command</th>
       </tr>
     </thead>
   <tbody>
@@ -77,6 +78,9 @@ $editable = ['car', 'phone'];
 						<? } ?>
           </td>
       <? } ?>
+        <td>
+          <button class="btn btn-secondary">command</button>
+        </td>
       </tr>
     <? } ?>
   </tbody>
