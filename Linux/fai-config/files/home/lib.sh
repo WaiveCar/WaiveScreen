@@ -573,6 +573,9 @@ local_upgrade() {
 upgrade_scripts() {
   for script in $(pycall upgrades_to_run); do
     cd $BASE
+    # we do this every time because some upgrades
+    # may call for a reboot
+    kv_set last_upgrade,$script
     $SUDO $script upgradepost
   done
 }
