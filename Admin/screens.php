@@ -79,7 +79,7 @@ $editable = ['car', 'phone'];
           </td>
       <? } ?>
         <td>
-          <button class="btn btn-secondary">command</button>
+          <button onclick='command("<?=$screen['id']?>")' class="btn btn-secondary">command</button>
         </td>
       </tr>
     <? } ?>
