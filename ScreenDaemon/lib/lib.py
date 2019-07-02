@@ -41,17 +41,8 @@ else:
 
 NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
-
-if 'SERVER' in os.environ:
-  SERVER_URL = os.environ['SERVER']
-  logging.info("Using {} as the server as specified in the server shell env variable")
-else:
-  # Eventually we can change this but right now nothing is live
-  SERVER_URL = 'http://waivescreen.com/api'
-
-  # We aren't always calling from something with flask
-  if 'app' in dir() and app.config['ENV'] == 'development':
-    SERVER_URL = 'http://waivescreen.com/api' 
+SERVER_URL = os.environ.get('SERVER_URL') or 'http://waivescreen.com/api'
+logging.info("Using {} as the server".format(SERVER_URL))
 
 storage_base = '/var/lib/waivescreen/'
 
