@@ -364,6 +364,15 @@ function db_update($table, $id, $kv) {
   $fields = [];
 
   $kv = process($table, $kv, 'pre');
+  
+  if(is_array($id)) {
+    $parts = array_keys($id);
+    $key = $parts[0];
+    $value = $id[$key];
+  } else {
+    $key = 'id';
+    $value = $id;
+  }
 
   foreach($kv as $k => $v) {
     $fields[] = "$k=$v";
@@ -371,7 +380,8 @@ function db_update($table, $id, $kv) {
 
   $fields = implode(',', $fields);
 
-  $qstr = "update $table set $fields where id = $id";
+  $qstr = "update $table set $fields where $key = $value";
+  error_log($qstr);
   return _query($qstr);
 }
 
