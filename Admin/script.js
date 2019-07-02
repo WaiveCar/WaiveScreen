@@ -19,9 +19,14 @@ function change(id, what, el) {
 function command(id) {
   var cmd = prompt(`Give a command for ${id}`);
   if(cmd) {
+    let parts = cmd.split(' ');
     fetch(new Request('/api/commands', {
       method: 'POST', 
-      body: JSON.stringify({id: id, cmd: cmd})
+      body: JSON.stringify({
+        id: id, 
+        cmd: parts[0], 
+        args: parts.slice(1).join(' ')
+      })
     })).then(res => {
       if (res.status === 200) {
         return res.json();
