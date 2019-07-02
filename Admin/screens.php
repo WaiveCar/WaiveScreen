@@ -23,7 +23,7 @@ for($ix = 0; $ix < count($screenList); $ix++){
   }
 
   $sec =  time() - $screenList[$ix]['last_local'];
-  $screenList[$ix]['last_local'] = sprintf("%d:%02d:%02d", floor($sec / 60 / 60), floor($sec/60) % 60, $sec %60);
+  $screenList[$ix]['last_local'] = sprintf("%dd %d:%02d:%02d", floor($sec / 60 / 60 / 24), floor($sec / 60 / 60) % 24, floor($sec/60) % 60, $sec %60);
   $screenList[$ix]['first_local'] = date("Y-m-d H:i:s", $screenList[$ix]['first_local']);
 }
 
