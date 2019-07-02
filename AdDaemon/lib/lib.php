@@ -179,7 +179,7 @@ function command($payload) {
   return db_insert('task', [
     'scope' => "id:{$payload['id']}",
     'command' => db_string($payload['cmd'])
-  });
+  ]);
 }
 
 function ping($payload) {
