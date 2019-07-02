@@ -8,6 +8,8 @@ install_composer() {
   sudo phpenmod sqlite3
   sudo a2enmod php7.3
   sudo apachectl restart
+  sudo mkdir -p /var/www/WaiveScreen/MadisonAve/static/snap/
+  sudo chmod 0777 /var/www/WaiveScreen/MadisonAve/static/snap/
 }
 sshuser() {
   useradd -m sshbounce
