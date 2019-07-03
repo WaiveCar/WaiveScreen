@@ -587,14 +587,9 @@ upgrade_scripts() {
 
 hotspot() {
 	SSID=WaiveScreen-$( hostname | cut -c 25- )
-
-	# This is where the internet is
-	DEV_INTERNET=wwp0s29u1u1u4i4
-
-	# This is what you are listening on.
+  DEV_INTERNET=$( ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } ' )
 	DEV_AP=wlp1s0
 
-	# We are nat'ing so we need an IP
 	IP_START=172.16.10
 	IP_END=.1
 	IP_AP=$IP_START$IP_END
@@ -620,7 +615,6 @@ endl
 
 	sed -i -r 's/(INTERFACESv4=).*/INTERFACESv4="'$DEV_AP'"/' /etc/default/isc-dhcp-server
 
-
 	cat > /etc/dhcp/dhcpd.conf << endl
 	ddns-update-style none;
 	default-lease-time 600;
@@ -637,7 +631,6 @@ endl
 	pkill hostapd
 	sleep 1
 	hostapd /etc/hostapd/hostapd.conf&
-	#service hostapd start
 
 	sysctl net.ipv4.conf.all.forwarding=1
 
