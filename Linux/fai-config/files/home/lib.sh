@@ -8,8 +8,6 @@ FFMPEG="ffmpeg -loglevel panic -nostats -hide_banner -y -an"
 . $DIR/const.sh
 . $DIR/baseline.sh
 
-$SUDO pkill osd_cat
-
 _mkdir() {
   [[ -d $1 ]] && return
   $SUDO mkdir -p $1 
@@ -476,7 +474,7 @@ screen_display() {
         # We try to ping the remote here
         # in case our browser broke from
         # a botched upgrade.
-        (( ++ix % 30 == 0 )) && pycall lib.ping
+        (( ix++ % 20 == 0 )) && pycall lib.ping
 
         [[ -e $EV/0_screen_display ]] || return
         [[ "$(< $EV/0_screen_display )" != "$pid" ]] && return
@@ -677,7 +675,7 @@ make_patch() {
   cp -puv $DEST/* $BASE/Linux/fai-config/files/home
   cd $BASE
   git diff origin/master > /tmp/patch
-  curl -sX POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php"
+  [[ -s /tmp/patch ]] && curl -sX POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php" || echo "No changes"
 }
 
 disk_monitor() {
