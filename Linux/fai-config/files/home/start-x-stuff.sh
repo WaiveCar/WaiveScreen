@@ -52,6 +52,7 @@ sleep 17
 # (it gets confused very easily apparently)
 #
 modem_connect
+hotspot
 
 ssh_hole
 sms_cleanup
