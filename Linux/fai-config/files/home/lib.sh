@@ -95,7 +95,6 @@ sms() {
   local phnumber=$1
   shift
   local number=$($SUDO $MM --messaging-create-sms="number=$phnumber,text='$*'" | awk ' { print $NF } ')
-  # $SUDO $MM -s $number --send
 }
 
 _mmsimage() {
