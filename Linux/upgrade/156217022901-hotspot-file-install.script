@@ -1,0 +1,8 @@
+#!/bin/bash
+
+upgradepost() {
+  local path=/etc/dhcp/dhcpd.conf
+  cp -puv Linux/fai-config/files/$path $path
+}
+
+eval $1
