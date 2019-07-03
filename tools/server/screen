@@ -53,7 +53,7 @@ for i in $*; do
     force) $DIR/pcycle.js ;;
     restart|reboot|reset|pcycle) restart ;;
     *) 
-      echo -e "Error: $1\nValid: sync|reload list off connect on restart|reboot"
+      echo -e "Error: $1\nValid: patch sync|reload list off connect on restart|reboot"
       if [ $# -gt "1" ]; then
         echo "Exit: Found unknown command. Ending parsing"
       fi
