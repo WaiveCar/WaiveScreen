@@ -585,10 +585,88 @@ upgrade_scripts() {
   done
 }
 
+hotspot() {
+	SSID=WaiveScreen-$( hostname | cut -c 25- )
+
+	# This is where the internet is
+	DEV_INTERNET=wwp0s29u1u1u4i4
+
+	# This is what you are listening on.
+	DEV_AP=wlp1s0
+
+	# We are nat'ing so we need an IP
+	IP_START=172.16.10
+	IP_END=.1
+	IP_AP=$IP_START$IP_END
+
+	MASK_AP=255.255.255.0
+	CLASS_AP=24
+
+	cat > /etc/hostapd/hostapd.conf << endl
+	interface=$DEV_AP
+	driver=nl80211
+	ssid=$SSID
+	channel=11
+	hw_mode=g
+	country_code=US
+	eap_server=0
+	macaddr_acl=0
+	logger_stdout=-1
+	logger_stdout_level=1
+	beacon_int=100
+	dtim_period=2
+	ignore_broadcast_ssid=0
+endl
+
+	sed -i -r 's/(INTERFACESv4=).*/INTERFACESv4="'$DEV_AP'"/' /etc/default/isc-dhcp-server
+
+
+	cat > /etc/dhcp/dhcpd.conf << endl
+	ddns-update-style none;
+	default-lease-time 600;
+	subnet ${IP_START}.0 netmask $MASK_AP {
+		range ${IP_START}.5 ${IP_START}.30;
+		option domain-name-servers 8.8.8.8,74.82.42.42,68.94.156.1;
+		option routers $IP_AP;
+		option broadcast-address ${IP_START}.255;
+		default-lease-time 60000;
+		max-lease-time 720000;
+	}
+endl
+
+	pkill hostapd
+	sleep 1
+	hostapd /etc/hostapd/hostapd.conf&
+	#service hostapd start
+
+	sysctl net.ipv4.conf.all.forwarding=1
+
+	ifconfig $DEV_AP $IP_AP netmask $MASK_AP
+	ip route add ${IP_START}.0/$CLASS_AP dev $DEV_AP
+
+	service isc-dhcp-server stop
+	[ -e /var/run/dhcpd.pid ] && rm /var/run/dhcpd.pid
+	sleep 1
+	service isc-dhcp-server start
+
+	iptables -F
+	iptables --table nat -F
+	iptables --table mangle -F
+	iptables -X
+	iptables -A INPUT -i lo -j ACCEPT
+
+	iptables --table nat --append POSTROUTING --out-interface $DEV_INTERNET -j MASQUERADE
+	iptables --append FORWARD --in-interface $DEV_AP -o $DEV_INTERNET -j ACCEPT 
+	iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+	iptables -A INPUT -m state --state NEW -j ACCEPT
+}
+
 upgrade() {
   _sanityafter
   if local_sync; then
     cd $BASE/ScreenDaemon
+    # delete the old stuff
+    git clean -fdX
     $SUDO pip3 install -r requirements.txt
     perlcall install_list | xargs $SUDO apt -y install
     pycall db.upgrade
