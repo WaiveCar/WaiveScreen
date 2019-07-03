@@ -59,6 +59,7 @@ text_loop &
 modem_connect
 #hotspot
 
+pycall lib.ping
 ssh_hole
 sms_cleanup
 upgrade_scripts
