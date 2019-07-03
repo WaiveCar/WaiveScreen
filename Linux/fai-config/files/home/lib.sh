@@ -597,25 +597,25 @@ hotspot() {
 	MASK_AP=255.255.255.0
 	CLASS_AP=24
 
-	cat > /etc/hostapd/hostapd.conf << endl
-	interface=$DEV_AP
-	driver=nl80211
-	ssid=$SSID
-	channel=11
-	hw_mode=g
-	country_code=US
-	eap_server=0
-	macaddr_acl=0
-	logger_stdout=-1
-	logger_stdout_level=1
-	beacon_int=100
-	dtim_period=2
-	ignore_broadcast_ssid=0
+	cat << endl | $SUDO tee /etc/hostapd/hostapd.conf
+interface=$DEV_AP
+driver=nl80211
+ssid=$SSID
+channel=11
+hw_mode=g
+country_code=US
+eap_server=0
+macaddr_acl=0
+logger_stdout=-1
+logger_stdout_level=1
+beacon_int=100
+dtim_period=2
+ignore_broadcast_ssid=0
 endl
 
-	sed -i -r 's/(INTERFACESv4=).*/INTERFACESv4="'$DEV_AP'"/' /etc/default/isc-dhcp-server
+	$SUDO sed -i -r 's/(INTERFACESv4=).*/INTERFACESv4="'$DEV_AP'"/' /etc/default/isc-dhcp-server
 
-	cat > /etc/dhcp/dhcpd.conf << endl
+	cat << endl | $SUDO tee /etc/dhcp/dhcpd.conf
 	ddns-update-style none;
 	default-lease-time 600;
 	subnet ${IP_START}.0 netmask $MASK_AP {
@@ -628,30 +628,30 @@ endl
 	}
 endl
 
-	pkill hostapd
+	$SUDO pkill hostapd
 	sleep 1
-	hostapd /etc/hostapd/hostapd.conf&
+	$SUDO hostapd /etc/hostapd/hostapd.conf&
 
-	sysctl net.ipv4.conf.all.forwarding=1
+	$SUDO sysctl net.ipv4.conf.all.forwarding=1
 
-	ifconfig $DEV_AP $IP_AP netmask $MASK_AP
-	ip route add ${IP_START}.0/$CLASS_AP dev $DEV_AP
+	$SUDO ifconfig $DEV_AP $IP_AP netmask $MASK_AP
+	$SUDO ip route add ${IP_START}.0/$CLASS_AP dev $DEV_AP
 
-	service isc-dhcp-server stop
-	[ -e /var/run/dhcpd.pid ] && rm /var/run/dhcpd.pid
+	$SUDO service isc-dhcp-server stop
+	[ -e /var/run/dhcpd.pid ] && $SUDO rm /var/run/dhcpd.pid
 	sleep 1
-	service isc-dhcp-server start
+	$SUDO service isc-dhcp-server start
 
-	iptables -F
-	iptables --table nat -F
-	iptables --table mangle -F
-	iptables -X
-	iptables -A INPUT -i lo -j ACCEPT
+	$SUDO iptables -F
+	$SUDO iptables --table nat -F
+	$SUDO iptables --table mangle -F
+	$SUDO iptables -X
+	$SUDO iptables -A INPUT -i lo -j ACCEPT
 
-	iptables --table nat --append POSTROUTING --out-interface $DEV_INTERNET -j MASQUERADE
-	iptables --append FORWARD --in-interface $DEV_AP -o $DEV_INTERNET -j ACCEPT 
-	iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-	iptables -A INPUT -m state --state NEW -j ACCEPT
+	$SUDO iptables --table nat --append POSTROUTING --out-interface $DEV_INTERNET -j MASQUERADE
+	$SUDO iptables --append FORWARD --in-interface $DEV_AP -o $DEV_INTERNET -j ACCEPT 
+	$SUDO iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+	$SUDO iptables -A INPUT -m state --state NEW -j ACCEPT
 }
 
 upgrade() {
