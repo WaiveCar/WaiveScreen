@@ -60,11 +60,13 @@ check_online() {
     fi
   else
     pycall sess_set ping-fail,0
+    return 0
   fi
+  return 1
 }
 
-check_ssh_hole
+set -x
+[[ $(pycall sess_get modem) == 1 ]] && check_online && check_ssh_hole
 check_screen_daemon
 check_sensor_daemon
 check_screen_display
-check_online
