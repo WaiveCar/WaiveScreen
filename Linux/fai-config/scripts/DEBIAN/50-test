@@ -55,4 +55,3 @@ $ROOTCMD $CHDEST/dcall pip_install
 
 fcopy -ivm root,root,0755 /etc/cron.hourly/autobright
 fcopy -ivM /etc/polkit-1/localauthority/50-local.d/modemmanager.pkla
-fcopy -ivM /etc/dhcp/dhcpd.conf
