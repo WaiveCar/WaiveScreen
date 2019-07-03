@@ -63,6 +63,9 @@ def get_arduino(stop_on_failure=True):
     except Exception as ex:
       err = "Can't open arduino: {}".format(ex)
 
+      # Make sure we don't mis-report this as working
+      _arduino = False
+
       _arduino_err += 1
       if _arduino_err < 5:
         _log.warning(err)
