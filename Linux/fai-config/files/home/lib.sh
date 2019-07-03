@@ -8,7 +8,7 @@ FFMPEG="ffmpeg -loglevel panic -nostats -hide_banner -y -an"
 . $DIR/const.sh
 . $DIR/baseline.sh
 
-pkill osd_cat
+$SUDO pkill osd_cat
 
 _mkdir() {
   [[ -d $1 ]] && return
@@ -199,7 +199,7 @@ set_wrap() {
 set_event() {
   pid=${2:-$!}
   [[ -e $EV/$1 ]] || _info Event:$1
-  echo -n $pid > $EV/$1
+  echo -n $pid | $SUDO tee $EV/$1
 }
 
 set_brightness() {
@@ -281,6 +281,7 @@ modem_connect() {
   done
 
   for i in $( seq 1 5 ); do
+    $SUDO $MM --simple-disconnect
     $SUDO $MM --set-allowed-modes='3g|4g' --set-preferred-mode=4g
     $SUDO $MM --simple-connect="apn=internet,ip-type=ipv4v6"
     wwan=`ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } '`
@@ -297,23 +298,28 @@ modem_connect() {
   #$SUDO dhclient $wwan &
 
   # Show the config | find ipv4 | drop the LHS | replace the colons with equals | drop the whitespace | put everything on one line
-  eval `mmcli -b 0 | grep -A 4 IPv4 | awk -F '|' ' { print $2 } ' | sed -E s'/: (.*)/="\1"/' | sed -E "s/[\' +]//g" | tr '\n' ';'`
+  eval `mmcli -b 0 | grep -A 4 IPv4 | awk -F '|' ' { print $2 } ' | sed -E s'/: (.*)/="\1"/' | sed -E "s/^[\' ]+/four_/g" | tr '\n' ';'`
+  eval `mmcli -b 0 | grep -A 4 IPv6 | awk -F '|' ' { print $2 } ' | sed -E s'/: (.*)/="\1"/' | sed -E "s/^[\' ]+/six_/g" | tr '\n' ';'`
 
+  $SUDO ip addr flush dev $wwan
+  $SUDO ip route flush 0/0
   $SUDO ifconfig $wwan up
-  $SUDO ip addr add $address/$prefix dev $wwan
-  $SUDO ip route add default via $gateway dev $wwan
+  $SUDO ip addr add $four_address/$four_prefix dev $wwan
+  $SUDO ip addr add $six_address/$six_prefix dev $wwan
+  $SUDO ip route add default via $four_gateway dev $wwan
+  $SUDO ip route add default via $six_gateway dev $wwan
 
-  cat << ENDL | sed 's/^\s*//' | $SUDO tee /etc/resolv.conf
-$(perl -l << EPERL
-  @lines = split(/,\s*/, '$dns');
-  foreach( @lines ) {
-    print 'nameserver ', \$_;
-  }
+  perl -l << EPERL | $SUDO tee /etc/resolv.conf
+    @lines = split(/,\s*/, '$four_dns');
+    foreach( @lines ) {
+      print 'nameserver ', \$_;
+    }
+    @lines = split(/,\s*/, '$six_dns');
+    foreach( @lines ) {
+      print 'nameserver ', \$_;
+    }
 EPERL
-)
-  nameserver 2001:4860:4860::8888 
-  nameserver 2001:4860:4860::8844
-ENDL
+
   set_event net ''
 
   sleep 4
@@ -333,7 +339,6 @@ ENDL
     hasip=$( ip addr show $wwan | grep inet | wc -l )
 
     (( hasip > 0 )) && _warn "Data plan issues." || "No IP assigned."
-    _error $(get_number)
   fi
   pycall db.sess_set modem,1 
 }
