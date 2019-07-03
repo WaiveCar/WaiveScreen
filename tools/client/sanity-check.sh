@@ -48,7 +48,7 @@ check_screen_display() {
 check_online() {
   if ! ping -c 1 -i 0.3 waivescreen.com; then
     # we try to do a one-shot reconnection thing
-    dcall modem_enable
+    dcall modem_connect
 
     # if things still suck
     if ! ping -c 1 -i 0.3 waivescreen.com; then
