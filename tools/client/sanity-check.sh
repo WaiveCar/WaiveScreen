@@ -65,8 +65,9 @@ check_online() {
   return 1
 }
 
-set -x
-[[ $(pycall sess_get modem) == 1 ]] && check_online && check_ssh_hole
-check_screen_daemon
-check_sensor_daemon
-check_screen_display
+if [[ $(pycall sess_get modem) == 1 ]]; then
+  check_online && check_ssh_hole
+  check_screen_daemon
+  check_sensor_daemon
+  check_screen_display
+fi
