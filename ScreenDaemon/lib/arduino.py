@@ -21,12 +21,9 @@ else:
   USER = os.environ['USER']
 
 # If the voltage drops below this we send it off to sleep
-VOLTAGE_SLEEP = 11.9
-VOLTAGE_WAKE = 13.5
-if 'DISPLAY' in os.environ:
-  DISPLAY = os.environ['DISPLAY']
-else:
-  DISPLAY = ':0'
+VOLTAGE_SLEEP = db.kv_get('voltage_sleep') or 11.5
+VOLTAGE_WAKE = db.kv_get('voltage_wake') or 13.5
+DISPLAY = os.environ.get('DISPLAY') or ':0'
 
 @atexit.register
 def close():
@@ -65,6 +62,9 @@ def get_arduino(stop_on_failure=True):
 
     except Exception as ex:
       err = "Can't open arduino: {}".format(ex)
+
+      # Make sure we don't mis-report this as working
+      _arduino = False
 
       _arduino_err += 1
       if _arduino_err < 5:
