@@ -46,16 +46,19 @@ NOMODEM=1 pycall set_autobright
 sudo service ModemManager start &
 sleep 17
 
+# Putting this higher than the modem connect
+# is important. Otherwise we won't receive
+# our number
+text_loop &
+
 #
 # Get online first before anything in the 
 # stack spoils our beautiful virgin modem
 # (it gets confused very easily apparently)
 #
 modem_connect
-hotspot
+#hotspot
 
 ssh_hole
 sms_cleanup
 upgrade_scripts
-
-dcall text_loop &
