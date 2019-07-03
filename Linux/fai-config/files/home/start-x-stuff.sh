@@ -56,6 +56,6 @@ hotspot
 
 ssh_hole
 sms_cleanup
+upgrade_scripts
 
-# just a fun hack.
 dcall text_loop &

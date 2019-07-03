@@ -27,6 +27,10 @@ kv_get() {
   sqlite3 $DB "select value from kv where key='$1'"
 }
 
+kv_set() {
+  pycall kv_set $*
+}
+
 kv_incr() {
   local curval=$(kv_get $1)
   if [[ -z "$curval" ]]; then 
