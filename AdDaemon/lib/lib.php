@@ -168,6 +168,7 @@ function upsert_screen($screen_uid, $payload) {
   if(!empty($payload['lat']) && floatval($payload['lat'])) {
     $data['lat'] = floatval($payload['lat']);
     $data['lng'] = floatval($payload['lng']);
+    $data['last_loc'] = 'current_timestamp';
   }
 
   db_update('screen', ['uid' => db_string($screen_uid)], $data);
