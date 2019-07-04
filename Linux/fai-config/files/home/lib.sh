@@ -592,7 +592,7 @@ hotspot() {
   eval $(pycall feature_detect)
   [ ! "$wifi" ] && return
 
-	SSID=WaiveScreen-$( hostname | cut -c 25- )
+	SSID=Waive-$( kv_get number | cut -c 6- )
   DEV_INTERNET=$( ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } ' )
 	DEV_AP=wlp1s0
 
