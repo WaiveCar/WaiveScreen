@@ -74,6 +74,7 @@ $SCHEMA = [
     'active'      => 'boolean default true',
     'features'    => 'text',
     'first_seen'  => 'datetime', 
+    'last_loc'    => 'datetime',
     'last_seen'   => 'datetime'
   ],
 
@@ -169,6 +170,12 @@ $SCHEMA = [
     'job_id'    => 'integer',
     'start'     => 'datetime',
     'end'       => 'datetime'
+  ],
+
+  'ping_history' => [
+    'id'        => 'integer primary key autoincrement',
+    'screen_id' => 'integer',
+    'created_at'=> 'datetime default current_timestamp',
   ],
 
   // This is going to be a monstrosity really and will

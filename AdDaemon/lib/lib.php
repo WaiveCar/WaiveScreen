@@ -168,6 +168,7 @@ function upsert_screen($screen_uid, $payload) {
   if(!empty($payload['lat']) && floatval($payload['lat'])) {
     $data['lat'] = floatval($payload['lat']);
     $data['lng'] = floatval($payload['lng']);
+    $data['last_loc'] = 'current_timestamp';
   }
 
   db_update('screen', ['uid' => db_string($screen_uid)], $data);
@@ -178,7 +179,7 @@ function upsert_screen($screen_uid, $payload) {
 function command($payload) {
   return db_insert('task', [
     'scope' => "id:{$payload['id']}",
-    'command' => db_string($payload['cmd'])
+    'command' => db_string($payload['cmd']),
     'args' => db_string($payload['args'])
   ]);
 }
@@ -220,6 +221,7 @@ function ping($payload) {
 
   $obj['pings'] = intval($screen['pings']) + 1;
   db_update('screen', $screen['id'], $obj);
+  db_insert('ping_history', ['screen_id' => $screen['id']]);
 
   // We return the definition for the default campaign
   // The latest version of the software
