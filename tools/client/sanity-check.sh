@@ -66,8 +66,11 @@ check_online() {
 }
 
 if [[ $(pycall sess_get modem) == 1 ]]; then
+  date >> /tmp/sanity-check
   check_online && check_ssh_hole
   check_screen_daemon
   check_sensor_daemon
   check_screen_display
+else
+  echo $(date) nomodem >> /tmp/sanity-check
 fi
