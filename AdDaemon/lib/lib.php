@@ -179,7 +179,7 @@ function upsert_screen($screen_uid, $payload) {
 function command($payload) {
   return db_insert('task', [
     'scope' => "id:{$payload['id']}",
-    'command' => db_string($payload['cmd'])
+    'command' => db_string($payload['cmd']),
     'args' => db_string($payload['args'])
   ]);
 }
