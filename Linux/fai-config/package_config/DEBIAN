@@ -43,6 +43,10 @@ wpasupplicant
 bluez
 v4l-utils
 
+# hotspot
+isc-dhcp-server
+hostapd
+
 # power management suite
 acpitool
 ethtool
