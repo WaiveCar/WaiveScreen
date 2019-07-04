@@ -27,7 +27,8 @@ for($ix = 0; $ix < count($screenList); $ix++){
   $screenList[$ix]['first_local'] = date("Y-m-d H:i:s", $screenList[$ix]['first_local']);
 
   if (isset( $screenList[$ix]['last_loc']) ) {
-    $sec =  time() - $screenList[$ix]['last_loc'];
+    $tmp = strtotime(str_replace(' ', 'T', $screenList[$ix]["last_loc"] . 'Z'));
+    $sec =  time() - $tmp;
     $screenList[$ix]['diff_loc'] = sprintf("%dd %d:%02d:%02d", floor($sec / 60 / 60 / 24), floor($sec / 60 / 60) % 24, floor($sec/60) % 60, $sec %60);
   } else {
     $screenList[$ix]['diff_loc'] = '<em>never</em>';
@@ -38,7 +39,7 @@ $fieldList = [
   'id'  => 'uid',
   'car' => 'car',
   'location' => 'addr',
-  'updated' => 'last_loc',
+  'updated' => 'diff_loc',
   'phone' => 'phone',
   'port' => 'port',
   'version' => 'version',
