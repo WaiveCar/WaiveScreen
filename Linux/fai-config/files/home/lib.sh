@@ -631,7 +631,7 @@ endl
 	}
 endl
 
-	$SUDO pkill hostapd
+	$SUDO pkill -f hostapd
 	sleep 1
 	$SUDO hostapd /etc/hostapd/hostapd.conf&
 
