@@ -588,6 +588,10 @@ upgrade_scripts() {
 }
 
 hotspot() {
+  # Only run if we have wifi
+  eval $(pycall feature_detect)
+  [ ! "$wifi" ] && return
+
 	SSID=WaiveScreen-$( hostname | cut -c 25- )
   DEV_INTERNET=$( ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } ' )
 	DEV_AP=wlp1s0
