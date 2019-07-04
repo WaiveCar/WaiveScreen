@@ -78,7 +78,7 @@ if len(sys.argv) > 1:
       if type(_last) is dict:
         for k,v in _last.items():
           if type(v) is bool:
-            v = int(not v)
+            v = 1 if v else ''
           print("{}='{}';".format(k,v))
 
       else:
