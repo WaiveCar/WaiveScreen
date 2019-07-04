@@ -8,8 +8,6 @@ FFMPEG="ffmpeg -loglevel panic -nostats -hide_banner -y -an"
 . $DIR/const.sh
 . $DIR/baseline.sh
 
-$SUDO pkill osd_cat
-
 _mkdir() {
   [[ -d $1 ]] && return
   $SUDO mkdir -p $1 
@@ -25,6 +23,10 @@ die() {
 
 kv_get() {
   sqlite3 $DB "select value from kv where key='$1'"
+}
+
+kv_set() {
+  pycall kv_set $*
 }
 
 kv_incr() {
@@ -91,7 +93,6 @@ sms() {
   local phnumber=$1
   shift
   local number=$($SUDO $MM --messaging-create-sms="number=$phnumber,text='$*'" | awk ' { print $NF } ')
-  # $SUDO $MM -s $number --send
 }
 
 _mmsimage() {
@@ -308,6 +309,7 @@ modem_connect() {
   $SUDO ip addr add $six_address/$six_prefix dev $wwan
   $SUDO ip route add default via $four_gateway dev $wwan
   $SUDO ip route add default via $six_gateway dev $wwan
+  pycall kv_set dns,$four_dns
 
   perl -l << EPERL | $SUDO tee /etc/resolv.conf
     @lines = split(/,\s*/, '$four_dns');
@@ -473,7 +475,7 @@ screen_display() {
         # We try to ping the remote here
         # in case our browser broke from
         # a botched upgrade.
-        (( ++ix % 30 == 0 )) && pycall lib.ping
+        (( ix++ % 20 == 0 )) && pycall lib.ping
 
         [[ -e $EV/0_screen_display ]] || return
         [[ "$(< $EV/0_screen_display )" != "$pid" ]] && return
@@ -585,10 +587,82 @@ upgrade_scripts() {
   done
 }
 
+hotspot() {
+  # Only run if we have wifi
+  eval $(pycall feature_detect)
+  [ ! "$wifi" ] && return
+
+	SSID=WaiveScreen-$( hostname | cut -c 25- )
+  DEV_INTERNET=$( ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } ' )
+	DEV_AP=wlp1s0
+
+	IP_START=172.16.10
+	IP_END=.1
+	IP_AP=$IP_START$IP_END
+
+	MASK_AP=255.255.255.0
+	CLASS_AP=24
+
+	cat << endl | $SUDO tee /etc/hostapd/hostapd.conf
+interface=$DEV_AP
+driver=nl80211
+ssid=$SSID
+channel=11
+hw_mode=g
+country_code=US
+eap_server=0
+macaddr_acl=0
+logger_stdout=-1
+ignore_broadcast_ssid=0
+endl
+
+	$SUDO sed -i -r 's/(INTERFACESv4=).*/INTERFACESv4="'$DEV_AP'"/' /etc/default/isc-dhcp-server
+
+	cat << endl | $SUDO tee /etc/dhcp/dhcpd.conf
+	ddns-update-style none;
+	default-lease-time 600;
+	subnet ${IP_START}.0 netmask $MASK_AP {
+		range ${IP_START}.5 ${IP_START}.30;
+    option domain-name-servers $(kv_get dns);
+		option routers $IP_AP;
+		option broadcast-address ${IP_START}.255;
+		default-lease-time 60000;
+		max-lease-time 720000;
+	}
+endl
+
+	$SUDO pkill hostapd
+	sleep 1
+	$SUDO hostapd /etc/hostapd/hostapd.conf&
+
+	$SUDO sysctl net.ipv4.conf.all.forwarding=1
+
+	$SUDO ifconfig $DEV_AP $IP_AP netmask $MASK_AP
+	$SUDO ip route add ${IP_START}.0/$CLASS_AP dev $DEV_AP
+
+	$SUDO service isc-dhcp-server stop
+	[[ -e /var/run/dhcpd.pid ]] && $SUDO rm /var/run/dhcpd.pid
+	sleep 1
+	$SUDO service isc-dhcp-server start
+
+	$SUDO iptables -F
+	$SUDO iptables --table nat -F
+	$SUDO iptables --table mangle -F
+	$SUDO iptables -X
+	$SUDO iptables -A INPUT -i lo -j ACCEPT
+
+	$SUDO iptables --table nat --append POSTROUTING --out-interface $DEV_INTERNET -j MASQUERADE
+	$SUDO iptables --append FORWARD --in-interface $DEV_AP -o $DEV_INTERNET -j ACCEPT 
+	$SUDO iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+	$SUDO iptables -A INPUT -m state --state NEW -j ACCEPT
+}
+
 upgrade() {
   _sanityafter
   if local_sync; then
     cd $BASE/ScreenDaemon
+    # delete the old stuff
+    git clean -fdX
     $SUDO pip3 install -r requirements.txt
     perlcall install_list | xargs $SUDO apt -y install
     pycall db.upgrade
@@ -603,7 +677,7 @@ make_patch() {
   cp -puv $DEST/* $BASE/Linux/fai-config/files/home
   cd $BASE
   git diff origin/master > /tmp/patch
-  curl -sX POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php"
+  [[ -s /tmp/patch ]] && curl -sX POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php" || echo "No changes"
 }
 
 disk_monitor() {

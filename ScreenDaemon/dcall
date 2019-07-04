@@ -75,7 +75,14 @@ if len(sys.argv) > 1:
     if type(_last) is str:
       print(_last)
     elif _last:
-      print(json.dumps(_last))
+      if type(_last) is dict:
+        for k,v in _last.items():
+          if type(v) is bool:
+            v = 1 if v else ''
+          print("{}='{}';".format(k,v))
+
+      else:
+        print(json.dumps(_last))
   else:
     # If we get failure then we should bail.
     dumpfailure()
