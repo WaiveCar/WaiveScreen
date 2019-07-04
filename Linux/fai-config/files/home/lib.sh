@@ -309,6 +309,7 @@ modem_connect() {
   $SUDO ip addr add $six_address/$six_prefix dev $wwan
   $SUDO ip route add default via $four_gateway dev $wwan
   $SUDO ip route add default via $six_gateway dev $wwan
+  pycall kv_set dns,$four_dns
 
   perl -l << EPERL | $SUDO tee /etc/resolv.conf
     @lines = split(/,\s*/, '$four_dns');
@@ -608,9 +609,6 @@ country_code=US
 eap_server=0
 macaddr_acl=0
 logger_stdout=-1
-logger_stdout_level=1
-beacon_int=100
-dtim_period=2
 ignore_broadcast_ssid=0
 endl
 
@@ -621,7 +619,7 @@ endl
 	default-lease-time 600;
 	subnet ${IP_START}.0 netmask $MASK_AP {
 		range ${IP_START}.5 ${IP_START}.30;
-		option domain-name-servers 8.8.8.8,74.82.42.42,68.94.156.1;
+    option domain-name-servers $(kv_get dns);
 		option routers $IP_AP;
 		option broadcast-address ${IP_START}.255;
 		default-lease-time 60000;
@@ -639,7 +637,7 @@ endl
 	$SUDO ip route add ${IP_START}.0/$CLASS_AP dev $DEV_AP
 
 	$SUDO service isc-dhcp-server stop
-	[ -e /var/run/dhcpd.pid ] && $SUDO rm /var/run/dhcpd.pid
+	[[ -e /var/run/dhcpd.pid ]] && $SUDO rm /var/run/dhcpd.pid
 	sleep 1
 	$SUDO service isc-dhcp-server start
 
