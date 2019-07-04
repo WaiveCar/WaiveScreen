@@ -662,7 +662,7 @@ upgrade() {
   if local_sync; then
     cd $BASE/ScreenDaemon
     # delete the old stuff
-    git clean -fdX
+    git clean -fxd
     $SUDO pip3 install -r requirements.txt
     perlcall install_list | xargs $SUDO apt -y install
     pycall db.upgrade
