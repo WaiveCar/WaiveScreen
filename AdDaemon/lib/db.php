@@ -172,6 +172,12 @@ $SCHEMA = [
     'end'       => 'datetime'
   ],
 
+  'ping_history' => [
+    'id'        => 'integer primary key autoincrement',
+    'screen_id' => 'integer',
+    'created_at'=> 'datetime default current_timestamp',
+  ]
+
   // This is going to be a monstrosity really and will
   // be the majority of the storage.
   'history' => [

@@ -221,6 +221,7 @@ function ping($payload) {
 
   $obj['pings'] = intval($screen['pings']) + 1;
   db_update('screen', $screen['id'], $obj);
+  db_insert('ping_history', ['screen_id' => $screen['id']]);
 
   // We return the definition for the default campaign
   // The latest version of the software
