@@ -12,3 +12,4 @@ power-history
 Linux/fai-config/files/home/pip/*.whl
 Linux/fai-config/files/home/pip/*.gz
 patch
+__pycache__
