@@ -61,7 +61,10 @@ def default():
     # Things aren't working out for us
     return failure("Cannot contact server")
 
-  return success(campaign)
+  return success({
+    'campaign': campaign,
+    'system': db.kv_get
+  })
 
 @app.route('/sow', methods=['GET', 'POST'])
 def next_ad(work = False):
