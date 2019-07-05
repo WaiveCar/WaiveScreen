@@ -40,8 +40,8 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  font-size: 8px;
-  color: rgba(100,240,100,0.1);
+  font-size: 9px;
+  color: rgba(100,240,100,0.3);
   font-family: "Bitstream Charter";
   z-index: 1000;
 }
