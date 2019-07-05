@@ -2,7 +2,7 @@
 
 upgradepost() {
   sqlite3 /var/db/config.db "delete from kv where key like '%ping-fail%'"
-  pycall db.kv_set uuid,$(< /etc/UUID )
+  /home/adorno/WaiveScreen/ScreenDaemon/dcall db.kv_set uuid,$(< /etc/UUID )
 }
 
 eval $1
