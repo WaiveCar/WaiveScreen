@@ -5,7 +5,7 @@ upgradepost() {
   local file=modemmanager.pkla
   set -x
   mkdir -p $dir
-  cp -puv Linux/fai-config/files/$dir/$file/DEBIAN $dir/$file
+  cp -puv /home/adorno/WaiveScreen/Linux/fai-config/files/$dir/$file/DEBIAN $dir/$file
   reboot
 }
 
