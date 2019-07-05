@@ -428,6 +428,7 @@ get_uuid() {
       uuid=$(cat /sys/class/net/enp3s0/address | md5sum | awk ' { print $1 } ' | xxd -r -p | base64 | sed -E 's/[=\/\+]//g')
 
       if [[ "$uuid" != "$uuid_old" ]]; then
+        kv_set uuid,$uuid
         _info "New UUID $uuid_old -> $uuid"
         echo $uuid_old | $SUDO tee -a $UUIDfile.bak
         echo $uuid | $SUDO tee $UUIDfile
