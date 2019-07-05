@@ -324,6 +324,8 @@ var Engine = function(opts){
           } else {
             onsuccess(res);
           }
+        } else if(http.status == 500 && onfail) {
+          onfail();
         }
       }
     }
