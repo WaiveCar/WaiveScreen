@@ -10,7 +10,7 @@ import os
 import logging
 import sys
 
-DEBUG = 'DEBUG' in os.environ
+DEBUG = os.environ.get('DEBUG')
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.DEBUG if DEBUG else logging.INFO, stream=sys.stderr)
