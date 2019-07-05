@@ -31,13 +31,11 @@ UUID = False
 
 _pinglock = Lock()
 
-ME = os.environ['USER']
-if os.environ['USER'] == 'root':
+USER = os.environ.get('USER')
+if not USER or USER == 'root':
   # This tool probably shouldn't be run as root but we should
   # know who we are talking about if it is
   USER = 'adorno'
-else:
-  USER = os.environ['USER']
 
 NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')

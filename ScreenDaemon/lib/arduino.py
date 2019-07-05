@@ -13,12 +13,11 @@ _first = False
 _sleeping = None
 _log = False
 
-if os.environ['USER'] == 'root':
+USER = os.environ.get('USER')
+if not USER or USER == 'root':
   # This tool probably shouldn't be run as root but we should
   # know who we are talking about if it is
   USER = 'adorno'
-else:
-  USER = os.environ['USER']
 
 # If the voltage drops below this we send it off to sleep
 VOLTAGE_SLEEP = db.kv_get('voltage_sleep') or 11.5
