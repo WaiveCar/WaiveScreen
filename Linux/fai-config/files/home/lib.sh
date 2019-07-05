@@ -309,9 +309,6 @@ modem_connect() {
   $SUDO ip addr add $six_address/$six_prefix dev $wwan
   $SUDO ip route add default via $four_gateway dev $wwan
   $SUDO ip route add default via $six_gateway dev $wwan
-  pycall kv_set dns,1
-  sqlite3 $DB "update kv set value='$four_dns' where key='dns'";
-
 
   perl -l << EPERL | $SUDO tee /etc/resolv.conf
     @lines = split(/,\s*/, '$four_dns');
@@ -629,7 +626,7 @@ endl
 	default-lease-time 600;
 	subnet ${IP_START}.0 netmask $MASK_AP {
 		range ${IP_START}.5 ${IP_START}.30;
-    option domain-name-servers $(kv_get dns);
+    option domain-name-servers 8.8.4.4,1.1.1.1,8.8.8.8,1.0.0.1;
 		option routers $IP_AP;
 		option broadcast-address ${IP_START}.255;
 		default-lease-time 60000;
@@ -660,6 +657,7 @@ endl
 	$SUDO iptables --table nat --append POSTROUTING --out-interface $DEV_INTERNET -j MASQUERADE
 	$SUDO iptables --append FORWARD --in-interface $DEV_AP -o $DEV_INTERNET -j ACCEPT 
 	$SUDO iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+  $SUDO iptables -A FORWARD -p tcp -m multiport --dports 80,443,110,53 -j ACCEPT 
 	$SUDO iptables -A INPUT -m state --state NEW -j ACCEPT
 }
 
