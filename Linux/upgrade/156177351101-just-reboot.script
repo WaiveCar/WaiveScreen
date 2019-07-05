@@ -1,7 +1,0 @@
-#!/bin/bash
-upgradepost() {
-  reboot
-}
-
-eval $1
-
