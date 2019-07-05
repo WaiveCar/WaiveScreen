@@ -309,7 +309,9 @@ modem_connect() {
   $SUDO ip addr add $six_address/$six_prefix dev $wwan
   $SUDO ip route add default via $four_gateway dev $wwan
   $SUDO ip route add default via $six_gateway dev $wwan
-  pycall kv_set dns,"${four_dns//,/}"
+  pycall kv_set dns,1
+  sqlite3 $DB "update kv set value='$four_dns' where key='dns'";
+
 
   perl -l << EPERL | $SUDO tee /etc/resolv.conf
     @lines = split(/,\s*/, '$four_dns');
