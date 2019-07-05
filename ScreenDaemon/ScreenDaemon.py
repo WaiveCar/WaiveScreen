@@ -63,7 +63,7 @@ def default():
 
   return success({
     'campaign': campaign,
-    'system': db.kv_get
+    'system': db.kv_get()
   })
 
 @app.route('/sow', methods=['GET', 'POST'])
