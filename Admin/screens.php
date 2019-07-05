@@ -72,7 +72,6 @@ $editable = ['car', 'phone'];
   <div id="wrapper">
   <div id="content-wrapper" class="d-flex flex-column">
 
-  <h2>screens <span class='id'><?= $VERSION?></span></h2>
   <div class="card-body">
     <div class="table-responsive">
       <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
