@@ -592,7 +592,7 @@ hotspot() {
   eval $(pycall feature_detect)
   [ ! "$wifi" ] && return
 
-	SSID=WaiveScreen-$( hostname | cut -c 25- )
+	SSID=Waive-$( kv_get number | cut -c 6- )
   DEV_INTERNET=$( ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } ' )
 	DEV_AP=wlp1s0
 
@@ -662,7 +662,7 @@ upgrade() {
   if local_sync; then
     cd $BASE/ScreenDaemon
     # delete the old stuff
-    git clean -fdX
+    git clean -fxd
     $SUDO pip3 install -r requirements.txt
     perlcall install_list | xargs $SUDO apt -y install
     pycall db.upgrade

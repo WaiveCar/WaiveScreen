@@ -57,7 +57,7 @@ text_loop &
 # (it gets confused very easily apparently)
 #
 modem_connect
-#hotspot
+hotspot
 
 pycall lib.ping
 ssh_hole
