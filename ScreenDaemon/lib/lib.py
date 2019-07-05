@@ -487,8 +487,7 @@ def ping():
 
   except Exception as ex:
     _pinglock.release()
-    if DEBUG:
-      raise ex
+    logging.warning("ping issue {}".format(ex)) 
 
     return False
 
