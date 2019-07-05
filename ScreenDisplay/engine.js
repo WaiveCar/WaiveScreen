@@ -58,7 +58,10 @@ var Engine = function(opts){
       // but no thanks.
       fadeMs: 500,
 
-      pause: false
+      pause: false,
+
+      listeners: {},
+      data: {}
 
     }, opts || {}),
     _current = false,
@@ -79,6 +82,16 @@ var Engine = function(opts){
 
   function isString(obj) { 
     return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
+  }
+
+  function trigger(wnat, data) {
+    console.log('>> trigger ' + what);
+    _res.data[what] = data;
+    if(_res.listeners[what]) {
+      _res.listeners[what].forEach(function(cb) {
+        cb(data);
+      });
+    }
   }
 
   function assetError(obj, e) {
@@ -504,7 +517,6 @@ var Engine = function(opts){
       // We do this "dice roll" to see 
       breakpoint = Math.random() * range;
 
-      console.log(maxPriority);
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
       console.log("Range < 0, using fallback");
@@ -568,7 +580,9 @@ var Engine = function(opts){
     if(!_res.fallback && !url) {
       // If we have a server we can get it from there
       get('/default', function(res) {
-        _fallback = makeJob(res.data);
+        _fallback = makeJob(res.data.campaign);
+        _res.system = _res.data.system;
+        trigger('system', _res.system);
       }, function() { 
         setTimeout(function() {
           setFallback();
@@ -608,6 +622,17 @@ var Engine = function(opts){
       sow();
       _res.SetFallback();
       nextJob();
+    },
+    on: function(what, cb) {
+      console.log('>> on ' + what);
+      if(_res.data[what]) {
+        cb(_res.data[what]);
+      } else { 
+        if(!(what in _res.listeners)) {
+          _res.listeners[what] = [];
+        }
+        _res.listeners[what].push(cb);
+      }
     },
     SetFallback: setFallback,
     AddJob: function(obj) {
