@@ -583,7 +583,7 @@ var Engine = function(opts){
       // If we have a server we can get it from there
       get('/default', function(res) {
         _fallback = makeJob(res.data.campaign);
-        _res.system = _res.data.system;
+        _res.system = res.data.system;
         trigger('system', _res.system);
       }, function() { 
         setTimeout(function() {
