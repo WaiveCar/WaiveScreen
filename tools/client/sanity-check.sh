@@ -59,7 +59,7 @@ check_online() {
       fi
     fi
   else
-    pycall sess_set ping-fail,0
+    pycall sess_set ping_fail,0
     return 0
   fi
   return 1
