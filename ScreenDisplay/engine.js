@@ -84,7 +84,7 @@ var Engine = function(opts){
     return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
   }
 
-  function trigger(wnat, data) {
+  function trigger(what, data) {
     console.log('>> trigger ' + what);
     _res.data[what] = data;
     if(_res.listeners[what]) {
