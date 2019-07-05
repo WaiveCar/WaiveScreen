@@ -131,8 +131,8 @@ def get_message(dbus_path):
     try:
       iface.Send()
 
-    except:
-      pass
+    except Exception as ex:
+      logging.warning("Sending issue {}".format(ex)) 
 
     print("type=sent;dbuspath={}".format(proxy))
 
@@ -503,7 +503,7 @@ def feature_detect():
 
   # * btle - todo
   return {
-    'modem'   : os.path.exists("/dev/cdc-wdm0"),
+    'modem'   : os.path.exists("/dev/cdc-wdm0") or os.path.exists('/dev/cdc-wdm1'),
     'arduino' : os.path.exists("/dev/ttyACM0"),
     'cameras' : int(len(videoList) / 2),
     'wifi'    : os.path.exists("/proc/sys/net/ipv4/conf/wlp1s0"),
