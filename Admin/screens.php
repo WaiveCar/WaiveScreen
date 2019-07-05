@@ -70,8 +70,6 @@ $editable = ['car', 'phone'];
   </style>
   <body id="page-top">
   <div id="wrapper">
-    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-    </ul>
   <div id="content-wrapper" class="d-flex flex-column">
 
   <h2>screens <span class='id'><?= $VERSION?></span></h2>
