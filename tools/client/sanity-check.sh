@@ -53,7 +53,7 @@ check_online() {
     # if things still suck
     if ! ping -c 1 -i 0.3 waivescreen.com; then
       # if we fail to do multiple times
-      if (( $(pycall sess_incr ping-fail) > 1 )); then
+      if (( $(pycall sess_incr ping_fail) > 1 )); then
         # shrug our shoulders and just try to reboot, I dunno
         sudo reboot
       fi
