@@ -33,7 +33,7 @@ try {
   else if(array_search($func, ['jobs', 'campaigns', 'screens']) !== false) {
     jemit(show(rtrim($func, 's')));
   }
-  else if(array_search($func, ['sow', 'tag', 'ping', 'command']) !== false) { 
+  else if(array_search($func, ['sow', 'tag', 'ping', 'command', 'response']) !== false) { 
     jemit($func($all));
   }
   else if($func == 'setup') {
