@@ -202,6 +202,13 @@ def dcall(*kvarg, method='popen'):
   return res
 
 
+def post(url, payload):
+  headers = {
+   'User-Agent': get_uuid()
+  }
+  logging.info("{} {}".format(url, json.dumps(payload))
+  return requests.post(urlify(url), verify=False, headers=headers, json=payload)
+
 def get_gps():
   modem = get_modem()
 
@@ -223,6 +230,9 @@ def get_gps():
 
   return {}
 
+
+def task_response(which, payload):
+  post('response', json=payload)
 
 def task_ingest(data):
   if 'task' not in data:
@@ -246,24 +256,31 @@ def task_ingest(data):
     args = task['args']
 
     if action == 'upgrade':
-      upgrade()
+      dcall("upgrade &")
 
     elif action == 'screenoff':
       global _reading
       _reading = arduino.do_sleep()
+      task_response(id, True)
 
     elif action == 'screenon':
       arduino.do_awake(_reading)
+      task_response(id, True)
 
     elif action == 'reboot':
+      # we respond before we do it, probably a bad idea
+      task_response(id, True)
       os.system('/usr/bin/sudo /sbin/reboot')
 
     elif action == 'autobright':
       db.sess_del('backlight')
       arduino.set_autobright()
+      task_response(id, True)
 
     elif action == 'raw':
       dcall(val)
+      # todo
+      # task_response(id, True)
 
     elif action == 'brightness':
       val = float(args)
@@ -274,6 +291,7 @@ def task_ingest(data):
       # call this again, call autobright (above)
       # or reboot
       db.sess_set('backlight', val)
+      task_response(id, True)
 
 
 def get_modem_info():
@@ -423,12 +441,8 @@ def ping():
     'gps': get_gps(),
   }
 
-  headers = {
-   'User-Agent': get_uuid()
-  }
-
   try: 
-    with requests.post(urlify('ping'), verify=False, headers=headers, json=payload) as response:
+    with post('ping', payload) as response:
       data_raw = response.text
       try:
         data = json.loads(data_raw)
