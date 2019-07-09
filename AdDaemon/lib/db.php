@@ -227,6 +227,10 @@ function db_connect() {
   return $_db;
 }
 
+function db_int($what) {
+  return intval($what);
+}
+
 function db_string($what) {
   if (strpos($what, "'") === false) {
     return "'$what'";
