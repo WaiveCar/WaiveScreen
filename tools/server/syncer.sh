@@ -6,22 +6,18 @@ GIT=$DIR/../../
 LOCAL_HOME=$CODE/files/home
 SRV_HOME=/srv/fai/config/files/home
 
-if [ $# -gt 0 ]; then
-  case $1 in
-    pip)
-      cd $DIR/../../ScreenDaemon
-      mkdir -p $LOCAL_HOME/pip
-      rm -f $LOCAL_HOME/pip/*
-      pip3 download -d $LOCAL_HOME/pip -r requirements.txt
-      ls $LOCAL_HOME/pip/
-      exit
-      ;;
-    loop)
-      LOOP=0
-  esac
+if [[ $1 = pip ]]; then
+  cd $DIR/../../ScreenDaemon
+  mkdir -p $LOCAL_HOME/pip
+  rm -f $LOCAL_HOME/pip/*
+  pip3 download -d $LOCAL_HOME/pip -r requirements.txt
+  ls $LOCAL_HOME/pip/
+  exit
 fi
 
-while [ 0 ]; do
+[[ $1 = loop ]] && LOOP=0
+
+while true; do
 
   # This is needed to the get the git version
   cd $DIR
