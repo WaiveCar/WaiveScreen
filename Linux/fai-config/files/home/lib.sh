@@ -357,6 +357,13 @@ try_wireless() {
   set_event wireless_dhclient
 }
 
+first_run() {
+  if [[ -z $(kv_get first_run) ]]; then
+    $SUDO apt update || die "Can't find network"
+    kv_set first_run,1
+  fi
+}
+
 pycall() {
   $BASE/ScreenDaemon/dcall $*
 }

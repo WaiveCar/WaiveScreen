@@ -62,4 +62,5 @@ hotspot
 pycall lib.ping
 ssh_hole
 sms_cleanup
+first_run
 upgrade_scripts
