@@ -35,13 +35,9 @@ while [ 0 ]; do
   realname=$SRV_HOME/WaiveScreen
   if [ ! -e $SRV_HOME/WaiveScreen ]; then
     # It may be pointing nowhere
-    [ -h $SRV_HOME/WaiveScreen ] && unlink $SRV_HOME/WaiveScreen
+    [[ -h $SRV_HOME/WaiveScreen ]] && unlink $SRV_HOME/WaiveScreen
     fname=$SRV_HOME/WaiveScreen*
-    if [ -n "$fname" ]; then
-      realname=$fname
-    else
-      realname=$newname
-    fi
+    [[ -n "$fname" ]] && realname=$fname || realname=$newname
   else    
     realname=$(readlink -f $SRV_HOME/WaiveScreen)
   fi
@@ -66,15 +62,13 @@ while [ 0 ]; do
   date +%s | sudo tee /tmp/last-sync
 
   cd $SRV_HOME
-  [ $realname != $newname ] && mv $realname $newname
+  [[ $realname != $newname ]] && mv $realname $newname
 
   # not -e ... we expect this to be a broken linke now.
   [ -h WaiveScreen ] && unlink WaiveScreen
   ln -s $newname WaiveScreen
 
-  if [ ! "$LOOP" ]; then
-    exit
-  fi
+  [[ "$LOOP" ]] || exit
 
   inotifywait -qe close_write,attrib,modify,move,move_self,create,delete,delete_self -r $CODE
 done
