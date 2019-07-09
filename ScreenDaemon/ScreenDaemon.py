@@ -4,7 +4,6 @@ from flask import Flask, request, Response, jsonify
 from flask_cors import CORS
 import json
 import urllib
-import requests
 import lib.lib as lib
 import lib.db as db
 import logging
@@ -127,14 +126,10 @@ def next_ad(work = False):
 
   logging.debug(json.dumps(payload))
 
-  headers = {
-   'User-Agent': lib.get_uuid()
-  }
-
   try:
     for queuejob in db.all('queue'):
       payload = json.loads(queuejob['data'])
-      with requests.post(lib.urlify('sow'), verify=False, headers=headers, json=payload) as response:
+      with lib.post('sow', payload) as response:
         data_raw = response.text
 
         # we really only care about the last job ... 
