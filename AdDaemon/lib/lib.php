@@ -153,6 +153,10 @@ function tag($data) {
 
 }
 
+function find_missing($obj, $fieldList) {
+  return array_diff($fieldList, array_keys($obj));
+}
+
 // Whenever we get some communication we know
 // the screen is on and we may have things like
 // lat/lng if we're lucky so let's try to gleam
@@ -176,6 +180,22 @@ function upsert_screen($screen_uid, $payload) {
   return array_merge($screen, $data);
 }
 
+function response($payload) {
+  $missing = find_missing($payload, ['task_id', 'uid', 'response']);
+  if($missing) {
+    return doError("Missing fields: " . implode(', ', $missing));
+  }
+
+  $screen = Get::screen($payload['uid']);
+
+  return db_insert('task_response', [
+    'task_id' => db_int($payload['task_id']),
+    'screen_id' => "id:{$screen['id']}",
+    'response' => db_string($payload['response'])
+  ]);
+}
+
+// This is called from the admin UX
 function command($payload) {
   return db_insert('task', [
     'scope' => "id:{$payload['id']}",
@@ -248,7 +268,7 @@ function create_job($campaignId, $screenId) {
 
     $job_id = db_insert(
       'job', [
-        'campaign_id' => $campaignId,
+        'campaign_id' => db_int($campaignId),
         'screen_id' => $screenId,
         'job_start' => 'current_timestamp',
         'job_end' => db_string($campaign['end_time']),
