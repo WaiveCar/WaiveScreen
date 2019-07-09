@@ -11,7 +11,6 @@ if [[ $1 = pip ]]; then
   mkdir -p $LOCAL_HOME/pip
   rm -f $LOCAL_HOME/pip/*
   pip3 download -d $LOCAL_HOME/pip -r requirements.txt
-  ls $LOCAL_HOME/pip/
   exit
 fi
 
@@ -23,10 +22,7 @@ while true; do
   cd $DIR
 
   newname=WaiveScreen-$(date +%Y%m%d%H%m%S)-$(git describe)
-
-  #sudo cp -pru $CODE/* /srv/fai/config
   sudo rsync -azvr $CODE/ /srv/fai/config
-  #sudo rsync -azvr $CODE/ --delete /srv/fai/config
 
   realname=$SRV_HOME/WaiveScreen
   if [ ! -e $SRV_HOME/WaiveScreen ]; then
@@ -41,17 +37,12 @@ while true; do
   sudo rsync -azvr $GIT $realname
   sudo chown -R root.root /srv/fai/config/scripts
 
-  if [ ! "$NONET" ]; then
-    if ssh screen "./dcall sync_scripts"; then
-      fn=$(date +%X)
-    else
-      fn="!! Failure !!"
-    fi
+  if [[ ! "$NONET" ]]; then
+    ssh screen "./dcall sync_scripts" && fn=$(date +%X) || fn="!! Failure !!"
   fi
     
   echo $fn | osd_cat \
-    -c white \
-    -p top -A right \
+    -c white -p top -A right \
     -l 1 -o 10 -d 1 \
     -f lucidasanstypewriter-bold-14 &
 
