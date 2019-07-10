@@ -13,7 +13,8 @@ get_uuid 1
 rm -fr $DEST/.notion/default-session--* 
 /usr/bin/notion &
 
-_warn $(get_uuid) $(kv_get number) $ENV
+local version=$(cd $BASE; git describe | awk -F \- ' { print $2"-"$3 } ')
+_warn $(get_uuid) $(version) $ENV
 
 # If the hostname is changed via UUID, then
 # this lock will prevent chromium from starting 
