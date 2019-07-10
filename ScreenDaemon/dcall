@@ -11,7 +11,7 @@ import logging
 import sys
 
 DEBUG = os.environ.get('DEBUG')
-
+CRASH = os.environ.get('CRASH')
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.DEBUG if DEBUG else logging.INFO, stream=sys.stderr)
 logger = logging.getLogger(__name__)
@@ -32,6 +32,8 @@ def tryit(fn):
     _succ = True
 
   except Exception as ex:
+    if CRASH:
+      raise ex
     row.append(ex)
 
   _attemptList.append(row)
