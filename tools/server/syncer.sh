@@ -10,7 +10,6 @@ if [[ $1 = pip ]]; then
   mkdir -p $LOCAL_HOME/pip
   rm -f $LOCAL_HOME/pip/* $SRV_HOME/pip/*
   pip3 download -d $LOCAL_HOME/pip -r $GIT/ScreenDaemon/requirements.txt
-  exit
 fi
 
 [[ $1 = loop ]] && LOOP=0
