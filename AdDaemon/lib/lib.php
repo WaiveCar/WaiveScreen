@@ -294,7 +294,7 @@ function update_job($jobId, $completed_seconds) {
 
 }
 
-function task_master($screen, $last_task = 0) {
+function task_master($screen) {
   $scope = "id:${screen['uid']}";
 
   // The crazy date math there is the simplest way I can get 
@@ -305,7 +305,7 @@ function task_master($screen, $last_task = 0) {
   //
   return db_all("
     select * from task where 
-      id > $last_task and
+      id > {$screen['last_task']} and
       strftime('%s', create_time) + expiry_sec - strftime('%s', current_timestamp) > 0 and
       scope = '$scope'
   ");
@@ -334,7 +334,11 @@ function screen_edit($data) {
 // After a screen runs a task it's able to respond... kind of 
 // have a dialog if you will.
 function task_response($screen, $id, $response) {
-
+  return db_insert('task_response', [
+    'task_id' => db_int($id),
+    'screen_id' => $screen['id'],
+    'response' => db_string($response),
+  ]);
 }
 
 // we need to find out if the screen has tasks we need
@@ -357,6 +361,7 @@ function task_inject($screen, $res) {
   } else if($screen['version'] != $VERSION) {
     $res['task'] = [['upgrade',false]];
   }
+  error_log(json_encode(task_master($screen));
   return $res;
 }
 

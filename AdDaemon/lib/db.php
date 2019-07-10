@@ -74,6 +74,7 @@ $SCHEMA = [
     'active'      => 'boolean default true',
     'features'    => 'text',
     'first_seen'  => 'datetime', 
+    'last_task'   => 'integer default 0',
     'last_loc'    => 'datetime',
     'last_seen'   => 'datetime'
   ],
