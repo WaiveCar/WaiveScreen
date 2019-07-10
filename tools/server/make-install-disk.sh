@@ -5,8 +5,6 @@
 # MIRROR    - Will (re)do the mirroring
 # ONLYDISK  - Only creates a disk
 # NOPIP     - Skip over pip download
-#
-##
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 dir=$HOME/usb
@@ -37,10 +35,7 @@ if [[ -z "$NODISK" ]]; then
   fi
 fi
 
-if [[ -z "$NOPIP" ]]; then
-  NONET=1 $DIR/syncer.sh pip || die "Can't sync"
-  NONET=1 $DIR/syncer.sh force || die "Can't force an update"
-fi
+[[ -z "$NOPIP" ]] && ( NONET=1 $DIR/syncer.sh pip || die "Can't sync" )
 
 if [ "$MIRROR" -o ! -e $dir ]; then
   mkdir -p $dir
