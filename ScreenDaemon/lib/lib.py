@@ -37,6 +37,7 @@ if not USER or USER == 'root':
   # know who we are talking about if it is
   USER = 'adorno'
 
+SANITYCHECK = os.environ.get('SANITYCHECK')
 NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
 SERVER_URL = os.environ.get('SERVER_URL') or 'http://waivescreen.com/api'

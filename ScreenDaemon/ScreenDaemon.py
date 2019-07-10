@@ -190,6 +190,9 @@ if __name__ == '__main__':
     logging.basicConfig(filename=logpath, format=format, level=level)
 
 
+  if lib.SANITYCHECK:
+    sys.exit(0)
+
   # db.upgrade()
   db.incr('runcount')
   app.run(port=4096)
