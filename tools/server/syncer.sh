@@ -7,17 +7,15 @@ LOCAL_HOME=$CODE/files/home
 SRV_HOME=/srv/fai/config/files/home
 
 if [[ $1 = pip ]]; then
-  cd $DIR/../../ScreenDaemon
   mkdir -p $LOCAL_HOME/pip
-  rm -f $LOCAL_HOME/pip/*
-  pip3 download -d $LOCAL_HOME/pip -r requirements.txt
+  rm -f $LOCAL_HOME/pip/* $SRV_HOME/pip/*
+  pip3 download -d $LOCAL_HOME/pip -r $GIT/ScreenDaemon/requirements.txt
   exit
 fi
 
 [[ $1 = loop ]] && LOOP=0
 
 while true; do
-
   # This is needed to the get the git version
   cd $DIR
 
@@ -29,7 +27,7 @@ while true; do
     # It may be pointing nowhere
     [[ -h $SRV_HOME/WaiveScreen ]] && unlink $SRV_HOME/WaiveScreen
     fname=$SRV_HOME/WaiveScreen*
-    [[ -n "$fname" ]] && realname=$fname || realname=$newname
+    [[ -n $fname ]] && realname=$fname || realname=$newname
   else    
     realname=$(readlink -f $SRV_HOME/WaiveScreen)
   fi
@@ -39,14 +37,13 @@ while true; do
 
   if [[ ! "$NONET" ]]; then
     ssh screen "./dcall sync_scripts" && fn=$(date +%X) || fn="!! Failure !!"
-  fi
     
-  echo $fn | osd_cat \
-    -c white -p top -A right \
-    -l 1 -o 10 -d 1 \
-    -f lucidasanstypewriter-bold-14 &
+    echo $fn | osd_cat \
+      -c white -p top -A right \
+      -l 1 -o 10 -d 1 &
 
-  date +%s | sudo tee /tmp/last-sync
+    sudo touch /tmp/last-sync
+  fi
 
   cd $SRV_HOME
   [[ $realname != $newname ]] && mv $realname $newname
