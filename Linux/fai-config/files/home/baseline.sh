@@ -53,3 +53,23 @@ local_sync() {
   fi
   return 1
 }
+
+# The success case here is the empty string. Anything
+# other than that is failure
+code_check() {
+  BASEDIR=$1
+  LINDIR=$BASEDIR/Linux/fai-config/files/home/
+
+  for i in const.sh baseline.sh lib.sh; do
+    . $LINDIR/$i
+  done
+
+  for i in start-x-stuff.sh .xinitrc; do
+    bash -n $LINDIR/$i
+  done
+
+  SANITYCHECK=1 $BASEDIR/ScreenDaemon/SensorDaemon.py
+  SANITYCHECK=1 $BASEDIR/ScreenDaemon/ScreenDaemon.py
+
+  [[ $($LINDIR/dcall kv_get sms) = $($BASEDIR/ScreenDaemon/dcall kv_get sms) ]] || echo "The python and bash kv_get don't match"
+}
