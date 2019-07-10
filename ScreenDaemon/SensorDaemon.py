@@ -108,6 +108,9 @@ window = []
 
 # f = open ("/home/adorno/charge-record.txt", "a+")
 
+if lib.SANITYCHECK:
+  sys.exit(0)
+
 while True:
   sensor = arduino.arduino_read()
   if first:
