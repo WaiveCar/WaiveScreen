@@ -599,18 +599,18 @@ hotspot() {
   eval $(pycall feature_detect)
   [ ! "$wifi" ] && return
 
-	SSID=Waive-$( kv_get number | cut -c 6- )
+  SSID=Waive-$( kv_get number | cut -c 6- )
   DEV_INTERNET=$( ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } ' )
-	DEV_AP=wlp1s0
+  DEV_AP=wlp1s0
 
-	IP_START=172.16.10
-	IP_END=.1
-	IP_AP=$IP_START$IP_END
+  IP_START=172.16.10
+  IP_END=.1
+  IP_AP=$IP_START$IP_END
 
-	MASK_AP=255.255.255.0
-	CLASS_AP=24
+  MASK_AP=255.255.255.0
+  CLASS_AP=24
 
-	cat << endl | $SUDO tee /etc/hostapd/hostapd.conf
+  cat << endl | $SUDO tee /etc/hostapd/hostapd.conf
 interface=$DEV_AP
 driver=nl80211
 ssid=$SSID
@@ -626,46 +626,46 @@ logger_stdout=-1
 ignore_broadcast_ssid=0
 endl
 
-	$SUDO sed -i -r 's/(INTERFACESv4=).*/INTERFACESv4="'$DEV_AP'"/' /etc/default/isc-dhcp-server
+  $SUDO sed -i -r 's/(INTERFACESv4=).*/INTERFACESv4="'$DEV_AP'"/' /etc/default/isc-dhcp-server
 
-	cat << endl | $SUDO tee /etc/dhcp/dhcpd.conf
-	ddns-update-style none;
-	default-lease-time 600;
-	subnet ${IP_START}.0 netmask $MASK_AP {
-		range ${IP_START}.5 ${IP_START}.30;
+  cat << endl | $SUDO tee /etc/dhcp/dhcpd.conf
+  ddns-update-style none;
+  default-lease-time 600;
+  subnet ${IP_START}.0 netmask $MASK_AP {
+    range ${IP_START}.5 ${IP_START}.30;
     option domain-name-servers 8.8.4.4,1.1.1.1,8.8.8.8,1.0.0.1;
-		option routers $IP_AP;
-		option broadcast-address ${IP_START}.255;
-		default-lease-time 60000;
-		max-lease-time 720000;
-	}
+    option routers $IP_AP;
+    option broadcast-address ${IP_START}.255;
+    default-lease-time 60000;
+    max-lease-time 720000;
+  }
 endl
 
-	$SUDO pkill -f hostapd
-	sleep 1
-	$SUDO hostapd /etc/hostapd/hostapd.conf&
+  $SUDO pkill -f hostapd
+  sleep 1
+  $SUDO hostapd /etc/hostapd/hostapd.conf&
 
-	$SUDO sysctl net.ipv4.conf.all.forwarding=1
+  $SUDO sysctl net.ipv4.conf.all.forwarding=1
 
-	$SUDO ifconfig $DEV_AP $IP_AP netmask $MASK_AP
-	$SUDO ip route add ${IP_START}.0/$CLASS_AP dev $DEV_AP
+  $SUDO ifconfig $DEV_AP $IP_AP netmask $MASK_AP
+  $SUDO ip route add ${IP_START}.0/$CLASS_AP dev $DEV_AP
 
-	$SUDO service isc-dhcp-server stop
-	[[ -e /var/run/dhcpd.pid ]] && $SUDO rm /var/run/dhcpd.pid
-	sleep 1
-	$SUDO service isc-dhcp-server start
+  $SUDO service isc-dhcp-server stop
+  [[ -e /var/run/dhcpd.pid ]] && $SUDO rm /var/run/dhcpd.pid
+  sleep 1
+  $SUDO service isc-dhcp-server start
 
-	$SUDO iptables -F
-	$SUDO iptables --table nat -F
-	$SUDO iptables --table mangle -F
-	$SUDO iptables -X
-	$SUDO iptables -A INPUT -i lo -j ACCEPT
+  $SUDO iptables -F
+  $SUDO iptables --table nat -F
+  $SUDO iptables --table mangle -F
+  $SUDO iptables -X
+  $SUDO iptables -A INPUT -i lo -j ACCEPT
 
-	$SUDO iptables --table nat --append POSTROUTING --out-interface $DEV_INTERNET -j MASQUERADE
-	$SUDO iptables --append FORWARD --in-interface $DEV_AP -o $DEV_INTERNET -j ACCEPT 
-	$SUDO iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+  $SUDO iptables --table nat --append POSTROUTING --out-interface $DEV_INTERNET -j MASQUERADE
+  $SUDO iptables --append FORWARD --in-interface $DEV_AP -o $DEV_INTERNET -j ACCEPT 
+  $SUDO iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
   $SUDO iptables -A FORWARD -p tcp -m multiport --dports 80,443,110,53 -j ACCEPT 
-	$SUDO iptables -A INPUT -m state --state NEW -j ACCEPT
+  $SUDO iptables -A INPUT -m state --state NEW -j ACCEPT
 }
 
 upgrade() {
