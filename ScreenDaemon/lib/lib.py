@@ -155,7 +155,7 @@ def get_message(dbus_path):
       else:
         message = fn['Text']
 
-    print("type={};sender={};message='{}';dbuspath={}".format(klass, fn['Number'], base64.b64encode(message.encode('ascii')).decode(), proxy))
+    print("type={};sender={};message='{}';dbuspath={}".format(klass, fn['Number'], base64.b64encode(message.encode('utf-8')).decode(), proxy))
 
 
 def catchall_signal_handler(*args, **kwargs):
