@@ -1,19 +1,16 @@
 #!/bin/bash
 #
-# RESET   - Will remove the previous copy of the code and start afresh
 # NODISK  - Won't do disk things 
 # NOCLONE - Will skip over cloning
 # NOPIP   - Skips over pip install
 # LOCAL   - Just use local code
-#
-##
 
-if [[ -z "$NODISK" ]]; then
-  if [[ $# -lt 1 ]]; then
-    echo "You need to pass a dev entry for it such as /dev/sdb1"
-    exit
-  fi
-fi
+die() {
+  exit $1
+  exit
+}
+
+[[ -z "$NODISK" ]] && [[ $# -lt 1 ]] && die "You need to pass a dev entry for it such as /dev/sdb1"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -23,26 +20,15 @@ package=/tmp/upgrade.package
 mount=/tmp/mount
 dest_home=$path/Linux/fai-config/files/home
 
-[ -n "$RESET" -a -e $path ] && rm -fr $path
-[[ -d $path ]] || mkdir $path
+if [[ -z "$NOCLONE" ]]; then
+  [[ -d $path ]] && sudo rm -fr $path
+  mkdir -p $path
 
-if [ -z "$NOCLONE" ]; then
-  if [ -n "$LOCAL" ]; then
+  if [[ -n "$LOCAL" ]]; then
     echo "Using local code"
     cp -puvr $DIR/../../* $path
 
-  elif [ -e $path ]; then
-    cd $path
-    if ! git pull; then
-      cd /tmp
-      rm -fr $path
-      git clone git@github.com:WaiveCar/WaiveScreen.git $path
-      cd $path
-    fi
-    [[ -z "$NOPIP" ]] && pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
-    
   else
-    mkdir $path
     git clone git@github.com:WaiveCar/WaiveScreen.git $path
     mkdir -p $dest_home/pip
     [[ -z "$NOPIP" ]] && pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
@@ -63,19 +49,11 @@ if [ -z "$NOCLONE" ]; then
   echo "Upgrade package at $package"
 fi
 
-if [ -z "$NODISK" ]; then
-  if [ ! -e $disk ]; then
-    echo "Woops, $disk doesn't exist. Check your spelling."
-    exit
-  fi
-
+if [[ -z "$NODISK" ]]; then
+  [[ -e $disk ]] || die "Woops, $disk doesn't exist. Check your spelling."
   [[ -e $mount ]] || mkdir $mount
   sudo umount $mount >& /dev/null 
-
-  if sudo mount $disk $mount; then
-    sudo cp -v $package $mount
-    sudo umount $mount
-    exit
-  fi
-  echo "Can't mount $disk on $mount - fix this and then rerun with the NOCLONE=1 env variable to skip the cloning"
+  sudo mount $disk $mount || die "Can't mount $disk on $mount - fix this and then rerun with the NOCLONE=1 env variable to skip the cloning"
+  sudo cp -v $package $mount
+  sudo umount $mount
 fi
