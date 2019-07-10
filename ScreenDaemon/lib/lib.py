@@ -206,7 +206,7 @@ def post(url, payload):
   headers = {
    'User-Agent': get_uuid()
   }
-  logging.info("{} {}".format(url, json.dumps(payload))
+  logging.info("{} {}".format(url, json.dumps(payload)))
   return requests.post(urlify(url), verify=False, headers=headers, json=payload)
 
 def get_gps():
@@ -232,7 +232,7 @@ def get_gps():
 
 
 def task_response(which, payload):
-  post('response', json=payload)
+  post('response', payload)
 
 def task_ingest(data):
   if 'task' not in data:
