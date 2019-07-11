@@ -38,6 +38,7 @@ fi
 [[ -z "$NOPIP" ]] && ( NONET=1 $DIR/syncer.sh pip || die "Can't sync" )
 
 if [ "$MIRROR" -o ! -e $dir ]; then
+  [ -d $usb ] && rm -fr $usb
   mkdir -p $dir
   fai-mirror -v -cDEBIAN $dir
 fi
