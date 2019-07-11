@@ -51,7 +51,7 @@ while true; do
   [ -h WaiveScreen ] && unlink WaiveScreen
   ln -s $newname WaiveScreen
 
-  [[ "$LOOP" ]] || exit
+  [[ "$LOOP" ]] || exit 0
 
   inotifywait -qe close_write,attrib,modify,move,move_self,create,delete,delete_self -r $CODE
 done
