@@ -72,6 +72,13 @@ function jemit($what) {
   exit;
 }
 
+function doSuccess($what) {
+  return [
+    'res' => true,
+    'data' => $what
+  ];
+}
+
 function doError($what) {
   return [
     'res' => false,
@@ -190,18 +197,20 @@ function response($payload) {
 
   return db_insert('task_response', [
     'task_id' => db_int($payload['task_id']),
-    'screen_id' => "id:{$screen['id']}",
+    'screen_id' => db_string("id:{$screen['id']}"),
     'response' => db_string($payload['response'])
   ]);
 }
 
 // This is called from the admin UX
 function command($payload) {
-  return db_insert('task', [
-    'scope' => "id:{$payload['id']}",
-    'command' => db_string($payload['cmd']),
-    'args' => db_string($payload['args'])
-  ]);
+  return doSuccess(
+    db_insert('task', [
+      'scope' => db_string("id:{$payload['id']}"),
+      'command' => db_string($payload['cmd']),
+      'args' => db_string($payload['args'])
+    ])
+  );
 }
 
 function ping($payload) {
@@ -295,7 +304,7 @@ function update_job($jobId, $completed_seconds) {
 }
 
 function task_master($screen) {
-  $scope = "id:${screen['uid']}";
+  $scope = "id:${screen['id']}";
 
   // The crazy date math there is the simplest way I can get 
   // this thing to work, I know I know, it looks excessive.
@@ -348,20 +357,20 @@ function task_response($screen, $id, $response) {
 // We want the key to be empty if there's nothing
 // that satisfies it.
 function task_inject($screen, $res) {
-  // before we assign new jobs we want to make sure that the server
-  // is up to date. 
-  global 
-    $VERSION, 
-    $LASTCOMMIT;
-
-  if($screen['version_time']) {
-    if($screen['version_time'] < $LASTCOMMIT) {
-      $res['task'] = [['upgrade',false]];
+  $taskList = task_master($screen);
+  if(count($taskList) > 0) {
+    if(empty($res['task'])) {
+      // Vintage task
+      $res['task'] = [];
+      // modern tasklist
+      $res['taskList'] = [];
     }
-  } else if($screen['version'] != $VERSION) {
-    $res['task'] = [['upgrade',false]];
+    foreach($taskList as $task) {
+      $res['task'][] = [$task['command'],$task['args']];
+      $res['taskList'][] = $task;
+    }
   }
-  error_log('tasks: ' . json_encode(task_master($screen)));
+  error_log('tasks: ' . json_encode(aget($res,'task')));
   return $res;
 }
 

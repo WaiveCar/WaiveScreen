@@ -22,7 +22,7 @@ while true; do
   sudo rsync -azvr $CODE/ /srv/fai/config
 
   realname=$SRV_HOME/WaiveScreen
-  if [ ! -e $SRV_HOME/WaiveScreen ]; then
+  if [[ ! -e $SRV_HOME/WaiveScreen ]]; then
     # It may be pointing nowhere
     [[ -h $SRV_HOME/WaiveScreen ]] && unlink $SRV_HOME/WaiveScreen
     fname=$SRV_HOME/WaiveScreen*
@@ -48,7 +48,7 @@ while true; do
   [[ $realname != $newname ]] && mv $realname $newname
 
   # not -e ... we expect this to be a broken linke now.
-  [ -h WaiveScreen ] && unlink WaiveScreen
+  [[ -h WaiveScreen ]] && unlink WaiveScreen
   ln -s $newname WaiveScreen
 
   [[ "$LOOP" ]] || exit 0

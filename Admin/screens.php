@@ -67,23 +67,26 @@ $editable = ['car', 'phone'];
     .last { text-align: right }
     em { color: #555 }
     .edit:hover { color: #000 }
+    #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
   </style>
   <body id="page-top">
   <div id="wrapper">
   <div id="content-wrapper" class="d-flex flex-column">
 
+    <div class="alert alert-primary" id="notice" role="alert"></div>
+
     <div class="table-responsive">
       <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
 
-    <thead>
-      <tr>
-      <? foreach($fieldList as $key => $value) { ?>
-        <th scope="col" class="<?= $key ?>"><?= $key ?></th>
-      <? } ?>
-      <th scope="col">command</th>
-      </tr>
-    </thead>
-  <tbody>
+      <thead>
+        <tr>
+        <? foreach($fieldList as $key => $value) { ?>
+          <th scope="col" class="<?= $key ?>"><?= $key ?></th>
+        <? } ?>
+        <th scope="col">command</th>
+        </tr>
+      </thead>
+    <tbody>
     <? foreach($screenList as $screen) { ?>
       <tr>
         <? foreach($fieldList as $name => $key) { ?>
