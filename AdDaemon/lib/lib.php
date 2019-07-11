@@ -370,7 +370,16 @@ function task_inject($screen, $res) {
   } else if($screen['version'] != $VERSION) {
     $res['task'] = [['upgrade',false]];
   }
-  error_log('tasks: ' . json_encode(task_master($screen)));
+  $taskList = task_master($screen);
+  if(count($taskList) > 0) {
+    if(empty($res['task'])) {
+      $res['task'] = [];
+    }
+    foreach($taskList as $task) {
+      $res['task'][] = [$task['upgrade'],$task['args'],$task['id']];
+    }
+  }
+  error_log('tasks: ' . json_encode($res['task']));
   return $res;
 }
 
