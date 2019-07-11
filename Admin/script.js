@@ -1,3 +1,12 @@
+function show(res) {
+  let notice = document.getElementById('notice');
+  notice.innerHTML = res.data || "OK";
+  notice.style.display = 'block';
+  setTimeout(function() {
+    notice.style.display = 'none';
+  }, 4000);
+}
+
 function change(id, what, el) {
   let dom = el.parentNode.firstElementChild;
   var newval = prompt(`Change the ${what}`, dom.innerHTML)
@@ -20,7 +29,7 @@ function command(id) {
   var cmd = prompt(`Give a command for ${id}`);
   if(cmd) {
     let parts = cmd.split(' ');
-    fetch(new Request('/api/commands', {
+    fetch(new Request('/api/command', {
       method: 'POST', 
       body: JSON.stringify({
         id: id, 
@@ -32,7 +41,7 @@ function command(id) {
         return res.json();
       }
     }).then(res => {
-      dom.innerHTML = res[what];
+      show(res);
     });
   }
 }
