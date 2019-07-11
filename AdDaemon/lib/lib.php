@@ -376,7 +376,7 @@ function task_inject($screen, $res) {
       $res['task'] = [];
     }
     foreach($taskList as $task) {
-      $res['task'][] = [$task['upgrade'],$task['args'],$task['id']];
+      $res['task'][] = [$task['command'],$task['args'],$task['id']];
     }
   }
   error_log('tasks: ' . json_encode(aget($res,'task')));
