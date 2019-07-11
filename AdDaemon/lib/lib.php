@@ -370,7 +370,7 @@ function task_inject($screen, $res) {
       $res['taskList'][] = $task;
     }
   }
-  error_log('tasks: ' . json_encode(aget($res,'task')));
+  error_log('taskList: ' . json_encode(aget($res,'taskList')));
   return $res;
 }
 
