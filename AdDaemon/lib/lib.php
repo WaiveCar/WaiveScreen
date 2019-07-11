@@ -72,6 +72,13 @@ function jemit($what) {
   exit;
 }
 
+function doSuccess($what) {
+  return [
+    'res' => true,
+    'data' => $what
+  ];
+}
+
 function doError($what) {
   return [
     'res' => false,
@@ -190,18 +197,20 @@ function response($payload) {
 
   return db_insert('task_response', [
     'task_id' => db_int($payload['task_id']),
-    'screen_id' => "id:{$screen['id']}",
+    'screen_id' => db_string("id:{$screen['id']}"),
     'response' => db_string($payload['response'])
   ]);
 }
 
 // This is called from the admin UX
 function command($payload) {
-  return db_insert('task', [
-    'scope' => "id:{$payload['id']}",
-    'command' => db_string($payload['cmd']),
-    'args' => db_string($payload['args'])
-  ]);
+  return doSuccess(
+    db_insert('task', [
+      'scope' => db_string("id:{$payload['id']}"),
+      'command' => db_string($payload['cmd']),
+      'args' => db_string($payload['args'])
+    ])
+  );
 }
 
 function ping($payload) {
@@ -295,7 +304,7 @@ function update_job($jobId, $completed_seconds) {
 }
 
 function task_master($screen) {
-  $scope = "id:${screen['uid']}";
+  $scope = "id:${screen['id']}";
 
   // The crazy date math there is the simplest way I can get 
   // this thing to work, I know I know, it looks excessive.
