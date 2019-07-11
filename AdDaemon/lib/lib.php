@@ -379,7 +379,7 @@ function task_inject($screen, $res) {
       $res['task'][] = [$task['upgrade'],$task['args'],$task['id']];
     }
   }
-  error_log('tasks: ' . json_encode($res['task']));
+  error_log('tasks: ' . json_encode(aget($res,'task')));
   return $res;
 }
 
