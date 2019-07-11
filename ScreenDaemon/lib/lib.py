@@ -243,7 +243,7 @@ def task_ingest(data):
   last_task = int(db.kv_get('last_task') or 0)
 
   for task in data.get('taskList'):
-    logging.info("Doing task: {}".format(json.dumps(task))
+    logging.info("Doing task: {}".format(json.dumps(task)))
 
     id = task.get('id')
 
