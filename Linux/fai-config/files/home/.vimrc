@@ -1,3 +1,4 @@
+so /usr/share/vim/vim81/defaults.vim
 set backupdir=/tmp/
 set directory=/tmp/
 filetype plugin on
