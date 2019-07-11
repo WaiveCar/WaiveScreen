@@ -12,7 +12,7 @@ connect() {
 
 reload() {
   LOCK=/tmp/sync-screen
-  if [ -e $LOCK ] ; then
+  if [[ -e $LOCK ]] ; then
     echo "Woops, not running with $LOCK existing ($( stat -c %y $LOCK )). Are you already running this?"
     exit -1
   fi
@@ -23,9 +23,7 @@ reload() {
 
   echo "Sync: "$(( $( date +%s ) - $( cat /tmp/last-sync ) )) \
     | osd_cat \
-      -c white \
-      -S darkgray \
-      -s 2 -o 10 -d 30 \
+      -c white -S darkgray -s 2 -o 10 -d 30 \
       -f lucidasanstypewriter-bold-24 &
 
   ssh screen "./reload"
@@ -55,9 +53,7 @@ for i in $*; do
     restart|reboot|reset|pcycle) restart ;;
     *) 
       echo -e "Error: $1\nValid: patch sync|reload list off connect on restart|reboot"
-      if [ $# -gt "1" ]; then
-        echo "Exit: Found unknown command. Ending parsing"
-      fi
+      [[ $# -gt "1" ]] && echo "Exit: Found unknown command. Ending parsing"
       exit
       ;;
   esac
