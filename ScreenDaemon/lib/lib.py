@@ -236,15 +236,15 @@ def task_response(which, payload):
   post('response', payload)
 
 def task_ingest(data):
-  if 'task' not in data:
+  if 'taskList' not in data:
     return
 
   from . import arduino
-  last_task = db.kv_get('last_task') or 0
+  last_task = int(db.kv_get('last_task') or 0)
 
-  for task in data['task']:
+  for task in data.get('taskList'):
 
-    id = task['id']
+    id = task.get('id')
 
     if id <= last_task:
       continue
@@ -253,8 +253,8 @@ def task_ingest(data):
 
     ## TODO: expiry check
 
-    action = task['action']
-    args = task['args']
+    action = task.get('command')
+    args = task.get('args')
 
     if action == 'upgrade':
       dcall("upgrade &")
@@ -279,9 +279,7 @@ def task_ingest(data):
       task_response(id, True)
 
     elif action == 'raw':
-      dcall(val)
-      # todo
-      # task_response(id, True)
+      task_response(id, os.popen(args).read().strip())
 
     elif action == 'brightness':
       val = float(args)
