@@ -357,19 +357,6 @@ function task_response($screen, $id, $response) {
 // We want the key to be empty if there's nothing
 // that satisfies it.
 function task_inject($screen, $res) {
-  // before we assign new jobs we want to make sure that the server
-  // is up to date. 
-  global 
-    $VERSION, 
-    $LASTCOMMIT;
-
-  if($screen['version_time']) {
-    if($screen['version_time'] < $LASTCOMMIT) {
-      $res['task'] = [['upgrade',false]];
-    }
-  } else if($screen['version'] != $VERSION) {
-    $res['task'] = [['upgrade',false]];
-  }
   $taskList = task_master($screen);
   if(count($taskList) > 0) {
     if(empty($res['task'])) {
