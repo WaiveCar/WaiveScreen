@@ -361,7 +361,7 @@ function task_inject($screen, $res) {
   } else if($screen['version'] != $VERSION) {
     $res['task'] = [['upgrade',false]];
   }
-  error_log(json_encode(task_master($screen));
+  error_log('tasks: ' . json_encode(task_master($screen)));
   return $res;
 }
 
