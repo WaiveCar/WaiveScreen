@@ -373,10 +373,14 @@ function task_inject($screen, $res) {
   $taskList = task_master($screen);
   if(count($taskList) > 0) {
     if(empty($res['task'])) {
+      // Vintage task
       $res['task'] = [];
+      // modern tasklist
+      $res['taskList'] = [];
     }
     foreach($taskList as $task) {
-      $res['task'][] = [$task['command'],$task['args'],$task['id']];
+      $res['task'][] = [$task['command'],$task['args']];
+      $res['taskList'][] = $task;
     }
   }
   error_log('tasks: ' . json_encode(aget($res,'task')));
