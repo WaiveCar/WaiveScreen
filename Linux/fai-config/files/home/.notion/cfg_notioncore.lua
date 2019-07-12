@@ -9,13 +9,10 @@ defbindings("WScreen", {
     kpress(META.."0", "WScreen.switch_nth(_, 9)"),
     
     bdoc("Switch to next/previous object within current screen."),
-    kpress(META.."S", "WScreen.switch_prev(_)"),
     kpress(OTHERMETA.."S", "WScreen.switch_prev(_)"),
     --kpress(META.."D", "WScreen.switch_prev(_)"),
-    kpress(META.."D", "WScreen.switch_next(_)"),
     kpress(OTHERMETA.."D", "WScreen.switch_next(_)"),
 
-    kpress(META.."L", "ioncore.goto_activity() or ioncore.goto_previous()"),
     kpress(OTHERMETA.."J", "ioncore.goto_activity() or ioncore.goto_previous()"),
     kpress(OTHERMETA.."L", "ioncore.goto_activity() or ioncore.goto_previous()"),
     submap(META.."K", {
@@ -45,8 +42,6 @@ defbindings("WScreen", {
     -- the managing group of that window. The right/left directions are
     -- used instead of next/prev, because they work better in conjunction
     -- with tilings.
-    kpress(META.."Tab", "ioncore.goto_next(_chld, 'right')", 
-           "_chld:non-nil"),
     kpress(METASHIFT.."Tab", "ioncore.goto_next(_chld, 'left')", 
            "_chld:non-nil"),
     kpress(OTHERMETA.."Tab", "ioncore.goto_next(_chld, 'right')", 
@@ -103,6 +98,7 @@ defbindings("WMPlex", {
 
 -- Frames for transient windows ignore this bindmap
 defbindings("WMPlex.toplevel", {
+    kpress(OTHERMETA.."space", "notioncore.exec_on(_, 'exec /home/adorno/dcall acceptance_test')"),
     kpress(OTHERMETA.."T", "WRegion.set_tagged(_sub, 'toggle')", "_sub:non-nil"),
     kpress(OTHERMETA.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white -fa \"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*\" -fs 13 ')"),
     kpress(OTHERMETA.."slash", "mod_query.query_gotoclient(_)"),

@@ -730,6 +730,7 @@ _raw() {
 }
 
 acceptance_test() {
+  _bigtext 'Loading...⌛'
   perlcall acceptance_screen
   chromium --app=file:///tmp/acceptance.html
 }
