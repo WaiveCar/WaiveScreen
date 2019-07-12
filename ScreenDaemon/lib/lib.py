@@ -233,7 +233,11 @@ def get_gps():
 
 
 def task_response(which, payload):
-  post('response', payload)
+  post('response', {
+    'uid': get_uuid(),
+    'task_id': which,
+    'response': payload
+  })
 
 def task_ingest(data):
   if 'taskList' not in data:
