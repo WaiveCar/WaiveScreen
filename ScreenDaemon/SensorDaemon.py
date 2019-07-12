@@ -98,7 +98,7 @@ def is_significant(totest):
         buffer.append("{:10} {:3.4f} {:.4f} {:4.4f}->{:4.4f}".format(k, ttl, diff/v, last_reading[k], totest[k]))
 
   if ttl > AGGREGATE_THRESHOLD:
-    logging.info("\n".join(buffer))
+    logging.debug("\n".join(buffer))
     last_reading = totest
     return True
 
