@@ -732,6 +732,7 @@ _raw() {
 acceptance_test() {
   _bigtext 'Loading...⌛'
   perlcall acceptance_screen
+  set_brightness 1
   chromium --app=file:///tmp/acceptance.html
 }
 
