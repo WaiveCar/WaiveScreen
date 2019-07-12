@@ -17,12 +17,16 @@ _mkdir() {
 _mkdir $EV
 
 die() {
-  _error "$*"
+  [[ "$2" == "info" ]] && _info "$1" || _error "$1"
   exit
 }
 
 kv_get() {
   sqlite3 $DB "select value from kv where key='$1'"
+}
+
+kv_unset() {
+  sqlite3 $DB "delete from kv where key='$1'"
 }
 
 kv_set() {
@@ -339,7 +343,7 @@ EPERL
 
     hasip=$( ip addr show $wwan | grep inet | wc -l )
 
-    (( hasip > 0 )) && _warn "Data plan issues." || "No IP assigned."
+    (( hasip > 0 )) && _warn "Data plan/SIM issues." || "No IP assigned."
   fi
   pycall db.sess_set modem,1 
 }
@@ -372,10 +376,7 @@ ssh_hole() {
   local rest=20
   local event=ssh_hole
 
-  if (( $(pgrep -cf dcall\ ssh_hole ) > 1 )); then
-    echo "Nope, kill the others first"
-    exit 0
-  fi
+  (( $(pgrep -cf dcall\ ssh_hole ) > 1 )) && die "ssh_hole already running" info
 
   {
     while true; do
@@ -692,7 +693,7 @@ make_patch() {
 }
 
 disk_monitor() {
-  (( $( pgrep -cf 'dcall disk_monitor' ) < 1 )) || die "kill the others first"
+  (( $( pgrep -cf 'dcall disk_monitor' ) < 1 )) || die "disk_monitor already running" info
   {
     while true; do
       local disk=$(pycall lib.disk_monitor)
@@ -727,6 +728,13 @@ stack_restart() {
 
 _raw() {
   eval "$*"
+}
+
+acceptance_test() {
+  _bigtext 'Loading...⌛'
+  perlcall acceptance_screen
+  set_brightness 1
+  chromium --app=file:///tmp/acceptance.html
 }
 
 get_location() {

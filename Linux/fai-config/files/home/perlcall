@@ -4,9 +4,12 @@ use strict;
 use warnings;
 use Scalar::Util qw/reftype/;
 
+my $home = '/home/adorno/';
+my $modem = 0;
+
 sub install_list {
   my $ix = 0;
-  open(my $fh, '<:encoding(UTF-8)', '/home/adorno/WaiveScreen/Linux/fai-config/package_config/DEBIAN') or die '';
+  open(my $fh, '<:encoding(UTF-8)', "$home/WaiveScreen/Linux/fai-config/package_config/DEBIAN") or die '';
 
   my @all = qw//;
   while (my $row = <$fh>) {
@@ -48,27 +51,119 @@ sub capture_all_cameras {
   return $#outlist;
 }
 
+sub acceptance_screen {
+  my $out= qx($home/WaiveScreen/ScreenDaemon/dcall kv_get | sed -E s"/[\'=;]/ /"g);
+  my %values;
+  my $uptime = qx(awk ' { print \$1 } ' /proc/uptime);
+  my $version = qx(cd $home/WaiveScreen && git describe);
+  my @all = eval "qw($out)";
+  for(my $ix = 0; $ix < $#all; $ix += 2) {
+    $values{$all[$ix]} = $all[$ix + 1];
+  }
+
+  open(my $html, '>', '/tmp/acceptance.html');
+  print $html qq(<style>
+html {
+  font-size:220%;
+}
+.bad,.good,.value {
+  width:45%;
+  font-size:1.1rem;
+  color:rgb(170,64,64);
+  display:inline-block;
+  font-weight: bold;
+}
+.mark {
+  font-size: 1.5rem;
+  vertical-align: sub;
+  width: 1.5rem;
+  text-align: center;
+  display: inline-block;
+}
+.mark.mini {
+  font-size: .9rem;
+  vertical-align: middle;
+}
+#results { 
+  font-size: 0;
+}
+#box {
+ max-width: 48%;
+ box-shadow:0 0 1px 1px black;
+ padding:.75rem;
+ display:inline-block;
+ background:rgb(255,255,255);
+ font-family:sans-serif;
+ font-size:1.5rem;
+ text-align:left;
+}
+.value { color:rgb(64,64,64); }
+.good { color:rgb(64,170,64); }
+#header { 
+  font-weight: bold; 
+  margin-bottom: .5rem;
+}
+</style>
+<body style="text-align:center;padding:.5rem;background:url('file://$home/WaiveScreen/tools/client/test-bg.gif') repeat">
+<span id='box'>
+<div id='header'>
+  <div >$values{'uuid'}</div>
+  <div style=font-weight:normal;font-size:1.25rem>$values{'number'} <span style="margin:.2rem 0;float:right;font-size:0.85rem">$version</span></div>
+</div>
+<div id=results>
+  );
+
+  my @features = detect_features();
+  for (my $ix = 0; $ix < scalar @features; $ix += 2) {
+    my $key = $features[$ix];
+    my $value = $features[$ix + 1];
+    if (!$value || $value <= 1) {
+      my $class = $value ? 'good' : 'bad';
+      my $character = ($class eq 'bad') ? '&#x2717;' : '&#x2714;';
+      print $html "<div class=$class><span class=mark>$character</span> $key</div>";
+    } else {
+      print $html "<div class=value><span class='mark mini'>$value</span> $key</div>";
+    }
+  }
+
+  print $html qq(
+  </div>
+  <div style=padding-top:1rem;font-size:1rem>
+    <div style=font-size:.9rem;font-weight:bold>up: $uptime | boot: $values{'runcount'} <br/><script>
+    document.write(("" + new Date()).split('\(').join('<br>\('));</script></div>
+  </div>
+  <div style=padding-top:.5rem;font-size:1rem;font-style:italic;text-align:center>press ctrl+w to exit</div>
+</body>
+  );
+  close $html;
+}
+
 # see #73
 sub detect_features {
   my @videoList = glob("/dev/video*");
-  my $hasSim = qx(mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l);
+  my $hasSim = qx(mmcli -m $modem --output-keyvalue | grep sim | grep org | wc -l);
+  my $signal = qx(mmcli -m $modem --output-keyvalue | grep signal-quality.value | awk -F : ' { print \$2 } ');
 
   # * btle - todo
-  my %features = (
-    modem => -e "/dev/cdc-wdm0",
-    arduino => -e "/dev/ttyACM0",
-    camera_count => $#videoList / 2,
-    wifi => -e "/proc/sys/net/ipv4/conf/wlp1s0",
-    sim => $hasSim,
-    size => qx(df -m --output=size / | tail -1)
+  my @features = (
+    "arduino", -e "/dev/ttyACM0" ? 1 : 0,
+    "wifi", -e "/proc/sys/net/ipv4/conf/wlp1s0" ? 1 : 0,
+    "modem", -e "/dev/cdc-wdm0" ? 1 : 0,
+    "signal", $signal,
+    "sim", $hasSim,
+    "ip", qx(mmcli -b 0| grep address | wc -l) > 0,
+    "cameras", ($#videoList + 1) / 2,
   );
-  return %features;
+  for (my $ix = 1; $ix < scalar @features; $ix += 2) {
+    $features[$ix] =~ s/\s//g;
+  }
+  return @features;
 }
 
 sub acceptance_test {
   my %results = {
     # Make sure gps has actual lat/lng
-    'gps' => qx(mmcli -m 0 --location-get --output-keyvalue | grep longitude | grep -v -- -- | wc -l),
+    'gps' => qx(mmcli -m $modem --location-get --output-keyvalue | grep longitude | grep -v -- -- | wc -l),
 
     # Check to make sure we have access to sensors
     'sensor' => qx(pycall sensor_last | wc -c) > 200,

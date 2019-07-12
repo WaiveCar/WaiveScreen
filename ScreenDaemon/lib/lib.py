@@ -233,7 +233,11 @@ def get_gps():
 
 
 def task_response(which, payload):
-  post('response', payload)
+  post('response', {
+    'uid': get_uuid(),
+    'task_id': which,
+    'response': payload
+  })
 
 def task_ingest(data):
   if 'taskList' not in data:
@@ -436,6 +440,7 @@ def ping():
     'uptime': get_uptime(),
     'version': VERSION,
     'version_time': VERSIONDATE,
+    'last_task': db.kv_get('last_task') or 0,
     'features': feature_detect(),
     'modem': get_modem_info(),
     'gps': get_gps(),
