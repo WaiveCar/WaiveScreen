@@ -83,15 +83,7 @@ def dcall(*kvarg):
   os.popen('{} {}'.format(dcall,' '.join([str(k) for k in kvarg])))
 
 def set_autobright():
-  brightness_map = [
-    0.20, 0.08, 0.08, 0.08,  # 4am
-    0.10, 0.30, 0.70, 0.90,  # 8am
-    1.00, 1.00, 1.00, 1.00,  # 12pm
-    1.00, 1.00, 1.00, 1.00,  # 4pm
-    1.00, 0.90, 0.80, 0.70,  # 8pm
-    0.50, 0.50, 0.40, 0.30,  # midnight
-  ]
-
+  brightness_map = get_brightness_map()
 
   level = brightness_map[time.localtime().tm_hour]
   
@@ -108,35 +100,6 @@ def set_autobright():
 
   set_backlight(level)
   dcall('set_brightness', level, 'nopy')
-
-def get_brightness_map():
-  default_brightness_map = [
-    0.20, 0.08, 0.08, 0.08,  # 4am
-    0.10, 0.30, 0.70, 0.90,  # 8am
-    1.00, 1.00, 1.00, 1.00,  # 12pm
-    1.00, 1.00, 1.00, 1.00,  # 4pm
-    1.00, 0.90, 0.80, 0.70,  # 8pm
-    0.50, 0.50, 0.40, 0.30,  # midnight
-  ]
-  suntimes = get_suntimes()
-  if suntimes:
-    night_brightness = 0.20
-    dawn_diff = suntimes['sunrise'] - suntimes['dawn']
-    dusk_diff = suntimes['dusk'] - suntimes['sunset']
-    bmap = [night_brightness] * 24
-    bmap[0:dawn_diff] = 0.60
-
-
-def get_suntimes():
-  from . import lib
-  location = lib.get_gps()
-  if location:
-    from astral import Astral
-    a = Astral()
-    suntimes = a.sun_utc(datetime.date.today(), location['Lat'], location['Lng'])
-    return suntimes
-  else:
-    return {}
 
 def do_awake():
   global _sleeping
