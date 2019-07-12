@@ -38,6 +38,7 @@ for($ix = 0; $ix < count($screenList); $ix++){
 $fieldList = [
   'id'  => 'uid',
   'car' => 'car',
+  'serial' => 'name',
   'location' => 'addr',
   'updated' => 'diff_loc',
   'phone' => 'phone',
@@ -46,7 +47,7 @@ $fieldList = [
   'last' => 'last_local',
   'first' => 'first_local'
 ];
-$editable = ['car', 'phone'];
+$editable = ['car', 'serial', 'phone'];
 ?>
 <!doctype html>
 <html lang="en">
