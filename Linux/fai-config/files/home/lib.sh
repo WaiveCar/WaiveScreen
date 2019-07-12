@@ -729,6 +729,11 @@ _raw() {
   eval "$*"
 }
 
+acceptance_test() {
+  perlcall acceptance_screen
+  chromium --app=file:///tmp/acceptance.html
+}
+
 get_location() {
   $SUDO $MM --location-get
   $SUDO $MM --location-status
