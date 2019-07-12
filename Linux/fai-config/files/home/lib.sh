@@ -598,7 +598,10 @@ upgrade_scripts() {
 hotspot() {
   # Only run if we have wifi
   eval $(pycall feature_detect)
-  [[ -z "$wifi" ]] && return
+  if [[ -z "$wifi" ]]; then
+    $SUDO service hostap stop
+    return
+  fi
 
   SSID=Waive-$( kv_get number | cut -c 6- )
   DEV_INTERNET=$( ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } ' )
