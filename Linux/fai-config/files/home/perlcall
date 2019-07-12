@@ -4,9 +4,11 @@ use strict;
 use warnings;
 use Scalar::Util qw/reftype/;
 
+my $home = '/home/adorno/';
+
 sub install_list {
   my $ix = 0;
-  open(my $fh, '<:encoding(UTF-8)', '/home/adorno/WaiveScreen/Linux/fai-config/package_config/DEBIAN') or die '';
+  open(my $fh, '<:encoding(UTF-8)', "$home/WaiveScreen/Linux/fai-config/package_config/DEBIAN") or die '';
 
   my @all = qw//;
   while (my $row = <$fh>) {
@@ -49,30 +51,40 @@ sub capture_all_cameras {
 }
 
 sub acceptance_screen {
-  open(my $uuidFile, '<:encoding(UTF-8)', '/etc/UUID') or die '';
-  my $uuid = <$uuidFile>;
-  close($uuidFile);
+  my $out= qx($home/WaiveScreen/ScreenDaemon/dcall kv_get | sed -E s"/[\'=;]/ /"g);
+  my %values;
+  my $uptime = qx(awk ' { print \$1 } ' /proc/uptime);
+  my $version = qx(cd $home/WaiveScreen && git describe);
+  my @all = eval "qw($out)";
+  for(my $ix = 0; $ix < $#all; $ix += 2) {
+    $values{$all[$ix]} = $all[$ix + 1];
+  }
 
   open(my $html, '>', '/tmp/acceptance.html');
   print $html qq(<style>
+  html{font-size:150%}
 .bad,.good,.value {
   color:rgb(170,64,64);
   font-weight: bold;
-  margin-left:.5rem
 }
-.value { color:rgb(64,64,64);margin-left:3rem }
+.value { color:rgb(64,64,64);margin-left:2rem }
 .good { color:rgb(64,170,64); }
 .good:before,.bad:before {
   content: '\\2714';
-  font-size: 2.5rem;
+  font-size: 2rem;
+  width: 1rem;
   margin-right:0.25rem;
   vertical-align: sub;
 }
+#header { font-weight: bold; margin-bottom:.5rem }
 .bad:before { content: '\\2717'; }
 </style>
-<body style="text-align:center;padding:2rem;background:url('data:image/gif;base64,R0lGODlhAgACAPAAAAkJCf///yH+EUNyZWF0ZWQgd2l0aCBHSU1QACwAAAAAAgACAAACAwwQBQA7') repeat">
-<span style=padding:1rem;display:inline-block;background:rgba(255,255,255,0.9);font-family:sans-serif;font-size:1.5rem;min-width:20rem;text-align:left>
-<div style=padding-bottom:.5rem><b>$uuid</b><div style=font-size:.8rem;font-weight:bold><script>document.write(new Date());</script></div></div>
+<body style="text-align:center;padding:1rem;background:url('file://$home/WaiveScreen/tools/client/test-bg.gif') repeat">
+<span style="box-shadow:0 0 1px 1px black;padding:1rem;display:inline-block;background:rgb(255,255,255);font-family:sans-serif;font-size:1.5rem;min-width:20rem;text-align:left">
+<div id='header'>
+  <div >$values{'uuid'}</div>
+  <div style=font-weight:normal;font-size:1.25rem>$values{'number'} <span style="margin:.2rem 0;float:right;font-size:0.85rem">$version</span></div>
+</div>
   );
 
   my @features = detect_features();
@@ -91,8 +103,12 @@ sub acceptance_screen {
   print $html join "\n", @top;
   print $html join "\n", @bottom;
 
-  print $html qq(<div style=font-style:italic;padding-top:1rem;font-size:1rem;text-align:center>press ctrl+w to exit</div>
-</span>
+  print $html qq(
+  <div style=padding-top:1rem;font-size:1rem>
+    <div style=font-size:.9rem;font-weight:bold>up: $uptime | boot: $values{'runcount'} <br/><script>
+    document.write(("" + new Date()).split('\(').join('<br>\('));</script></div>
+  </div>
+  <div style=padding-top:.5rem;font-size:1rem;font-style:italic;text-align:center>press ctrl+w to exit</div>
 </body>
   );
   close $html;
