@@ -269,12 +269,17 @@ def task_ingest(data):
     if action == 'upgrade':
       dcall("upgrade &")
 
+    if action == 'dcall':
+      task_response(id, dcall(args))
+
     elif action == 'screenoff':
+      db.sess_set('force_sleep')
       global _reading
       _reading = arduino.do_sleep()
       task_response(id, True)
 
     elif action == 'screenon':
+      db.sess_del('force_sleep')
       arduino.do_awake(_reading)
       task_response(id, True)
 
