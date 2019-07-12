@@ -56,7 +56,7 @@ $SCHEMA = [
     'uid'         => 'text not null', 
 
     # A human readable name
-    'name'        => 'text',
+    'serial'      => 'text',
 
     # If the device goes offline this will tell us
     # what it is that dissappeared so we can check
@@ -150,7 +150,7 @@ $SCHEMA = [
   // #39
   'task' => [
     'id'           => 'integer primary key autoincrement',
-    'create_time'  => 'datetime default current_timestamp',
+    'created_at'   => 'datetime default current_timestamp',
     'expiry_sec'   => 'integer default 172800',
     'scope'        => 'text',
     'command'      => 'text',

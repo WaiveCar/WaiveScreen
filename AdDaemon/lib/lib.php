@@ -331,7 +331,7 @@ function screens() {
 }
 
 function screen_edit($data) {
-  $whitelist = ['car', 'phone'];
+  $whitelist = ['car', 'phone', 'serial'];
   $update = [];
   foreach(array_intersect($whitelist, array_keys($data)) as $key) {
     $update[$key] = db_string($data[$key]);
@@ -370,7 +370,7 @@ function task_inject($screen, $res) {
       $res['taskList'][] = $task;
     }
   }
-  error_log('tasks: ' . json_encode(aget($res,'task')));
+  error_log('taskList: ' . json_encode(aget($res,'taskList')));
   return $res;
 }
 
