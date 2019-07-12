@@ -160,6 +160,14 @@ function tag($data) {
 
 }
 
+function get_default_campaign($screen) {
+  return db_all("
+    select value from tag_info where key='default_campaign' and tag in (
+      select tag from screen_tag where screen_id = {$screen['id']}
+    )
+  ");
+}
+
 function find_missing($obj, $fieldList) {
   return array_diff($fieldList, array_keys($obj));
 }
@@ -227,7 +235,8 @@ function ping($payload) {
     'imei', 'phone', 'Lat', 'Lng',                     // <v0.2-Bakeneko-347-g277611a
     'modem.imei', 'modem.phone', 'gps.lat', 'gps.lng', // >v0.2-Bakeneko-347-g277611a
     'version_time',                                    // >v0.2-Bakeneko-378-gf6697e1
-    'uptime', 'features'                               // >v0.2-Bakeneko-384-g4e32e37
+    'uptime', 'features',                              // >v0.2-Bakeneko-384-g4e32e37
+    'last_task'                                        // >v0.2-Bakeneko-623-g8989622
   ] as $key) {
     $val = aget($payload, $key);
 
@@ -315,7 +324,7 @@ function task_master($screen) {
   return db_all("
     select * from task where 
       id > {$screen['last_task']} and
-      strftime('%s', create_time) + expiry_sec - strftime('%s', current_timestamp) > 0 and
+      strftime('%s', created_at) + expiry_sec - strftime('%s', current_timestamp) > 0 and
       scope = '$scope'
   ");
 }
@@ -331,7 +340,7 @@ function screens() {
 }
 
 function screen_edit($data) {
-  $whitelist = ['car', 'phone'];
+  $whitelist = ['car', 'phone', 'serial'];
   $update = [];
   foreach(array_intersect($whitelist, array_keys($data)) as $key) {
     $update[$key] = db_string($data[$key]);

@@ -4,6 +4,7 @@ export WHO=adorno
 export DEST=/home/$WHO
 export PATH=/usr/bin:/usr/sbin:$PATH:$DEST
 export BASE=$DEST/WaiveScreen
+export ROOTHOME=/root
 export DEV=$BASE.sshfs
 export EV=/tmp/event
 export DISPLAY=${DISPLAY:-:0}

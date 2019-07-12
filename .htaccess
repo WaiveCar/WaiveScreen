@@ -11,5 +11,6 @@ RewriteRule "gallery/(.*)$" "MadisonAve/static/gallery.php?id=$1" [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule "admin/(.*)$" "Admin/$1.php?%{QUERY_STRING}" [L]
 
+RewriteRule "install" "https://youtu.be/Yc7FoILU5vY" [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)$ MadisonAve/static/$1 [L]
