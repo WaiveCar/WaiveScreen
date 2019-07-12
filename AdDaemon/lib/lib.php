@@ -235,7 +235,8 @@ function ping($payload) {
     'imei', 'phone', 'Lat', 'Lng',                     // <v0.2-Bakeneko-347-g277611a
     'modem.imei', 'modem.phone', 'gps.lat', 'gps.lng', // >v0.2-Bakeneko-347-g277611a
     'version_time',                                    // >v0.2-Bakeneko-378-gf6697e1
-    'uptime', 'features'                               // >v0.2-Bakeneko-384-g4e32e37
+    'uptime', 'features',                              // >v0.2-Bakeneko-384-g4e32e37
+    'last_task'                                        // >v0.2-Bakeneko-623-g8989622
   ] as $key) {
     $val = aget($payload, $key);
 
