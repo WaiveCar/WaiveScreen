@@ -339,7 +339,7 @@ EPERL
 
     hasip=$( ip addr show $wwan | grep inet | wc -l )
 
-    (( hasip > 0 )) && _warn "Data plan issues." || "No IP assigned."
+    (( hasip > 0 )) && _warn "Data plan/SIM issues." || "No IP assigned."
   fi
   pycall db.sess_set modem,1 
 }

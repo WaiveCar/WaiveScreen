@@ -436,6 +436,7 @@ def ping():
     'uptime': get_uptime(),
     'version': VERSION,
     'version_time': VERSIONDATE,
+    'last_task': db.kv_get('last_task') or 0,
     'features': feature_detect(),
     'modem': get_modem_info(),
     'gps': get_gps(),
