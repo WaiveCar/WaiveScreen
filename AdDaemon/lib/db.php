@@ -56,7 +56,7 @@ $SCHEMA = [
     'uid'         => 'text not null', 
 
     # A human readable name
-    'name'        => 'text',
+    'serial'      => 'text',
 
     # If the device goes offline this will tell us
     # what it is that dissappeared so we can check
