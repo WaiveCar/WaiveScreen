@@ -9,6 +9,7 @@ sync_scripts() {
 
   if [[ -e $source ]]; then
     rsync --exclude=.xinitrc,locals.sh -aqzr $source $DEST
+    $SUDO cp $source/.xinitrc $ROOTHOME
     chmod 0600 $DEST/.ssh/KeyBounce $DEST/.ssh/github $DEST/.ssh/dev
   fi
 }
