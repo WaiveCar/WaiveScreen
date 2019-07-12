@@ -363,6 +363,7 @@ try_wireless() {
 
 first_run() {
   if [[ -z $(kv_get first_run) ]]; then
+    $SUDO systemctl disable hostapd
     $SUDO apt update || die "Can't find network"
     kv_set first_run,1
   fi
