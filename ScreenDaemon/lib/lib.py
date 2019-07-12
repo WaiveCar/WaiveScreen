@@ -14,6 +14,7 @@ import base64
 import subprocess
 from threading import Lock
 from pprint import pprint
+from datetime import datetime
 
 # This is needed for the git describe to succeed
 MYPATH = os.path.dirname(os.path.realpath(__file__))
@@ -573,4 +574,47 @@ def disk_monitor():
       print(path)
       sys.exit(0)
       #dcall('local_upgrade', path, '&')
+
+
+def get_brightness_map():
+  # Fallback map if we can't get the lat/long from GPS
+  default_brightness_map = [
+    0.20, 0.08, 0.08, 0.08,  # 4am
+    0.10, 0.30, 0.70, 0.90,  # 8am
+    1.00, 1.00, 1.00, 1.00,  # 12pm
+    1.00, 1.00, 1.00, 1.00,  # 4pm
+    1.00, 0.90, 0.80, 0.70,  # 8pm
+    0.50, 0.50, 0.40, 0.30,  # midnight
+  ]
+  # Get dict of local dawn, sunrise, sunset dusk times in UTC
+  suntimes = get_suntimes()
+  if suntimes:
+    night_brightness = 0.2  # Default nighttime brightness level
+    transition_brightness = 0.6  # Default nighttime brightness level
+    day_brightness = 1.0  # Default nighttime brightness level
+
+    dawn_len = suntimes['sunrise'] - suntimes['dawn'] + 1
+    day_len = suntimes['sunset'] - suntimes['sunrise'] - 1
+    dusk_len = suntimes['dusk'] - suntimes['sunset'] + 1
+    bmap = [transition_brightness] * dawn_len + 
+           [day_brightness] * day_len + 
+           [transition_brightness] * dusk_len
+    bmap = bmap + [night_brightness] * (24 - len(bmap))
+    # Calculate and rotate the map by dawn and TZ adjustment
+    rotate_map_by = suntime['dawn'] + (datetime.now().hour - datetime.utcnow().hour)
+    return bmap[-rotate_map_by:] + bmap[:-rotate_map_by]
+  else:
+    return default_brightness_map
+
+def get_suntimes():
+  # Attempt to get Lat/Long from GPS. On success,
+  # return dict of local dawn, sunrise, sunset dusk times in UTC
+  location = get_gps()
+  if location:
+    from astral import Astral
+    a = Astral()
+    suntimes = a.sun_utc(datetime.date.today(), location['Lat'], location['Lng'])
+    return suntimes
+  else:
+    return {}
 
