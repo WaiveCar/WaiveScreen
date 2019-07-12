@@ -109,11 +109,12 @@ def set_autobright():
 
 def do_awake():
   global _sleeping
-  _sleeping = False
-  db.sess_set('power', 'awake')
-  os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
-  set_autobright()
-  set_fanauto()
+  if not db.sess.get('force_sleep'):
+    _sleeping = False
+    db.sess_set('power', 'awake')
+    os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
+    set_autobright()
+    set_fanauto()
 
 def do_sleep():
   global _sleeping
@@ -121,6 +122,7 @@ def do_sleep():
   
   _sleeping = True
   _log.info("Going to sleep")
+
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force suspend".format(DISPLAY))
 
   set_backlight(0)
