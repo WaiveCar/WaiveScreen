@@ -147,6 +147,20 @@ $SCHEMA = [
     'value'     => 'text'
   ],
 
+  // #95 If different tags need different default campaign ids 
+  // or split kingdoms we do that here. It's basically a
+  // key/value with a name-space. Right now we don't have 
+  // a list of tags, probably should so that the screen_tag
+  // and tag_info table references a tag_list but this is
+  // fine for now.
+  'tag_info' => [
+    'id'         => 'integer primary key autoincrement',
+    'tag'        => 'text not null',
+    'key'        => 'text',
+    'value'      => 'text',
+    'created_at' => 'datetime default current_timestamp',
+  ],
+
   // #39
   'task' => [
     'id'           => 'integer primary key autoincrement',
