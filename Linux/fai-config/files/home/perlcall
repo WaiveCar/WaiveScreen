@@ -5,6 +5,7 @@ use warnings;
 use Scalar::Util qw/reftype/;
 
 my $home = '/home/adorno/';
+my $modem = 0;
 
 sub install_list {
   my $ix = 0;
@@ -62,48 +63,61 @@ sub acceptance_screen {
 
   open(my $html, '>', '/tmp/acceptance.html');
   print $html qq(<style>
-  html{font-size:150%}
+html {
+  font-size:220%;
+}
 .bad,.good,.value {
+  width:45%;
+  font-size:1.1rem;
   color:rgb(170,64,64);
+  display:inline-block;
   font-weight: bold;
 }
-.value { color:rgb(64,64,64);margin-left:2rem }
-.good { color:rgb(64,170,64); }
-.good:before,.bad:before {
-  content: '\\2714';
-  font-size: 2rem;
-  width: 1rem;
-  margin-right:0.25rem;
+.mark {
+  font-size: 1.5rem;
   vertical-align: sub;
+  width: 1.5rem;
+  text-align: center;
+  display: inline-block;
 }
+.mark.mini {
+  font-size: .9rem;
+  vertical-align: middle;
+}
+#results { 
+  font-size: 0;
+}
+#box {
+ width: 50%;
+}
+.value { color:rgb(64,64,64); }
+.good { color:rgb(64,170,64); }
 #header { font-weight: bold; margin-bottom:.5rem }
-.bad:before { content: '\\2717'; }
 </style>
 <body style="text-align:center;padding:1rem;background:url('file://$home/WaiveScreen/tools/client/test-bg.gif') repeat">
-<span style="box-shadow:0 0 1px 1px black;padding:1rem;display:inline-block;background:rgb(255,255,255);font-family:sans-serif;font-size:1.5rem;min-width:20rem;text-align:left">
+<span id='box' style="box-shadow:0 0 1px 1px black;padding:.75rem;display:inline-block;background:rgb(255,255,255);font-family:sans-serif;font-size:1.5rem;min-width:20rem;text-align:left">
 <div id='header'>
   <div >$values{'uuid'}</div>
   <div style=font-weight:normal;font-size:1.25rem>$values{'number'} <span style="margin:.2rem 0;float:right;font-size:0.85rem">$version</span></div>
 </div>
+<div id=results>
   );
 
   my @features = detect_features();
-  my @top = ();
-  my @bottom = ();
   for (my $ix = 0; $ix < scalar @features; $ix += 2) {
     my $key = $features[$ix];
     my $value = $features[$ix + 1];
     if (!$value || $value <= 1) {
       my $class = $value ? 'good' : 'bad';
-      push @top, "<div class=$class>$key</div>";
+      my $character = ($class eq 'bad') ? '&#x2717;' : '&#x2714;';
+      print $html "<div class=$class><span class=mark>$character</span> $key</div>";
     } else {
-      push @bottom, "<div class=value>$key: $value</div>";
+      print $html "<div class=value><span class='mark mini'>$value</span> $key</div>";
     }
   }
-  print $html join "\n", @top;
-  print $html join "\n", @bottom;
 
   print $html qq(
+  </div>
   <div style=padding-top:1rem;font-size:1rem>
     <div style=font-size:.9rem;font-weight:bold>up: $uptime | boot: $values{'runcount'} <br/><script>
     document.write(("" + new Date()).split('\(').join('<br>\('));</script></div>
@@ -117,16 +131,18 @@ sub acceptance_screen {
 # see #73
 sub detect_features {
   my @videoList = glob("/dev/video*");
-  my $hasSim = qx(mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l);
+  my $hasSim = qx(mmcli -m $modem --output-keyvalue | grep sim | grep org | wc -l);
+  my $signal = qx(mmcli -m $modem --output-keyvalue | grep signal-quality.value | awk -F : ' { print \$2 } ');
 
   # * btle - todo
   my @features = (
-    "modem", -e "/dev/cdc-wdm0" ? 1 : 0,
     "arduino", -e "/dev/ttyACM0" ? 1 : 0,
-    "cameras", ($#videoList + 1) / 2,
-    "ip", qx(mmcli -b 0| grep address | wc -l) > 0,
     "wifi", -e "/proc/sys/net/ipv4/conf/wlp1s0" ? 1 : 0,
-    "sim", $hasSim
+    "modem", -e "/dev/cdc-wdm0" ? 1 : 0,
+    "signal", $signal,
+    "sim", $hasSim,
+    "ip", qx(mmcli -b 0| grep address | wc -l) > 0,
+    "cameras", ($#videoList + 1) / 2,
   );
   for (my $ix = 1; $ix < scalar @features; $ix += 2) {
     $features[$ix] =~ s/\s//g;
@@ -137,7 +153,7 @@ sub detect_features {
 sub acceptance_test {
   my %results = {
     # Make sure gps has actual lat/lng
-    'gps' => qx(mmcli -m 0 --location-get --output-keyvalue | grep longitude | grep -v -- -- | wc -l),
+    'gps' => qx(mmcli -m $modem --location-get --output-keyvalue | grep longitude | grep -v -- -- | wc -l),
 
     # Check to make sure we have access to sensors
     'sensor' => qx(pycall sensor_last | wc -c) > 200,
