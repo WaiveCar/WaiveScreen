@@ -15,6 +15,12 @@ import subprocess
 from threading import Lock
 from pprint import pprint
 
+#
+# IMPORTANT. DO NOT LOG ANYTHING HERE BEFORE CALLING
+# THE BASICCONFIG. If you do your basicconfig will 
+# be ignored and your logs will drift away to mysterious
+# netherworlds
+#
 # This is needed for the git describe to succeed
 MYPATH = os.path.dirname(os.path.realpath(__file__))
 
