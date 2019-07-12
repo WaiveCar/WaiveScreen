@@ -6,6 +6,7 @@ import json
 import urllib
 import lib.lib as lib
 import lib.db as db
+import lib.arduino as arduino
 import logging
 import pprint
 import traceback
@@ -190,6 +191,8 @@ if __name__ == '__main__':
     os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
     logging.basicConfig(filename=logpath, format=format, level=level)
 
+  logger = logging.getLogger()
+  arduino.set_log(logger)
 
   if lib.SANITYCHECK:
     sys.exit(0)
