@@ -323,7 +323,7 @@ function task_master($screen) {
   return db_all("
     select * from task where 
       id > {$screen['last_task']} and
-      strftime('%s', create_time) + expiry_sec - strftime('%s', current_timestamp) > 0 and
+      strftime('%s', created_at) + expiry_sec - strftime('%s', current_timestamp) > 0 and
       scope = '$scope'
   ");
 }
