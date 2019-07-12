@@ -35,6 +35,8 @@ for($ix = 0; $ix < count($screenList); $ix++){
   }
 }
 
+$tagList = db_all("select name from tag");
+
 $fieldList = [
   'id'  => 'uid',
   'car' => 'car',

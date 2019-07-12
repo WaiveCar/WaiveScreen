@@ -138,13 +138,25 @@ $SCHEMA = [
     'job_end'     => 'datetime'
   ],
 
+  // This is a list of tags, it's notable that we aren't really
+  // doing some kind of "normalization" like all the proper kids
+  // do because we don't want to be doing stupid table joins 
+  // everywhere to say a couple bytes.
+  'tag' => [
+    'id'        => 'integer primary key autoincrement',
+    'name'      => 'text',
+    'created_at' => 'datetime default current_timestamp',
+  ],
+
   // #47 - the screen_id/tag is the unique constraint. There's
-  // probably a nice way to do it
+  // probably a nice way to do it. Also if you really are doing
+  // things well then you use the whitelist from the tag table
+  // before inserting since we are keeping it daringly free-form
   'screen_tag' => [
     'id'        => 'integer primary key autoincrement',
     'screen_id' => 'integer',
-    'tag'       => 'text not null',
-    'value'     => 'text'
+    'tag'       => 'text',
+    'created_at' => 'datetime default current_timestamp',
   ],
 
   // #95 If different tags need different default campaign ids 

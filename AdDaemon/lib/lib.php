@@ -160,6 +160,14 @@ function tag($data) {
 
 }
 
+function get_default_campaign($screen) {
+  return db_all("
+    select value from tag_info where key='default_campaign' and tag in (
+      select tag from screen_tag where screen_id = {$screen['id']}
+    )
+  ");
+}
+
 function find_missing($obj, $fieldList) {
   return array_diff($fieldList, array_keys($obj));
 }
