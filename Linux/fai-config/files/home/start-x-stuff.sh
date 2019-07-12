@@ -35,7 +35,7 @@ disk_monitor
 # but we are putting it in here to not
 # cause any problems
 #
-NOMODEM=1 pycall set_autobright
+NOMODEM=1 pycall arduino.set_autobright
 
 #
 # This delay is rather important because the
