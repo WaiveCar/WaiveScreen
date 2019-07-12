@@ -34,7 +34,9 @@ while true; do
   sudo rsync -azvr $GIT $realname
   sudo chown -R root.root /srv/fai/config/scripts
 
-  if [[ ! "$NONET" ]]; then
+  if [[ "$NONET" ]]; then
+    cd $realname && git clean -fxd
+  else
     ssh screen "./dcall sync_scripts" && fn=$(date +%X) || fn="!! Failure !!"
     
     echo $fn | osd_cat \
