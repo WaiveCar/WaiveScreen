@@ -331,7 +331,7 @@ function screens() {
 }
 
 function screen_edit($data) {
-  $whitelist = ['car', 'phone'];
+  $whitelist = ['car', 'phone', 'serial'];
   $update = [];
   foreach(array_intersect($whitelist, array_keys($data)) as $key) {
     $update[$key] = db_string($data[$key]);
