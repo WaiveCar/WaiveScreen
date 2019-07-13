@@ -576,11 +576,11 @@ def disk_monitor():
       #dcall('local_upgrade', path, '&')
 
 def get_latlng():
-	location = get_gps()
-	if location:
-		return location
-	else:
-		return {}
+  location = get_gps()
+  if location:
+    return location
+  else:
+    return {}
 
 def get_brightness_map():
   # Fallback map if we can't get the lat/long from GPS
@@ -595,9 +595,9 @@ def get_brightness_map():
   # Get dict of local dawn, sunrise, sunset dusk times in UTC
   suntimes = get_suntimes()
   if suntimes:
-    night_brightness = 0.2			# Default nighttime brightness level
+    night_brightness = 0.2      # Default nighttime brightness level
     transition_brightness = 0.6 # Default transition brightness level
-    day_brightness = 1.0				# Default day brightness level
+    day_brightness = 1.0        # Default day brightness level
 
     def hours_diff(t1, t2):
       return round((t1 - t2).seconds / 3600)
@@ -626,10 +626,10 @@ def get_suntimes():
     return {}
 
 def get_timezone():
-	from timezonefinder import TimezoneFinder
-	location = get_latlng()
-	if location:
-		return TimezoneFinder().timezone_at(lat=location['Lat'], lng=location['Lng'])
-	else:
-		return None
+  from timezonefinder import TimezoneFinder
+  location = get_latlng()
+  if location:
+    return TimezoneFinder().timezone_at(lat=location['Lat'], lng=location['Lng'])
+  else:
+    return None
 
