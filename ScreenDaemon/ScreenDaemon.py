@@ -91,7 +91,9 @@ def next_ad(work = False):
   db.kv_set('last_sow', int(time.time()))
 
   try:
-    power = db.sess_get('power')
+    dpms = os.popen("xset q | grep Monitor | tail -1 | awk ' { print $NF } '").read().strip()
+    power = 'awake' if dpms == 'On' else 'sleep'
+
     if power != 'sleep':
       jobList = request.get_json()
 
