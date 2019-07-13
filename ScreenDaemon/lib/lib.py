@@ -172,8 +172,8 @@ def set_logger(logpath):
     for handler in root.handlers:
       root.removeHandler(handler)
 
-  level = logging.DEBUG if lib.DEBUG else logging.INFO
-  format = '%(levelname)s@%(lineno)d:%(message)s'
+  level = logging.DEBUG if DEBUG else logging.INFO
+  format = '%(asctime)s %(levelname)s:%(message)s'
   try:
     logging.basicConfig(filename=logpath, format=format, level=level)
 
