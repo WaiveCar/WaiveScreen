@@ -625,3 +625,11 @@ def get_suntimes():
   else:
     return {}
 
+def get_timezone():
+	from timezonefinder import TimezoneFinder
+	location = get_latlng()
+	if location:
+		return TimezoneFinder().timezone_at(lat=location['Lat'], lng=location['Lng'])
+	else:
+		return None
+
