@@ -19,7 +19,7 @@ check_ssh_hole() {
 
   # If the file exists we are done, let's clean it up
   # otherwise our hole is down and we need to restart 
-  [ -e $tomake ] && rm $tomake || dcall ssh_hole 
+  [[ -e $tomake ]] && rm $tomake || dcall ssh_hole 
 }
 
 check_screen_daemon() {
@@ -53,9 +53,9 @@ check_online() {
     # if things still suck
     if ! ping -c 1 -i 0.3 waivescreen.com; then
       # if we fail to do multiple times
-      if (( $(pycall sess_incr ping_fail) > 1 )); then
+      if (( $(pycall sess_incr ping_fail) > 6 )); then
         # shrug our shoulders and just try to reboot, I dunno
-        # sudo reboot
+        sudo reboot
       fi
     fi
   else
