@@ -6,6 +6,7 @@
         "aws/aws-sdk-php": "^3.91",
         "ramsey/uuid": "^3.8",
         "php-http/curl-client": "^1.7",
-        "guzzlehttp/psr7": "^1.6"
+        "guzzlehttp/psr7": "^1.6",
+        "jolicode/slack-php-api": "^1.2"
     }
 }

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 install_composer() {
-  sudo apt install -y curl php7.3-xml zip unzip sqlite3 php7.3-sqlite3 php-curl
+  sudo apt install -y curl php7.3-xml zip unzip sqlite3 php7.3-sqlite3 php-curl php-intl
   curl -s https://getcomposer.org/installer | php
   sudo mv composer.phar /usr/local/bin/composer
   composer install
