@@ -163,6 +163,29 @@ def get_message(dbus_path):
     print("type={};sender={};message='{}';dbuspath={}".format(klass, fn['Number'], base64.b64encode(message.encode('utf-8')).decode(), proxy))
 
 
+def set_logger(logpath):
+  from . import arduino
+
+  # From https://stackoverflow.com/questions/1943747/python-logging-before-you-run-logging-basicconfig
+  root = logging.getLogger()
+  if root.handlers:
+    for handler in root.handlers:
+      root.removeHandler(handler)
+
+  level = logging.DEBUG if lib.DEBUG else logging.INFO
+  format = '%(levelname)s@%(lineno)d:%(message)s'
+  try:
+    logging.basicConfig(filename=logpath, format=format, level=level)
+
+  except:
+    os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(os.path.dirname(logpath)))
+    os.system('/usr/bin/sudo /usr/bin/touch {}'.format(logpath))
+    os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
+    logging.basicConfig(filename=logpath, format=format, level=level)
+
+  logger = logging.getLogger()
+  arduino.set_log(logger)
+
 def catchall_signal_handler(*args, **kwargs):
   from gi.repository import GLib
   global _loop

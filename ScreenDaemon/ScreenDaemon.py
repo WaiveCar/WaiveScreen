@@ -181,20 +181,7 @@ def next_ad(work = False):
 
 if __name__ == '__main__':
 
-  level = logging.DEBUG if lib.DEBUG else logging.INFO
-  format = '%(levelname)s@%(lineno)d:%(message)s'
-  logpath = '/var/log/screen/screendaemon.log'
-  try:
-    logging.basicConfig(filename=logpath, format=format, level=level)
-
-  except:
-    os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(os.path.dirname(logpath)))
-    os.system('/usr/bin/sudo /usr/bin/touch {}'.format(logpath))
-    os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
-    logging.basicConfig(filename=logpath, format=format, level=level)
-
-  logger = logging.getLogger()
-  arduino.set_log(logger)
+  lib.set_logger('/var/log/screen/screendaemon.log')
 
   if lib.SANITYCHECK:
     sys.exit(0)
