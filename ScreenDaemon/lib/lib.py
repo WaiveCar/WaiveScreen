@@ -575,6 +575,12 @@ def disk_monitor():
       sys.exit(0)
       #dcall('local_upgrade', path, '&')
 
+def get_latlng():
+	location = get_gps()
+	if location:
+		return location
+	else:
+		return {}
 
 def get_brightness_map():
   # Fallback map if we can't get the lat/long from GPS
@@ -589,9 +595,9 @@ def get_brightness_map():
   # Get dict of local dawn, sunrise, sunset dusk times in UTC
   suntimes = get_suntimes()
   if suntimes:
-    night_brightness = 0.2  # Default nighttime brightness level
-    transition_brightness = 0.6  # Default nighttime brightness level
-    day_brightness = 1.0  # Default nighttime brightness level
+    night_brightness = 0.2			# Default nighttime brightness level
+    transition_brightness = 0.6 # Default transition brightness level
+    day_brightness = 1.0				# Default day brightness level
 
     def hours_diff(t1, t2):
       return round((t1 - t2).seconds / 3600)
@@ -601,8 +607,8 @@ def get_brightness_map():
     dusk_len = hours_diff(suntimes['dusk'], suntimes['sunset']) + 1
     bmap = [transition_brightness] * dawn_len + [day_brightness] * day_len + [transition_brightness] * dusk_len
     bmap = bmap + [night_brightness] * (24 - len(bmap))
-    # Calculate and rotate the map by dawn and TZ adjustment
-    rotate_map_by = suntimes['dawn'].hour - hours_diff(datetime.utcnow(), datetime.now())
+    # Calculate and rotate the map by dawn hour
+    rotate_map_by = suntimes['dawn'].hour
     return bmap[-rotate_map_by:] + bmap[:-rotate_map_by]
   else:
     return default_brightness_map
@@ -610,7 +616,7 @@ def get_brightness_map():
 def get_suntimes():
   # Attempt to get Lat/Long from GPS. On success,
   # return dict of local dawn, sunrise, sunset dusk times in UTC
-  location = get_gps()
+  location = get_latlng()
   if location:
     from astral import Astral
     a = Astral()
