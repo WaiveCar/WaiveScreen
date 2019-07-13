@@ -89,7 +89,6 @@ html {
 }
 #box {
  max-width: 48%;
- box-shadow:0 0 1px 1px black;
  padding:.75rem;
  display:inline-block;
  background:rgb(255,255,255);
