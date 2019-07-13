@@ -109,7 +109,7 @@ def set_autobright():
 
 def do_awake():
   global _sleeping
-  if not db.sess.get('force_sleep'):
+  if not db.sess_get('force_sleep'):
     _sleeping = False
     db.sess_set('power', 'awake')
     os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
