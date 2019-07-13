@@ -1,46 +1,45 @@
 #!/bin/bash
 
 . /home/adorno/const.sh
+. /home/adorno/baseline.sh
 
 export PATH=$DEST:$PATH
 
 pycall() {
-  $BASE/ScreenDaemon/dcall $*
+  _as_user $BASE/ScreenDaemon/dcall $*
 }
 
 check_ssh_hole() {
   local tomake=$(mktemp -u)
 
-  [[ $USER = 'root' ]] && cmd="su adorno -c"
-
   port=$( pycall db.kv_get port )
   # Next we try to create this remotely using su if we need to.
-  echo "ssh -o ConnectTimeout=10 adorno@bounce -p $port touch $tomake" | $cmd /bin/bash
+  echo "ssh -o ConnectTimeout=10 adorno@bounce -p $port touch $tomake" | _as_user /bin/bash
 
   # If the file exists we are done, let's clean it up
   # otherwise our hole is down and we need to restart 
-  [[ -e $tomake ]] && rm $tomake || dcall ssh_hole 
+  [[ -e $tomake ]] && rm $tomake || _as_user dcall ssh_hole 
 }
 
 check_screen_daemon() {
-  curl -s 127.1:4096/default > /dev/null || dcall screen_daemon
+  curl -s 127.1:4096/default > /dev/null || _as_user dcall screen_daemon
 }
 
 check_sensor_daemon() {
   db_delta=$(( $(date +%s) - $(stat -c %Y /var/db/config.db) ))
-  [ "$db_delta" -gt 900 ] && dcall sensor_daemon
+  [ "$db_delta" -gt 900 ] && _as_user dcall sensor_daemon
 }
 
 check_screen_display() {
   if ! pgrep chromium > /dev/null; then
-    dcall screen_display
+    _as_user dcall screen_display
   else
     # we also have to make sure it hasn't just 
     # straight up crashed. Time is in seconds
     if (( $(date +%s) - $(dcall kv_get last_sow) > 600 )); then
       dcall down screen_display
       pkill chromium
-      dcall screen_display
+      _as_user dcall screen_display
     fi
   fi
 }
@@ -48,7 +47,7 @@ check_screen_display() {
 check_online() {
   if ! ping -c 1 -i 0.3 waivescreen.com; then
     # we try to do a one-shot reconnection thing
-    dcall modem_connect
+    _as_user dcall modem_connect
 
     # if things still suck
     if ! ping -c 1 -i 0.3 waivescreen.com; then
