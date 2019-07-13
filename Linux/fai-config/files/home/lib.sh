@@ -480,12 +480,6 @@ screen_display() {
     while pgrep Xorg; do
       while pgrep chromium; do
         sleep 10
-
-        # We try to ping the remote here
-        # in case our browser broke from
-        # a botched upgrade.
-        (( ix++ % 20 == 0 )) && pycall lib.ping
-
         [[ -e $EV/0_screen_display ]] || return
         [[ "$(< $EV/0_screen_display )" != "$pid" ]] && return
       done

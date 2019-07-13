@@ -55,7 +55,7 @@ check_online() {
       # if we fail to do multiple times
       if (( $(pycall sess_incr ping_fail) > 1 )); then
         # shrug our shoulders and just try to reboot, I dunno
-        sudo reboot
+        # sudo reboot
       fi
     fi
   else
@@ -68,6 +68,7 @@ check_online() {
 if [[ $(pycall sess_get modem) == 1 ]]; then
   date >> /tmp/sanity-check
   check_online && check_ssh_hole
+  pycall lib.ping
   check_screen_daemon
   check_sensor_daemon
   check_screen_display
