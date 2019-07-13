@@ -594,7 +594,7 @@ def get_brightness_map():
     day_brightness = 1.0  # Default nighttime brightness level
 
     def hours_diff(t1, t2):
-      return round((t1 - t2).seconds / 60 / 60)
+      return round((t1 - t2).seconds / 3600)
 
     dawn_len = hours_diff(suntimes['sunrise'], suntimes['dawn']) + 1
     day_len = hours_diff(suntimes['sunset'], suntimes['sunrise']) - 1
@@ -602,7 +602,7 @@ def get_brightness_map():
     bmap = [transition_brightness] * dawn_len + [day_brightness] * day_len + [transition_brightness] * dusk_len
     bmap = bmap + [night_brightness] * (24 - len(bmap))
     # Calculate and rotate the map by dawn and TZ adjustment
-    rotate_map_by = suntimes['dawn'].hour + (datetime.now().hour - datetime.utcnow().hour)
+    rotate_map_by = suntimes['dawn'].hour - hours_diff(datetime.utcnow(), datetime.now())
     return bmap[-rotate_map_by:] + bmap[:-rotate_map_by]
   else:
     return default_brightness_map
@@ -611,7 +611,6 @@ def get_suntimes():
   # Attempt to get Lat/Long from GPS. On success,
   # return dict of local dawn, sunrise, sunset dusk times in UTC
   location = get_gps()
-  #location = { 'Lat': 34.0766, 'Lng': -118.2646 }
   if location:
     from astral import Astral
     a = Astral()
