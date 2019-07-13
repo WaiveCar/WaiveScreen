@@ -429,7 +429,7 @@ def sess_del(key):
   kv_set(key, None)
   kv_set("{}_bootnumber", None)
 
-def sess_set(key, value):
+def sess_set(key, value = 1):
   bc = None if value is None else get_bootcount()
   kv_set(key, value)
   kv_set("{}_bootnumber".format(key), bc)

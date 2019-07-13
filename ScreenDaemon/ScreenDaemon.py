@@ -6,6 +6,7 @@ import json
 import urllib
 import lib.lib as lib
 import lib.db as db
+import lib.arduino as arduino
 import logging
 import pprint
 import traceback
@@ -90,7 +91,9 @@ def next_ad(work = False):
   db.kv_set('last_sow', int(time.time()))
 
   try:
-    power = db.sess_get('power')
+    dpms = os.popen("xset q | grep Monitor | tail -1 | awk ' { print $NF } '").read().strip()
+    power = 'awake' if dpms == 'On' else 'sleep'
+
     if power != 'sleep':
       jobList = request.get_json()
 
@@ -143,7 +146,7 @@ def next_ad(work = False):
     data = False
     err = ex
     if data_raw:
-      logging.warning("Unable to parse {}".format(data_raw))
+      logging.warning("Unable to parse {}: {}".format(data_raw, ex))
 
   if data:
     try:
@@ -178,7 +181,7 @@ def next_ad(work = False):
 
 if __name__ == '__main__':
 
-  level = logging.DEBUG if os.getenv('DEBUG') else logging.WARN
+  level = logging.DEBUG if lib.DEBUG else logging.INFO
   format = '%(levelname)s@%(lineno)d:%(message)s'
   logpath = '/var/log/screen/screendaemon.log'
   try:
@@ -190,6 +193,8 @@ if __name__ == '__main__':
     os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
     logging.basicConfig(filename=logpath, format=format, level=level)
 
+  logger = logging.getLogger()
+  arduino.set_log(logger)
 
   if lib.SANITYCHECK:
     sys.exit(0)

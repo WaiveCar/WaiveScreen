@@ -1,0 +1,7 @@
+#!/bin/bash
+
+upgradepost() {
+  systemctl disable hostapd
+}
+
+eval $1

@@ -13,8 +13,8 @@ get_uuid 1
 rm -fr $DEST/.notion/default-session--* 
 /usr/bin/notion &
 
-local version=$(cd $BASE; git describe | awk -F \- ' { print $2"-"$3 } ')
-_warn $(get_uuid) $(version) $ENV
+version=$(cd $BASE; git describe | awk -F \- ' { print $2"-"$3 } ')
+_warn $(get_uuid) $version 
 
 # If the hostname is changed via UUID, then
 # this lock will prevent chromium from starting 
@@ -35,7 +35,7 @@ disk_monitor
 # but we are putting it in here to not
 # cause any problems
 #
-NOMODEM=1 pycall set_autobright
+NOMODEM=1 pycall arduino.set_autobright
 
 #
 # This delay is rather important because the
