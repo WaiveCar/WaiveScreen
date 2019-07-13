@@ -673,7 +673,6 @@ upgrade() {
     _sanityafter
     if local_sync; then
       cd $BASE/ScreenDaemon
-      # delete the old stuff
       git clean -fxd
       $SUDO pip3 install -r requirements.txt
       perlcall install_list | xargs $SUDO apt -y install
@@ -683,7 +682,7 @@ upgrade() {
     else
       _warn "Failed to upgrade"
     fi
-  } |& $SUDO tee -a /var/log/upgrade.log
+  } |& $SUDO tee -a /var/log/upgrade.log &
 }
 
 make_patch() {
@@ -694,7 +693,7 @@ make_patch() {
 }
 
 disk_monitor() {
-  (( $( pgrep -cf 'dcall disk_monitor' ) < 1 )) || die "disk_monitor already running" info
+  (( $( pgrep -cf 'dcall disk_monitor' ) < 1 )) || return
   {
     while true; do
       local disk=$(pycall lib.disk_monitor)
