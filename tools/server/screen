@@ -6,6 +6,7 @@ list() {
 }
 
 connect() {
+  ssh-keygen -f "/home/chris/.ssh/known_hosts" -R "[reflect.waivescreen.com]:$1"
   ssh -i $DIR/../../Linux/keys/ScreenAccess adorno@reflect.waivescreen.com -p $1
   exit
 }
