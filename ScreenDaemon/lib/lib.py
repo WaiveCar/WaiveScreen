@@ -461,9 +461,9 @@ def ping():
       data_raw = response.text
       try:
         data = json.loads(data_raw)
-      except:
+      except Exception as ex:
         data = False
-        logging.warning("Unable to parse {}".format(data_raw))
+        logging.warning("Unable to parse {}: {}".format(data_raw, ex))
 
       if data:
         # we have 

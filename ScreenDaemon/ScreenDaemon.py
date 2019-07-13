@@ -144,7 +144,7 @@ def next_ad(work = False):
     data = False
     err = ex
     if data_raw:
-      logging.warning("Unable to parse {}".format(data_raw))
+      logging.warning("Unable to parse {}: {}".format(data_raw, ex))
 
   if data:
     try:
