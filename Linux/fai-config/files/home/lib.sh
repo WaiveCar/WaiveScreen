@@ -672,8 +672,9 @@ upgrade() {
     set -x
     _sanityafter
     if local_sync; then
+      # note: git clean only goes deeper, it doesn't do the entire repo
+      cd $BASE && git clean -fxd
       cd $BASE/ScreenDaemon
-      git clean -fxd
       $SUDO pip3 install -r requirements.txt
       perlcall install_list | xargs $SUDO apt -y install
       pycall db.upgrade
