@@ -374,10 +374,10 @@ pycall() {
 }
 
 ssh_hole() {
-  local rest=20
   local event=ssh_hole
 
-  (( $(pgrep -cf dcall\ ssh_hole ) > 1 )) && die "ssh_hole already running" info
+  # I think this is causing problems. Either the event pattern works or it doesn't.
+  # (( $(pgrep -cf dcall\ ssh_hole ) > 1 )) && die "ssh_hole already running" info
 
   {
     while true; do
@@ -391,14 +391,14 @@ ssh_hole() {
 
       elif [[ -e $EV/$event ]] && ps -o pid= -p $(< $EV/$event ); then
         # this means we have an ssh open and life is fine
-        sleep $rest
+        sleep $EVREST
 
       else
         ssh -NC -R bounce:$port:127.0.0.1:22 bounce &
         set_event $event
       fi
 
-      sleep $rest
+      sleep $EVREST
     done
   } > /dev/null &
 
@@ -479,7 +479,7 @@ screen_display() {
   {
     while pgrep Xorg; do
       while pgrep chromium; do
-        sleep 10
+        sleep $EVREST
         [[ -e $EV/0_screen_display ]] || return
         [[ "$(< $EV/0_screen_display )" != "$pid" ]] && return
       done
