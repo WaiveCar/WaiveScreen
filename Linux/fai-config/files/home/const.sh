@@ -13,6 +13,7 @@ export LOG=/var/log/screen
 export DB=/var/db/config.db
 export CACHE=/var/cache/assets
 export ENV=production
+export EVREST=20
 [[ $USER != 'root' ]] && SUDO=/usr/bin/sudo
 
 # Local overrides to the above 
