@@ -259,8 +259,11 @@ function db_int($what) {
 }
 
 function db_string($what) {
-  if (strpos($what, "'") === false) {
+  $where = strpos($what, "'");
+  if ($where === false) {
     return "'$what'";
+  } else if ($where != 0) {
+    return '"' . SQLite3::escapeString($what) . '"';
   }
   return $what;
 }
@@ -419,7 +422,7 @@ function db_update($table, $id, $kv) {
   $fields = implode(',', $fields);
 
   $qstr = "update $table set $fields where $key = $value";
-  error_log($qstr);
+  // error_log($qstr);
   return _query($qstr);
 }
 

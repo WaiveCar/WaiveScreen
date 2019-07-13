@@ -25,8 +25,9 @@ function change(id, what, el) {
   }
 }
 
-function command(id) {
-  var cmd = prompt(`Give a command for ${id}`);
+function command(id, name) {
+  name = name || id;
+  var cmd = prompt(`Give a command for ${name}`);
   if(cmd) {
     let parts = cmd.split(' ');
     fetch(new Request('/api/command', {
