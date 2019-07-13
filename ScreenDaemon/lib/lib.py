@@ -267,7 +267,8 @@ def task_ingest(data):
     args = task.get('args')
 
     if action == 'upgrade':
-      dcall("upgrade &")
+      task_response(id, True)
+      dcall("upgrade", method='subprocess')
 
     if action == 'dcall':
       task_response(id, dcall(args))
