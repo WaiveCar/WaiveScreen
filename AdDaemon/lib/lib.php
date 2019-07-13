@@ -195,13 +195,20 @@ function upsert_screen($screen_uid, $payload) {
   return array_merge($screen, $data);
 }
 
+// After a screen runs a task it's able to respond... kind of 
+// have a dialog if you will.
 function response($payload) {
   $missing = find_missing($payload, ['task_id', 'uid', 'response']);
   if($missing) {
     return doError("Missing fields: " . implode(', ', $missing));
   }
+  $task_id = intval($payload['task_id']);
 
-  $screen = Get::screen($payload['uid']);
+  $screen = Get::screen(['uid' => $payload['uid']]);
+
+  if ($screen['last_task'] < $task_id) {
+    db_update('screen', $screen['id'], ['last_task' => $task_id]);
+  }
 
   return db_insert('task_response', [
     'task_id' => db_int($payload['task_id']),
@@ -306,10 +313,7 @@ function update_job($jobId, $completed_seconds) {
       'completed_seconds' => $completed_seconds,
       'job_end' => 'current_timestamp'
     ]);
-  } else {
-    error_log("update job failed: $jobId");
-  }
-
+  } 
 }
 
 function task_master($screen) {
@@ -339,6 +343,14 @@ function screens() {
   return show('screen');
 }
 
+function tasks() {
+  return show('task');
+}
+
+function task_responses() {
+  return show('task_response');
+}
+
 function screen_edit($data) {
   $whitelist = ['car', 'phone', 'serial'];
   $update = [];
@@ -347,16 +359,6 @@ function screen_edit($data) {
   }
   db_update('screen', $data['id'], $update);
   return Get::screen($data['id']);
-}
-
-// After a screen runs a task it's able to respond... kind of 
-// have a dialog if you will.
-function task_response($screen, $id, $response) {
-  return db_insert('task_response', [
-    'task_id' => db_int($id),
-    'screen_id' => $screen['id'],
-    'response' => db_string($response),
-  ]);
 }
 
 // we need to find out if the screen has tasks we need
@@ -379,7 +381,10 @@ function task_inject($screen, $res) {
       $res['taskList'][] = $task;
     }
   }
-  error_log('taskList: ' . json_encode(aget($res,'taskList')));
+  $tasks = aget($res,'taskList');
+  if ($tasks) {
+    error_log('taskList: ' . json_encode($tasks));
+  }
   return $res;
 }
 
@@ -406,7 +411,9 @@ function sow($payload) {
   foreach($jobList as $job) {
 
     $job_id = aget($job, 'job_id', aget($job, 'id'));
-    update_job($job_id, $job['completed_seconds']);
+    if (! update_job($job_id, $job['completed_seconds']) ) {
+      error_log("could not process job: " . json_encode($job));
+    }
 
     if(!isset($job['campaign_id'])) {
       $job = Get::job($job_id);

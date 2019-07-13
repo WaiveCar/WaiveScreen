@@ -18,7 +18,12 @@ check_ssh_hole() {
 
   # If the file exists we are done, let's clean it up
   # otherwise our hole is down and we need to restart 
-  [[ -e $tomake ]] && rm $tomake || _as_user dcall ssh_hole 
+  if [[ -e $tomake ]]; then 
+    rm $tomake
+  else 
+    dcall down ssh_hole
+    _as_user dcall ssh_hole 
+  fi
 }
 
 check_screen_daemon() {

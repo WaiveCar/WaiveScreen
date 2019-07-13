@@ -38,7 +38,7 @@ local_sync() {
   # Since everything is in memory and already loaded
   # we can try to just pull things down
   cd $BASE
-  local sha1=${1:-master}
+  local sha1=${1:-$BRANCH}
   
   # We make sure that local changes (there shouldn't be any)
   # get tossed aside and pull down the new code.
