@@ -5,7 +5,7 @@ FAI_ALLOW_UNSIGNED=1
 
 # Set UTC=yes if your system clock is set to UTC (GMT), and UTC=no if not.
 UTC=yes
-TIMEZONE=America/Los_Angeles
+#TIMEZONE=America/Los_Angeles
 
 # the hash of the root password for the new installed linux system
 # pw is "waivelet"
