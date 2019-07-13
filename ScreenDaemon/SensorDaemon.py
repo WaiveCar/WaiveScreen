@@ -34,20 +34,7 @@ ix = 0
 ix_hb = 0
 first = True
 
-format = '%(asctime)-15s %(message)s'
-level = logging.DEBUG if os.getenv('DEBUG') else logging.INFO
-logpath = '/var/log/screen/sensordaemon.log'
-
-try:
-  logging.basicConfig(filename=logpath, format=format, level=level)
-
-except:
-  os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
-  logging.basicConfig(filename=logpath, format=format, level=level)
-
-logger = logging.getLogger()
-arduino.set_log(logger)
-
+lib.set_logger('/var/log/screen/sensordaemon.log')
 
 def is_significant(totest):
   global last_reading, ix, ix_hb
