@@ -153,26 +153,12 @@ sub detect_features {
     "sim", $hasSim,
     "ip", qx(mmcli -b 0| grep address | wc -l) > 0,
     "cameras", ($#videoList + 1) / 2,
+    'gps', qx(mmcli -m $modem --location-get --output-keyvalue | grep longitude | grep -v -- -- | wc -l)
   );
   for (my $ix = 1; $ix < scalar @features; $ix += 2) {
     $features[$ix] =~ s/\s//g;
   }
   return @features;
-}
-
-sub acceptance_test {
-  my %results = {
-    # Make sure gps has actual lat/lng
-    'gps' => qx(mmcli -m $modem --location-get --output-keyvalue | grep longitude | grep -v -- -- | wc -l),
-
-    # Check to make sure we have access to sensors
-    'sensor' => qx(pycall sensor_last | wc -c) > 200,
-
-    # Make sure we can get online-- todo
-    
-    # Number of cameras/bus isolation
-    'cameras' => capture_all_cameras
-  };
 }
 
 if ($#ARGV >= 0) {
