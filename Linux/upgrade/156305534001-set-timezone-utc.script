@@ -1,0 +1,6 @@
+#!/bin/bash
+upgradepost() {
+  timedatectl set-timezone UTC
+}
+
+eval $1
