@@ -130,10 +130,6 @@ sms_cleanup() {
   done
 }
 
-t() {
-  echo $(date +%s.%N) $*
-}
-
 text_loop() {
   _mkdir $SMSDIR
 
@@ -167,6 +163,10 @@ text_loop() {
   done
 }
 
+_log() {
+  echo $(date +"%Y-%m-%d %H:%M:%S") $(< /etc/bootcount) "$*" | $SUDO tee -a $LOG/messages.log
+}
+
 _onscreen() {
   [[ -e /tmp/offset ]] && offset=$(< /tmp/offset ) || offset=0
 
@@ -174,25 +174,25 @@ _onscreen() {
   local size=14
 
   echo $1 "$ts" | osd_cat \
-    -c $2 -u black  -A right \
+    -c $3 -d $4 \
+    -u black -A right \
     -O 1 -o $offset \
-    -d $3 \
     -f lucidasanstypewriter-bold-$size &
 
-  echo $ts $1 | $SUDO tee -a /tmp/messages
-  offset=$(( (offset + size + 9) % ((size + 9) * 28) ))
+  _log "[$2]" "$1"
+  offset=$(( (offset + size + 9) % ( (size + 9) * 28 ) ))
 
   echo $offset > /tmp/offset
   chmod 0666 /tmp/offset
 }
 _info() {
-  _onscreen "$*" white 10
+  _onscreen "$*" info white 10
 }
 _warn() {
-  _onscreen "$*" yellow 40
+  _onscreen "$*" warn yellow 40
 }
 _error() {
-  _onscreen "$*" red 90
+  _onscreen "$*" error red 90
 }
 
 set_wrap() {
@@ -227,20 +227,6 @@ enable_gps() {
     --location-enable-agps \
     --location-enable-gps-nmea \
     --location-enable-gps-raw 
-}
-
-capture_all_cameras() {
-  # This makes sure that the wiring is good
-  {
-    for ix in $(seq 0 2 6); do
-      $SUDO rm -f "/tmp/video${ix}.mp4";
-      $SUDO $FFMPEG -i /dev/video$ix -t 4 /tmp/video${ix}.mp4 &
-    done
-
-    sleep 7
-  } >& /dev/null 
-
-  echo /tmp/video*mp4 | wc -w
 }
 
 get_number() {
@@ -348,19 +334,6 @@ EPERL
   pycall db.sess_set modem,1 
 }
 
-# This tries to see if it can find a wireless network
-# to connect to. Generally speaking this is for debugging
-# something that is out in the field
-try_wireless() {
-  down wpa_supplicant
-  $SUDO wpa_supplicant -d -Dnl80211,wext -i$DEV -c/etc/wpa_supplicant.conf &
-  set_event wpa_supplicant
-
-  down wireless_dhclient
-  $SUDO dhclient $DEV &
-  set_event wireless_dhclient
-}
-
 first_run() {
   if [[ -z $(kv_get first_run) ]]; then
     $SUDO systemctl disable hostapd
@@ -418,6 +391,7 @@ sensor_daemon() {
 }
 
 # This is used during the installation - don't touch it!
+# {
 pip_install() {
   pip3 -q install $DEST/pip/*
 }
@@ -426,6 +400,8 @@ install() {
   cd $BASE/ScreenDaemon
   $SUDO pip3 install -r requirements.txt 
 }
+# } end of stuff used during the install that you 
+# SHOULD NOT REMOVE
 
 get_uuid() {
   local UUIDfile=/etc/UUID
@@ -513,6 +489,7 @@ running() {
 down() {
   cd $EV
 
+  _log down $1
   for pidfile in $1; do
     # kill the wrapper first
     [[ -e "0_$pidfile" ]] && down "0_$pidfile"
@@ -547,6 +524,7 @@ local_upgrade() {
   local mountpoint='/tmp/upgrade'
   local package=$mountpoint/upgrade.package
 
+  _log "[upgrade] usb"
   _mkdir $mountpoint
 
   $SUDO umount $mountpoint >& /dev/null
@@ -585,6 +563,7 @@ upgrade_scripts() {
     cd $BASE
     # we do this every time because some upgrades
     # may call for a reboot
+    _log "[upgrade-script] $script"
     kv_set last_upgrade,$script
     $SUDO $script upgradepost
   done
@@ -671,6 +650,7 @@ upgrade() {
   {
     set -x
     _sanityafter
+    _log "[upgrade] net"
     if local_sync; then
       cd $BASE/ScreenDaemon
       git clean -fxd
