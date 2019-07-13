@@ -17,12 +17,16 @@ _mkdir() {
 _mkdir $EV
 
 die() {
-  _error "$*"
+  [[ "$2" == "info" ]] && _info "$1" || _error "$1"
   exit
 }
 
 kv_get() {
   sqlite3 $DB "select value from kv where key='$1'"
+}
+
+kv_unset() {
+  sqlite3 $DB "delete from kv where key='$1'"
 }
 
 kv_set() {
@@ -359,6 +363,7 @@ try_wireless() {
 
 first_run() {
   if [[ -z $(kv_get first_run) ]]; then
+    $SUDO systemctl disable hostapd
     $SUDO apt update || die "Can't find network"
     kv_set first_run,1
   fi
@@ -372,10 +377,7 @@ ssh_hole() {
   local rest=20
   local event=ssh_hole
 
-  if (( $(pgrep -cf dcall\ ssh_hole ) > 1 )); then
-    echo "Nope, kill the others first"
-    exit 0
-  fi
+  (( $(pgrep -cf dcall\ ssh_hole ) > 1 )) && die "ssh_hole already running" info
 
   {
     while true; do
@@ -478,12 +480,6 @@ screen_display() {
     while pgrep Xorg; do
       while pgrep chromium; do
         sleep 10
-
-        # We try to ping the remote here
-        # in case our browser broke from
-        # a botched upgrade.
-        (( ix++ % 20 == 0 )) && pycall lib.ping
-
         [[ -e $EV/0_screen_display ]] || return
         [[ "$(< $EV/0_screen_display )" != "$pid" ]] && return
       done
@@ -597,7 +593,10 @@ upgrade_scripts() {
 hotspot() {
   # Only run if we have wifi
   eval $(pycall feature_detect)
-  [ ! "$wifi" ] && return
+  if [[ -z "$wifi" ]]; then
+    $SUDO service hostap stop
+    return
+  fi
 
   SSID=Waive-$( kv_get number | cut -c 6- )
   DEV_INTERNET=$( ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } ' )
@@ -669,19 +668,21 @@ endl
 }
 
 upgrade() {
-  _sanityafter
-  if local_sync; then
-    cd $BASE/ScreenDaemon
-    # delete the old stuff
-    git clean -fxd
-    $SUDO pip3 install -r requirements.txt
-    perlcall install_list | xargs $SUDO apt -y install
-    pycall db.upgrade
-    upgrade_scripts
-    stack_restart
-  else
-    _warn "Failed to upgrade"
-  fi
+  {
+    set -x
+    _sanityafter
+    if local_sync; then
+      cd $BASE/ScreenDaemon
+      git clean -fxd
+      $SUDO pip3 install -r requirements.txt
+      perlcall install_list | xargs $SUDO apt -y install
+      pycall db.upgrade
+      upgrade_scripts
+      stack_restart
+    else
+      _warn "Failed to upgrade"
+    fi
+  } |& $SUDO tee -a /var/log/upgrade.log &
 }
 
 make_patch() {
@@ -692,7 +693,7 @@ make_patch() {
 }
 
 disk_monitor() {
-  (( $( pgrep -cf 'dcall disk_monitor' ) < 1 )) || die "kill the others first"
+  (( $( pgrep -cf 'dcall disk_monitor' ) < 1 )) || return
   {
     while true; do
       local disk=$(pycall lib.disk_monitor)
@@ -733,7 +734,7 @@ acceptance_test() {
   _bigtext 'Loading...⌛'
   perlcall acceptance_screen
   set_brightness 1
-  chromium --app=file:///tmp/acceptance.html
+  _as_user chromium --app=file:///tmp/acceptance.html
 }
 
 get_location() {

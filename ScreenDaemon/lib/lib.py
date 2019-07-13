@@ -15,6 +15,12 @@ import subprocess
 from threading import Lock
 from pprint import pprint
 
+#
+# IMPORTANT. DO NOT LOG ANYTHING HERE BEFORE CALLING
+# THE BASICCONFIG. If you do your basicconfig will 
+# be ignored and your logs will drift away to mysterious
+# netherworlds
+#
 # This is needed for the git describe to succeed
 MYPATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -41,7 +47,6 @@ SANITYCHECK = os.environ.get('SANITYCHECK')
 NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
 SERVER_URL = os.environ.get('SERVER_URL') or 'http://waivescreen.com/api'
-logging.info("Using {} as the server".format(SERVER_URL))
 
 storage_base = '/var/lib/waivescreen/'
 
@@ -233,7 +238,11 @@ def get_gps():
 
 
 def task_response(which, payload):
-  post('response', payload)
+  post('response', {
+    'uid': get_uuid(),
+    'task_id': which,
+    'response': payload
+  })
 
 def task_ingest(data):
   if 'taskList' not in data:
@@ -258,14 +267,20 @@ def task_ingest(data):
     args = task.get('args')
 
     if action == 'upgrade':
-      dcall("upgrade &")
+      task_response(id, True)
+      dcall("upgrade", method='subprocess')
+
+    if action == 'dcall':
+      task_response(id, dcall(args))
 
     elif action == 'screenoff':
+      db.sess_set('force_sleep')
       global _reading
       _reading = arduino.do_sleep()
       task_response(id, True)
 
     elif action == 'screenon':
+      db.sess_del('force_sleep')
       arduino.do_awake(_reading)
       task_response(id, True)
 
@@ -447,9 +462,9 @@ def ping():
       data_raw = response.text
       try:
         data = json.loads(data_raw)
-      except:
+      except Exception as ex:
         data = False
-        logging.warning("Unable to parse {}".format(data_raw))
+        logging.warning("Unable to parse {}: {}".format(data_raw, ex))
 
       if data:
         # we have 
