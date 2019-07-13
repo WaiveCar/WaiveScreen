@@ -521,12 +521,6 @@ def ping():
 
     return False
 
-def acceptance_test():
-  from . import arduino
-  arduino.test('fb')
-  dcall('_warn', 'phone:{}'.format( db.kv_get('number')), method='subprocess')
-  dcall('_warn', 'camera:{}'.format( dcall('capture_all_cameras') ), method='subprocess')
-
 def feature_detect():
   videoList = glob.glob("/dev/video*")
   hasSim = int(os.popen('mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l').read().strip())
