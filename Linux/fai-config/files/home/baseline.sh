@@ -27,7 +27,7 @@ dev_setup() {
 }
 
 _as_user() {
-  [[ $USER = 'root' ]] && su $WHO -c "$*" || eval $*
+  [[ "$USER" != "$WHO" ]] && su $WHO -c "$*" || eval $*
 }
 
 _git() {

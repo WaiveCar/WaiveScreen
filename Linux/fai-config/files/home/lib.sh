@@ -668,19 +668,22 @@ endl
 }
 
 upgrade() {
-  _sanityafter
-  if local_sync; then
-    cd $BASE/ScreenDaemon
-    # delete the old stuff
-    git clean -fxd
-    $SUDO pip3 install -r requirements.txt
-    perlcall install_list | xargs $SUDO apt -y install
-    pycall db.upgrade
-    upgrade_scripts
-    stack_restart
-  else
-    _warn "Failed to upgrade"
-  fi
+  {
+    set -x
+    _sanityafter
+    if local_sync; then
+      cd $BASE/ScreenDaemon
+      # delete the old stuff
+      git clean -fxd
+      $SUDO pip3 install -r requirements.txt
+      perlcall install_list | xargs $SUDO apt -y install
+      pycall db.upgrade
+      upgrade_scripts
+      stack_restart
+    else
+      _warn "Failed to upgrade"
+    fi
+  } |& $SUDO tee -a /var/log/upgrade.log
 }
 
 make_patch() {
