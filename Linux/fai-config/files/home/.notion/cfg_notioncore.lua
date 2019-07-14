@@ -5,8 +5,8 @@ defwinprop{
 defbindings("WScreen", {
     bdoc("Switch to n:th object (workspace, full screen client window) "..
          "within current screen."),
-    kpress(META.."1", "WScreen.switch_nth(_, 0)"),
-    kpress(META.."0", "WScreen.switch_nth(_, 9)"),
+    kpress(OTHERMETA.."1", "WScreen.switch_nth(_, 0)"),
+    kpress(OTHERMETA.."0", "WScreen.switch_nth(_, 9)"),
     
     bdoc("Switch to next/previous object within current screen."),
     kpress(OTHERMETA.."S", "WScreen.switch_prev(_)"),
@@ -69,8 +69,6 @@ defbindings("WScreen", {
 -- These bindings affect client windows directly.
 
 defbindings("WClientWin", {
-    kpress(METASHIFT.."4", "WClientWin.kill(_)"),
-    kpress(OTHERMETASHIFT.."4", "WClientWin.kill(_)"),
 
     submap(META.."K", {
        bdoc("Kill client owning the client window."),
@@ -103,6 +101,7 @@ defbindings("WMPlex.toplevel", {
     kpress(OTHERMETA.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white -fa \"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*\" -fs 13 ')"),
     kpress(OTHERMETA.."slash", "mod_query.query_gotoclient(_)"),
     kpress(OTHERMETA.."Delete", "notioncore.exec_on(_, 'exec /usr/bin/sudo /sbin/reboot')"),
+    kpress(OTHERMETA.."U", "notioncore.exec_on(_, 'exec /home/adorno/dcall upgrade')"),
     
     submap(META.."K", {
         bdoc("Detach (float) or reattach an object to its previous location."),
