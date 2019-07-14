@@ -66,6 +66,12 @@ sub acceptance_screen {
 html {
   font-size:220%;
 }
+body {
+  overflow:hidden;
+  text-align:center;
+  padding:.5rem;
+  background:url('file://$home/WaiveScreen/tools/client/test-bg.gif') repeat;
+}
 .bad,.good,.value {
   width:45%;
   font-size:1.1rem;
@@ -102,8 +108,9 @@ html {
   font-weight: bold; 
   margin-bottom: .5rem;
 }
+
 </style>
-<body style="text-align:center;padding:.5rem;background:url('file://$home/WaiveScreen/tools/client/test-bg.gif') repeat">
+<body>
 <span id='box'>
 <div id='header'>
   <div >$values{'uuid'}</div>
