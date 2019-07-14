@@ -597,6 +597,7 @@ def upgrades_to_run():
 
     try:
       pos = upgrade_list.index(last_upgrade_script)
+      pos += 1
     except Exception as ex:
       pos = 0
 
