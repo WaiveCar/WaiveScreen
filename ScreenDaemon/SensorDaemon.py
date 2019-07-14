@@ -106,6 +106,14 @@ while True:
   # Put data in if we have it
   location = lib.get_gps()
 
+  try:
+    if location:
+      if not db.sess_get('autobright'):
+        arduino.set_autobright()
+        
+  except:
+    pass
+
   all = {**location, **sensor, 'run': run} 
 
   if first:
