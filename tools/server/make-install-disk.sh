@@ -35,6 +35,8 @@ if [[ -z "$NODISK" ]]; then
   fi
 fi
 
+preexist=$HOME/WaiveScreen-*$(git describe).iso
+[[ -n "$preexist" ]] && die "$preexist already exists. Either run with ONLYDISK or remove the iso(s)."
 [[ -z "$NOPIP" ]] && ( NONET=1 $DIR/syncer.sh pip || die "Can't sync" )
 
 if [ "$MIRROR" -o ! -e $dir ]; then
