@@ -2,7 +2,6 @@
 from . import db
 import serial
 import time
-import datetime
 import math
 import struct
 import sys
