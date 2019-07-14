@@ -43,8 +43,6 @@ wpasupplicant
 bluez
 v4l-utils
 
-geoclue-2.0
-
 # hotspot
 isc-dhcp-server
 hostapd
