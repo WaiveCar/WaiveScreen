@@ -173,7 +173,7 @@ _onscreen() {
   local ts=$( printf "%03d" $(( $(date +%s) - $(< /tmp/startup) )))
   local size=14
 
-  echo $1 "$ts" | osd_cat \
+  echo $1 | osd_cat \
     -c $3 -d $4 \
     -u black -A right \
     -O 1 -o $offset \
@@ -647,10 +647,10 @@ endl
 }
 
 upgrade() {
+  _info "Upgrading... Please wait"
   {
     set -x
     _sanityafter
-    _log "[upgrade] net"
     if local_sync; then
       # note: git clean only goes deeper, it doesn't do the entire repo
       cd $BASE && git clean -fxd
@@ -660,6 +660,7 @@ upgrade() {
       pycall db.upgrade
       upgrade_scripts
       stack_restart
+      _info "Now on $(cd $BASE && git describe)"
     else
       _warn "Failed to upgrade"
     fi
