@@ -248,8 +248,8 @@ def get_gps(use_cache=False):
     lng = db.kv_get('Lng')
     if lat:
       fallback = {
-        'Lat': lat,
-        'Lng': lng
+        'Lat': float(lat),
+        'Lng': float(lng)
       }
 
   if modem:
