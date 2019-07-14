@@ -1,6 +1,11 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+die() {
+  echo $*
+  exit
+}
+
 list() {
   curl -s waivescreen.com/api/screens | python -mjson.tool
 }
