@@ -138,7 +138,7 @@ body {
     <div style=font-size:.9rem;font-weight:bold>up: $uptime | boot: $values{'runcount'} <br/><script>
     document.write(("" + new Date()).split('\(').join('<br>\('));</script></div>
   </div>
-  <div style=padding-top:.5rem;font-size:1rem;font-style:italic;text-align:center>press ctrl+w to exit</div>
+  <div style=padding-top:.5rem;font-size:1rem;font-style:italic;text-align:center>press ctrl+w to exit, ctrl+alt+delete to reboot</div>
 </body>
   );
   close $html;
