@@ -161,7 +161,7 @@ sub detect_features {
   my @features = (
     "arduino", -e "/dev/ttyACM0" ? 1 : 0,
     "wifi", -e "/proc/sys/net/ipv4/conf/wlp1s0" ? 1 : 0,
-    "modem", -e "/dev/cdc-wdm0" ? 1 : 0,
+    "modem", ( -e "/dev/cdc-wdm0" || -e "/dev/cdc-wdm1" ) ? 1 : 0,
     "signal", $signal,
     "sim", $hasSim,
     "ip", qx(mmcli -b 0| grep address | wc -l) > 0,
