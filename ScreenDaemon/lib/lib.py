@@ -175,14 +175,19 @@ def set_logger(logpath):
 
   level = logging.DEBUG if DEBUG else logging.INFO
   format = '%(asctime)s %(levelname)s:%(message)s'
-  try:
-    logging.basicConfig(filename=logpath, format=format, level=level)
 
-  except:
-    os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(os.path.dirname(logpath)))
-    os.system('/usr/bin/sudo /usr/bin/touch {}'.format(logpath))
-    os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
-    logging.basicConfig(filename=logpath, format=format, level=level)
+  if logpath == sys.stderr:
+    logging.basicConfig(stream=logpath, format=format, level=level)
+
+  else:
+    try:
+      logging.basicConfig(filename=logpath, format=format, level=level)
+
+    except:
+      os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(os.path.dirname(logpath)))
+      os.system('/usr/bin/sudo /usr/bin/touch {}'.format(logpath))
+      os.system('/usr/bin/sudo chmod 0666 {}'.format(logpath))
+      logging.basicConfig(filename=logpath, format=format, level=level)
 
   logger = logging.getLogger()
   arduino.set_log(logger)
@@ -651,6 +656,7 @@ def get_brightness_map():
   # Get dict of local dawn, sunrise, sunset dusk times in UTC
   suntimes = get_suntimes()
   if suntimes:
+    logging.info('[autobright] Using suntimes')
     def hours_diff(t1, t2):
       return round((t1 - t2).seconds / 3600)
 
@@ -669,6 +675,7 @@ def get_brightness_map():
     rotate_map_by = suntimes['dawn'].hour
     return bmap[-rotate_map_by:] + bmap[:-rotate_map_by]
   else:
+    logging.info('[autobright] Using fallback')
     return default_brightness_map
 
 def get_suntimes():
