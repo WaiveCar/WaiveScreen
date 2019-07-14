@@ -595,18 +595,20 @@ def get_brightness_map():
   # Get dict of local dawn, sunrise, sunset dusk times in UTC
   suntimes = get_suntimes()
   if suntimes:
-    night_brightness = 0.2      # Default nighttime brightness level
-    transition_brightness = 0.6 # Default transition brightness level
-    day_brightness = 1.0        # Default day brightness level
-
     def hours_diff(t1, t2):
       return round((t1 - t2).seconds / 3600)
 
+    night_brightness = 0.2      # Default nighttime brightness level
+    transition_brightness = 0.6 # Default transition brightness level
+    day_brightness = 1.0        # Default day brightness level
     dawn_len = hours_diff(suntimes['sunrise'], suntimes['dawn']) + 1
     day_len = hours_diff(suntimes['sunset'], suntimes['sunrise']) - 1
     dusk_len = hours_diff(suntimes['dusk'], suntimes['sunset']) + 1
-    bmap = [transition_brightness] * dawn_len + [day_brightness] * day_len + [transition_brightness] * dusk_len
-    bmap = bmap + [night_brightness] * (24 - len(bmap))
+
+    bmap = [transition_brightness] * dawn_len + \
+           [day_brightness] * day_len + \
+           [transition_brightness] * dusk_len + \
+           [night_brightness] * (24 - len(bmap))
     # Calculate and rotate the map by dawn hour
     rotate_map_by = suntimes['dawn'].hour
     return bmap[-rotate_map_by:] + bmap[:-rotate_map_by]
@@ -618,7 +620,12 @@ def get_suntimes():
   # return dict of local dawn, sunrise, sunset dusk times in UTC
   location = get_latlng()
   if location:
-    from astral import Astral
+    try:
+      from astral import Astral
+    except ImportError as ex:
+      logging.warning("Failed to import astral module: {}".format(ex))
+      return {}
+
     a = Astral()
     suntimes = a.sun_utc(datetime.today(), location['Lat'], location['Lng'])
     return suntimes
@@ -626,7 +633,12 @@ def get_suntimes():
     return {}
 
 def get_timezone():
-  from timezonefinder import TimezoneFinder
+  try:
+    from timezonefinder import TimezoneFinder
+  except ImportError as ex:
+    logging.warning("Failed to import timezonefinder module: {}".format(ex))
+    return None
+
   location = get_latlng()
   if location:
     return TimezoneFinder().timezone_at(lat=location['Lat'], lng=location['Lng'])
