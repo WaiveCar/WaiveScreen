@@ -64,7 +64,7 @@ sub acceptance_screen {
   open(my $html, '>', '/tmp/acceptance.html');
   print $html qq(<style>
 html {
-  font-size:220%;
+  font-size:210%;
 }
 body {
   overflow:hidden;
@@ -108,7 +108,14 @@ body {
   font-weight: bold; 
   margin-bottom: .5rem;
 }
-
+#shortcut {
+  padding: 0.15rem;
+  font-family: monospace;
+  font-size: .8rem;
+  text-align: left;
+  background: #eee;
+  margin-top: 0.4rem;
+}
 </style>
 <body>
 <span id='box'>
@@ -138,7 +145,7 @@ body {
     <div style=font-size:.9rem;font-weight:bold>up: $uptime | boot: $values{'runcount'} <br/><script>
     document.write(("" + new Date()).split('\(').join('<br>\('));</script></div>
   </div>
-  <div style=padding-top:.5rem;font-size:1rem;font-style:italic;text-align:center>press ctrl+w to exit, ctrl+alt+delete to reboot</div>
+  <div id=shortcut><b>shortcuts</b><br/>exit: ctrl+w | reboot: ctrl+alt+delete | upgrade: ctrl+alt+u</div>
 </body>
   );
   close $html;
