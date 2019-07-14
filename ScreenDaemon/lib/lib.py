@@ -607,8 +607,8 @@ def get_brightness_map():
 
     bmap = [transition_brightness] * dawn_len + \
            [day_brightness] * day_len + \
-           [transition_brightness] * dusk_len + \
-           [night_brightness] * (24 - len(bmap))
+           [transition_brightness] * dusk_len
+    bmap = bmap + [night_brightness] * (24 - len(bmap))
     # Calculate and rotate the map by dawn hour
     rotate_map_by = suntimes['dawn'].hour
     return bmap[-rotate_map_by:] + bmap[:-rotate_map_by]
