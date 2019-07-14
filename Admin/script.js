@@ -1,3 +1,7 @@
+function get(id) {
+  var res = Data.filter(row => row.id == id);
+  return res ? res[0] : null;
+}
 function show(res) {
   let notice = document.getElementById('notice');
   notice.innerHTML = res.data || "OK";
@@ -47,3 +51,8 @@ function command(id, name) {
   }
 }
 
+function edit(id) {
+  var screen = get(id);
+  $("#ModalLabel").html(screen.uid);
+  $("#editModal").modal();
+}
