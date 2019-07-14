@@ -102,7 +102,7 @@ defbindings("WMPlex.toplevel", {
     kpress(OTHERMETA.."T", "WRegion.set_tagged(_sub, 'toggle')", "_sub:non-nil"),
     kpress(OTHERMETA.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white -fa \"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*\" -fs 13 ')"),
     kpress(OTHERMETA.."slash", "mod_query.query_gotoclient(_)"),
-    kpress(OTHERMETA.."Delete",        "ioncore.restart()"),
+    kpress(OTHERMETA.."Delete", "notioncore.exec_on(_, 'exec /usr/bin/sudo /sbin/reboot')"),
     
     submap(META.."K", {
         bdoc("Detach (float) or reattach an object to its previous location."),
@@ -121,8 +121,6 @@ defbindings("WMPlex.toplevel", {
 -- frame bindings are found in some modules' configuration files.
 
 defbindings("WFrame", {
-    kpress(META.."2", "realmaximize(_)"),
-    kpress(OTHERMETA.."2", "realmaximize(_)"),
     
     bdoc("Display context menu."),
     mpress("Button3", "mod_menu.pmenu(_, _sub, 'ctxmenu')"),
