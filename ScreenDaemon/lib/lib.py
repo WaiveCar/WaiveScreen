@@ -630,6 +630,7 @@ def get_latlng():
 
 def get_brightness_map():
   # Fallback map if we can't get the lat/long from GPS
+  """
   default_brightness_map = [
     0.20, 0.08, 0.08, 0.08,  # 4am
     0.10, 0.30, 0.70, 0.90,  # 8am
@@ -637,6 +638,15 @@ def get_brightness_map():
     1.00, 1.00, 1.00, 1.00,  # 4pm
     1.00, 0.90, 0.80, 0.70,  # 8pm
     0.50, 0.50, 0.40, 0.30,  # midnight
+  ]
+  """
+  default_brightness_map = [
+    0.60, 0.60, 0.60, 0.60,  # 4am
+    0.60, 0.60, 0.60, 0.60,  # 8am
+    0.60, 0.60, 0.60, 0.60,  # 12pm
+    0.60, 0.60, 0.60, 0.60,  # 4pm
+    0.60, 0.60, 0.60, 0.60,  # 8pm
+    0.60, 0.60, 0.60, 0.60,  # midnight
   ]
   # Get dict of local dawn, sunrise, sunset dusk times in UTC
   suntimes = get_suntimes()
@@ -666,6 +676,8 @@ def get_suntimes():
   # return dict of local dawn, sunrise, sunset dusk times in UTC
   location = get_latlng()
   if location:
+    db.sess_set('autobright')
+
     try:
       from astral import Astral
     except ImportError as ex:
