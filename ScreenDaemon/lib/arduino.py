@@ -82,17 +82,11 @@ def dcall(*kvarg):
   os.popen('{} {}'.format(dcall,' '.join([str(k) for k in kvarg])))
 
 def set_autobright():
-  brightness_map = [
-    0.20, 0.08, 0.08, 0.08,  # 4am
-    0.10, 0.30, 0.70, 0.90,  # 8am
-    1.00, 1.00, 1.00, 1.00,  # 12pm
-    1.00, 1.00, 1.00, 1.00,  # 4pm
-    1.00, 0.90, 0.80, 0.70,  # 8pm
-    0.50, 0.50, 0.40, 0.30,  # midnight
-  ]
+  from .lib import get_brightness_map
+
+  brightness_map = get_brightness_map()
 
   level = brightness_map[time.localtime().tm_hour]
-  
   #
   # The maximum brightness can be instructed to us
   # on a per-boot-instance basis by a "brightnes" 
