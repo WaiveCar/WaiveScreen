@@ -239,8 +239,18 @@ def post(url, payload):
   logging.info("{} {}".format(url, json.dumps(payload)))
   return requests.post(urlify(url), verify=False, headers=headers, json=payload)
 
-def get_gps():
+def get_gps(use_cache=False):
   modem = get_modem()
+  fallback = {}
+
+  if use_cache:
+    lat = db.kv_get('Lat')
+    lng = db.kv_get('Lng')
+    if lat:
+      fallback = {
+        'Lat': lat,
+        'Lng': lng
+      }
 
   if modem:
     try:
@@ -248,9 +258,12 @@ def get_gps():
 
       gps = location.get(2)
       if not gps:
-        return {}
+        return fallback
 
       else:
+        db.kv_set('Lat', gps['latitude'])
+        db.kv_set('Lng', gps['longitude'])
+
         return {
           'Lat': gps['latitude'],
           'Lng': gps['longitude']
@@ -258,7 +271,7 @@ def get_gps():
     except Exception as ex:
       logging.warning("Modem issue {}".format(ex)) 
 
-  return {}
+  return fallback
 
 
 def task_response(which, payload):
@@ -609,7 +622,7 @@ def disk_monitor():
       #dcall('local_upgrade', path, '&')
 
 def get_latlng():
-  location = get_gps()
+  location = get_gps(use_cache=True)
   if location:
     return location
   else:
