@@ -326,11 +326,6 @@ def task_ingest(data):
       arduino.do_awake(_reading)
       task_response(id, True)
 
-    elif action == 'reboot':
-      # we respond before we do it, probably a bad idea
-      task_response(id, True)
-      os.system('/usr/bin/sudo /sbin/reboot')
-
     elif action == 'autobright':
       db.sess_del('backlight')
       arduino.set_autobright()
@@ -603,9 +598,7 @@ def upgrades_to_run():
     try:
       pos = upgrade_list.index(last_upgrade_script)
     except Exception as ex:
-      pos = -1
-      
-    pos += 1
+      pos = 0
 
     to_run = upgrade_list[pos:]
     print(" ".join(to_run))
