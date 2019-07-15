@@ -13,7 +13,7 @@ $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
 $PROJECT_LIST = ['LA', 'NY'];
 $DEFAULT_CAMPAIGN_MAP = [
-  'none' => 30, // 139
+  'none' => 139,
   'LA' => 30,
   'NY' => 140
 ];
