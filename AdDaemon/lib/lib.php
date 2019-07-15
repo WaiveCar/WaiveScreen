@@ -453,16 +453,22 @@ function sow($payload) {
 
   foreach($jobList as $job) {
 
-    $job_id = aget($job, 'job_id', aget($job, 'id'));
-    if (! update_job($job_id, $job['completed_seconds']) ) {
-      error_log("could not process job: " . json_encode($job));
-    }
+    // this is the old system ... these machines
+    // should just upgrade.
+    if(aget($job, 'id')) {
+      error_log("need to upgrade: {$payload['uid']}");
+    } else {
+      $job_id = aget($job, 'job_id');
+      if (! update_job($job_id, $job['completed_seconds']) ) {
+        error_log("could not process job: " . json_encode($job));
+      }
 
-    if(!isset($job['campaign_id'])) {
-      $job = Get::job($job_id);
-    }
-    if(isset( $job['campaign_id'] )) {
-      $campaignsToUpdateList[] = $job['campaign_id'];
+      if(!isset($job['campaign_id'])) {
+        $job = Get::job($job_id);
+      }
+      if(isset( $job['campaign_id'] )) {
+        $campaignsToUpdateList[] = $job['campaign_id'];
+      }
     }
   }
 
