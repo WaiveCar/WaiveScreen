@@ -436,7 +436,11 @@ function update_campaign_completed($id) {
   if(!$id) {
     error_log("Not updating an invalid campaign: $id");
   } else {
-    _query("update campaign set completed_seconds=(select sum(completed_seconds) from job where campaign_id=$id) where id=$id and is_default=0");
+    // only update campaign totals that aren't our defaults
+    _query("update campaign 
+      set completed_seconds=(
+        select sum(completed_seconds) from job where campaign_id=$id
+      ) where id=$id and is_default=0");
   }
 }
   
@@ -474,9 +478,9 @@ function sow($payload) {
 
   // Make sure we update our grand totals on a per campaign basis when it comes in.
   $uniqueCampaignList = array_unique($campaignsToUpdateList);
-  foreach($uniqueCampaignList as $campaign) {
-    if($campaign) {
-      update_campaign_completed($campaign);
+  foreach($uniqueCampaignList as $campaign_id) {
+    if($campaign_id) {
+      update_campaign_completed($campaign_id);
     } else {
       error_log("Couldn't update campaign");
     }
