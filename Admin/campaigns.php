@@ -42,12 +42,9 @@ for($ix = 0; $ix < count($campaignList); $ix++){
 
           Start: <?= $campaign['start_time'] ?><br>
           End: <?= $campaign['end_time'] ?>
-
-
-user
   
           <p class="card-text">user</p>
-          <a href="#" class="btn btn-primary">Disable</a>
+          <a href="#<?=$campaign['id']?>" class="btn btn-primary">Disable</a>
         </div>
       </div>
     <? } ?>
