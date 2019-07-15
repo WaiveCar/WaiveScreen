@@ -436,7 +436,7 @@ function update_campaign_completed($id) {
   if(!$id) {
     error_log("Not updating an invalid campaign: $id");
   } else {
-    _query("update campaign set completed_seconds=(select sum(completed_seconds) from job where campaign_id=$id) where id=$id");
+    _query("update campaign set completed_seconds=(select sum(completed_seconds) from job where campaign_id=$id) where id=$id and is_default=0");
   }
 }
   
@@ -455,10 +455,10 @@ function sow($payload) {
 
     // this is the old system ... these machines
     // should just upgrade.
+    $job_id = aget($job, 'job_id');
     if(aget($job, 'id')) {
       error_log("need to upgrade: {$payload['uid']}");
-    } else {
-      $job_id = aget($job, 'job_id');
+    } else if($job_id) {
       if (! update_job($job_id, $job['completed_seconds']) ) {
         error_log("could not process job: " . json_encode($job));
       }
@@ -579,7 +579,13 @@ function show($what, $clause = '') {
 }
 
 function active_campaigns() {
-  return show('campaign', 'where active=1 and end_time > current_timestamp and start_time < current_timestamp and completed_seconds < duration_seconds order by active desc, start_time desc');
+  return show('campaign', 'where 
+    active=1 and 
+    is_default=0 and
+    end_time > current_timestamp and 
+    start_time < current_timestamp and 
+    completed_seconds < duration_seconds 
+    order by active desc, start_time desc');
 }
 
 function campaigns_list($opts = []) {
