@@ -13,9 +13,9 @@ $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
 $PROJECT_LIST = ['LA', 'NY'];
 $DEFAULT_CAMPAIGN_MAP = [
-  'none' => 30,
+  'none' => 30, // 139
   'LA' => 30,
-  'NY' => 31
+  'NY' => 140
 ];
 
 // Play time in seconds of one ad.
