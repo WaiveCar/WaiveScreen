@@ -37,6 +37,8 @@ for($ix = 0; $ix < count($screenList); $ix++){
 
 //$tagList = db_all("select name from tag");
 
+$PROJECT_LIST = ['LA', 'NY'];
+
 $fieldList = [
   //'id'  => 'uid',
   'car' => 'car',
@@ -50,6 +52,10 @@ $fieldList = [
   'first' => 'first_local'
 ];
 $editable = ['car', 'serial', 'phone'];
+function split($str) {
+  return $str;
+}
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -84,6 +90,7 @@ $editable = ['car', 'serial', 'phone'];
         <thead>
           <tr>
           <th scope="col">id</th>
+          <th scope="col">project</th>
           <? foreach($fieldList as $key => $value) { ?>
             <th scope="col" class="<?= $key ?>"><?= $key ?></th>
           <? } ?>
@@ -94,13 +101,21 @@ $editable = ['car', 'serial', 'phone'];
         <? foreach($screenList as $screen) { ?>
           <tr>
             <td>
-              <a href="#<?=$screen['id']?>" onclick='edit("<?=$screen['id']?>")' class=id><?= $screen['uid'] ?></a>
+              <a href="#<?=$screen['id']?>" onclick='edit("<?=$screen['id']?>")' class=id><?= split($screen['uid']) ?></a>
+            </td>
+            <td>
+            <select onchange=change(<?=$screen['id']?>,'project',this)>
+                <option value="">none</option>
+                <?foreach($PROJECT_LIST as $project) { ?>
+                  <option value="<?=$project?>"><?=$project?></option>
+                <? } ?>
+              </select>
             </td>
             <? foreach($fieldList as $name => $key) { ?>
               <td class="<?= $name?>">
                 <span><?= $screen[$key] ?></span>
                 <? if (array_search($key, $editable) !== false) { ?>
-                  <a onclick="change(<?=$screen['id']?>,'<?=$key?>',this)"><i class="edit fa fa-pencil"></i></a>
+                  <a onclick="promptchange(<?=$screen['id']?>,'<?=$key?>',this)"><i class="edit fa fa-pencil"></i></a>
                 <? } ?>
               </td>
             <? } ?>

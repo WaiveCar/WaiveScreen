@@ -63,6 +63,7 @@ $SCHEMA = [
     'imei'        => 'text',
     'phone'       => 'text',
     'car'         => 'text',
+    'project'     => 'text',
 
     'lat'         => 'float default null',
     'lng'         => 'float default null',

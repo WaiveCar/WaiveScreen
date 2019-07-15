@@ -2,16 +2,30 @@ function get(id) {
   var res = Data.filter(row => row.id == id);
   return res ? res[0] : null;
 }
-function show(res) {
+function show(res, timeout) {
   let notice = document.getElementById('notice');
+  timeout = timeout || 4000;
   notice.innerHTML = res.data || "OK";
   notice.style.display = 'block';
   setTimeout(function() {
     notice.style.display = 'none';
-  }, 4000);
+  }, timeout);
 }
 
 function change(id, what, el) {
+  fetch(new Request('/api/screens', {
+    method: 'POST', 
+    body: JSON.stringify({id: id, [what]: el.value})
+  })).then(res => {
+    if (res.status === 200) {
+      return res.json();
+    }
+  }).then(res => {
+    show({data: 'Updated project'}, 1000);
+  });
+}
+
+function promptchange(id, what, el) {
   let dom = el.parentNode.firstElementChild;
   var newval = prompt(`Change the ${what}`, dom.innerHTML)
   if(newval !== null) {

@@ -11,6 +11,7 @@ include_once('user.php');
 
 $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
+$PROJECT_LIST = ['LA', 'NY'];
 $DEFAULT_CAMPAIGN_ID = 30;
 
 // Play time in seconds of one ad.
@@ -182,13 +183,13 @@ function tag($data, $verb) {
   return doError("Need an action & name");
 }
 
+// create/show/update tags with screens
 function screen_tag($data, $verb) {
   $tagList = Many::tag(['screen_id' => $data['id']]);
   $toadd = aget($data, 'add');
-  $todel = aget($data, 'del');
+  $todel = aget($data, 'delete');
   foreach($todel as $key) {
   }
-
 
 }
 
@@ -384,7 +385,7 @@ function task_responses() {
 }
 
 function screen_edit($data) {
-  $whitelist = ['car', 'phone', 'serial'];
+  $whitelist = ['car', 'phone', 'serial', 'project'];
   $update = [];
   foreach(array_intersect($whitelist, array_keys($data)) as $key) {
     $update[$key] = db_string($data[$key]);
