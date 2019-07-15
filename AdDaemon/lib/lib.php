@@ -12,7 +12,11 @@ include_once('user.php');
 $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
 $PROJECT_LIST = ['LA', 'NY'];
-$DEFAULT_CAMPAIGN_ID = 30;
+$DEFAULT_CAMPAIGN_MAP = [
+  'none' => 30,
+  'LA' => 30,
+  'NY' => 31
+];
 
 // Play time in seconds of one ad.
 $PLAYTIME = 7.5;
@@ -261,11 +265,17 @@ function command($payload) {
   );
 }
 
+function default_campaign($screen) {
+  global $DEFAULT_CAMPAIGN_MAP;
+  $id = $DEFAULT_CAMPAIGN_MAP['none'];
+  if($screen['project']) {
+    $id =  $DEFAULT_CAMPAIGN_MAP[$screen['project']];
+  }
+  return Get::campaign($id);
+}
+
 function ping($payload) {
-  global 
-    $DEFAULT_CAMPAIGN_ID,
-    $VERSION, 
-    $LASTCOMMIT;
+  global $VERSION, $LASTCOMMIT;
 
   error_log(json_encode($payload));
 
@@ -308,7 +318,7 @@ function ping($payload) {
     'version' => $VERSION,
     'version_date' => $LASTCOMMIT,
     'screen' => $screen,
-    'default' => Get::campaign($DEFAULT_CAMPAIGN_ID)
+    'default' => default_campaign($screen)
   ];
   return task_inject($screen, $res);
 }
