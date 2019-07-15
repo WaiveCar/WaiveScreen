@@ -70,3 +70,11 @@ function edit(id) {
   $("#ModalLabel").html(screen.uid);
   $("#editModal").modal();
 }
+
+$(function() {
+  $('#dataTable').DataTable({
+    stateSave: true,
+    order: [[10, 'desc']]
+  });
+});
+
