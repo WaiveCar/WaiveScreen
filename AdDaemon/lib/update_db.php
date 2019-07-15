@@ -27,7 +27,12 @@ foreach($SCHEMA as $table_name => $table_schema) {
 
       foreach($column_to_add_list as $column_to_add) {
         $column_to_add_schema = $table_schema[$column_to_add];
-        $db->exec("alter table $table_name add column $column_to_add $column_to_add_schema");
+        $sql = "alter table $table_name add column '$column_to_add' $column_to_add_schema";
+        try {
+          $db->exec($sql);
+        } catch(Exception $ex) {
+          echo "Failed: $sql";
+        }
       }
 
       // If we added columns then we need to revisit our pragma
