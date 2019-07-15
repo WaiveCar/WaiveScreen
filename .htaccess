@@ -13,5 +13,7 @@ RewriteRule "admin/(.*)/(.*)$" "Admin/$1.php?id=$2&%{QUERY_STRING}" [L]
 RewriteRule "admin/(.*)$" "Admin/$1.php?%{QUERY_STRING}" [L]
 
 RewriteRule "install" "https://youtu.be/Yc7FoILU5vY" [L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !Madison*
 RewriteRule ^(.*)$ MadisonAve/static/$1 [L]
