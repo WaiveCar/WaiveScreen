@@ -151,12 +151,44 @@ function find_unfinished_job($campaignId, $screenId) {
 function tag_update($screen) {
 }
 
-function tag($data) {
+// create/show/delete tag: 
+// options:
+//
+//  {
+//    action: add/delete
+//    name: tag to add
+//  }
+//
+function tag($data, $verb) {
+  if($verb === 'GET') {
+    return show('tag');
+  }
+  $action = aget($data, 'action');
+  $name = db_string(aget($data, 'name'));
+  $row = Get::tag(['name' => $name]);
+  if($action == 'add') { 
+    if(!$row) {
+      db_insert('tag', ['name' => $name]);
+      return doSuccess("tag $name added");
+    }
+    return doError("tag $name exists!");
+  } else if ($action == 'delete') {
+    if($row) {
+      db_delete('tag', ['id' => $row['id']]);
+      return doSuccess("tag $name deleted");
+    }
+    return doError("tag $name does not exist");
+  } 
+  return doError("Need an action & name");
+}
+
+function screen_tag($data, $verb) {
   $tagList = Many::tag(['screen_id' => $data['id']]);
   $toadd = aget($data, 'add');
   $todel = aget($data, 'del');
   foreach($todel as $key) {
   }
+
 
 }
 

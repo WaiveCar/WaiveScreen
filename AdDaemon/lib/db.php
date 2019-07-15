@@ -138,10 +138,14 @@ $SCHEMA = [
     'job_end'     => 'datetime'
   ],
 
+  // In the future we can have different tag classes or namespaces
+  // But for the time being we just need 1 separation: LA and NY
+  // and that's literally it. Generalizability can come later.
+  //
   // This is a list of tags, it's notable that we aren't really
   // doing some kind of "normalization" like all the proper kids
   // do because we don't want to be doing stupid table joins 
-  // everywhere to say a couple bytes.
+  // everywhere to save a couple bytes.
   'tag' => [
     'id'        => 'integer primary key autoincrement',
     'name'      => 'text',

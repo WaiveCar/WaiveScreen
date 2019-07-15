@@ -33,8 +33,8 @@ try {
   else if(array_search($func, ['jobs', 'campaigns', 'screens', 'tasks', 'task_responses']) !== false) {
     jemit(show(rtrim($func, 's')));
   }
-  else if(array_search($func, ['sow', 'tag', 'ping', 'command', 'response']) !== false) { 
-    jemit($func($all));
+  else if(array_search($func, ['sow', 'screen_tag', 'tag', 'ping', 'command', 'response']) !== false) { 
+    jemit($func($all, $verb));
   }
   else if($func == 'setup') {
     jemit(setup($_POST));
