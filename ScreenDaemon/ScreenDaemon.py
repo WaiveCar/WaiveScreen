@@ -84,13 +84,14 @@ def next_ad(work = False):
   sensor = lib.sensor_last()
   payload = {
     'uid': lib.get_uuid(),
-    'lat': sensor.get('Lat'),
-    'lng': sensor.get('Lng')
+    'lat': db.kv_get('Lat'),
+    'lng': db.kv_get('Lng')
   }
 
   db.kv_set('last_sow', int(time.time()))
 
   try:
+    # we probably want a smarter way to do this.
     dpms = os.popen("xset q | grep Monitor | tail -1 | awk ' { print $NF } '").read().strip()
     power = 'awake' if dpms == 'On' else 'sleep'
 
