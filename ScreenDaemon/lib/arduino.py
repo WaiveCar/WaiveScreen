@@ -12,6 +12,10 @@ _arduino = False
 _first = False
 _sleeping = None
 _log = False
+# we do this to get an initial value
+_changeTime = time.time()
+_baseline = False
+_baselineList = []
 
 USER = os.environ.get('USER')
 if not USER or USER == 'root':
@@ -103,20 +107,31 @@ def set_autobright():
   dcall('set_brightness', level, 'nopy')
 
 def do_awake():
-  global _sleeping
+  global _sleeping, _changeTime
   if not db.sess_get('force_sleep'):
     _sleeping = False
+    _changeTime = time.time()
+    _baseline = False
+    _baselineList = []
     db.sess_set('power', 'awake')
+    db.sess_set('power_changeTime', 'current_timestamp')
     os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
+    _log.info("Waking up")
+    _log.info("Changetime set {}".format(time.time())
     set_autobright()
     set_fanauto()
 
 def do_sleep():
-  global _sleeping
+  global _sleeping, _changeTime
   db.sess_set('power', 'sleep')
+  db.sess_set('power_changeTime', 'current_timestamp')
   
   _sleeping = True
+  _changeTime = time.time()
+  _baseline = False
+  _baselineList = []
   _log.info("Going to sleep")
+  _log.info("Changetime set {}".format(time.time())
 
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force suspend".format(DISPLAY))
 
@@ -130,7 +145,34 @@ def do_sleep():
   #
   # os.system("/usr/bin/sudo /usr/bin/acpitool -s")
 
-def pm_if_needed(avg):
+def pm_if_needed(avg, last):
+  global _changeTime, _baselineList, _baseline
+
+  if _changeTime and not _baseline:
+    delta = time.time() - _changeTime 
+
+    if delta > 0.5 && delta < 5.0:
+      if len(_baselineList) == 0:
+        _log.info("Baseline time window started")
+
+      _baselineList.append(last)
+
+    elif delta > 5.0:
+      _baseline = sum(_baselineList) / len(_baselineList)
+      _log.info("Baseline time window finished. Value to compare: {}".format(_baseline))
+      _baselineList = []
+
+  if (_sleeping == None or _sleeping == False) and avg < _baseline - 0.25: 
+    _log.info("Sleep threshold met: {} < {} ".format(avg, _baseline - 0.25))
+    do_sleep()
+
+  # TODO: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
+  # triggered by either the door closing or the car starting to move.
+  if (_sleeping == None or _sleeping == True) and avg > _baseline + 0.25:
+    _log.info("Awake threshold met: {} > {} ".format(avg, _baseline + 0.25))
+    do_awake()
+
+  """
   if (_sleeping == None or _sleeping == False) and avg < VOLTAGE_SLEEP: # and reading['Current'] > 1:
     do_sleep()
 
@@ -138,6 +180,7 @@ def pm_if_needed(avg):
   # triggered by either the door closing or the car starting to move.
   if (_sleeping == None or _sleeping == True) and avg > VOLTAGE_WAKE: # or abs(_base - reading['Accel_z']) > 1500):
     do_awake()
+  """
 
 
 def clear():
