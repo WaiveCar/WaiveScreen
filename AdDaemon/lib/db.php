@@ -64,7 +64,7 @@ $SCHEMA = [
     'phone'       => 'text',
     'car'         => 'text',
     'project'     => 'text',
-
+    'model'       => 'text',
     'lat'         => 'float default null',
     'lng'         => 'float default null',
     'version'     => 'text',
