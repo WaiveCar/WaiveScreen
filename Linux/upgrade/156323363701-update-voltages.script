@@ -1,8 +1,8 @@
 #!/bin/bash
 
 upgradepost() {
-  /home/adorno/WaiveScreen/ScreenDaemon/dcall db.kv_set voltage_sleep,11.75
-  /home/adorno/WaiveScreen/ScreenDaemon/dcall db.kv_set voltage_wake,12.8
+  /home/adorno/WaiveScreen/ScreenDaemon/dcall db.kv_set voltage_sleep,11.9
+  /home/adorno/WaiveScreen/ScreenDaemon/dcall db.kv_set voltage_wake,12.6
   DISPLAY=:0 /home/adorno/dcall _info "Voltages upgraded"
 }
 
