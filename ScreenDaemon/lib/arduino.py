@@ -164,14 +164,14 @@ def pm_if_needed(avg, last):
       _baselineList = []
 
   if _baseline:
-    if (_sleeping == None or _sleeping == False) and avg < _baseline - 0.5: 
-      _log.info("Sleep threshold met: {} < {} ".format(avg, _baseline - 0.5))
+    if (_sleeping == None or _sleeping == False) and avg < _baseline - 0.95:
+      _log.info("Sleep threshold met: {} < {} ({})".format(avg, _baseline - 0.95, last))
       do_sleep()
 
     # TODO: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
     # triggered by either the door closing or the car starting to move.
     elif (_sleeping == None or _sleeping == True) and avg > _baseline + 0.5:
-      _log.info("Awake threshold met: {} > {} ".format(avg, _baseline + 0.5))
+      _log.info("Awake threshold met: {} > {} ({})".format(avg, _baseline + 0.5, last))
       do_awake()
 
   """

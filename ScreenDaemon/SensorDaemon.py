@@ -34,10 +34,12 @@ last_reading = False
 ix = 0
 ix_hb = 0
 first = True
+avg = 0
 
 if lib.DEBUG:
   lib.set_logger(sys.stderr)
 else:
+  #lib.set_logger(sys.stderr)
   lib.set_logger('/var/log/screen/sensordaemon.log')
 
 def is_significant(totest):
@@ -102,9 +104,12 @@ window = []
 if lib.SANITYCHECK:
   sys.exit(0)
 
+n = 0
 while True:
   sensor = arduino.arduino_read()
-  # print("voltage {:.3f} current {:.3f} avg: {:.3f}".format(sensor['Voltage'], sensor['Current'], avg))
+  n += 1
+  if n % 8 == 0:
+    logging.info("voltage {:.3f} current {:.3f} avg: {:.3f}".format(sensor['Voltage'], sensor['Current'], avg))
 
   if first:
     logging.info("Got first arduino read")
