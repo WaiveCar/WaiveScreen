@@ -151,7 +151,7 @@ def pm_if_needed(avg, last):
   if _changeTime and not _baseline:
     delta = time.time() - _changeTime 
 
-    if delta > 0.5 && delta < 5.0:
+    if delta > 0.5 and delta < 5.0:
       if len(_baselineList) == 0:
         _log.info("Baseline time window started")
 
