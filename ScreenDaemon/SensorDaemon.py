@@ -104,8 +104,7 @@ if lib.SANITYCHECK:
 
 while True:
   sensor = arduino.arduino_read()
-  if lib.DEBUG:
-    print("voltage {:.3f} current {:.3f}".format(sensor['Voltage'], sensor['Current']))
+  # print("voltage {:.3f} current {:.3f} avg: {:.3f}".format(sensor['Voltage'], sensor['Current'], avg))
 
   if first:
     logging.info("Got first arduino read")
