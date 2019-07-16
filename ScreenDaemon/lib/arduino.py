@@ -20,8 +20,8 @@ if not USER or USER == 'root':
   USER = 'adorno'
 
 # If the voltage drops below this we send it off to sleep
-VOLTAGE_SLEEP = db.kv_get('voltage_sleep') or 11.5
-VOLTAGE_WAKE = db.kv_get('voltage_wake') or 13.5
+VOLTAGE_SLEEP = float(db.kv_get('voltage_sleep') or 11.5)
+VOLTAGE_WAKE = float(db.kv_get('voltage_wake') or 13.5)
 DISPLAY = os.environ.get('DISPLAY') or ':0'
 
 @atexit.register
