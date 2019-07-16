@@ -26,7 +26,7 @@ if not USER or USER == 'root':
 # If the voltage drops below this we send it off to sleep
 VOLTAGE_SLEEP = float(db.kv_get('voltage_sleep') or 11.5)
 VOLTAGE_WAKE = float(db.kv_get('voltage_wake') or 13.5)
-DISPLAY = os.environ.get('DISPLAY') or ':0'
+DISPLAY = ':0' #os.environ.get('DISPLAY') or ':0'
 
 @atexit.register
 def close():
@@ -107,7 +107,8 @@ def set_autobright():
   dcall('set_brightness', level, 'nopy')
 
 def do_awake():
-  global _sleeping, _changeTime
+  global _sleeping, _changeTime, _baseline, _baselineList
+
   if not db.sess_get('force_sleep'):
     _sleeping = False
     _changeTime = time.time()
@@ -122,7 +123,7 @@ def do_awake():
     set_fanauto()
 
 def do_sleep():
-  global _sleeping, _changeTime
+  global _sleeping, _changeTime, _baseline, _baselineList
   db.sess_set('power', 'sleep')
   db.sess_set('power_changeTime', 'current_timestamp')
   
@@ -133,9 +134,9 @@ def do_sleep():
   _log.info("Going to sleep")
   _log.info("Changetime set {}".format(time.time()))
 
+  set_backlight(0)
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force suspend".format(DISPLAY))
 
-  set_backlight(0)
   set_fanspeed(0)
   #
   # TODO: This will immediately turn back on thanks to our Quectel modem. See #8 at 
@@ -162,15 +163,16 @@ def pm_if_needed(avg, last):
       _log.info("Baseline time window finished. Value to compare: {}".format(_baseline))
       _baselineList = []
 
-  if (_sleeping == None or _sleeping == False) and avg < _baseline - 0.25: 
-    _log.info("Sleep threshold met: {} < {} ".format(avg, _baseline - 0.25))
-    do_sleep()
+  if _baseline:
+    if (_sleeping == None or _sleeping == False) and avg < _baseline - 0.5: 
+      _log.info("Sleep threshold met: {} < {} ".format(avg, _baseline - 0.5))
+      do_sleep()
 
-  # TODO: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
-  # triggered by either the door closing or the car starting to move.
-  if (_sleeping == None or _sleeping == True) and avg > _baseline + 0.25:
-    _log.info("Awake threshold met: {} > {} ".format(avg, _baseline + 0.25))
-    do_awake()
+    # TODO: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
+    # triggered by either the door closing or the car starting to move.
+    elif (_sleeping == None or _sleeping == True) and avg > _baseline + 0.5:
+      _log.info("Awake threshold met: {} > {} ".format(avg, _baseline + 0.5))
+      do_awake()
 
   """
   if (_sleeping == None or _sleeping == False) and avg < VOLTAGE_SLEEP: # and reading['Current'] > 1:
