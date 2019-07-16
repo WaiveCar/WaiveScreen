@@ -117,7 +117,7 @@ def do_awake():
     db.sess_set('power_changeTime', 'current_timestamp')
     os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
     _log.info("Waking up")
-    _log.info("Changetime set {}".format(time.time())
+    _log.info("Changetime set {}".format(time.time()))
     set_autobright()
     set_fanauto()
 
@@ -131,7 +131,7 @@ def do_sleep():
   _baseline = False
   _baselineList = []
   _log.info("Going to sleep")
-  _log.info("Changetime set {}".format(time.time())
+  _log.info("Changetime set {}".format(time.time()))
 
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force suspend".format(DISPLAY))
 
