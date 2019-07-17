@@ -40,7 +40,9 @@ iw
 wpasupplicant
 
 # and ble
+firmware-atheros
 bluez
+bluez-tools
 v4l-utils
 
 # hotspot
