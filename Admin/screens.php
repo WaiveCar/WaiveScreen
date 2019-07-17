@@ -43,6 +43,7 @@ $PROJECT_LIST = [
   'NY' => 'NY'
 ];
 $MODEL_LIST = [
+  '' => 'none',
   'ioniq_ev' => 'Ioniq EV', 
   'ioniq_hybrid' => 'Ioniq Hybrid', 
   'camry' => 'Camry'
@@ -115,7 +116,7 @@ function split($str) {
             <td>
               <select onchange=change(<?=$screen['id']?>,'project',this)>
                 <?foreach($PROJECT_LIST as $value => $project) { 
-                  $selected = ($key === $screen['project']) ? 'selected' : '';
+                  $selected = ($value === $screen['project']) ? 'selected' : '';
                  ?>
                   <option value="<?=$value?> <?=$selected?>"><?=$project?></option>
                 <? } ?>
@@ -124,7 +125,7 @@ function split($str) {
             <td>
               <select onchange=change(<?=$screen['id']?>,'model',this)>
                 <?foreach($MODEL_LIST as $value => $project) { 
-                  $selected = ($key === $screen['model']) ? 'selected' : '';
+                  $selected = ($value === $screen['model']) ? 'selected' : '';
                 ?>
                   <option value="<?=$value?>" <?=$selected?>><?=$project?></option>
                 <? } ?>
