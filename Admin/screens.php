@@ -118,7 +118,7 @@ function split($str) {
                 <?foreach($PROJECT_LIST as $value => $project) { 
                   $selected = ($value === $screen['project']) ? 'selected' : '';
                  ?>
-                  <option value="<?=$value?> <?=$selected?>"><?=$project?></option>
+                  <option value="<?=$value?>" <?=$selected?>><?=$project?></option>
                 <? } ?>
               </select>
             </td>
