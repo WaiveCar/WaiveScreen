@@ -168,12 +168,12 @@ def pm_if_needed(avg, last):
         _baselineList = []
 
     if _baseline:
-      if (_sleeping == None or _sleeping == False) and avg < _baseline - 0.95:
-        _log.info("Sleep threshold met: {} < {} ({})".format(avg, _baseline - 0.95, last))
+      if (_sleeping == None or _sleeping == False) and avg < _baseline - 0.5:
+        _log.info("Sleep threshold met: {} < {} ({})".format(avg, _baseline - 0.5, last))
         do_sleep()
 
-      elif (_sleeping == None or _sleeping == True) and avg > _baseline + 0.5:
-        _log.info("Awake threshold met: {} > {} ({})".format(avg, _baseline + 0.5, last))
+      elif (_sleeping == None or _sleeping == True) and avg > _baseline + 0.95:
+        _log.info("Awake threshold met: {} > {} ({})".format(avg, _baseline + 0.95, last))
         do_awake()
 
   else:
