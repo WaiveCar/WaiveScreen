@@ -149,40 +149,41 @@ def do_sleep():
 def pm_if_needed(avg, last):
   global _changeTime, _baselineList, _baseline
 
-  if _changeTime and not _baseline:
-    delta = time.time() - _changeTime 
+  # Right I know this is crazy but every car seems to require its own special system
+  model = kv_get('model')
 
-    if delta > 0.5 and delta < 5.0:
-      if len(_baselineList) == 0:
-        _log.info("Baseline time window started")
+  if model == 'camry':
+    if _changeTime and not _baseline:
+      delta = time.time() - _changeTime 
 
-      _baselineList.append(last)
+      if delta > 0.5 and delta < 5.0:
+        if len(_baselineList) == 0:
+          _log.info("Baseline time window started")
 
-    elif delta > 5.0:
-      _baseline = sum(_baselineList) / len(_baselineList)
-      _log.info("Baseline time window finished. Value to compare: {}".format(_baseline))
-      _baselineList = []
+        _baselineList.append(last)
 
-  if _baseline:
-    if (_sleeping == None or _sleeping == False) and avg < _baseline - 0.95:
-      _log.info("Sleep threshold met: {} < {} ({})".format(avg, _baseline - 0.95, last))
+      elif delta > 5.0:
+        _baseline = sum(_baselineList) / len(_baselineList)
+        _log.info("Baseline time window finished. Value to compare: {}".format(_baseline))
+        _baselineList = []
+
+    if _baseline:
+      if (_sleeping == None or _sleeping == False) and avg < _baseline - 0.95:
+        _log.info("Sleep threshold met: {} < {} ({})".format(avg, _baseline - 0.95, last))
+        do_sleep()
+
+      elif (_sleeping == None or _sleeping == True) and avg > _baseline + 0.5:
+        _log.info("Awake threshold met: {} > {} ({})".format(avg, _baseline + 0.5, last))
+        do_awake()
+
+  else:
+    if (_sleeping == None or _sleeping == False) and avg < VOLTAGE_SLEEP: 
       do_sleep()
 
     # TODO: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
     # triggered by either the door closing or the car starting to move.
-    elif (_sleeping == None or _sleeping == True) and avg > _baseline + 0.5:
-      _log.info("Awake threshold met: {} > {} ({})".format(avg, _baseline + 0.5, last))
+    if (_sleeping == None or _sleeping == True) and avg > VOLTAGE_WAKE: 
       do_awake()
-
-  """
-  if (_sleeping == None or _sleeping == False) and avg < VOLTAGE_SLEEP: # and reading['Current'] > 1:
-    do_sleep()
-
-  # TODO: replace z_accel wakeup with status from invers. currently going by change in the z accel which will be
-  # triggered by either the door closing or the car starting to move.
-  if (_sleeping == None or _sleeping == True) and avg > VOLTAGE_WAKE: # or abs(_base - reading['Accel_z']) > 1500):
-    do_awake()
-  """
 
 
 def clear():

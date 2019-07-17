@@ -505,20 +505,21 @@ def ping():
 
       if data:
         # we have 
-        #
-        #  * this screen's info in "screen"
-        #  * the default campaign in "default"
-        #  * software version in "version"
-        #
+        # * this screen's info in "screen"
+        # * the default campaign in "default"
   
-        db.kv_set('port', data['screen']['port'])
+        screen = data.get('screen') or {} 
+        default = data.get('default') or {}
+
+        for key in ['port','model','project','car','serial']:
+          if key in screen:
+            db.kv_set(key, screen[key])
   
-        # set the default campaign
-        db.kv_set('default', data['default']['id'])
+        db.kv_set('default', default.get('id'))
   
-        if not db.get('campaign', data['default']['id']):
-          default = asset_cache(data['default'])
-          db.insert('campaign', default)
+        if not db.get('campaign', default.get('id')):
+          default_campaign = asset_cache(default)
+          db.insert('campaign', default_campaign)
 
         db.kv_set('lastping', db.kv_get('runcount')) 
 
