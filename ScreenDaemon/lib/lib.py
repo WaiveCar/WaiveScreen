@@ -505,48 +505,23 @@ def ping():
 
       if data:
         # we have 
-        #
-        #  * this screen's info in "screen"
-        #  * the default campaign in "default"
-        #  * software version in "version"
-        #
+        # * this screen's info in "screen"
+        # * the default campaign in "default"
   
-        db.kv_set('port', data['screen']['port'])
+        screen = data.get('screen') or {} 
+        default = data.get('default') or {}
+
+        for key in ['port','model','project','car','serial']:
+          if key in screen:
+            db.kv_set(key, screen[key])
   
-        # set the default campaign
-        db.kv_set('default', data['default']['id'])
+        db.kv_set('default', default.get('id'))
   
-        if not db.get('campaign', data['default']['id']):
-          default = asset_cache(data['default'])
-          db.insert('campaign', default)
+        if not db.get('campaign', default.get('id')):
+          default_campaign = asset_cache(default)
+          db.insert('campaign', default_campaign)
 
         db.kv_set('lastping', db.kv_get('runcount')) 
-
-        if int(data['version_date']) <= int(VERSIONDATE):
-          logging.debug("Us: {} {}, server: {} {}".format(VERSION, VERSIONDATE, data['version'], data['version_date']))
-        else:
-          logging.warning("This is {} but {} is available".format(VERSION, data['version']))
-          # This means we can .
-          #
-          # We need to make sure that a failed
-          # upgrade doesn't send us in some kind
-          # of crazy upgrade loop where we constantly
-          # try to restart things.
-          #
-          version = db.kv_get('version_date')
-          if version and version >= data['version_date']:
-            logging.warning("Not upgrading to {}. We attempted to do it before ({}={})".format(VERSION, version,  data['version_date']))
-
-          else:
-            # Regardless of whether we succeed or not
-            # we store this latest version as the last
-            # version we *attempted* to upgrade to
-            # in order to avoid the aforementioned 
-            # issue
-            db.kv_set('version_date', data['version_date'])
-            logging.info("Upgrading from {} to {}. So long.".format(VERSION, data['version']))
-
-            dcall("upgrade &")
 
         task_ingest(data)
 
