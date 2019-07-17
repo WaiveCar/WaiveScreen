@@ -10,7 +10,6 @@ defbindings("WScreen", {
     
     bdoc("Switch to next/previous object within current screen."),
     kpress(OTHERMETA.."S", "WScreen.switch_prev(_)"),
-    --kpress(META.."D", "WScreen.switch_prev(_)"),
     kpress(OTHERMETA.."D", "WScreen.switch_next(_)"),
 
     kpress(OTHERMETA.."J", "ioncore.goto_activity() or ioncore.goto_previous()"),
@@ -63,10 +62,7 @@ defbindings("WScreen", {
 
 })
 
-
 -- Client window bindings
---
--- These bindings affect client windows directly.
 
 defbindings("WClientWin", {
 
@@ -101,7 +97,7 @@ defbindings("WMPlex.toplevel", {
     kpress(OTHERMETA.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white -fa \"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*\" -fs 13 ')"),
     kpress(OTHERMETA.."slash", "mod_query.query_gotoclient(_)"),
     kpress(OTHERMETA.."Delete", "notioncore.exec_on(_, 'exec /home/adorno/dcall stack_restart')"),
-    kpress(OTHERMETA.."Backspace", "notioncore.exec_on(_, 'exec /usr/bin/sudo /sbin/reboot')"),
+    kpress(OTHERMETA.."BackSpace", "notioncore.exec_on(_, 'exec /usr/bin/sudo /sbin/reboot')"),
     kpress(OTHERMETA.."U", "notioncore.exec_on(_, 'exec /home/adorno/dcall upgrade')"),
     
     submap(META.."K", {
