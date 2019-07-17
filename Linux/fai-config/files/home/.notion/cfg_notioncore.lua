@@ -100,7 +100,8 @@ defbindings("WMPlex.toplevel", {
     kpress(OTHERMETA.."T", "WRegion.set_tagged(_sub, 'toggle')", "_sub:non-nil"),
     kpress(OTHERMETA.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white -fa \"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*\" -fs 13 ')"),
     kpress(OTHERMETA.."slash", "mod_query.query_gotoclient(_)"),
-    kpress(OTHERMETA.."Delete", "notioncore.exec_on(_, 'exec /usr/bin/sudo /sbin/reboot')"),
+    kpress(OTHERMETA.."Delete", "notioncore.exec_on(_, 'exec /home/adorno/dcall stack_restart')"),
+    kpress(OTHERMETA.."Backspace", "notioncore.exec_on(_, 'exec /usr/bin/sudo /sbin/reboot')"),
     kpress(OTHERMETA.."U", "notioncore.exec_on(_, 'exec /home/adorno/dcall upgrade')"),
     
     submap(META.."K", {
@@ -244,7 +245,6 @@ defmenu("mainmenu", {
     menuentry("Lock screen",
               "notioncore.exec_on(_, notioncore.lookup_script('notion-lock'))"),
     menuentry("Help",           "mod_query.query_man(_)"),
-    menuentry("About Notion",      "mod_query.show_about_ion(_)"),
     submenu("Styles",           "stylemenu"),
     submenu("Debian",           "Debian"),
     submenu("Session",          "sessionmenu"),
@@ -255,7 +255,6 @@ defmenu("mainmenu", {
 defmenu("sessionmenu", {
     menuentry("Save",           "ioncore.snapshot()"),
     menuentry("Restart",        "ioncore.restart()"),
-    menuentry("Restart TWM",    "ioncore.restart_other('twm')"),
     menuentry("Exit",           "ioncore.shutdown()"),
 })
 
