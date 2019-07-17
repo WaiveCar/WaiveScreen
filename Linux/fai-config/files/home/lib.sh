@@ -668,6 +668,11 @@ upgrade() {
   } |& $SUDO tee -a /var/log/upgrade.log &
 }
 
+debug() {
+  down sensor_daemon
+  DEBUG=1 $SUDO $BASE/ScreenDaemon/SensorDaemon.py 
+}
+
 make_patch() {
   cp -puv $DEST/* $DEST/.* $BASE/Linux/fai-config/files/home
   cd $BASE

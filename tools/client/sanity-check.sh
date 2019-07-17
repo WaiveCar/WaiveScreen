@@ -58,6 +58,7 @@ check_online() {
     if ! ping -c 1 -i 0.3 waivescreen.com; then
       # if we fail to do multiple times
       if (( $(pycall sess_incr ping_fail) > 6 )); then
+        /bin/true
         # shrug our shoulders and just try to reboot, I dunno
         # I ran into a reboot loop that I can't find. It's probably
         # best to just not do it.

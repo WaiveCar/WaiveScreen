@@ -29,12 +29,18 @@ HB = 120
 PERIOD = HB / FREQUENCY
 START = time.time()
 
+_autobright_set = False
 last_reading = False
 ix = 0
 ix_hb = 0
 first = True
+avg = 0
 
-lib.set_logger('/var/log/screen/sensordaemon.log')
+if lib.DEBUG:
+  lib.set_logger(sys.stderr)
+else:
+  #lib.set_logger(sys.stderr)
+  lib.set_logger('/var/log/screen/sensordaemon.log')
 
 def is_significant(totest):
   global last_reading, ix, ix_hb
@@ -98,8 +104,13 @@ window = []
 if lib.SANITYCHECK:
   sys.exit(0)
 
+n = 0
 while True:
   sensor = arduino.arduino_read()
+  n += 1
+  if n % 8 == 0:
+    logging.info("voltage {:.3f} current {:.3f} avg: {:.3f}".format(sensor['Voltage'], sensor['Current'], avg))
+
   if first:
     logging.info("Got first arduino read")
 
@@ -107,9 +118,9 @@ while True:
   location = lib.get_gps()
 
   try:
-    if location:
-      if not db.sess_get('autobright'):
-        arduino.set_autobright()
+    if location and not _autobright_set:
+      _autobright_set = True
+      arduino.set_autobright()
         
   except:
     pass
@@ -126,6 +137,7 @@ while True:
 
   try:
     avg = float(sum(window)) / len(window)
+
   except:
     avg = 0
 
@@ -141,7 +153,7 @@ while True:
 
   # If we need to go into/get out of a low power mode
   if sensor:
-    arduino.pm_if_needed(avg)
+    arduino.pm_if_needed(avg, all.get('Voltage'))
 
   # Now you'd think that we just sleep on the frequency, that'd be wrong.
   # Thanks, try again. Instead we need to use the baseline time from start

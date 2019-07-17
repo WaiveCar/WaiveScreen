@@ -266,8 +266,8 @@ def get_gps(use_cache=False):
         return fallback
 
       else:
-        db.kv_set('Lat', gps['latitude'])
-        db.kv_set('Lng', gps['longitude'])
+        #db.kv_set('Lat', gps['latitude'])
+        #db.kv_set('Lng', gps['longitude'])
 
         return {
           'Lat': gps['latitude'],

@@ -395,7 +395,7 @@ function task_responses() {
 }
 
 function screen_edit($data) {
-  $whitelist = ['car', 'phone', 'serial', 'project'];
+  $whitelist = ['car', 'phone', 'serial', 'project', 'model'];
   $update = [];
   foreach(array_intersect($whitelist, array_keys($data)) as $key) {
     $update[$key] = db_string($data[$key]);
