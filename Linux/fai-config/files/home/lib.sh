@@ -203,7 +203,7 @@ set_wrap() {
 
 set_event() {
   pid=${2:-$!}
-  [[ -e $EV/$1 ]] || _info Event:$1
+  [[ -e $EV/$1 ]] || _log Event:$1
   echo -n $pid | $SUDO tee $EV/$1
 }
 
