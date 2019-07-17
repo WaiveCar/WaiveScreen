@@ -37,7 +37,16 @@ for($ix = 0; $ix < count($screenList); $ix++){
 
 //$tagList = db_all("select name from tag");
 
-$PROJECT_LIST = ['LA', 'NY'];
+$PROJECT_LIST = [
+  '' => 'none',
+  'LA' => 'LA', 
+  'NY' => 'NY'
+];
+$MODEL_LIST = [
+  'ioniq_ev' => 'Ioniq EV', 
+  'ioniq_hybrid' => 'Ioniq Hybrid', 
+  'camry' => 'Camry'
+];
 
 $fieldList = [
   //'id'  => 'uid',
@@ -90,6 +99,7 @@ function split($str) {
           <tr>
           <th scope="col">id</th>
           <th scope="col">project</th>
+          <th scope="col">model</th>
           <? foreach($fieldList as $key => $value) { ?>
             <th scope="col" class="<?= $key ?>"><?= $key ?></th>
           <? } ?>
@@ -103,10 +113,16 @@ function split($str) {
               <a href="#<?=$screen['id']?>" onclick='edit("<?=$screen['id']?>")' class=id><?= split($screen['uid']) ?></a>
             </td>
             <td>
-            <select onchange=change(<?=$screen['id']?>,'project',this)>
-                <option value="">none</option>
-                <?foreach($PROJECT_LIST as $project) { ?>
-                  <option value="<?=$project?>"><?=$project?></option>
+              <select onchange=change(<?=$screen['id']?>,'project',this)>
+                <?foreach($PROJECT_LIST as $value => $project) { ?>
+                  <option value="<?=$value?>"><?=$project?></option>
+                <? } ?>
+              </select>
+            </td>
+            <td>
+              <select onchange=change(<?=$screen['id']?>,'model',this)>
+                <?foreach($MODEL_LIST as $value => $project) { ?>
+                  <option value="<?=$value?>"><?=$project?></option>
                 <? } ?>
               </select>
             </td>
