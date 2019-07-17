@@ -522,32 +522,6 @@ def ping():
 
         db.kv_set('lastping', db.kv_get('runcount')) 
 
-        if int(data['version_date']) <= int(VERSIONDATE):
-          logging.debug("Us: {} {}, server: {} {}".format(VERSION, VERSIONDATE, data['version'], data['version_date']))
-        else:
-          logging.warning("This is {} but {} is available".format(VERSION, data['version']))
-          # This means we can .
-          #
-          # We need to make sure that a failed
-          # upgrade doesn't send us in some kind
-          # of crazy upgrade loop where we constantly
-          # try to restart things.
-          #
-          version = db.kv_get('version_date')
-          if version and version >= data['version_date']:
-            logging.warning("Not upgrading to {}. We attempted to do it before ({}={})".format(VERSION, version,  data['version_date']))
-
-          else:
-            # Regardless of whether we succeed or not
-            # we store this latest version as the last
-            # version we *attempted* to upgrade to
-            # in order to avoid the aforementioned 
-            # issue
-            db.kv_set('version_date', data['version_date'])
-            logging.info("Upgrading from {} to {}. So long.".format(VERSION, data['version']))
-
-            dcall("upgrade &")
-
         task_ingest(data)
 
     _pinglock.release()
