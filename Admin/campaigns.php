@@ -15,21 +15,20 @@ for($ix = 0; $ix < count($campaignList); $ix++){
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
-    <title>Admin panel</title>
+    <title>Campaign admin</title>
+    <style>
+    .form-control-file { display: none }
+    .upload-button { margin-bottom: 0 }
+    </style>
   </head>
   <body>
-   <h2> Campaigns</h2>
     <div class='row'>
     <? foreach($campaignList as $campaign) { 
       $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
-?>
+      ?>
       <div class="card" style="width: 18rem;">
         <img src="<?= $campaign['asset'][0] ?>" class="card-img-top">
         <div class="card-body">
@@ -43,13 +42,16 @@ for($ix = 0; $ix < count($campaignList); $ix++){
           Start: <?= $campaign['start_time'] ?><br>
           End: <?= $campaign['end_time'] ?>
   
-          <p class="card-text">user</p>
-          <a href="#<?=$campaign['id']?>" class="btn btn-primary">Disable</a>
+          <p class="card-text"></p>
+          <a href="#<?=$campaign['id']?>" class="btn btn-secondary">Disable</a>
+          <label class="btn btn-info upload-button" for="image-upload-<?=$campaign['id']?>">
+            Edit
+          </label>
+          <input id="image-upload-<?=$campaign['id']?>" multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
         </div>
       </div>
     <? } ?>
     </div>
-    Users
     <script src="engine.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>

@@ -704,6 +704,18 @@ function campaign_create($data, $fileList, $user = false) {
   return $campaign_id;
 }
 
+function campaign_update($data, $fileList, $user = false) {
+  $assetList = [];
+
+  foreach($fileList as $file) {
+    $assetList[] = upload_s3($file);
+  }
+
+  $campaign = $data['campaign_id'];
+  db_update('campaign', $campaign_id, ['asset' => db_string($assetList)]);
+  return $campaign_id;
+}
+
 // By the time we get here we should already have the asset
 // and we should have our monies
 function campaign_activate($campaign_id, $data) {
