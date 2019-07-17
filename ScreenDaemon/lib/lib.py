@@ -517,9 +517,9 @@ def ping():
   
         db.kv_set('default', default.get('id'))
   
-        if not db.get('campaign', default.get('id')):
-          default_campaign = asset_cache(default)
-          db.insert('campaign', default_campaign)
+        # We run through it every time, should be fine
+        default_campaign = asset_cache(default)
+        campaign_store(default_campaign)
 
         db.kv_set('lastping', db.kv_get('runcount')) 
 

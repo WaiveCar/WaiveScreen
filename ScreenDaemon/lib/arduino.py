@@ -150,7 +150,7 @@ def pm_if_needed(avg, last):
   global _changeTime, _baselineList, _baseline
 
   # Right I know this is crazy but every car seems to require its own special system
-  model = kv_get('model')
+  model = db.kv_get('model')
 
   if model == 'camry':
     if _changeTime and not _baseline:
