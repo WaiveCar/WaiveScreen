@@ -15,7 +15,8 @@ $PROJECT_LIST = ['LA', 'NY'];
 $DEFAULT_CAMPAIGN_MAP = [
   'none' => 139,
   'LA' => 30,
-  'NY' => 140
+  'NY' => 140,
+  'dev' => 139
 ];
 
 // Play time in seconds of one ad.

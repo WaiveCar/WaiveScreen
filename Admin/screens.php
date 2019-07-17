@@ -40,7 +40,8 @@ for($ix = 0; $ix < count($screenList); $ix++){
 $PROJECT_LIST = [
   '' => 'none',
   'LA' => 'LA', 
-  'NY' => 'NY'
+  'NY' => 'NY',
+  'dev' => 'dev'
 ];
 $MODEL_LIST = [
   '' => 'none',
