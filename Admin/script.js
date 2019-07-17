@@ -72,9 +72,37 @@ function edit(id) {
 }
 
 $(function() {
-  $('#dataTable').DataTable({
-    stateSave: true,
-    order: [[10, 'desc']]
+  if(document.getElementById('dataTable')) {
+    $('#dataTable').DataTable({
+      stateSave: true,
+      order: [[10, 'desc']]
+    });
+  }
+  $('.form-control-file').on('change', function(e) {
+    let uploadInput = e.target;
+    update_campaign($(e.target).data('campaign'), e.target);
   });
 });
 
+
+function update_campaign(campaign, el) {
+  // Before the payment is processed by paypal, a user's purchase is sent to the server with 
+  // the information that has so far been obtained including the picture.
+  let formData = new FormData();
+
+  formData.append('campaign_id', campaign);
+  for(var ix = 0; ix < el.files.length; ix++) {
+    formData.append('file' + ix, el.files[ix]);
+  }
+
+  return axios({
+    method: 'post',
+    url: '/api/campaign_update',
+    data: formData,
+    config: {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    },
+  }).then(function(resp) {
+    show("Updated assets");
+  });
+}

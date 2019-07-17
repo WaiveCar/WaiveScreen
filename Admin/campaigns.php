@@ -22,9 +22,11 @@ for($ix = 0; $ix < count($campaignList); $ix++){
     <style>
     .form-control-file { display: none }
     .upload-button { margin-bottom: 0 }
+    #notice { position: fixed; top:0; left:0; width: 100%; z-index: 100;display:none}
     </style>
   </head>
   <body>
+    <div class="alert alert-primary" id="notice" role="alert"></div>
     <div class='row'>
     <? foreach($campaignList as $campaign) { 
       $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
@@ -44,17 +46,21 @@ for($ix = 0; $ix < count($campaignList); $ix++){
   
           <p class="card-text"></p>
           <a href="#<?=$campaign['id']?>" class="btn btn-secondary">Disable</a>
-          <label class="btn btn-info upload-button" for="image-upload-<?=$campaign['id']?>">
-            Edit
-          </label>
-          <input id="image-upload-<?=$campaign['id']?>" multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
+          <form id='form-<?=$campaign['id']?>'>
+            <label class="btn btn-info upload-button" for="image-upload-<?=$campaign['id']?>">
+              Edit
+            </label>
+            <input id="image-upload-<?=$campaign['id']?>" data-campaign=<?=$campaign['id']?> multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
+          </form>
         </div>
       </div>
     <? } ?>
     </div>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="engine.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="/Admin/script.js?1"></script>
   </body>
 </html>

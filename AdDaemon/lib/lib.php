@@ -711,8 +711,8 @@ function campaign_update($data, $fileList, $user = false) {
     $assetList[] = upload_s3($file);
   }
 
-  $campaign = $data['campaign_id'];
-  db_update('campaign', $campaign_id, ['asset' => db_string($assetList)]);
+  $campaign_id = $data['campaign_id'];
+  db_update('campaign', $campaign_id, ['asset' => db_string(json_encode($assetList))]);
   return $campaign_id;
 }
 
