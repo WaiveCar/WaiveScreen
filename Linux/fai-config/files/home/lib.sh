@@ -171,7 +171,7 @@ _onscreen() {
   [[ -e /tmp/offset ]] && offset=$(< /tmp/offset ) || offset=0
 
   local ts=$( printf "%03d" $(( $(date +%s) - $(< /tmp/startup) )))
-  local size=14
+  local size=12
 
   echo $1 | osd_cat \
     -c $3 -d $4 \
@@ -186,13 +186,13 @@ _onscreen() {
   chmod 0666 /tmp/offset
 }
 _info() {
-  _onscreen "$*" info white 10
+  _onscreen "$*" info white 8
 }
 _warn() {
-  _onscreen "$*" warn yellow 40
+  _onscreen "$*" warn yellow 30 
 }
 _error() {
-  _onscreen "$*" error red 90
+  _onscreen "$*" error red 80
 }
 
 set_wrap() {
