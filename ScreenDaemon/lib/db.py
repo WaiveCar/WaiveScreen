@@ -384,7 +384,7 @@ def kv_get(key=None, expiry=0, use_cache=False, default=None):
 
   return default
 
-def kv_set(key, value):
+def kv_set(key, value=None):
   # Sets (or replaces) a given key to a specific value.  
   # Returns the value that was sent.
   global _params
