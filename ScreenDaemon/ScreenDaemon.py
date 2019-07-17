@@ -92,7 +92,8 @@ def next_ad(work = False):
 
   try:
     # we probably want a smarter way to do this.
-    dpms = os.popen("xset q | grep Monitor | tail -1 | awk ' { print $NF } '").read().strip()
+    # probably from https://github.com/python-xlib/python-xlib
+    dpms = os.popen('xset q').read().strip()[-2:]
     power = 'awake' if dpms == 'On' else 'sleep'
 
     if power != 'sleep':
