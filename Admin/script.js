@@ -17,7 +17,7 @@ function post(ep, body, cb) {
 function show(res, timeout) {
   let notice = document.getElementById('notice');
   timeout = timeout || 4000;
-  if(res.res) {
+  if(res.res || !('res' in res)) {
     notice.className = 'alert alert-primary';
   } else {
     notice.className = 'alert alert-danger';
