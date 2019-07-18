@@ -434,9 +434,9 @@ def get_bootcount():
 def sess_del(key):
   kv_set(key, None)
 
-def sess_set(key, value = 1, is_raw = False):
+def sess_set(key, value = 1):
   bc = None if value is None else get_bootcount()
-  kv_set(key, value, is_raw, bootcount=bc)
+  kv_set(key, value, bootcount=bc)
 
 def sess_get(key):
   return kv_get(key, bootcount = get_bootcount())
