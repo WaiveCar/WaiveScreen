@@ -170,7 +170,6 @@ _log() {
 _onscreen() {
   [[ -e /tmp/offset ]] && offset=$(< /tmp/offset ) || offset=0
 
-  local ts=$( printf "%03d" $(( $(date +%s) - $(< /tmp/startup) )))
   local size=12
 
   echo $1 | osd_cat \

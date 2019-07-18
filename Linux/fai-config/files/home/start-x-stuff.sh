@@ -2,8 +2,6 @@
 
 . lib.sh
 
-date +%s > /tmp/startup
-
 export DISPLAY=$1
 
 # Force a UUID update if needed
