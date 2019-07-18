@@ -60,6 +60,8 @@ var Engine = function(opts){
 
       pause: false,
 
+      target: { width: 1920, height: 675 },
+
       listeners: {},
       data: {}
 
@@ -69,7 +71,6 @@ var Engine = function(opts){
     _playCount = 0,
     _id = 0,
     _downweight = 0.7,
-    _target = { width: 1920, height: 675 },
     _firstRun = false,
     _nop = function(){},
     _isNetUp = true,
@@ -78,7 +79,7 @@ var Engine = function(opts){
     _last_sow = [+_start, +_start],
     _fallback;
 
-  _target.ratio = _target.width / _target.height;
+  _res.target.ratio = _res.target.width / _res.target.height;
 
   function isString(obj) { 
     return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
@@ -165,14 +166,14 @@ var Engine = function(opts){
       vid.muted = true;
       if(vid.videoWidth) {
         var ratio = vid.videoWidth / vid.videoHeight;
-        if(ratio > _target.ratio) {
-          var maxHeight = _target.width * vid.videoHeight / vid.videoWidth;
-          vid.style.height =  Math.min(_target.height, maxHeight * 1.2) + "px";
-          vid.style.width = _target.width + "px";
+        if(ratio > _res.target.ratio) {
+          var maxHeight = _res.target.width * vid.videoHeight / vid.videoWidth;
+          vid.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
+          vid.style.width = _res.target.width + "px";
         } else { 
-          var maxWidth = _target.height * vid.videoWidth / vid.videoHeight;
-          vid.style.width =  Math.min(_target.width, maxWidth * 1.2) + "px";
-          vid.style.height = _target.height + "px";
+          var maxWidth = _res.target.height * vid.videoWidth / vid.videoHeight;
+          vid.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
+          vid.style.height = _res.target.height + "px";
         }
       } 
       obj.duration += asset.duration;
@@ -239,15 +240,15 @@ var Engine = function(opts){
         img.onload = function(e) {
           if(e.target.width) {
             var ratio = e.target.width / e.target.height;
-            if(ratio > _target.ratio) {
-              var maxHeight = _target.width * e.target.height / e.target.width;
-              e.target.style.height =  Math.min(_target.height, maxHeight * 1.2) + "px";
-              e.target.style.width = _target.width + "px";
-              //console.log(_target.width, e.target.height, e.target.width, e.target.src);
+            if(ratio > _res.target.ratio) {
+              var maxHeight = _res.target.width * e.target.height / e.target.width;
+              e.target.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
+              e.target.style.width = _res.target.width + "px";
+              //console.log(_res.target.width, e.target.height, e.target.width, e.target.src);
             } else { 
-              var maxWidth = _target.height * e.target.width / e.target.height;
-              e.target.style.width =  Math.min(_target.width, maxWidth * 1.2) + "px";
-              e.target.style.height = _target.height + "px";
+              var maxWidth = _res.target.height * e.target.width / e.target.height;
+              e.target.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
+              e.target.style.height = _res.target.height + "px";
             }
           }
           asset.active = true;
@@ -646,3 +647,7 @@ var Engine = function(opts){
     }
   });
 };
+
+Engine.width = 1920;
+Engine.height = 675;
+Engine.ratio = Engine.width / Engine.height;
