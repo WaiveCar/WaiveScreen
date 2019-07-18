@@ -11,6 +11,8 @@ for($ix = 0; $ix < count($campaignList); $ix++){
   $campaignList[$ix]['addr'] = $addrList[$ix];
 }
 
+$width = 700;
+$height = $width * 675 / 1920;
 ?>
 <!doctype html>
 <html lang="en">
@@ -21,8 +23,9 @@ for($ix = 0; $ix < count($campaignList); $ix++){
     <link rel='stylesheet' href='/engine.css'>
     <title>Campaign admin</title>
     <style>
+    form { float: right }
     .form-control-file { display: none }
-    .asset-container { width: 500px; position: relative; height: 215px; }
+    .asset-container { width: <?= $width; ?>px; position: relative; height: <?= $height; ?>px; }
     .upload-button { margin-bottom: 0 }
     #notice { position: fixed; top:0; left:0; width: 100%; z-index: 100;display:none}
     </style>
@@ -32,27 +35,39 @@ for($ix = 0; $ix < count($campaignList); $ix++){
     <div class='row'>
     <? foreach($campaignList as $campaign) { 
       $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
+      $isDefault = $campaign['is_default'];
       ?>
-      <div class="card" style="width: 500px">
+        <div class="card" style="width: <?=$width?>px">
         <div class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
         <!-- <img src="<?= $campaign['asset'][0] ?>" class="card-img-top"> -->
         <div class="card-body">
-          <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
-          </div>
-          <p><?= $campaign['completed_seconds'] ?>/<?= $campaign['duration_seconds'] ?>s complete<br/>
-          <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a><br/>
-          Radius: <?= $campaign['radius'] ?>m</p>
+          <? if (!$isDefault) { ?>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <p><?= $campaign['completed_seconds'] ?>/<?= $campaign['duration_seconds'] ?>s complete<br/>
+            <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a><br/>
+            Radius: <?= $campaign['radius'] ?>m</p>
+            Start: <?= $campaign['start_time'] ?><br>
+            End: <?= $campaign['end_time'] ?>
+          <? } else { ?>
+            <h4>Default advertisement</h4>
+          <? } ?>
 
-          Start: <?= $campaign['start_time'] ?><br>
-          End: <?= $campaign['end_time'] ?>
-  
           <p class="card-text"></p>
-          <a href="#<?=$campaign['id']?>" class="btn btn-secondary">Disable</a>
+
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Actions
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <a href="#<?=$campaign['id']?>" class="dropdown-item">Disable</a>
+              <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Edit</label>
+              <a class="dropdown-item" href="#">Make Default</a>
+            </div>
+          </div>
+
           <form id='form-<?=$campaign['id']?>'>
-            <label class="btn btn-info upload-button" for="image-upload-<?=$campaign['id']?>">
-              Edit
-            </label>
             <input id="image-upload-<?=$campaign['id']?>" data-campaign=<?=$campaign['id']?> multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
           </form>
         </div>
@@ -60,7 +75,7 @@ for($ix = 0; $ix < count($campaignList); $ix++){
     <? } ?>
     </div>
     <script>
-    var Data=<?=json_encode($campaignList);?>
+      var Data=<?=json_encode($campaignList);?>,width=<?=$width?>,height=<?=$height?>;
     </script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="/engine.js"></script>
