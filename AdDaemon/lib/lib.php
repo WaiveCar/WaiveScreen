@@ -257,6 +257,22 @@ function response($payload) {
 
 // This is called from the admin UX
 function command($payload) {
+  $scope_whitelist = ['id', 'project', 'model', 'version'];
+  $idList = [];
+  
+  $field = aget($payload, 'field');
+  $value = aget($payload, 'value');
+  if (in_array($scope_whitelist, $field)) {
+    if($field === 'id') {
+      $idList = [db_int($value)];
+    } else {
+      $value = db_string($value);
+      $idList = db_all("select id from screens where $field = $value and active = true");
+    }
+  }
+  var_dump($idList);
+  exit(0);
+
   return doSuccess(
     db_insert('task', [
       'scope' => db_string("id:{$payload['id']}"),
@@ -361,8 +377,6 @@ function update_job($jobId, $completed_seconds) {
 }
 
 function task_master($screen) {
-  $scope = "id:${screen['id']}";
-
   // The crazy date math there is the simplest way I can get 
   // this thing to work, I know I know, it looks excessive.
   //
@@ -370,10 +384,12 @@ function task_master($screen) {
   // and start hacking.
   //
   return db_all("
-    select * from task where 
-      id > {$screen['last_task']} and
-      strftime('%s', created_at) + expiry_sec - strftime('%s', current_timestamp) > 0 and
-      scope = '$scope'
+    select * from task_screen 
+      join task on task_screen.task_id = task.id
+      where 
+            task_screen.screen_id = {$screen['id']}
+        and task.id > {$screen['last_task']} 
+        and strftime('%s', task.created_at) + task.expiry_sec - strftime('%s', current_timestamp) > 0 
   ");
 }
 
