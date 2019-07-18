@@ -2,6 +2,7 @@ import dbus
 import requests
 import json
 import subprocess
+import logging
 from time import sleep
 from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository import GLib
@@ -45,17 +46,17 @@ def dbus_wifi_if_array():
   return props.Get(WPA_BUS_NAME, 'Interfaces')
 
 def collect_scan_results(scan_done, iface, obj):
-  global bss_array, loop, cb_count
+  global _bss_array, loop, _cb_count
   proxy = BUS.get_object(WPA_BUS_NAME, obj)
   props = dbus.Interface(proxy, dbus_interface=DBUS_PROPERTIES)
-  bss_array += props.Get(WPA_IF_NAME, 'BSSs')
-  cb_count -= 1
-  if cb_count == 0:
+  _bss_array += props.Get(WPA_IF_NAME, 'BSSs')
+  _cb_count -= 1
+  if _cb_count == 0:
     loop.quit()
 
 def generate_wifi_ap_dict():
   l = []
-  for bss in bss_array:
+  for bss in _bss_array:
     props = bss_props(bss)
     l.append({ 'macAddress': bytes_to_mac_addr(props['BSSID']), 'signalStrength': props['Signal'] })
   return { 'wifiAccessPoints': l }
@@ -78,9 +79,9 @@ def wifi_location():
       }
       wpa_if['iface'].Scan({'Type': 'active'})
       wpa_if['iface'].connect_to_signal('ScanDone', collect_scan_results, dbus_interface=WPA_IF_NAME, interface_keyword='iface', path_keyword='obj')
-      cb_count += 1
+      _cb_count += 1
 
-    if cb_count > 0:
+    if _cb_count > 0:
       loop = GLib.MainLoop()
       timeout_id = GLib.timeout_add_seconds(10, loop.quit)
       loop.run()
