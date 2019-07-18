@@ -14,18 +14,6 @@ sync_scripts() {
   fi
 }
 
-dev_setup() {
-  $SUDO pkill dhclient
-  oldroute=$(ip route show | grep default | awk ' { print $1" "$2" "$3 }')
-  [[ -n "$oldroute" ]] && $SUDO ip route delete $oldroute
-
-  $SUDO dhclient enp3s0 
-  [[ -e $DEV ]] || mkdir $DEV
-
-  _as_user sshfs -o uid=$(id -u $WHO),gid=$(id -g $WHO),nonempty,allow_root dev:/home/chris/code/WaiveScreen $DEV -C 
-  export BASE=$DEV
-}
-
 _as_user() {
   [[ "$USER" != "$WHO" ]] && su $WHO -c "$*" || eval $*
 }
