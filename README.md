@@ -35,7 +35,7 @@ The SCREEN parts:
     * In charge of making sure it has the assets to display cached and has the content on the screen that it's been told to display.
     * Works with the Screen Sensor to pass readings over the network.
     * Works with the Ad Daemon: 
-      * Sends over gps readings from the Screen sensor and retrieves assets to display
+      * Sends over location readings from the Screen sensor and retrieves assets to display
       * Talks to the Screen display to display specific assets
       * Gets the duration of time an asset was displayed on the screen and reports back to the Ad daemon
 
@@ -43,7 +43,7 @@ The SERVER parts:
 
   * Ad daemon
     * Has contracts which states when and where ads should be displayed.
-    * Gets gps requests rom the Screen daemon and then responds with ad descriptions and terms to be displayed.
+    * Gets location requests from the Screen Daemon and then responds with ad descriptions and terms to be displayed.
     * Keeps track of who satisfied what part of the contract. This is a message passing model in distributed computing terms.
   * Report system
     * Talks with the Ad daemon and can generate real time "reports" of the current state of a contract. 
