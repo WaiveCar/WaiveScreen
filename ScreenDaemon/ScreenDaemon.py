@@ -183,6 +183,7 @@ def next_ad(work = False):
 
 if __name__ == '__main__':
 
+  db.kv_set('version', lib.VERSION)
   lib.set_logger('/var/log/screen/screendaemon.log')
 
   if lib.SANITYCHECK:
