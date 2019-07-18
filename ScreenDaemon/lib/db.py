@@ -384,7 +384,7 @@ def kv_get(key=None, expiry=0, use_cache=False, default=None):
 
   return default
 
-def kv_set(key, value=None):
+def kv_set(key, value = None, is_raw = False):
   # Sets (or replaces) a given key to a specific value.  
   # Returns the value that was sent.
   global _params
@@ -402,10 +402,18 @@ def kv_set(key, value=None):
         res = run('select value from kv where key = ?', (key, )).fetchone()
 
       if not res:
-        run('insert into kv (key, value) values(?, ?)', (key, value))
+        if is_raw:
+          run('insert into kv (key, value) values(?, {})'.format(value), (key, ))
+
+        else: 
+          run('insert into kv (key, value) values(?, ?)', (key, value))
 
       elif res[0] != str(value):
-        run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
+        if is_raw:
+          run('update kv set updated_at = current_timestamp, value = {} where key = ?'.format(value), (key, ))
+
+        else:
+          run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
 
   except Exception as ex:
     logging.warning("Couldn't set {} to {}: {}".format(key, value, ex))
@@ -429,9 +437,9 @@ def sess_del(key):
   kv_set(key, None)
   kv_set("{}_bootnumber", None)
 
-def sess_set(key, value = 1):
+def sess_set(key, value = 1, is_raw = False):
   bc = None if value is None else get_bootcount()
-  kv_set(key, value)
+  kv_set(key, value, is_raw)
   kv_set("{}_bootnumber".format(key), bc)
 
 def kv_incr(key):
