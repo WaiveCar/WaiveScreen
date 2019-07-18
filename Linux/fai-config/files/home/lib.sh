@@ -25,6 +25,10 @@ kv_get() {
   sqlite3 $DB "select value from kv where key='$1'"
 }
 
+sess_get() {
+  sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )"
+}
+
 kv_unset() {
   sqlite3 $DB "delete from kv where key='$1'"
 }
@@ -132,8 +136,17 @@ sms_cleanup() {
 
 text_loop() {
   _mkdir $SMSDIR
+  local foundModem=
 
   while true; do
+    if [[ -z "$foundModem" ]]; then
+      if [[ -z "$(sess_get modem)" ]]; then
+        sleep 10
+        continue
+      fi
+      foundModem=1
+    fi
+
     sms=$(pycall lib.next_sms)
 
     if [[ -n "$sms" ]]; then
