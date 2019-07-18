@@ -15,6 +15,7 @@ import subprocess
 from threading import Lock
 from pprint import pprint
 from datetime import datetime
+from .wifi_location import wifi_location
 
 #
 # IMPORTANT. DO NOT LOG ANYTHING HERE BEFORE CALLING
@@ -679,3 +680,6 @@ def get_timezone():
   else:
     return None
 
+def get_wifi_location():
+  return wifi_location()
+  
