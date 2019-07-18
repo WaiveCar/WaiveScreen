@@ -2,9 +2,27 @@ function get(id) {
   var res = Data.filter(row => row.id == id);
   return res ? res[0] : null;
 }
+
+function post(ep, body, cb) {
+  fetch(new Request(`/api/${ep}`, {
+    method: 'POST', 
+    body: JSON.stringify(body)
+  })).then(res => {
+    if (res.status === 200) {
+      return res.json();
+    }
+  }).then(cb);
+}
+
 function show(res, timeout) {
   let notice = document.getElementById('notice');
   timeout = timeout || 4000;
+  if(res.res) {
+    notice.className = 'alert alert-primary';
+  } else {
+    notice.className = 'alert alert-danger';
+  }
+
   notice.innerHTML = res.data || "OK";
   notice.style.display = 'block';
   setTimeout(function() {
@@ -13,14 +31,7 @@ function show(res, timeout) {
 }
 
 function change(id, what, el) {
-  fetch(new Request('/api/screens', {
-    method: 'POST', 
-    body: JSON.stringify({id: id, [what]: el.value})
-  })).then(res => {
-    if (res.status === 200) {
-      return res.json();
-    }
-  }).then(res => {
+  post('screens', {id: id, [what]: el.value}, res => {
     show({data: 'Updated project'}, 1000);
   });
 }
@@ -30,17 +41,18 @@ function promptchange(id, what, el) {
   var newval = prompt(`Change the ${what}`, dom.innerHTML)
   if(newval !== null) {
     dom.innerHTML = '&#8987;...';
-    fetch(new Request('/api/screens', {
-      method: 'POST', 
-      body: JSON.stringify({id: id, [what]: newval})
-    })).then(res => {
-      if (res.status === 200) {
-        return res.json();
-      }
-    }).then(res => {
+    post('screens', {id: id, [what]: newval}, res => {
       dom.innerHTML = res[what];
     });
   }
+}
+
+function scope_command() {
+  var payload = {};
+  ['field','value','command','args'].forEach(row => {
+    payload[row] =  document.getElementById(row).value;
+  });
+  post('command', payload, show);
 }
 
 function command(id, name) {
@@ -48,20 +60,12 @@ function command(id, name) {
   var cmd = prompt(`Give a command for ${name}`);
   if(cmd) {
     let parts = cmd.split(' ');
-    fetch(new Request('/api/command', {
-      method: 'POST', 
-      body: JSON.stringify({
-        id: id, 
-        cmd: parts[0], 
-        args: parts.slice(1).join(' ')
-      })
-    })).then(res => {
-      if (res.status === 200) {
-        return res.json();
-      }
-    }).then(res => {
-      show(res);
-    });
+    post('command', {
+      field: 'id',
+      value: id,
+      command: parts[0], 
+      args: parts.slice(1).join(' ')
+    }, show);
   }
 }
 
