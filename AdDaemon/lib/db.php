@@ -509,6 +509,38 @@ function db_delete($table, $kv) {
   return _query($qstr);
 }
 
+function db_insert_many($table, $kvList) {
+  $fields = [];
+  $valueList = [];
+  $isFirst = true;
+  $db = db_connect();
+
+  foreach($kvList as $kv) {
+    $kv = process($table, $kv, 'pre');
+    $row = [];
+    foreach($kv as $k => $v) {
+      if($isFirst) {
+        $fields[] = $k;
+      }
+      if($v === false) {
+        $row[] = 'false';
+      } else {
+        $row[] = $v;
+      }
+    } 
+    $valueList[] = "(" . implode(',', $row) . ")";
+    $isFirst = false;
+  }
+  $fields = implode(',', $fields);
+  $values = implode(',', $valueList);
+  $qstr = "insert into $table($fields) values $values";
+
+  if(_query($qstr)) {
+    return $db->lastInsertRowID();
+  }
+  return null;
+}
+
 function db_insert($table, $kv) {
   $fields = [];
   $values = [];
