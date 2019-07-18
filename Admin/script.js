@@ -81,6 +81,15 @@ $(function() {
       stateSave: true,
       order: [[10, 'desc']]
     });
+  } else {
+    for (var which of Data) {
+      let id = which.id;
+      let engine = Engine({
+        container: document.getElementById(`asset-container-${id}`)
+      });
+      engine.AddJob(which)
+      engine.Start();
+    }
   }
   $('.form-control-file').on('change', function(e) {
     let uploadInput = e.target;

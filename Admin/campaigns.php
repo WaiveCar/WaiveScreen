@@ -18,9 +18,11 @@ for($ix = 0; $ix < count($campaignList); $ix++){
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel='stylesheet' href='/engine.css'>
     <title>Campaign admin</title>
     <style>
     .form-control-file { display: none }
+    .asset-container { width: 100%; position: relative; height: 160px }
     .upload-button { margin-bottom: 0 }
     #notice { position: fixed; top:0; left:0; width: 100%; z-index: 100;display:none}
     </style>
@@ -32,7 +34,8 @@ for($ix = 0; $ix < count($campaignList); $ix++){
       $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
       ?>
       <div class="card" style="width: 18rem;">
-        <img src="<?= $campaign['asset'][0] ?>" class="card-img-top">
+        <div class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
+        <!-- <img src="<?= $campaign['asset'][0] ?>" class="card-img-top"> -->
         <div class="card-body">
           <div class="progress">
             <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
@@ -56,6 +59,9 @@ for($ix = 0; $ix < count($campaignList); $ix++){
       </div>
     <? } ?>
     </div>
+    <script>
+    var Data=<?=json_encode($campaignList);?>
+    </script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="/engine.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
