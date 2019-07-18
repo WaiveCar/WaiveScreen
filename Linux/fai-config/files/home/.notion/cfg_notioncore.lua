@@ -96,8 +96,8 @@ defbindings("WMPlex.toplevel", {
     kpress(OTHERMETA.."T", "WRegion.set_tagged(_sub, 'toggle')", "_sub:non-nil"),
     kpress(OTHERMETA.."Q", "notioncore.exec_on(_, XTERM or 'exec xterm -bg black -fg white -fa \"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*\" -fs 13 ')"),
     kpress(OTHERMETA.."slash", "mod_query.query_gotoclient(_)"),
-    kpress(OTHERMETA.."Delete", "notioncore.exec_on(_, 'exec /home/adorno/dcall stack_restart')"),
-    kpress(OTHERMETA.."BackSpace", "notioncore.exec_on(_, 'exec /usr/bin/sudo /sbin/reboot')"),
+    kpress(OTHERMETA.."BackSpace", "notioncore.exec_on(_, 'exec /home/adorno/dcall stack_restart')"),
+    kpress(OTHERMETA.."Delete", "notioncore.exec_on(_, 'exec /usr/bin/sudo /sbin/reboot')"),
     kpress(OTHERMETA.."U", "notioncore.exec_on(_, 'exec /home/adorno/dcall upgrade')"),
     
     submap(META.."K", {
