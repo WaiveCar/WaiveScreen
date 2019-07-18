@@ -147,6 +147,11 @@ function split($str) {
         <? } ?>
       </tbody>
     </table>
+    <input size=4 id=field placeholder=field></input>
+    <input id=value placeholder=value></input>
+    <input id=command placeholder=command></input>
+    <input id=args placeholder=args></input>
+    <button onclick=doit()>do it</button>
    </div>
 
     <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
