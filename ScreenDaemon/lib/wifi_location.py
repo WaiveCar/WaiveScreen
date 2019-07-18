@@ -88,9 +88,10 @@ def wifi_location():
       loop.run()
       GLib.source_remove(timeout_id)
 
+    d = generate_wifi_ap_dict()
+
     wifi_scan_shutdown()
 
-    d = generate_wifi_ap_dict()
     url = 'https://location.services.mozilla.com/v1/geolocate?key=test'
     r = requests.post(url, json=d)
     if r.status_code == 200:
