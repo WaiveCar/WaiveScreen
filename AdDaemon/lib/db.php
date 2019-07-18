@@ -180,7 +180,9 @@ $SCHEMA = [
     'created_at' => 'datetime default current_timestamp',
   ],
 
-  // #39
+  // #107 - scoped tasks
+  // The id here is the referential id so that we 
+  // can group the responses
   'task' => [
     'id'           => 'integer primary key autoincrement',
     'created_at'   => 'datetime default current_timestamp',
@@ -188,6 +190,13 @@ $SCHEMA = [
     'scope'        => 'text',
     'command'      => 'text',
     'args'         => 'text'
+  ],
+   
+  // #39
+  'task_screen' => [
+    'id'           => 'integer primary key autoincrement',
+    'task_id'      => 'integer',
+    'screen_id'    => 'integer',
   ],
 
   'task_response' => [
