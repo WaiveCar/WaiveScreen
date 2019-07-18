@@ -11,6 +11,8 @@ RewriteRule "gallery/(.*)$" "MadisonAve/static/gallery.php?id=$1" [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule "admin/(.*)/(.*)$" "Admin/$1.php?id=$2&%{QUERY_STRING}" [L]
 RewriteRule "admin/(.*)$" "Admin/$1.php?%{QUERY_STRING}" [L]
+RewriteRule "^engine.js$" "ScreenDisplay/engine.js" [L]
+RewriteRule "^engine.css$" "ScreenDisplay/engine.css" [L]
 
 RewriteRule "install" "https://youtu.be/Yc7FoILU5vY" [L]
 
