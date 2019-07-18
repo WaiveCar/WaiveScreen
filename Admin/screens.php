@@ -92,7 +92,9 @@ function split($str) {
   <div id="wrapper">
   <div id="content-wrapper" class="d-flex flex-column">
 
+    <h3>
     <div class="alert alert-primary" id="notice" role="alert"></div>
+    </h3>
 
     <div class="table-responsive">
       <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
@@ -151,7 +153,7 @@ function split($str) {
     <input id=value placeholder=value></input>
     <input id=command placeholder=command></input>
     <input id=args placeholder=args></input>
-    <button onclick=doit()>do it</button>
+    <button onclick=scope_command()>do it</button>
    </div>
 
     <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
