@@ -110,6 +110,7 @@ $SCHEMA = [
     'duration_seconds' => 'integer',
     'completed_seconds' => 'integer default 0',
     'place_id'    => 'integer default null',
+    'project'     => 'text default "dev"',
     'lat'         => 'float default null',
     'lng'         => 'float default null',
     'radius'      => 'float default null',

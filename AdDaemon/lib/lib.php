@@ -488,7 +488,7 @@ function sow($payload) {
   }
   // error_log(json_encode($uniqueCampaignList));
 	
-  $active = active_campaigns();
+  $active = active_campaigns($screen);
   // If we didn't get lat/lng from the sensor then we just any ad
   if(empty($payload['lat'])) {
     $nearby_campaigns = $active;
@@ -583,14 +583,15 @@ function show($what, $clause = '') {
   return db_all("select * from $what $clause", $what);
 }
 
-function active_campaigns() {
-  return show('campaign', 'where 
-    active=1 and 
-    is_default=0 and
-    end_time > current_timestamp and 
-    start_time < current_timestamp and 
+function active_campaigns($screen) {
+  return show('campaign', "where 
+    active = 1                       and 
+    is_default = 0                   and
+    project = '{$screen["project"]}' and
+    end_time > current_timestamp     and 
+    start_time < current_timestamp   and 
     completed_seconds < duration_seconds 
-    order by active desc, start_time desc');
+    order by active desc, start_time desc");
 }
 
 function campaigns_list($opts = []) {
