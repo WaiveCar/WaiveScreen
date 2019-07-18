@@ -67,7 +67,7 @@ def bss_props(bss_object):
   return props.GetAll(WPA_BSS_NAME)
 
 def wifi_location():
-  global _cb_count
+  global _cb_count, loop
   try:
     wifi_scan_startup()
 
