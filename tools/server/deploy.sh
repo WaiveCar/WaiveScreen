@@ -5,8 +5,3 @@ git pull
 
 $DIR/../../AdDaemon/lib/update_db.php
 
-cat > $DIR/../../AdDaemon/lib/const.php << ENDL
-<?php
-\$VERSION="$(git describe)";
-\$LASTCOMMIT=$(git log -1 --format="%at")
-ENDL
