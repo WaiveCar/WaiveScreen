@@ -9,6 +9,7 @@ import json
 import os
 import logging
 import sys
+import operator
 
 DEBUG = os.environ.get('DEBUG')
 CRASH = os.environ.get('CRASH')
@@ -76,7 +77,8 @@ if len(sys.argv) > 1:
       print(_last)
     elif _last:
       if type(_last) is dict:
-        for k,v in _last.items():
+        _lastSorted = sorted(_last.items(), key=operator.itemgetter(0))
+        for k,v in _lastSorted:
           if type(v) is bool:
             v = 1 if v else ''
           print("{}='{}';".format(k,v))
