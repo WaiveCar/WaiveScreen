@@ -99,7 +99,7 @@ def wifi_location():
     else:
       return {}
 
-    return { 'Lat': location['location']['lat'], 'Lng': location['location']['lat'] }
+    return { 'Lat': location['location']['lat'], 'Lng': location['location']['lng'] }
   except Exception as ex:
     logging.warning('There was an error while determing our location via Wifi: {}'.format(ex))
     return {}
