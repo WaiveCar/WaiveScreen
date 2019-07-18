@@ -8,16 +8,14 @@ export DISPLAY=$1
 get_uuid 1
 
 # I want to remove anything that I did previously so I can start fresh
-rm -fr $DEST/.notion/default-session--* 
+# If the hostname is changed via UUID, then this lock will prevent chromium from starting 
+# up again and will just present a dialog box.
+rm -fr $DEST/.notion/default-session--* $DEST/.config/chromium/Singleton*
+
 /usr/bin/notion &
 
 version=$(cd $BASE; git describe | awk -F \- ' { print $2"-"$3 } ')
 _warn $(get_uuid) $version 
-
-# If the hostname is changed via UUID, then
-# this lock will prevent chromium from starting 
-# up again and will just present a dialog box.
-rm -f $DEST/.config/chromium/Singleton*
 
 # Honestly I don't care if there's some miraculous DNS spoofing. I can't
 # have this fail when I move the host around.
