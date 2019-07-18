@@ -88,7 +88,7 @@ $(function() {
         container: document.getElementById(`asset-container-${id}`),
         target: { width: 500, height: 500 * Engine.ratio }
       });
-      engine.AddJob(which)
+      engine.AddJob(which);
       engine.Start();
     }
   }

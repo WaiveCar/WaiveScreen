@@ -598,6 +598,8 @@ var Engine = function(opts){
     }
   }
 
+  Engine.list.push(_res);
+
   // The convention we'll be using is that
   // variables start with lower case letters,
   // function start with upper case.
@@ -648,6 +650,13 @@ var Engine = function(opts){
   });
 };
 
+Engine.all = function(what) {
+  Engine.list.forEach(function(row) {
+    row[what]();
+  });
+}
+
+Engine.list = [];
 Engine.width = 1920;
 Engine.height = 675;
 Engine.ratio = Engine.width / Engine.height;
