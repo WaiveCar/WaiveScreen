@@ -115,7 +115,6 @@ def do_awake():
     _baseline = False
     _baselineList = []
     db.sess_set('power', 'awake')
-    db.sess_set('power_changeTime', 'current_timestamp', is_raw = True)
     os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
     _log.info("Waking up")
     _log.info("Changetime set {}".format(time.time()))
@@ -125,7 +124,6 @@ def do_awake():
 def do_sleep():
   global _sleeping, _changeTime, _baseline, _baselineList
   db.sess_set('power', 'sleep')
-  db.sess_set('power_changeTime', 'current_timestamp', is_raw = True)
   
   _sleeping = True
   _changeTime = time.time()
