@@ -37,6 +37,7 @@ _SCHEMA = {
     ('id', 'integer primary key'),
     ('key', 'text unique'),
     ('value', 'text'),
+    ('bootcount', 'integer'),
     ('namespace', 'text'),
     ('created_at', 'datetime default current_timestamp'),
     ('updated_at', 'datetime default current_timestamp')
@@ -351,12 +352,14 @@ def incr(key, value=1):
       pass
 
 
-def kv_get(key=None, expiry=0, use_cache=False, default=None):
+def kv_get(key=None, expiry=0, use_cache=False, default=None, bootcount=None):
   # Retrieves a value from the database, tentative on the expiry. 
   # If the cache is set to true then it retrieves it from in-memory if available, otherwise
   # it goes out to the db. Other than directly hitting up the _params parameter which is 
   # used internally, there is no way to invalidate the cache.
   global _params
+
+  bc_str = ' and bootcount={}'.format(bootcount) if bootcount else ''
 
   # only use the cache if the expiry is not set.
   if use_cache and key in _params and expiry == 0:
@@ -370,9 +373,9 @@ def kv_get(key=None, expiry=0, use_cache=False, default=None):
 
   if expiry > 0:
     # If we let things expire, we first sweep for it
-    res = run("select value, created_at from kv where key = '%s' and created_at >= datetime(current_timestamp, '-%d second')" % (key, expiry)).fetchone()
+    res = run("select value, created_at from kv where key = '%s' and created_at >= datetime(current_timestamp, '-%d second') {}".format(bc_str) % (key, expiry)).fetchone()
   else:
-    res = run('select value, created_at from kv where key = ?', (key, )).fetchone()
+    res = run('select value, created_at from kv where key = ? {}'.format(bc_str), (key, )).fetchone()
 
   if res:
     if default and type(default) is int: 
@@ -384,7 +387,7 @@ def kv_get(key=None, expiry=0, use_cache=False, default=None):
 
   return default
 
-def kv_set(key, value = None, is_raw = False):
+def kv_set(key, value = None, bootcount = None):
   # Sets (or replaces) a given key to a specific value.  
   # Returns the value that was sent.
   global _params
@@ -402,18 +405,13 @@ def kv_set(key, value = None, is_raw = False):
         res = run('select value from kv where key = ?', (key, )).fetchone()
 
       if not res:
-        if is_raw:
-          run('insert into kv (key, value) values(?, {})'.format(value), (key, ))
-
-        else: 
-          run('insert into kv (key, value) values(?, ?)', (key, value))
+        run('insert into kv (key, value) values(?, ?)', (key, value))
 
       elif res[0] != str(value):
-        if is_raw:
-          run('update kv set updated_at = current_timestamp, value = {} where key = ?'.format(value), (key, ))
+        run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
 
-        else:
-          run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
+      if bootcount:
+        run('update kv set bootcount = ? where key = ?', (bootcount, key))
 
   except Exception as ex:
     logging.warning("Couldn't set {} to {}: {}".format(key, value, ex))
@@ -435,12 +433,13 @@ def get_bootcount():
 
 def sess_del(key):
   kv_set(key, None)
-  kv_set("{}_bootnumber", None)
 
 def sess_set(key, value = 1, is_raw = False):
   bc = None if value is None else get_bootcount()
-  kv_set(key, value, is_raw)
-  kv_set("{}_bootnumber".format(key), bc)
+  kv_set(key, value, is_raw, bootcount=bc)
+
+def sess_get(key):
+  return kv_get(key, bootcount = get_bootcount())
 
 def kv_incr(key):
   val = int(kv_get(key) or 0)
@@ -451,10 +450,6 @@ def sess_incr(key):
   val = int(kv_get(key) or 0)
   sess_set(key, val + 1)
   return val + 1
-
-def sess_get(key):
-  if kv_get("{}_bootnumber".format(key)) == get_bootcount():
-    return kv_get(key)
 
 def process(res, table, what):
   if table in _PROCESSOR:
