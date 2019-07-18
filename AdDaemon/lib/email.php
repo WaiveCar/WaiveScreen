@@ -1,5 +1,5 @@
 <?php
-require '../vendor/autoload.php';
+require $_SERVER['DOCUMENT_ROOT'] .  'AdDaemon/vendor/autoload.php';
 use Mailgun\Mailgun;
 
 function email($user, $name, $vars) {

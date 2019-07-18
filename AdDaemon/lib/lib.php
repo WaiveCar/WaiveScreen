@@ -1,13 +1,15 @@
 <?
-require '../vendor/autoload.php';
+require $_SERVER['DOCUMENT_ROOT'] .  'AdDaemon/vendor/autoload.php';
+
 use Aws\S3\S3Client;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
-include_once('const.php');
-include_once('db.php');
-include_once('email.php');
-include_once('user.php');
+$mypath = $_SERVER['DOCUMENT_ROOT'] . 'AdDaemon/lib/';
+include_once($mypath . 'const.php');
+include_once($mypath . 'db.php');
+include_once($mypath . 'email.php');
+include_once($mypath . 'user.php');
 
 $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
