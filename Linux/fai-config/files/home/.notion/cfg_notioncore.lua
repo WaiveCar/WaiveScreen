@@ -70,8 +70,6 @@ defbindings("WClientWin", {
        bdoc("Kill client owning the client window."),
        kpress("C", "WClientWin.kill(_)"),
        
-       bdoc("Send next key press to the client window. "..
-            "Some programs may not allow this by default."),
        kpress("Q", "WClientWin.quote_next(_)"),
     }),
 })

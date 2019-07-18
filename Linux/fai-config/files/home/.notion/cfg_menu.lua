@@ -1,11 +1,3 @@
---
--- Menu module configuration. 
--- 
--- Only bindings that are effect in menus are configured here. 
--- See ion-menus.lua for menu definitions and ion-bindings.lua
--- for bindings to display menus.
---
-
 
 defbindings("WMenu", {
     bdoc("Close the menu."),
