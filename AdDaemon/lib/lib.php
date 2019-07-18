@@ -260,26 +260,49 @@ function command($payload) {
   $scope_whitelist = ['id', 'project', 'model', 'version'];
   $idList = [];
   
-  $field = aget($payload, 'field');
-  $value = aget($payload, 'value');
-  if (in_array($scope_whitelist, $field)) {
-    if($field === 'id') {
-      $idList = [db_int($value)];
-    } else {
-      $value = db_string($value);
-      $idList = db_all("select id from screens where $field = $value and active = true");
-    }
-  }
-  var_dump($idList);
-  exit(0);
+  $field_raw = aget($payload, 'field');
+  $value_raw = aget($payload, 'value');
+  $command = aget($payload, 'command');
 
-  return doSuccess(
-    db_insert('task', [
-      'scope' => db_string("id:{$payload['id']}"),
-      'command' => db_string($payload['cmd']),
-      'args' => db_string($payload['args'])
-    ])
-  );
+  if (in_array($field_raw, $scope_whitelist)) {
+    $value = db_string($value_raw);
+    $idList = array_map(
+      function($row) { return $row['id']; }, 
+      db_all("select id from screen where $field_raw = $value and active = true")
+    );
+  } else {
+    return doError("Scope is wrong. Try: " . implode(', ', $scope_whitelist));
+  }
+
+  if(count($idList) == 0) {
+    return doError("No screens match query");
+  }
+
+  if(empty($command)) {
+    return doError("Command cannot be blank");
+  }
+
+  $taskId = db_insert('task', [
+    'scope' => db_string("$field_raw:$value_raw"),
+    'command' => db_string($command),
+    'args' => db_string($payload['args'])
+  ]);
+
+  if(!$taskId) {
+    return doError("Unable to create task");
+  }
+
+  $toInsert = [];
+  foreach($idList as $id) {
+    $toInsert[] = [
+      'task_id' => $taskId,
+      'screen_id' => $id 
+    ];
+  }
+
+  db_insert_many('task_screen', $toInsert);
+
+  return doSuccess( $taskId );
 }
 
 function default_campaign($screen) {
