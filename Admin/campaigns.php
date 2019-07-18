@@ -52,7 +52,13 @@ $height = $width * 675 / 1920;
             Start: <?= $campaign['start_time'] ?><br>
             End: <?= $campaign['end_time'] ?>
           <? } else { ?>
-            <h4>Default advertisement</h4>
+            <h4>Default advertisement
+            <? foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
+              if ($value == $campaign['id']) { 
+                echo "<span class='badge badge-pill badge-dark'>$key</span> ";
+              }
+            } ?>
+            </h4>
           <? } ?>
 
           <p class="card-text"></p>
