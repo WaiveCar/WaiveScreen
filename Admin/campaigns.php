@@ -22,7 +22,7 @@ for($ix = 0; $ix < count($campaignList); $ix++){
     <title>Campaign admin</title>
     <style>
     .form-control-file { display: none }
-    .asset-container { width: 100%; position: relative; height: 160px }
+    .asset-container { width: 500px; position: relative; height: 215px; }
     .upload-button { margin-bottom: 0 }
     #notice { position: fixed; top:0; left:0; width: 100%; z-index: 100;display:none}
     </style>
@@ -33,7 +33,7 @@ for($ix = 0; $ix < count($campaignList); $ix++){
     <? foreach($campaignList as $campaign) { 
       $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
       ?>
-      <div class="card" style="width: 18rem;">
+      <div class="card" style="width: 500px">
         <div class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
         <!-- <img src="<?= $campaign['asset'][0] ?>" class="card-img-top"> -->
         <div class="card-body">

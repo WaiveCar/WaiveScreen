@@ -85,7 +85,8 @@ $(function() {
     for (var which of Data) {
       let id = which.id;
       let engine = Engine({
-        container: document.getElementById(`asset-container-${id}`)
+        container: document.getElementById(`asset-container-${id}`),
+        target: { width: 500, height: 500 * Engine.ratio }
       });
       engine.AddJob(which)
       engine.Start();
