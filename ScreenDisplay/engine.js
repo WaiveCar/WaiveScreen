@@ -293,6 +293,7 @@ var Engine = function(opts){
   // TODO: A circular buffer to try and navigate poor network
   // conditions.
   function remote(verb, url, what, onsuccess, onfail) {
+    if(!_res.server) { return; }
     onfail = onfail || function(a){
       console.log(a);
     }
@@ -451,7 +452,11 @@ var Engine = function(opts){
         prev = _last.shown;
         setTimeout(function() {
           prev.container.classList.remove('fadeOut');
-          _res.container.removeChild(prev.container);
+          if(prev.container.parentNode) {
+            prev.container.parentNode.removeChild(prev.container);
+          } else {
+            console.log("Not able to remove container");
+          }
         }, _res.fadeMs);
         doFade = true;
       }
