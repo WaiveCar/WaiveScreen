@@ -16,8 +16,9 @@ WPA_IF_NAME = '{}.Interface'.format(WPA_BUS_NAME)
 WPA_BSS_NAME = '{}.BSS'.format(WPA_BUS_NAME)
 DBUS_PROPERTIES = 'org.freedesktop.DBus.Properties'
 
-_bss_array = dbus.Array()
+_bss_array = False
 _cb_count = 0
+_hostapd_was_running = None
 
 BUS = dbus.SystemBus()
 _wpa_proxy = BUS.get_object(WPA_BUS_NAME, WPA_OBJECT_NAME)
@@ -26,20 +27,26 @@ def bytes_to_mac_addr(bytes_list):
   return ':'.join(list(map( '{:02x}'.format, bytes_list)))
 
 def wifi_scan_startup():
-  s = subprocess.run('sudo systemctl stop hostapd', shell=True)
   iface = dbus.Interface(_wpa_proxy, dbus_interface=WPA_BUS_NAME)
   try:
-    iface.CreateInterface({'Ifname': WIFI_IF})
-  except Exception as ex:
-    logging.warning('Error creating Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
+    iface.GetInterface(WIFI_IF)
+    _hostapd_was_running = False
+  except: 
+    s = subprocess.run('sudo systemctl stop hostapd', shell=True, timeout=5)
+    _hostapd_was_running = True
+    try:
+      iface.CreateInterface({'Ifname': WIFI_IF})
+    except Exception as ex:
+      logging.warning('Error creating Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
   
 def wifi_scan_shutdown():
-  iface = dbus.Interface(_wpa_proxy, dbus_interface=WPA_BUS_NAME)
-  try:
-    iface.RemoveInterface(iface.GetInterface(WIFI_IF))
-  except Exception as ex:
-    logging.warning('Error removing Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
-  s = subprocess.run('sudo systemctl start hostapd', shell=True)
+  if _hostapd_was_running:
+    iface = dbus.Interface(_wpa_proxy, dbus_interface=WPA_BUS_NAME)
+    try:
+      iface.RemoveInterface(iface.GetInterface(WIFI_IF))
+    except Exception as ex:
+      logging.warning('Error removing Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
+    s = subprocess.run('sudo systemctl start hostapd', shell=True, timeout=5)
 
 def dbus_wifi_if_array():
   props = dbus.Interface(_wpa_proxy, dbus_interface=DBUS_PROPERTIES)
@@ -52,6 +59,7 @@ def collect_scan_results(scan_done, iface, obj):
   _bss_array += props.Get(WPA_IF_NAME, 'BSSs')
   _cb_count -= 1
   if _cb_count == 0:
+    logging.debug('Scan done, quitting the loop')
     loop.quit()
 
 def generate_wifi_ap_dict():
@@ -66,13 +74,20 @@ def bss_props(bss_object):
   props = dbus.Interface(proxy, dbus_interface=DBUS_PROPERTIES)
   return props.GetAll(WPA_BSS_NAME)
 
-def wifi_location():
-  global _cb_count, loop
+def loop_killer():
+  global loop
+  logging.warning('Killing the Scan loop due to timeout')
+  loop.quit()
+
+def wifi_location(skip_shutdown=False):
+  global _cb_count, loop, _bss_array
+  _bss_array = dbus.Array()
+  _cb_count = 0
   try:
     wifi_scan_startup()
 
     for wifi_if in dbus_wifi_if_array():
-      print(wifi_if)
+      logging.debug('Scanning on interface: {}'.format(wifi_if))
       if_proxy = BUS.get_object(WPA_BUS_NAME, wifi_if)
       wpa_if = {
         'iface': dbus.Interface(if_proxy, dbus_interface=WPA_IF_NAME),
@@ -84,13 +99,14 @@ def wifi_location():
 
     if _cb_count > 0:
       loop = GLib.MainLoop()
-      timeout_id = GLib.timeout_add_seconds(10, loop.quit)
+      timeout_id = GLib.timeout_add_seconds(10, loop_killer)
       loop.run()
       GLib.source_remove(timeout_id)
 
     d = generate_wifi_ap_dict()
 
-    wifi_scan_shutdown()
+    if not skip_shutdown:
+      wifi_scan_shutdown()
 
     url = 'https://location.services.mozilla.com/v1/geolocate?key=test'
     r = requests.post(url, json=d)
@@ -99,7 +115,7 @@ def wifi_location():
     else:
       return {}
 
-    return { 'Lat': location['location']['lat'], 'Lng': location['location']['lng'] }
+    return { 'Lat': location['location']['lat'], 'Lng': location['location']['lng'], 'accuracy': location['accuracy'] }
   except Exception as ex:
     logging.warning('There was an error while determing our location via Wifi: {}'.format(ex))
     return {}
