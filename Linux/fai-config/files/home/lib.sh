@@ -337,6 +337,7 @@ first_run() {
   if [[ -z $(kv_get first_run) ]]; then
     set -x
     $SUDO systemctl disable hostapd
+    $SUDO systemctl enable location-daemon
     $SUDO apt -y update || die "Can't find network" info
     kv_set first_run,1
   fi
