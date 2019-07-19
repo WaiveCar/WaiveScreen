@@ -75,7 +75,6 @@ var Engine = function(opts){
     _nop = function(){},
     _isNetUp = true,
     _start = new Date(),
-    _timeline = [],
     _last_sow = [+_start, +_start],
     _fallback;
 
@@ -488,6 +487,49 @@ var Engine = function(opts){
     }
   }
 
+  var Timeline = {
+    _data: [], 
+    // This goes forward and loops around ... *almost*
+    // it depends on what happens, see below for more
+    // excitement.
+    position: 0,
+
+    // This returns if thre is a next slot without looping.
+    hasNext: function() {
+     return Timeline._data.length > Timeline.position;
+    },
+
+    // This is different, this will loop.
+    move: function(amount) {
+      // the classic trick for negatives
+      Timeline.position = (Timeline._data.length + Timeline.position + amount) % Timeline._data.length
+      return Timeline._data[Timeline.position];
+    },
+
+    bath: function() {
+      // scrub scrub, clean up time.
+      // This is actually only 3 hours of 7 second ads
+      // which we cut back to 2. This should be fine 
+      if(Timeline._data.length > 1500 && Timeline.position > 500) {
+        // this moves our pointer
+        Timeline._data = Timeline._data.slice(500);
+        // so we move our pointer.
+        Timeline.position -= 500;
+      }
+    },
+
+    add: function(job) {
+      // Just adds it to the current place.
+      Timeline._data.splice(Timeline.position, 0, job);
+      Timeline.bath();
+    },
+
+    addAtEnd: function(job) {
+      Timeline._data.push(job);
+      Timeline.bath();
+    },
+  }
+
   function nextJob() {
     // We note something we call "breaks" which designate which asset to show.
     // This is a composite of what remains - this is two pass, eh, kill me.
@@ -603,6 +645,7 @@ var Engine = function(opts){
     }
   }
 
+  // A repository of engines
   Engine.list.push(_res);
 
   // The convention we'll be using is that
