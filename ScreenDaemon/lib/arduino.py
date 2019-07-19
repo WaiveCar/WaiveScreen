@@ -4,6 +4,7 @@ import serial
 import time
 import math
 import struct
+import binascii
 import sys
 import os
 import atexit
@@ -37,6 +38,29 @@ def set_log(what):
   global _log
   _log = what
 
+class FakeArduino:
+  def __init__(self):
+    self.in_waiting  = 0
+    self.is_fake = True
+
+  def write(self, payload):
+    _log.info("fake writing: {}".format(binascii.b2a_base64(payload)))
+
+  def read(self, payload):
+    return None
+
+  def open():
+    _log.info("fake open")
+
+  def close():
+    _log.info("fake close")
+
+  def reset_input_buffer():
+    _log.info("fake reset")
+
+
+_fake_arduino = FakeArduino()
+
 _arduino_err = 0
 def get_arduino(stop_on_failure=True):
   global _arduino, _first, _arduino_err
@@ -61,6 +85,8 @@ def get_arduino(stop_on_failure=True):
 
     try:
       _arduino = serial.Serial(com_port, 115200, timeout=0.1)
+      _arduino.is_fake = False
+
       _first = arduino_read()
 
     except Exception as ex:
@@ -114,6 +140,7 @@ def do_awake():
     _changeTime = time.time()
     _baseline = False
     _baselineList = []
+    db.sess_del('backlight')
     db.sess_set('power', 'awake')
     os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force on".format(DISPLAY))
     _log.info("Waking up")
@@ -133,6 +160,7 @@ def do_sleep():
   _log.info("Changetime set {}".format(time.time()))
 
   set_backlight(0)
+  db.sess_set('backlight', 0)
   os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force suspend".format(DISPLAY))
 
   set_fanspeed(0)
