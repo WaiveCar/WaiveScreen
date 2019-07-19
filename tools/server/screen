@@ -7,12 +7,28 @@ die() {
 }
 
 list() {
-  curl -s waivescreen.com/api/screens | python -mjson.tool
+  curl -s waivescreen.com/api/screens | python3 -mjson.tool
 }
 
 connect() {
-  ssh-keygen -f "/home/chris/.ssh/known_hosts" -R "[reflect.waivescreen.com]:$1"
-  ssh -XC -i $DIR/../../Linux/keys/ScreenAccess adorno@reflect.waivescreen.com -p $1
+  local key
+  local keypath=$DIR/../../Linux/keys/ScreenAccess 
+
+  if [[ ! -e $keypath ]]; then
+    echo "I need $keypath to go on without a password"
+  else
+    key="-i $keypath"
+  fi
+
+  if [[ $1 =~ ^[0-9]*$ ]]; then
+    port=$1
+  else
+    port=$(curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'$1'") | .port')
+  fi
+
+  ssh-keygen -f "/home/chris/.ssh/known_hosts" -R "[reflect.waivescreen.com]:$port"
+  ssh -XC -oStrictHostKeyChecking=no $key adorno@reflect.waivescreen.com -p $port
+
   exit
 }
 
