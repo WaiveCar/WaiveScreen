@@ -12,10 +12,12 @@ import lib.db as db
 logging.basicConfig(level=logging.DEBUG)
 
 SLEEP_TIME = 10
+MAX_WIFI_INTERVAL = 600
 _current_location_source = None
+_last_wifi_location_request_time = 0.0
 
 def get_location_from_wifi():
-  l = wifi_location(True)
+  l = wifi_location()
   return l
 
 def stop_wifi_location_service():
@@ -32,8 +34,8 @@ def save_location(location):
   db.kv_set('location_accuracy', location.get('accuracy', ''))
   db.kv_set('location_source', _current_location_source)
 
-def the_main_loop():
-  global _current_location_source
+def location_loop():
+  global _current_location_source, _last_wifi_location_request_time
   while True:
     location = False
     try:
@@ -43,8 +45,9 @@ def the_main_loop():
           stop_wifi_location_service()
         _current_location_source = 'gps'
         save_location(location)
-      else:
+      elif time.time() - _last_wifi_location_request_time >= MAX_WIFI_INTERVAL:
         location = get_location_from_wifi()
+        _last_wifi_location_request_time = time.time()
         _current_location_source = 'wifi'
         if location:
           save_location(location)
@@ -57,5 +60,5 @@ def the_main_loop():
 
 
 #if __name__ == '__main__':
-#  the_main_loop()
+#  location_loop()
 
