@@ -48,6 +48,10 @@ ainsl /etc/fuse.conf "^user_allow_other"
 ainsl /etc/group "dialout:x:20:adorno"
 ainsl /etc/group- "dialout:x:20:adorno"
 
+# Gives the user perms for wpa_supplicant
+ainsl /etc/group "netdev:x:109:adorno"
+ainsl /etc/group- "netdev:x:109:adorno"
+
 # Make sure the paths from the lib are shared to the shell
 ainsl $CHDEST/.bashrc 'source $HOME/const.sh' 'const.sh'
 $ROOTCMD $CHDEST/dcall get_uuid
