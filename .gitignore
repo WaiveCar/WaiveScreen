@@ -9,6 +9,7 @@ AdDaemon/lib/const.php
 tools/package-lock.json
 ScreenDisplay/assets/
 power-history
+Linux/keys/ScreenAccess
 Linux/fai-config/files/home/pip/*.whl
 Linux/fai-config/files/home/pip/*.gz
 patch
