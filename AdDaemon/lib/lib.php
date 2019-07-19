@@ -252,7 +252,7 @@ function response($payload) {
 
   return db_insert('task_response', [
     'task_id' => db_int($payload['task_id']),
-    'screen_id' => db_int($screen['id']}),
+    'screen_id' => db_int($screen['id']),
     'response' => db_string($payload['response'])
   ]);
 }
