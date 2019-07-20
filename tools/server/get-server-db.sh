@@ -1,7 +1,11 @@
 #!/bin/bash
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-scp -C waivescreen.com:/var/www/WaiveScreen/db/main.db /tmp
-sudo mv /tmp/main.db $DIR/../db/main.db
-sudo chown www-data.www-data $DIR/../db/main.db
-
+set -x
+compress=/tmp/backup.sql.bz2
+sql=/tmp/backup.sql
+db=/var/db/waivescreen/main.db
+ssh waivescreen.com "sqlite3 $db .dump | bzip2 -c > $compress"
+rm -f $compress $db $sql
+scp -C waivescreen.com:$compress $compress
+bunzip2 -d $compress 
+sudo sqlite3 $db < $sql
+sudo chown www-data.www-data $db

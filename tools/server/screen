@@ -35,10 +35,19 @@ connect() {
     port=$(curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'${1,,}'") | .port')
   fi
 
-  ssh-keygen -f "/home/chris/.ssh/known_hosts" -R "[reflect.waivescreen.com]:$port"
+  # ssh-keygen -f "/home/chris/.ssh/known_hosts" -R "[reflect.waivescreen.com]:$port"
   ssh -XC -oStrictHostKeyChecking=no $key adorno@reflect.waivescreen.com -p $port
 
   exit
+}
+
+state() { 
+  if [[ -n "$1" ]]; then
+    scp -C waivescreen.com:/var/states/$1 /tmp/
+    echo /tmp/$1
+  else
+    ssh waivescreen.com "ls -ltr /var/states"
+  fi
 }
 
 reload() {
@@ -77,6 +86,7 @@ for i in $*; do
       curl http://waivescreen.com/patchfile > /tmp/patch || die "Can't find waivescreen.com"
       git apply /tmp/patch || die "Can't apply /tmp/patch"
       ;;
+    state) state $2; exit 0;;
     connect) connect $2 ;;
     sync|reload) reload ;;
     on) on.js ;;
