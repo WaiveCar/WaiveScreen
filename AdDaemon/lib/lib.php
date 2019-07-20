@@ -472,7 +472,7 @@ function task_inject($screen, $res) {
   }
   $tasks = aget($res,'taskList');
   if ($tasks) {
-    error_log('taskList: ' . json_encode($tasks));
+    error_log($screen['uid'] . ' :' . json_encode($tasks));
   }
   return $res;
 }
