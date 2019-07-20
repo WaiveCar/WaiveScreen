@@ -120,6 +120,7 @@ while True:
       _arduinoConnectionDown = False
       _arduinoDownTime = None
       # We could wake the screen up here, but I'm assuming the pm_if_needed call below will do the right thing
+      logging.info('Connection to arduino reestablished')
 
     n += 1
     if n % 8 == 0:
