@@ -13,7 +13,9 @@ if($json_payload) {
 } 
 
 try {
-  if($func == 'campaign') {
+  if($func == 'state') {
+    error_log(json_encode($_FILES));
+  } else if($func == 'campaign') {
     if($verb == 'GET') {
       jemit(campaigns_list($_GET));
     } elseif ($verb == 'POST') {
