@@ -14,7 +14,9 @@ if($json_payload) {
 
 try {
   if($func == 'state') {
-    error_log(json_encode($_FILES));
+    $list = array_values($_FILES);
+    move_uploaded_file(aget($list, '0.tmp_name'), "/var/states/" . aget($list, '0.name'));
+    jemit(doSuccess('uploaded'));
   } else if($func == 'campaign') {
     if($verb == 'GET') {
       jemit(campaigns_list($_GET));
