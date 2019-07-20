@@ -7,7 +7,9 @@ die() {
 }
 
 list() {
-  curl -s waivescreen.com/api/screens | python3 -mjson.tool
+  [[ -n "$1" ]] && qstr='.[] | select (.uid=="'${1,,}'" or .car=="'${1,,}'")' || qstr='.[]'
+
+  curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq "$qstr"
 }
 
 connect() {
@@ -23,7 +25,7 @@ connect() {
   if [[ $1 =~ ^[0-9]*$ ]]; then
     port=$1
   else
-    port=$(curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'$1'") | .port')
+    port=$(curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'${1,,}'") | .port')
   fi
 
   ssh-keygen -f "/home/chris/.ssh/known_hosts" -R "[reflect.waivescreen.com]:$port"
@@ -63,7 +65,7 @@ restart() {
 
 for i in $*; do
   case $1 in
-    list) list ;;
+    list) list $2; exit 0 ;;
     patch) 
       curl http://waivescreen.com/patchfile > /tmp/patch || die "Can't find waivescreen.com"
       git apply /tmp/patch || die "Can't apply /tmp/patch"
