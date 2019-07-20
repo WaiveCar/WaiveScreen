@@ -425,6 +425,7 @@ get_state() {
 
   cp -r $SMSDIR $LOG $path
   cp /proc/uptime /etc/bootcount /etc/UUID $path
+  $SUDO cp /var/log/daemon.log $path
 
   sqlite3 $DB .dump > $path/backup.sql
 
