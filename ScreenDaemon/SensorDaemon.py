@@ -16,6 +16,9 @@ from datetime import datetime
 FREQUENCY = 0.1 if 'FREQUENCY' not in os.environ else os.environ['FREQUENCY']
 WINDOW_SIZE = int(12.0 / FREQUENCY)
 
+# Number of seconds to keep the screen running when disconnected from the arduino
+ARDUINO_DOWN_SECONDS = 30
+
 # If all the sensor deltas reach this percentage
 # (multiplied by 100) from the baseline, then we
 # call this a "significant event" and store it.
@@ -35,6 +38,8 @@ ix = 0
 ix_hb = 0
 first = True
 avg = 0
+_arduinoConnectionDown = False
+_arduinoDownTime = None
 
 if lib.DEBUG:
   lib.set_logger(sys.stderr)
@@ -106,53 +111,77 @@ if lib.SANITYCHECK:
 
 n = 0
 while True:
-  sensor = arduino.arduino_read()
-  n += 1
-  if n % 8 == 0:
-    try:
+  try:
+    sensor = arduino.arduino_read()
+
+    if not sensor:
+      raise Exception('arduino_read() returned no data')
+    elif _arduinoConnectionDown:
+      _arduinoConnectionDown = False
+      _arduinoDownTime = None
+      # We could wake the screen up here, but I'm assuming the pm_if_needed call below will do the right thing
+      logging.info('Connection to arduino reestablished')
+
+    n += 1
+    if n % 8 == 0:
       logging.info("voltage {:.3f} current {:.3f} avg: {:.3f}".format(sensor['Voltage'], sensor['Current'], avg))
+
+    if first:
+      logging.info("Got first arduino read")
+
+    # Put data in if we have it
+    location = lib.get_gps()
+
+    try:
+      if location and not _autobright_set:
+        _autobright_set = True
+        arduino.set_autobright()
+
     except:
       pass
 
-  if first:
-    logging.info("Got first arduino read")
+    all = {**location, **sensor, 'run': run}
 
-  # Put data in if we have it
-  location = lib.get_gps()
+    if first:
+      logging.debug("Success, Main Loop")
+      first = False
 
-  try:
-    if location and not _autobright_set:
-      _autobright_set = True
-      arduino.set_autobright()
-        
-  except:
-    pass
+    window.append(all.get('Voltage'))
+    if len(window) > WINDOW_SIZE * 1.2:
+      window = window[-WINDOW_SIZE:]
 
-  all = {**location, **sensor, 'run': run} 
+    try:
+      avg = float(sum(window)) / len(window)
 
-  if first:
-    logging.debug("Success, Main Loop")
-    first = False
+    except:
+      avg = 0
 
-  window.append(all.get('Voltage'))
-  if len(window) > WINDOW_SIZE * 1.2:
-    window = window[-WINDOW_SIZE:]
 
-  try:
-    avg = float(sum(window)) / len(window)
+    if is_significant(all):
+      lib.sensor_store(all)
 
-  except:
-    avg = 0
+    # If we need to go into/get out of a low power mode
+		# We also need to make sure that we are looking at a nice
+		# window of time. Let's not make it the window_size just
+		# in case our tidiness algorithm breaks.
+  	if sensor and len(window) > WINDOW_SIZE * 0.8:
+      arduino.pm_if_needed(avg, all.get('Voltage'))
 
-  if is_significant(all):
-    lib.sensor_store(all)
-
-  # If we need to go into/get out of a low power mode
-  # We also need to make sure that we are looking at a nice
-  # window of time. Let's not make it the window_size just
-  # in case our tidiness algorithm breaks.
-  if sensor and len(window) > WINDOW_SIZE * 0.8:
-    arduino.pm_if_needed(avg, all.get('Voltage'))
+  # We are unable to communicate with the arduino.  We will assume that the screen is on
+  # at max brightness and shutdown the screen sooner than usual.
+  except Exception as ex:
+    if not _arduinoConnectionDown:
+      logging.error('Arduino communication down: {}'.format(ex))
+      _arduinoConnectionDown = True
+      _arduinoDownTime = time.time()
+      # TODO Add more logic to guess the state of the car before we lost contact.
+      #      We should adjust ARDUINO_DOWN_SECONDS accordingly
+    elif db.sess_get('power') == 'awake':
+      if time.time() - _arduinoDownTime >= ARDUINO_DOWN_SECONDS:
+        try:
+          arduino.do_sleep()
+        except: # TODO catch the specific exception
+          pass  # The call should turn off the display but fail trying to turn off the backlight.  That's okay.
 
   # Now you'd think that we just sleep on the frequency, that'd be wrong.
   # Thanks, try again. Instead we need to use the baseline time from start
