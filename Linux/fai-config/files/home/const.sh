@@ -4,6 +4,7 @@ export WHO=adorno
 export DEST=/home/$WHO
 export BASE=$DEST/WaiveScreen
 
+export SERVER=waivescreen.com
 export BRANCH=master
 export CACHE=/var/cache/assets
 export DB=/var/db/config.db
@@ -16,6 +17,7 @@ export LOG=/var/log/screen
 export PATH=/usr/bin:/usr/sbin:$PATH:$DEST
 export ROOTHOME=/root
 export VID=/var/capture
+export SMSDIR=/var/log/sms 
 
 [[ $USER != 'root' ]] && SUDO=/usr/bin/sudo
 
