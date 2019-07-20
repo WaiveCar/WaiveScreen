@@ -20,8 +20,8 @@ sshuser() {
   echo "Set GatewayPorts Yes in sshd_config"
 }
 
-sudo mkdir -p /var/db/waivescreen
-sudo chmod 0777 /var/db/waivescreen
+sudo mkdir -p /var/db/waivescreen /var/states
+sudo chmod 0777 /var/db/waivescreen /var/states
 
 install_composer
 #sshuser
