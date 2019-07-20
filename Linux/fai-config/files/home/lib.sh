@@ -416,10 +416,12 @@ install() {
 # SHOULD NOT REMOVE
 
 get_state() {
-  local myname=state-$(date +%Y%m%d%H%m%s)-$(< /etc/UUID)
+  local uuid=$(< /etc/UUID)
+  local now=$(date +%Y%m%d%H%m%S)
+  local myname=state-$uuid-$now
   local archive=${myname}.tbz
-  local path=/tmp/$myname
-  mkdir $path
+  local path=/tmp/$uuid/$now
+  mkdir -p $path
 
   cp -r $SMSDIR $LOG $path
   cp /proc/uptime /etc/bootcount /etc/UUID $path
@@ -428,9 +430,9 @@ get_state() {
 
   ( cd $BASE && git describe > $path/version )
 
-  cd $path/..
-  tar cjf /tmp/$archive $myname
-  curl -sX POST -F "f0=@/tmp/$archive" "$SERVER/api/state" > /dev/null && echo $myname || _log "Could not send"
+  cd /tmp/
+  tar cjf /tmp/$archive $uuid
+  curl -sX POST -F "f0=@/tmp/$archive" "$SERVER/api/state" > /dev/null && echo $archive || _log "Could not send"
 }
 
 get_uuid() {
