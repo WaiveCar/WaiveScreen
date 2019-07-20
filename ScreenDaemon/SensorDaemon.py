@@ -16,6 +16,9 @@ from datetime import datetime
 FREQUENCY = 0.1 if 'FREQUENCY' not in os.environ else os.environ['FREQUENCY']
 WINDOW_SIZE = int(12.0 / FREQUENCY)
 
+# Number of seconds to keep the screen running when disconnected from the arduino
+ARDUINO_DOWN_SECONDS = 30
+
 # If all the sensor deltas reach this percentage
 # (multiplied by 100) from the baseline, then we
 # call this a "significant event" and store it.
@@ -35,6 +38,8 @@ ix = 0
 ix_hb = 0
 first = True
 avg = 0
+_arduinoConnectionDown = False
+_arduinoDownTime = None
 
 if lib.DEBUG:
   lib.set_logger(sys.stderr)
@@ -106,54 +111,76 @@ if lib.SANITYCHECK:
 
 n = 0
 while True:
-  sensor = arduino.arduino_read()
-  n += 1
-  if n % 8 == 0:
-    logging.info("voltage {:.3f} current {:.3f} avg: {:.3f}".format(sensor['Voltage'], sensor['Current'], avg))
-
-  if first:
-    logging.info("Got first arduino read")
-
-  # Put data in if we have it
-  location = lib.get_gps()
-
   try:
-    if location and not _autobright_set:
-      _autobright_set = True
-      arduino.set_autobright()
-        
-  except:
-    pass
+    sensor = arduino.arduino_read()
 
-  all = {**location, **sensor, 'run': run} 
+    if not sensor:
+      raise Exception('arduino_read() returned no data')
+    elif _arduinoConnectionDown:
+      _arduinoConnectionDown = False
+      _arduinoDownTime = None
+      # We could wake the screen up here, but I'm assuming the pm_if_needed call below will do the right thing
 
-  if first:
-    logging.debug("Success, Main Loop")
-    first = False
+    n += 1
+    if n % 8 == 0:
+      logging.info("voltage {:.3f} current {:.3f} avg: {:.3f}".format(sensor['Voltage'], sensor['Current'], avg))
 
-  window.append(all.get('Voltage'))
-  if len(window) > WINDOW_SIZE * 1.2:
-    window = window[-WINDOW_SIZE:]
+    if first:
+      logging.info("Got first arduino read")
 
-  try:
-    avg = float(sum(window)) / len(window)
+    # Put data in if we have it
+    location = lib.get_gps()
 
-  except:
-    avg = 0
+    try:
+      if location and not _autobright_set:
+        _autobright_set = True
+        arduino.set_autobright()
+    except:
+      pass
+
+    all = {**location, **sensor, 'run': run}
+
+    if first:
+      logging.debug("Success, Main Loop")
+      first = False
+
+    window.append(all.get('Voltage'))
+    if len(window) > WINDOW_SIZE * 1.2:
+      window = window[-WINDOW_SIZE:]
+
+    try:
+      avg = float(sum(window)) / len(window)
+
+    except:
+      avg = 0
 
 
-  if is_significant(all):
-    lib.sensor_store(all)
+    if is_significant(all):
+      lib.sensor_store(all)
 
-  #ln="{} {} {} {} {} \n".format(time.strftime("%H:%M:%S"), all['Voltage'], all['Current'], avg, db.sess_get('power'))
-  #
-  #f.write(ln)
-  #if ix % 10 == 0:
-  #  f.flush()
+    #ln="{} {} {} {} {} \n".format(time.strftime("%H:%M:%S"), all['Voltage'], all['Current'], avg, db.sess_get('power'))
+    #
+    #f.write(ln)
+    #if ix % 10 == 0:
+    #  f.flush()
 
-  # If we need to go into/get out of a low power mode
-  if sensor:
-    arduino.pm_if_needed(avg, all.get('Voltage'))
+    # If we need to go into/get out of a low power mode
+    if sensor:
+      arduino.pm_if_needed(avg, all.get('Voltage'))
+
+  # We are unable to communicate with the arduino.  We will assume that the screen is on
+  # at max brightness and shutdown the screen sooner than usual.
+  except Exception as ex:
+    logging.error('Arduino communication down: {}'.format(ex))
+    if not _arduinoConnectionDown:
+      _arduinoConnectionDown = True
+      _arduinoDownTime = time.time()
+    elif db.sess_get('power') == 'awake':
+      if time.time() - _arduinoDownTime >= ARDUINO_DOWN_SECONDS:
+        try:
+          arduino.do_sleep()
+        except: # TODO catch the specific exception
+          pass  # The call should turn off the display but fail trying to turn off the backlight.  That's okay.
 
   # Now you'd think that we just sleep on the frequency, that'd be wrong.
   # Thanks, try again. Instead we need to use the baseline time from start
