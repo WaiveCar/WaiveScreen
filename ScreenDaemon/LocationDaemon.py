@@ -12,7 +12,7 @@ import lib.db as db
 logging.basicConfig(level=logging.DEBUG)
 
 SLEEP_TIME = 10
-MAX_WIFI_INTERVAL = 600
+MAX_WIFI_INTERVAL = 60 #0
 _current_location_source = None
 _last_wifi_location_request_time = 0.0
 
