@@ -2,7 +2,6 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MM="mmcli -m 0"
-SMSDIR=/var/log/sms 
 FFMPEG="ffmpeg -loglevel panic -nostats -hide_banner -y -an"
 
 . $DIR/const.sh
@@ -92,7 +91,7 @@ selfie() {
     fi
   done
 
-  res=$(eval curl -sX POST $opts "waivescreen.com/selfie.php?pre=$now")
+  res=$(eval curl -sX POST $opts "$SERVER/selfie.php?pre=$now")
   [[ -n "$1" ]] && sms $sender "This just happened: $res. More cool stuff coming soon ;-)"
   echo $res
 }
@@ -327,11 +326,11 @@ EPERL
 
   sleep 4
 
-  if ping -c 1 -i 0.3 waivescreen.com; then
-    _info "waivescreen.com found" 
+  if ping -c 1 -i 0.3 $SERVER; then
+    _info "$SERVER found" 
     get_number
   else
-    _warn "waivescreen.com unresolvable!"
+    _warn "$SERVER unresolvable!"
 
     local ix=0
     while ! $MM; do
@@ -415,6 +414,25 @@ install() {
 }
 # } end of stuff used during the install that you 
 # SHOULD NOT REMOVE
+
+get_state() {
+  local path=/tmp/state
+  [[ -e $path/ ]] && $SUDO rm -fr $path
+  mkdir $path
+
+  cp -r $SMSDIR $LOG $path
+  cp /proc/uptime /etc/bootcount /etc/UUID $path
+
+  sqlite3 $DB .dump > $path/backup.sql
+
+  ( cd $BASE && git describe > $path/version )
+
+  cd $path
+  myname=state-$(date +%Y%m%d%H%m)-$(< /etc/UUID).tbz
+  tar -cjf /tmp/$myname .
+  curl -sX POST -F "f0=@/tmp/$myname" "$SERVER/api/state" || _log "Could not send"
+  echo $myname
+}
 
 get_uuid() {
   local UUIDfile=/etc/UUID
@@ -689,7 +707,7 @@ make_patch() {
   cp -puv $DEST/* $DEST/.* $BASE/Linux/fai-config/files/home
   cd $BASE
   git diff origin/master > /tmp/patch
-  [[ -s /tmp/patch ]] && curl -sX POST -F "f0=@/tmp/patch" "waivescreen.com/patch.php" || echo "No changes"
+  [[ -s /tmp/patch ]] && curl -sX POST -F "f0=@/tmp/patch" "$SERVER/patch.php" || echo "No changes"
 }
 
 disk_monitor() {
