@@ -433,7 +433,7 @@ get_state() {
   ( cd $BASE && git describe > $path/version )
 
   cd /tmp/
-  tar cjf /tmp/$archive $uuid
+  tar cjf /tmp/$archive $uuid/$now
   curl -sX POST -F "f0=@/tmp/$archive" "$SERVER/api/state" > /dev/null && echo $archive || _log "Could not send"
 }
 
