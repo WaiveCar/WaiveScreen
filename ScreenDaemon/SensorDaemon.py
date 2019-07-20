@@ -171,10 +171,12 @@ while True:
   # We are unable to communicate with the arduino.  We will assume that the screen is on
   # at max brightness and shutdown the screen sooner than usual.
   except Exception as ex:
-    logging.error('Arduino communication down: {}'.format(ex))
     if not _arduinoConnectionDown:
+      logging.error('Arduino communication down: {}'.format(ex))
       _arduinoConnectionDown = True
       _arduinoDownTime = time.time()
+      # TODO Add more logic to guess the state of the car before we lost contact.
+      #      We should adjust ARDUINO_DOWN_SECONDS accordingly
     elif db.sess_get('power') == 'awake':
       if time.time() - _arduinoDownTime >= ARDUINO_DOWN_SECONDS:
         try:
