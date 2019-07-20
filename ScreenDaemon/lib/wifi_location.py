@@ -19,12 +19,21 @@ DBUS_PROPERTIES = 'org.freedesktop.DBus.Properties'
 _bss_array = False
 _cb_count = 0
 _hostapd_was_running = None
+_current_macs = set()
+_previous_macs = set()
+_last_location = {}
 
 BUS = dbus.SystemBus()
 _wpa_proxy = BUS.get_object(WPA_BUS_NAME, WPA_OBJECT_NAME)
 
 def bytes_to_mac_addr(bytes_list):
   return ':'.join(list(map( '{:02x}'.format, bytes_list)))
+
+def is_same_scan_data():
+  if len(_current_macs & _previous_macs) >= len(_previous_macs) * 0.75:
+    return True
+  else:
+    return False
 
 def wifi_scan_startup():
   iface = dbus.Interface(_wpa_proxy, dbus_interface=WPA_BUS_NAME)
@@ -40,12 +49,12 @@ def wifi_scan_startup():
       logging.warning('Error creating Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
   
 def wifi_scan_shutdown():
+  iface = dbus.Interface(_wpa_proxy, dbus_interface=WPA_BUS_NAME)
+  try:
+    iface.RemoveInterface(iface.GetInterface(WIFI_IF))
+  except Exception as ex:
+    logging.warning('Error removing Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
   if _hostapd_was_running:
-    iface = dbus.Interface(_wpa_proxy, dbus_interface=WPA_BUS_NAME)
-    try:
-      iface.RemoveInterface(iface.GetInterface(WIFI_IF))
-    except Exception as ex:
-      logging.warning('Error removing Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
     s = subprocess.run('sudo systemctl start hostapd', shell=True, timeout=5)
 
 def dbus_wifi_if_array():
@@ -63,10 +72,14 @@ def collect_scan_results(scan_done, iface, obj):
     loop.quit()
 
 def generate_wifi_ap_dict():
+  global _current_macs
+  _current_macs.clear()
   l = []
   for bss in _bss_array:
     props = bss_props(bss)
-    l.append({ 'macAddress': bytes_to_mac_addr(props['BSSID']), 'signalStrength': props['Signal'] })
+    mac = bytes_to_mac_addr(props['BSSID'])
+    l.append({ 'macAddress': mac, 'signalStrength': props['Signal'] })
+    _current_macs.add(mac)
   return { 'wifiAccessPoints': l }
 
 def bss_props(bss_object):
@@ -79,8 +92,8 @@ def loop_killer():
   logging.warning('Killing the Scan loop due to timeout')
   loop.quit()
 
-def wifi_location(skip_shutdown=False):
-  global _cb_count, loop, _bss_array
+def wifi_location():
+  global _cb_count, loop, _bss_array, _previous_macs, _last_location
   _bss_array = dbus.Array()
   _cb_count = 0
   try:
@@ -104,16 +117,22 @@ def wifi_location(skip_shutdown=False):
       GLib.source_remove(timeout_id)
 
     d = generate_wifi_ap_dict()
+    logging.debug('Scan Results: {}'.format(d))
 
-    if not skip_shutdown:
-      wifi_scan_shutdown()
+    wifi_scan_shutdown()
 
-    url = 'https://location.services.mozilla.com/v1/geolocate?key=test'
-    r = requests.post(url, json=d)
-    if r.status_code == 200:
-      location = json.loads(r.text)
+    if is_same_scan_data():
+      logging.debug("Scan data looks the same.  Skipping Submission")
+      location = _last_location
     else:
-      return {}
+      url = 'https://location.services.mozilla.com/v1/geolocate?key=test'
+      r = requests.post(url, json=d)
+      if r.status_code == 200:
+        location = json.loads(r.text)
+        _last_location = location
+        _previous_macs = _current_macs
+      else:
+        return {}
 
     return { 'Lat': location['location']['lat'], 'Lng': location['location']['lng'], 'accuracy': location['accuracy'] }
   except Exception as ex:
