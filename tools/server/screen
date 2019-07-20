@@ -7,7 +7,14 @@ die() {
 }
 
 list() {
-  [[ -n "$1" ]] && qstr='.[] | select (.uid=="'${1,,}'" or .car=="'${1,,}'")' || qstr='.[]'
+  local qstr='.[]'
+  if [[ -n "$1" ]]; then
+    if [[ $1 =~ ^[0-9]*$ ]]; then
+      qstr=$qstr' | select (.id=='${1,,}' or .port=='${1,,}')'
+    else
+      qstr=$qstr' | select (.uid=="'${1,,}'" or .car=="'${1,,}'")' 
+    fi
+  fi
 
   curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq "$qstr"
 }
