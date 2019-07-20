@@ -430,8 +430,7 @@ get_state() {
   cd $path
   myname=state-$(date +%Y%m%d%H%m)-$(< /etc/UUID).tbz
   tar -cjf /tmp/$myname .
-  curl -sX POST -F "f0=@/tmp/$myname" "$SERVER/api/state" || _log "Could not send"
-  echo $myname
+  curl -sX POST -F "f0=@/tmp/$myname" "$SERVER/api/state" > /dev/null && echo $myname || _log "Could not send"
 }
 
 get_uuid() {
