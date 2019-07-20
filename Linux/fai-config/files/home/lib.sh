@@ -416,8 +416,9 @@ install() {
 # SHOULD NOT REMOVE
 
 get_state() {
-  local path=/tmp/state
-  [[ -e $path/ ]] && $SUDO rm -fr $path
+  local myname=state-$(date +%Y%m%d%H%m%s)-$(< /etc/UUID)
+  local archive=${myname}.tbz
+  local path=/tmp/$myname
   mkdir $path
 
   cp -r $SMSDIR $LOG $path
@@ -427,10 +428,9 @@ get_state() {
 
   ( cd $BASE && git describe > $path/version )
 
-  cd $path
-  myname=state-$(date +%Y%m%d%H%m)-$(< /etc/UUID).tbz
-  tar -cjf /tmp/$myname .
-  curl -sX POST -F "f0=@/tmp/$myname" "$SERVER/api/state" > /dev/null && echo $myname || _log "Could not send"
+  cd $path/..
+  tar cjf /tmp/$archive $myname
+  curl -sX POST -F "f0=@/tmp/$archive" "$SERVER/api/state" > /dev/null && echo $myname || _log "Could not send"
 }
 
 get_uuid() {
