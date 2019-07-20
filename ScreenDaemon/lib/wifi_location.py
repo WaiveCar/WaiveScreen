@@ -30,7 +30,7 @@ def bytes_to_mac_addr(bytes_list):
   return ':'.join(list(map( '{:02x}'.format, bytes_list)))
 
 def is_same_scan_data():
-  if len(_current_macs & _previous_macs) >= len(_previous_macs) * 0.75:
+  if len(_current_macs & _previous_macs) >= len(_current_macs) * 0.75:
     return True
   else:
     return False
