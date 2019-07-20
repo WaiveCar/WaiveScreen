@@ -432,8 +432,12 @@ function tasks() {
   return show('task');
 }
 
-function task_responses() {
-  return show('task_response');
+function task_dump() {
+  return [
+    'task' => show('task'),
+    'task_screen' => show('task_screen'),
+    'response' => show('task_response')
+  ];
 }
 
 function screen_edit($data) {
