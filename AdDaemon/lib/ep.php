@@ -38,10 +38,10 @@ try {
       jemit(screen_edit($all));
     }
   } 
-  else if(array_search($func, ['jobs', 'campaigns', 'screens', 'tasks', 'task_dump']) !== false) {
+  else if(array_search($func, ['jobs', 'campaigns', 'screens', 'tasks']) !== false) {
     jemit(show(rtrim($func, 's')));
   }
-  else if(array_search($func, ['sow', 'screen_tag', 'tag', 'ping', 'command', 'response']) !== false) { 
+  else if(array_search($func, ['sow', 'task_dump', 'screen_tag', 'tag', 'ping', 'command', 'response']) !== false) { 
     jemit($func($all, $verb));
   }
   else if($func == 'setup') {
