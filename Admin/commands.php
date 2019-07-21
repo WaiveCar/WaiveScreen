@@ -5,9 +5,13 @@ include('lib.php');
 
 $taskMap = get('task_dump');
 $keylist = array_keys($taskMap['task'][0]);
+$responseKeys = array_keys($taskMap['response'][0]);
 $responseMap = [];
+$responseKeys = array_filter($responseKeys, function($row) { 
+  return ! ( $row == 'task_id' || $row == 'id' );
+});
 foreach($taskMap['response'] as $obj) {
-  $id = $obj['id'];
+  $id = $obj['task_id'];
   if (!array_key_exists($id, $responseMap)) {
     $responseMap[$id] = [];
   }
@@ -35,7 +39,7 @@ foreach($taskMap['response'] as $obj) {
     <div class="alert alert-primary" id="notice" role="alert"></div>
     <div class='row'>
       <div class="col-lg-12">
-        <table class="table table-dark">
+        <table class="table">
           <thead>
             <tr>
               <? foreach($keylist as $key) { ?>
@@ -52,8 +56,15 @@ foreach($taskMap['response'] as $obj) {
               <? } ?>
 
               </tr><tr>
-                <td colspan=<?= count($keyList); ?>>
-                  <table class="table table-dark">
+                <td colspan=<?= count($keylist); ?>>
+                  <table class="table">
+                    <? foreach($responseMap[$task['id']] as $response)  {  ?>
+                      <tr>
+                      <? foreach($responseKeys as $key) { ?>
+                        <td> <?= preg_replace('/\n/', '<br>', $response[$key]); ?></td>
+                      <? } ?>
+                      </tr>
+                    <? } ?>
                   </table>
                </td>
               </tr> <?
