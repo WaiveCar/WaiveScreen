@@ -22,30 +22,37 @@ $keylist = array_keys($taskMap['task'][0]);
     </style>
   </head>
   <body>
+  <div class="container">
     <div class="alert alert-primary" id="notice" role="alert"></div>
     <div class='row'>
-    <table class="table table-dark">
-      <thead>
-        <tr>
-          <? foreach($keylist as $key) { ?>
-            <th scope="col"><?=$key?></th>
-          <? } ?>
-        </tr>
-      </thead>
-      <tbody>
-      <? 
-        foreach($taskMap['task'] as $task) {  
-          echo '<tr>';
-          foreach($keylist as $key) { ?>
-            <td><?= $task[$key]; ?></td>
-          <? }
-          echo '</tr>';
-        } 
-      ?>
-      </tbody>
-    </table>
+      <div class="col-lg-12">
+        <table class="table table-dark">
+          <thead>
+            <tr>
+              <? foreach($keylist as $key) { ?>
+                <th scope="col"><?=$key?></th>
+              <? } ?>
+            </tr>
+          </thead>
+          <tbody>
+          <? 
+            foreach($taskMap['task'] as $task) {  
+              echo '<tr>';
+              foreach($keylist as $key) { ?>
+                <td><?= $task[$key]; ?></td>
+              <? } ?>
+
+              </tr><tr>
+                <td colspan=<?= count($keyList); ?>>hello</td> 
+              </tr> <?
+            } 
+          ?>
+          </tbody>
+        </table>
+      </div>
     </div>
     </div>
+   </div>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="/engine.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
