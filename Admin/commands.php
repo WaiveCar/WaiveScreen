@@ -3,19 +3,7 @@ include('../MadisonAve/lib/lib.php');
 include('../AdDaemon/lib/lib.php');
 include('lib.php');
 
-$taskList = get('tasks');
-$responseList = get('task_responses');
-var_dump($taskList);var_dump($responseList);exit;
-$addrList = get_addressList(array_map(function($row) { 
-  return [$row['lat'],$row['lng']]; 
-}, $campaignList));
-
-for($ix = 0; $ix < count($campaignList); $ix++){
-  $campaignList[$ix]['addr'] = $addrList[$ix];
-}
-
-$width = 700;
-$height = $width * 675 / 1920;
+$taskMap = get('task_dump');
 ?>
 <!doctype html>
 <html lang="en">
@@ -28,7 +16,6 @@ $height = $width * 675 / 1920;
     <style>
     form { float: right }
     .form-control-file { display: none }
-    .asset-container { width: <?= $width; ?>px; position: relative; height: <?= $height; ?>px; }
     .upload-button { margin-bottom: 0 }
     #notice { position: fixed; top:0; left:0; width: 100%; z-index: 100;display:none}
     </style>
@@ -36,56 +23,15 @@ $height = $width * 675 / 1920;
   <body>
     <div class="alert alert-primary" id="notice" role="alert"></div>
     <div class='row'>
-    <? foreach($campaignList as $campaign) { 
-      $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
-      $isDefault = $campaign['is_default'];
-      ?>
-        <div class="card" style="width: <?=$width?>px">
-        <div class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
-        <!-- <img src="<?= $campaign['asset'][0] ?>" class="card-img-top"> -->
-        <div class="card-body">
-          <? if (!$isDefault) { ?>
-            <div class="progress">
-              <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-            <p><?= $campaign['completed_seconds'] ?>/<?= $campaign['duration_seconds'] ?>s complete<br/>
-            <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a><br/>
-            Radius: <?= $campaign['radius'] ?>m</p>
-            Start: <?= $campaign['start_time'] ?><br>
-            End: <?= $campaign['end_time'] ?>
-          <? } else { ?>
-            <h4>Default advertisement
-            <? foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
-              if ($value == $campaign['id']) { 
-                echo "<span class='badge badge-pill badge-dark'>$key</span> ";
-              }
-            } ?>
-            </h4>
-          <? } ?>
-
-          <p class="card-text"></p>
-
-          <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Actions
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <a href="#<?=$campaign['id']?>" class="dropdown-item">Disable</a>
-              <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Edit</label>
-              <a class="dropdown-item" href="#">Make Default</a>
-            </div>
-          </div>
-
-          <form id='form-<?=$campaign['id']?>'>
-            <input id="image-upload-<?=$campaign['id']?>" data-campaign=<?=$campaign['id']?> multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
-          </form>
-        </div>
-      </div>
-    <? } ?>
+    <? 
+      $keylist = array_keys($taskMap['task'][0]);
+      foreach($taskMap['task'] as $task) {  
+        foreach($keylist as $key) { ?>
+        <span><?= $task[$key]; ?></span>
+        <? }
+      } 
+    ?>
     </div>
-    <script>
-      var Data=<?=json_encode($campaignList);?>,width=<?=$width?>,height=<?=$height?>;
-    </script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="/engine.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
