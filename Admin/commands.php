@@ -5,6 +5,15 @@ include('lib.php');
 
 $taskMap = get('task_dump');
 $keylist = array_keys($taskMap['task'][0]);
+$responseMap = [];
+foreach($taskMap['response'] as $obj) {
+  $id = $obj['id'];
+  if (!array_key_exists($id, $responseMap)) {
+    $responseMap[$id] = [];
+  }
+  $responseMap[$id][] = $obj;
+}
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -43,7 +52,10 @@ $keylist = array_keys($taskMap['task'][0]);
               <? } ?>
 
               </tr><tr>
-                <td colspan=<?= count($keyList); ?>>hello</td> 
+                <td colspan=<?= count($keyList); ?>>
+                  <table class="table table-dark">
+                  </table>
+               </td>
               </tr> <?
             } 
           ?>
