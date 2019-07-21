@@ -4,6 +4,7 @@ include('../AdDaemon/lib/lib.php');
 include('lib.php');
 
 $taskMap = get('task_dump');
+$keylist = array_keys($taskMap['task'][0]);
 ?>
 <!doctype html>
 <html lang="en">
@@ -12,7 +13,7 @@ $taskMap = get('task_dump');
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel='stylesheet' href='/engine.css'>
-    <title>Campaign admin</title>
+    <title>Commands</title>
     <style>
     form { float: right }
     .form-control-file { display: none }
@@ -23,14 +24,27 @@ $taskMap = get('task_dump');
   <body>
     <div class="alert alert-primary" id="notice" role="alert"></div>
     <div class='row'>
-    <? 
-      $keylist = array_keys($taskMap['task'][0]);
-      foreach($taskMap['task'] as $task) {  
-        foreach($keylist as $key) { ?>
-        <span><?= $task[$key]; ?></span>
-        <? }
-      } 
-    ?>
+    <table class="table table-dark">
+      <thead>
+        <tr>
+          <? foreach($keylist as $key) { ?>
+            <th scope="col"><?=$key?></th>
+          <? } ?>
+        </tr>
+      </thead>
+      <tbody>
+      <? 
+        foreach($taskMap['task'] as $task) {  
+          echo '<tr>';
+          foreach($keylist as $key) { ?>
+            <td><?= $task[$key]; ?></td>
+          <? }
+          echo '</tr>';
+        } 
+      ?>
+      </tbody>
+    </table>
+    </div>
     </div>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="/engine.js"></script>
