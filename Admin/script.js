@@ -1,3 +1,4 @@
+var _append = false;
 function get(id) {
   var res = Data.filter(row => row.id == id);
   return res ? res[0] : null;
@@ -99,12 +100,20 @@ $(function() {
 });
 
 
+function append() {
+  _append = true;
+}
+
 function update_campaign(campaign, el) {
   // Before the payment is processed by paypal, a user's purchase is sent to the server with 
   // the information that has so far been obtained including the picture.
   let formData = new FormData();
 
   formData.append('campaign_id', campaign);
+  if(_append) { 
+    formData.append('append', '1');
+    _append = false;
+  }
   for(var ix = 0; ix < el.files.length; ix++) {
     formData.append('file' + ix, el.files[ix]);
   }
