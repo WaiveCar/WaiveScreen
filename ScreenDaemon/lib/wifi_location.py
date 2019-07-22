@@ -27,15 +27,22 @@ BUS = dbus.SystemBus()
 _wpa_proxy = BUS.get_object(WPA_BUS_NAME, WPA_OBJECT_NAME)
 
 def bytes_to_mac_addr(bytes_list):
+  """ Converts the byte format, returned by the scan, to the
+  more common hex format expected by MLS """
   return ':'.join(list(map( '{:02x}'.format, bytes_list)))
 
 def is_same_scan_data():
+  """ Check to see if the current scan results are similar enough
+  to the previous scan (by 75%). """
   if len(_current_macs & _previous_macs) >= len(_current_macs) * 0.75:
     return True
   else:
     return False
 
 def wifi_scan_startup():
+  """ Check if wpa_supplicant already has control of the wifi interface.
+  If not, we shutdown hostapd (which locks the interface) and then create
+  it in wpa_supplicant. """
   iface = dbus.Interface(_wpa_proxy, dbus_interface=WPA_BUS_NAME)
   try:
     iface.GetInterface(WIFI_IF)
@@ -49,6 +56,8 @@ def wifi_scan_startup():
       logging.warning('Error creating Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
   
 def wifi_scan_shutdown():
+  """ Remove the interface from wpa_supplicant, then start hostapd if it was
+  previously running. """
   iface = dbus.Interface(_wpa_proxy, dbus_interface=WPA_BUS_NAME)
   try:
     iface.RemoveInterface(iface.GetInterface(WIFI_IF))
@@ -72,6 +81,8 @@ def collect_scan_results(scan_done, iface, obj):
     loop.quit()
 
 def generate_wifi_ap_dict():
+  """ Loop through the scan results and retrieve the MAC and signal
+  strength.  Return a dict in the format expected by MLS. """
   global _current_macs
   _current_macs.clear()
   l = []
@@ -92,13 +103,14 @@ def loop_killer():
   logging.warning('Killing the Scan loop due to timeout')
   loop.quit()
 
-def wifi_location():
+def wifi_location(min_bss_count=2):
   global _cb_count, loop, _bss_array, _previous_macs, _last_location
   _bss_array = dbus.Array()
   _cb_count = 0
   try:
     wifi_scan_startup()
 
+    # Initiate a scan on each wifi interface
     for wifi_if in dbus_wifi_if_array():
       logging.debug('Scanning on interface: {}'.format(wifi_if))
       if_proxy = BUS.get_object(WPA_BUS_NAME, wifi_if)
@@ -110,6 +122,7 @@ def wifi_location():
       wpa_if['iface'].connect_to_signal('ScanDone', collect_scan_results, dbus_interface=WPA_IF_NAME, interface_keyword='iface', path_keyword='obj')
       _cb_count += 1
 
+    # If one or more scans are running, wait for them to finish or timeout after 10 seconds
     if _cb_count > 0:
       loop = GLib.MainLoop()
       timeout_id = GLib.timeout_add_seconds(10, loop_killer)
@@ -121,7 +134,10 @@ def wifi_location():
 
     wifi_scan_shutdown()
 
-    if is_same_scan_data():
+    if len(d) < min_bss_count:
+      logging.debug("Minimum number of BSS stations ({}) not found: {}".format(min_bss_count, len(d)))
+      return {}
+    elif is_same_scan_data():
       logging.debug("Scan data looks the same.  Skipping Submission")
       location = _last_location
     else:
