@@ -270,6 +270,30 @@ var Engine = function(opts){
     return obj;
   }
 
+  function scroll(obj, dim) {
+    var 
+      size     = dim == 'vertical' ? _res.target.height : _res.target.width,
+      anchor   = dim == 'vertical' ? 'marginTop' : 'marginLeft',
+      goal = obj[dim == 'vertical' ? 'height' : 'width'] - size,
+      time = _res.duration * 1000,
+      period = 1000 / 30,
+      rounds = time / period,
+      step = goal / rounds,
+      ix = 0,
+      ival = setInterval(function() {
+        if (ix++ >= rounds) {
+          clearInterval(ival);
+        }
+        obj.style[ anchor ] = -(ix * step) + "px";
+      }, period);
+  }
+  scroll.vertical = function (obj) {
+    return scroll(obj, 'vertical');
+  }
+  scroll.horizontal = function (obj) {
+    return scroll(obj, 'horizontal');
+  }
+
   // LRU cache invalidation should eventually exist.
   function addJob(job) {
     if(!_res.db[job.campaign_id]) {
