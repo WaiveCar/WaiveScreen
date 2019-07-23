@@ -94,6 +94,7 @@ def next_ad(work = False):
     # we probably want a smarter way to do this.
     # probably from https://github.com/python-xlib/python-xlib
     dpms = os.popen('xset q').read().strip()[-2:]
+    logging.info("<<{}>>".format(dpms))
     power = 'awake' if dpms == 'On' else 'sleep'
 
     if power != 'sleep':
