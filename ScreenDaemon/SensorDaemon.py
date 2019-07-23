@@ -109,7 +109,10 @@ while True:
   sensor = arduino.arduino_read()
   n += 1
   if n % 8 == 0:
-    logging.info("voltage {:.3f} current {:.3f} avg: {:.3f}".format(sensor['Voltage'], sensor['Current'], avg))
+    try:
+      logging.info("voltage {:.3f} current {:.3f} avg: {:.3f}".format(sensor['Voltage'], sensor['Current'], avg))
+    except:
+      pass
 
   if first:
     logging.info("Got first arduino read")
