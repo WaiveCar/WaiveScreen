@@ -436,7 +436,7 @@ def asset_cache(check):
   res = []
   for asset in check['asset']:
     name = "{}/{}".format(path, asset.split('/')[-1])
-    if not os.path.exists(name):
+    if (not os.path.exists(name)) or os.path.getsize(name) == 0:
       r = requests.get(asset, allow_redirects=True)
       # 
       # Since we are serving a file:/// then we don't have to worry
