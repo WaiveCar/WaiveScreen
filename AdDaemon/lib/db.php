@@ -6,7 +6,10 @@ $RULES = [
     'asset' => [
       'post' => function($v) {
          return array_map(function($m) {
-           return 'http://waivecar-prod.s3.amazonaws.com/' . $m;
+           if(strpos($m, 'http') === false) {
+             return 'http://waivecar-prod.s3.amazonaws.com/' . $m;
+           } 
+           return $m;
         }, json_decode($v, true));
       }
     ]

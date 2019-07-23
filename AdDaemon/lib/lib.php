@@ -753,6 +753,7 @@ function campaign_create($data, $fileList, $user = false) {
 
 function campaign_update($data, $fileList, $user = false) {
   $assetList = [];
+  $campaign_id = $data['campaign_id'];
 
   if(aget($data, 'append')) {
     $campaign = Get::campaign($campaign_id);
@@ -763,9 +764,7 @@ function campaign_update($data, $fileList, $user = false) {
     $assetList[] = upload_s3($file);
   }
 
-  error_log(json_encode($assetList));
-  $campaign_id = $data['campaign_id'];
-  #db_update('campaign', $campaign_id, ['asset' => db_string(json_encode($assetList))]);
+  db_update('campaign', $campaign_id, ['asset' => db_string(json_encode($assetList))]);
   return $campaign_id;
 }
 

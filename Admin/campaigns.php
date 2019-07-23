@@ -40,7 +40,6 @@ $height = $width * 675 / 1920;
       ?>
         <div class="card" style="width: <?=$width?>px">
         <div class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
-        <!-- <img src="<?= $campaign['asset'][0] ?>" class="card-img-top"> -->
         <div class="card-body">
           <? if (!$isDefault) { ?>
             <div class="progress">
