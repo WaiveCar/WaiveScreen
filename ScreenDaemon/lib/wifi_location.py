@@ -3,7 +3,8 @@ import requests
 import json
 import subprocess
 import logging
-from time import sleep
+import time
+from . import db
 from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository import GLib
 
@@ -18,6 +19,7 @@ DBUS_PROPERTIES = 'org.freedesktop.DBus.Properties'
 
 _bss_array = False
 _cb_count = 0
+_signals = []
 _hostapd_was_running = None
 _current_macs = set()
 _previous_macs = set()
@@ -34,10 +36,18 @@ def bytes_to_mac_addr(bytes_list):
 def is_same_scan_data():
   """ Check to see if the current scan results are similar enough
   to the previous scan (by 75%). """
+  logging.debug('_previous_macs: {}\n_current_macs: {}'.format(_previous_macs, _current_macs))
   if len(_current_macs & _previous_macs) >= len(_current_macs) * 0.75:
     return True
   else:
     return False
+
+def wifi_last_submission(set_it=False):
+  if set_it:
+    db.kv_set('wifi_last_submission', time.time())
+  else:
+    t = db.kv_get('wifi_last_submission')
+    return 0.0 if t is None else float(t)
 
 def wifi_scan_startup():
   """ Check if wpa_supplicant already has control of the wifi interface.
@@ -72,6 +82,7 @@ def dbus_wifi_if_array():
 
 def collect_scan_results(scan_done, iface, obj):
   global _bss_array, loop, _cb_count
+  logging.debug('IN COLLECT: _bss_array: {}'.format(_bss_array))
   proxy = BUS.get_object(WPA_BUS_NAME, obj)
   props = dbus.Interface(proxy, dbus_interface=DBUS_PROPERTIES)
   _bss_array += props.Get(WPA_IF_NAME, 'BSSs')
@@ -83,7 +94,8 @@ def collect_scan_results(scan_done, iface, obj):
 def generate_wifi_ap_dict():
   """ Loop through the scan results and retrieve the MAC and signal
   strength.  Return a dict in the format expected by MLS. """
-  global _current_macs
+  global _current_macs, _bss_array
+  logging.debug('IN GENERATE: _bss_array: {}'.format(_bss_array))
   _current_macs.clear()
   l = []
   for bss in _bss_array:
@@ -104,7 +116,7 @@ def loop_killer():
   loop.quit()
 
 def wifi_location(min_bss_count=2):
-  global _cb_count, loop, _bss_array, _previous_macs, _last_location
+  global _cb_count, loop, _bss_array, _previous_macs, _last_location, _signals
   _bss_array = dbus.Array()
   _cb_count = 0
   try:
@@ -119,7 +131,7 @@ def wifi_location(min_bss_count=2):
         'props': dbus.Interface(if_proxy, dbus_interface=DBUS_PROPERTIES)
       }
       wpa_if['iface'].Scan({'Type': 'active'})
-      wpa_if['iface'].connect_to_signal('ScanDone', collect_scan_results, dbus_interface=WPA_IF_NAME, interface_keyword='iface', path_keyword='obj')
+      _signals.append( wpa_if['iface'].connect_to_signal('ScanDone', collect_scan_results, dbus_interface=WPA_IF_NAME, interface_keyword='iface', path_keyword='obj') )
       _cb_count += 1
 
     # If one or more scans are running, wait for them to finish or timeout after 10 seconds
@@ -128,14 +140,16 @@ def wifi_location(min_bss_count=2):
       timeout_id = GLib.timeout_add_seconds(10, loop_killer)
       loop.run()
       GLib.source_remove(timeout_id)
+      for s in _signals:
+        s.remove()
 
     d = generate_wifi_ap_dict()
     logging.debug('Scan Results: {}'.format(d))
 
-    wifi_scan_shutdown()
 
-    if len(d) < min_bss_count:
+    if len(d['wifiAccessPoints']) < min_bss_count:
       logging.debug("Minimum number of BSS stations ({}) not found: {}".format(min_bss_count, len(d)))
+      wifi_scan_shutdown()
       return {}
     elif is_same_scan_data():
       logging.debug("Scan data looks the same.  Skipping Submission")
@@ -143,6 +157,7 @@ def wifi_location(min_bss_count=2):
     else:
       url = 'https://location.services.mozilla.com/v1/geolocate?key=test'
       r = requests.post(url, json=d)
+      wifi_last_submission(True)
       if r.status_code == 200:
         location = json.loads(r.text)
         _last_location = location
