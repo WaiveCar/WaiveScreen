@@ -122,6 +122,7 @@ var Engine = function(opts){
     src.src = asset.url;
     asset.dom = vid;
 
+    asset.duration = 100;
     asset.cycles = 1;
     asset.run = function(noreset) {
       if(!noreset) {
@@ -646,7 +647,7 @@ var Engine = function(opts){
     _last_sow[0] = _last_sow[1];
     _last_sow[1] = +new Date();
 
-    nextAsset();
+    setTimeout(nextAsset, 2000);
   }
 
   function setFallback (url) {
