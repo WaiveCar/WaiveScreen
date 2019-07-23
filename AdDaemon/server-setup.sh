@@ -8,6 +8,7 @@ install_composer() {
   sudo phpenmod sqlite3
   sudo a2enmod php7.3
   sudo apachectl restart
+  sudo cp tools/server/server-backup.sh /etc/cron.daily/server-backup
   sudo mkdir -p /var/www/WaiveScreen/MadisonAve/static/snap/
   sudo chmod 0777 /var/www/WaiveScreen/MadisonAve/static/snap/
 }
