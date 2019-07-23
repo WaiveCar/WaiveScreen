@@ -48,6 +48,7 @@ if not USER or USER == 'root':
 SANITYCHECK = os.environ.get('SANITYCHECK')
 NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
+DISPLAY = os.environ.get('DISPLAY')
 SERVER_URL = os.environ.get('SERVER_URL') or 'http://waivescreen.com/api'
 
 storage_base = '/var/lib/waivescreen/'
