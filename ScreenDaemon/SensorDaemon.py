@@ -141,18 +141,14 @@ while True:
   except:
     avg = 0
 
-
   if is_significant(all):
     lib.sensor_store(all)
 
-  #ln="{} {} {} {} {} \n".format(time.strftime("%H:%M:%S"), all['Voltage'], all['Current'], avg, db.sess_get('power'))
-  #
-  #f.write(ln)
-  #if ix % 10 == 0:
-  #  f.flush()
-
   # If we need to go into/get out of a low power mode
-  if sensor:
+  # We also need to make sure that we are looking at a nice
+  # window of time. Let's not make it the window_size just
+  # in case our tidiness algorithm breaks.
+  if sensor and len(window) > WINDOW_SIZE * 0.8:
     arduino.pm_if_needed(avg, all.get('Voltage'))
 
   # Now you'd think that we just sleep on the frequency, that'd be wrong.
