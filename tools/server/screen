@@ -36,7 +36,8 @@ connect() {
   fi
 
   # ssh-keygen -f "/home/chris/.ssh/known_hosts" -R "[reflect.waivescreen.com]:$port"
-  ssh -XC -oStrictHostKeyChecking=no $key adorno@reflect.waivescreen.com -p $port
+  set -x
+  ssh -C -oStrictHostKeyChecking=no $key adorno@reflect.waivescreen.com -p $port
 
   exit
 }
