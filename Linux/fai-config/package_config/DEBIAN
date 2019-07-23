@@ -39,6 +39,8 @@ vim
 iw
 wpasupplicant
 
+libtimedate-perl
+
 # and ble
 firmware-atheros
 bluez

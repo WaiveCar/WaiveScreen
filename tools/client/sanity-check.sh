@@ -31,8 +31,9 @@ check_screen_daemon() {
 }
 
 check_sensor_daemon() {
-  db_delta=$(( $(date +%s) - $(stat -c %Y /var/db/config.db) ))
-  [ "$db_delta" -gt 900 ] && _as_user dcall sensor_daemon
+  last_read=$(sqlite3 $DB 'select created_at from sensor order by id desc limit 1;')
+  db_delta=$(perl -e "use Date::Parse;print time() - str2time('$last_read');")
+  (( $db_delta > 900 )) && _as_user dcall sensor_daemon
 }
 
 check_screen_display() {
