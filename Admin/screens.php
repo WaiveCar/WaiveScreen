@@ -23,6 +23,12 @@ for($ix = 0; $ix < count($screenList); $ix++){
   }
 
   $sec =  time() - $screenList[$ix]['last_local'];
+  $screenList[$ix]['last_sec'] = $sec;
+
+  if($sec > 300) {
+    $screenList[$ix]['uptime'] = 'off';
+  } 
+
   $screenList[$ix]['last_local'] = sprintf("%dd %d:%02d:%02d", floor($sec / 60 / 60 / 24), floor($sec / 60 / 60) % 24, floor($sec/60) % 60, $sec %60);
   $screenList[$ix]['first_local'] = date("Y-m-d H:i:s", $screenList[$ix]['first_local']);
 
@@ -30,7 +36,9 @@ for($ix = 0; $ix < count($screenList); $ix++){
     $tmp = strtotime(str_replace(' ', 'T', $screenList[$ix]["last_loc"] . 'Z'));
     $sec =  time() - $tmp;
     $screenList[$ix]['diff_loc'] = sprintf("%dd %d:%02d:%02d", floor($sec / 60 / 60 / 24), floor($sec / 60 / 60) % 24, floor($sec/60) % 60, $sec %60);
+    $screenList[$ix]['loc_sec'] = $sec;
   } else {
+    $screenList[$ix]['loc_sec'] = 99999999999;
     $screenList[$ix]['diff_loc'] = '<em>never</em>';
   }
 }
@@ -59,6 +67,7 @@ $fieldList = [
   'phone' => 'phone',
   'port' => 'port',
   'version' => 'version',
+  'uptime' => 'uptime',
   'last' => 'last_local',
   'first' => 'first_local'
 ];
@@ -70,6 +79,21 @@ $props = [
       $base = substr($value, 3);
       $parts = explode('-', $base);
       return intval($parts[0]) * 10000 + intval($parts[2]);
+    }
+  ],
+  'last' => [ 
+    'order' => function($value, $row) {
+      return $row['last_sec'];
+    }
+  ],
+  'updated' => [ 
+    'order' => function($value, $row) {
+      return $row['loc_sec'];
+    }
+  ],
+  'uptime' => [ 
+    'order' => function($value, $row) {
+      return $value === 'off' ? PHP_INT_MAX : $value;
     }
   ]
 ];
