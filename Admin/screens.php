@@ -63,6 +63,17 @@ $fieldList = [
   'first' => 'first_local'
 ];
 $editable = ['car', 'serial', 'phone'];
+
+$props = [
+  'version' => [ 
+    'order' => function($value, $row) {
+      $base = substr($value, 3);
+      $parts = explode('-', $base);
+      return intval($parts[0]) * 10000 + intval($parts[2]);
+    }
+  ]
+];
+
 function split($str) {
   return $str;
 }
@@ -134,8 +145,17 @@ function split($str) {
                 <? } ?>
               </select>
             </td>
-            <? foreach($fieldList as $name => $key) { ?>
-              <td class="<?= $name?>">
+            <? foreach($fieldList as $name => $key) { 
+              
+                 $dataVals = [];
+                 if(array_key_exists($name, $props)) {
+                   foreach($props[$name] as $propKey => $propValue) {
+                     $dataVals[] = $propKey . '="' . $propValue($name, $screen) . '"';
+                   }
+                 }
+                 $dataVals = implode(' ', $dataVals);
+            ?>
+              <td class="<?= $name?>" <?=$dataVals?>>
                 <span><?= $screen[$key] ?></span>
                 <? if (array_search($key, $editable) !== false) { ?>
                   <a onclick="promptchange(<?=$screen['id']?>,'<?=$key?>',this)"><i class="edit fa fa-pencil"></i></a>
