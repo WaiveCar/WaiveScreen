@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG)
 SLEEP_TIME = 10
 # extra time to wait if we're using the wifi location service
 # We don't want to spam MLS and hit their 100,000 daily request limit
-MIN_WIFI_INTERVAL = 600
+MIN_WIFI_INTERVAL = 60 #TODO change back to 600 after testing
 
 def get_location_from_wifi():
   l = wifi_location()
@@ -30,7 +30,7 @@ def get_location_from_gps():
 
 def save_location(location):
   # Save current location info to the database
-  logging.debug("Saving location: lat:{} lng:{} accuracy:{}".format(location['Lat'], location['Lng'], location.get('accuracy')))
+  logging.info("Saving location: lat:{} lng:{} accuracy:{}, source:{}".format(location['Lat'], location['Lng'], location.get('accuracy'), location_source()))
   db.kv_set('lat', location['Lat'])
   db.kv_set('lng', location['Lng'])
   db.kv_set('location_accuracy', location.get('accuracy', ''))
