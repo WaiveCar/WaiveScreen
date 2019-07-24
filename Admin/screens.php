@@ -150,7 +150,7 @@ function split($str) {
                  $dataVals = [];
                  if(array_key_exists($name, $props)) {
                    foreach($props[$name] as $propKey => $propValue) {
-                     $dataVals[] = $propKey . '="' . $propValue($name, $screen) . '"';
+                     $dataVals[] = "data-$propKey='" . $propValue($screen[$key], $screen) . "'";
                    }
                  }
                  $dataVals = implode(' ', $dataVals);
