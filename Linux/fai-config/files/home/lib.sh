@@ -223,9 +223,13 @@ set_brightness() {
 enable_gps() {
   $SUDO $MM \
     --location-set-enable-signal \
-    --location-enable-agps \
     --location-enable-gps-nmea \
-    --location-enable-gps-raw 
+    --location-enable-gps-raw \
+    --location-disable-agps \
+    --location-disable-3gpp \
+    --location-disable-cdma-bs
+  $SUDO $MM \
+    --location-set-gps-refresh-rate=0
 }
 
 get_number() {
