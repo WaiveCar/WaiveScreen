@@ -31,9 +31,13 @@ check_screen_daemon() {
 }
 
 check_sensor_daemon() {
-  last_read=$(sqlite3 $DB 'select created_at from sensor order by id desc limit 1;')
-  db_delta=$(perl -e "use Date::Parse;print time() - str2time('$last_read');")
-  (( $db_delta > 900 )) && _as_user dcall sensor_daemon
+  if ! pgrep -if sensordaemon > /dev/null; then
+    _as_user dcall sensor_daemon
+  else
+    last_read=$(sqlite3 $DB 'select created_at from sensor order by id desc limit 1;')
+    db_delta=$(perl -e "use Date::Parse;print time() - str2time('$last_read');")
+    (( $db_delta > 240 )) && _as_user dcall sensor_daemon
+  fi
 }
 
 check_screen_display() {
