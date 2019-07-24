@@ -623,6 +623,8 @@ hotspot() {
   CLASS_AP=24
 
   cat << endl | $SUDO tee /etc/hostapd/hostapd.conf
+logger_syslog=-1
+logger_syslog_level=2
 interface=$DEV_AP
 driver=nl80211
 ssid=$SSID
@@ -653,9 +655,10 @@ endl
   }
 endl
 
-  #$SUDO pkill -f hostapd
+  $SUDO pkill -f hostapd
   sleep 1
-  $SUDO service hostapd restart #/etc/hostapd/hostapd.conf&
+  #$SUDO service hostapd restart #/etc/hostapd/hostapd.conf&
+  $SUDO hostapd /etc/hostapd/hostapd.conf&
 
   $SUDO sysctl net.ipv4.conf.all.forwarding=1
 
