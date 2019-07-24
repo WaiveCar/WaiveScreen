@@ -161,7 +161,7 @@ def wifi_location(min_bss_count=2):
       if r.status_code == 200:
         location = json.loads(r.text)
         _last_location = location
-        _previous_macs = _current_macs
+        _previous_macs = _current_macs.copy()
       else:
         return {}
 
