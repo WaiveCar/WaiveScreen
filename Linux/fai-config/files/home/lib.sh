@@ -236,10 +236,10 @@ enable_gps() {
   $SUDO $MM \
     --location-set-enable-signal \
     --location-enable-gps-nmea \
+    --location-enable-gps-raw \
+    --location-enable-3gpp \
     --location-disable-agps \
-    --location-enable-gps-raw 
-
-    # --location-enable-agps \
+    --location-disable-cdma-bs
 }
 
 get_number() {
