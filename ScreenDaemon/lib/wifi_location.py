@@ -165,7 +165,7 @@ def wifi_location(min_bss_count=2):
       else:
         return {}
 
-    return { 'Lat': location['location']['lat'], 'Lng': location['location']['lng'], 'accuracy': location['accuracy'] }
+    return { 'Lat': location['location']['lat'], 'Lng': location['location']['lng'], 'accuracy': location['accuracy'], 'raw_response': location }
   except Exception as ex:
     logging.warning('There was an error while determing our location via Wifi: {}'.format(ex))
     return {}
