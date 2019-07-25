@@ -434,9 +434,10 @@ function tasks() {
 
 function task_dump() {
   return [
-    'task' => show('task'),
+    'task' => show('task', 'order by id desc'),
     'task_screen' => show('task_screen'),
-    'response' => show('task_response')
+    'response' => show('task_response'),
+    'screen' => show('screen')
   ];
 }
 
