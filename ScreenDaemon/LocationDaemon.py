@@ -40,7 +40,7 @@ def get_location_from_gps():
 
 def save_location(location):
   # Save current location info to the database
-  logging.info("Saving location: lat:{} lng:{} accuracy:{}, utc:{}, source:{}".format(location['Lat'], location['Lng'], location.get('accuracy'), location.get('Utc'), location_source()))
+  logging.info("Saving location: lat:{} lng:{} accuracy:{} utc:{} source:{}".format(location['Lat'], location['Lng'], location.get('accuracy'), location.get('Utc'), location_source()))
   db.kv_set('lat', location['Lat'])
   db.kv_set('lng', location['Lng'])
   db.kv_set('location_accuracy', location.get('accuracy', ''))
