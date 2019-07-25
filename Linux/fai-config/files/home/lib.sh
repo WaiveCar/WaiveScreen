@@ -549,61 +549,6 @@ down() {
   done
 }
 
-_sanityafter() {
-  delay=${1:-30}
-  ( sleep $delay; $SUDO $BASE/tools/client/sanity-check.sh ) &
-}
-
-# This is for upgrading over USB
-local_upgrade() {
-  local dev=$1
-  local mountpoint='/tmp/upgrade'
-  local package=$mountpoint/upgrade.package
-
-  _log "[upgrade] usb"
-  _mkdir $mountpoint
-
-  $SUDO umount $mountpoint >& /dev/null
-
-  if $SUDO mount $dev $mountpoint; then
-    if [[ -e $package ]]; then
-      _sanityafter
-      _info "Found upgrade package - installing"
-      tar xf $package -C $BASE
-      $SUDO umount -l $mountpoint
-
-      _info "Disk can be removed"
-      pip_install
-
-      _info "Reinstalling base"
-      sync_scripts $BASE/Linux/fai-config/files/home/
-      # this is needed to get the git version
-      cd $BASE
-      _info "Upgraded to $(git describe) - restarting stack"
-      set -x
-      perlcall install_list | xargs $SUDO apt -y install
-      pycall db.upgrade
-      stack_restart 
-      upgrade_scripts
-    else
-      _info "No upgrade found"
-      $SUDO umount -l $mountpoint
-    fi
-  else
-    _info "Failed to mount $dev"
-  fi
-}
-
-upgrade_scripts() {
-  for script in $(pycall upgrades_to_run); do
-    cd $BASE
-    # we do this every time because some upgrades
-    # may call for a reboot
-    _log "[upgrade-script] $script"
-    kv_set last_upgrade,$script
-    $SUDO $script upgradepost
-  done
-}
 
 hotspot() {
   # Only run if we have wifi
@@ -685,21 +630,76 @@ endl
   $SUDO iptables -A INPUT -m state --state NEW -j ACCEPT
 }
 
+_sanityafter() {
+  delay=${1:-30}
+  ( sleep $delay; $SUDO $BASE/tools/client/sanity-check.sh ) &
+}
+
+upgrade_scripts() {
+  for script in $(pycall upgrades_to_run); do
+    cd $BASE
+    # we do this every time because some upgrades
+    # may call for a reboot
+    _log "[upgrade-script] $script"
+    kv_set last_upgrade,$script
+    $SUDO $script upgradepost
+  done
+}
+
+_upgrade_post() {
+  local version=$(cd $BASE && git describe)
+  perlcall install_list | xargs $SUDO apt -y install
+  pycall db.upgrade
+  pycall add_record "upgrade,$version"
+
+  upgrade_scripts
+  stack_restart 
+  _info "Now on $version"
+}
+
+# This is for upgrading over USB
+local_upgrade() {
+  local dev=$1
+  local mountpoint='/tmp/upgrade'
+  local package=$mountpoint/upgrade.package
+
+  _log "[upgrade] usb"
+  _mkdir $mountpoint
+
+  $SUDO umount $mountpoint >& /dev/null
+
+  if $SUDO mount $dev $mountpoint; then
+    if [[ -e $package ]]; then
+      _sanityafter
+      _info "Found upgrade package - installing"
+      tar xf $package -C $BASE
+      $SUDO umount -l $mountpoint
+
+      _info "Disk can be removed"
+      pip_install
+
+      _info "Reinstalling base"
+      sync_scripts $BASE/Linux/fai-config/files/home/
+      _upgrade_post
+    else
+      _info "No upgrade found"
+      $SUDO umount -l $mountpoint
+    fi
+  else
+    _info "Failed to mount $dev"
+  fi
+}
+
 upgrade() {
   _info "Upgrading... Please wait"
   {
     set -x
     _sanityafter
     if local_sync; then
-      # note: git clean only goes deeper, it doesn't do the entire repo
+      # note: git clean only goes deeper, it doesn't do by default the entire repo
       cd $BASE && git clean -fxd
-      cd $BASE/ScreenDaemon
-      $SUDO pip3 install -r requirements.txt
-      perlcall install_list | xargs $SUDO apt -y install
-      pycall db.upgrade
-      upgrade_scripts
-      stack_restart
-      _info "Now on $(cd $BASE && git describe)"
+      $SUDO pip3 install -r $BASE/ScreenDaemon/requirements.txt
+      _upgrade_post
     else
       _warn "Failed to upgrade"
     fi
