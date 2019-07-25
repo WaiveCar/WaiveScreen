@@ -1,12 +1,13 @@
 [Unit]
 Description=Location Daemon for updating WaiveScreen's location
-After=syslog.target
+After=syslog.target dbus.service ModemManager.service
 
 [Service]
 Type=simple
 User=adorno
 Group=adorno
 WorkingDirectory=/home/adorno/WaiveScreen/ScreenDaemon
+ExecStartPre=/usr/bin/sleep 60
 ExecStart=/home/adorno/WaiveScreen/ScreenDaemon/LocationDaemon.py
 StandardOutput=syslog
 StandardError=syslog
