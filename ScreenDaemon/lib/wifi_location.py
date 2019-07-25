@@ -53,6 +53,7 @@ def wifi_scan_startup():
   """ Check if wpa_supplicant already has control of the wifi interface.
   If not, we shutdown hostapd (which locks the interface) and then create
   it in wpa_supplicant. """
+  global _hostapd_was_running
   iface = dbus.Interface(_wpa_proxy, dbus_interface=WPA_BUS_NAME)
   try:
     iface.GetInterface(WIFI_IF)
