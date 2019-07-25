@@ -245,7 +245,7 @@ def post(url, payload):
   logging.info("{} {}".format(url, json.dumps(payload)))
   return requests.post(urlify(url), verify=False, headers=headers, json=payload)
 
-def get_gps():
+def get_gps(all_fields=False):
   modem = get_modem()
 
   if modem:
@@ -256,10 +256,17 @@ def get_gps():
       if not gps:
         return {}
       else:
-        return {
+        location_dict = {
           'Lat': gps['latitude'],
-          'Lng': gps['longitude']
+          'Lng': gps['longitude'],
         }
+        if all_fields:
+          location_dict.update( {
+            'Utc': gps['utc-time'],
+            'Nmea': location.get(4),
+            '3gpp': location.get(1)
+          } )
+        return location_dict
     except Exception as ex:
       logging.warning("Modem issue {}".format(ex)) 
 
