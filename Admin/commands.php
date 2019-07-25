@@ -3,19 +3,40 @@ include('../MadisonAve/lib/lib.php');
 include('../AdDaemon/lib/lib.php');
 include('lib.php');
 
+function get_screen($id) {
+  global $screenMap;
+  $screen = $screenMap[$id];
+  return $screen['car'] ?: $screen['serial'] ?: substr($screen['uid'], 0, 8) ;
+}
+
+
 $taskMap = get('task_dump');
-$keylist = array_keys($taskMap['task'][0]);
-$responseKeys = array_keys($taskMap['response'][0]);
+$keylist = ['command', 'args', 'created_at']; //array_keys($taskMap['task'][0]);
+$responseKeys = ['response', 'created_at'];//array_keys($taskMap['response'][0]);
+$screentaskMap = [];
 $responseMap = [];
+$screenMap = [];
+
 $responseKeys = array_filter($responseKeys, function($row) { 
   return ! ( $row == 'task_id' || $row == 'id' );
 });
+foreach($taskMap['screen'] as $obj) {
+  $screenMap[$obj['id']] = $obj;
+}
+
 foreach($taskMap['response'] as $obj) {
   $id = $obj['task_id'];
   if (!array_key_exists($id, $responseMap)) {
     $responseMap[$id] = [];
   }
-  $responseMap[$id][] = $obj;
+  $responseMap[$id][$obj['screen_id']] = $obj;
+}
+foreach($taskMap['task_screen'] as $obj) {
+  $id = $obj['task_id'];
+  if (!array_key_exists($id, $screentaskMap)) {
+    $screentaskMap[$id] = [];
+  }
+  $screentaskMap[$id][] = $obj['screen_id'];
 }
 
 ?>
@@ -31,6 +52,8 @@ foreach($taskMap['response'] as $obj) {
     form { float: right }
     .form-control-file { display: none }
     .upload-button { margin-bottom: 0 }
+    .answer td {border-top: 0}
+    .answer { margin-left:10px;border-left: 1px solid #ccc }
     #notice { position: fixed; top:0; left:0; width: 100%; z-index: 100;display:none}
     </style>
   </head>
@@ -50,23 +73,35 @@ foreach($taskMap['response'] as $obj) {
           <tbody>
           <? 
             foreach($taskMap['task'] as $task) {  
+              $taskId = $task['id'];
               echo '<tr>';
               foreach($keylist as $key) { ?>
                 <td><?= $task[$key]; ?></td>
               <? } ?>
 
               </tr><tr>
-                <td colspan=<?= count($keylist); ?>>
-                  <table class="table">
-                    <? foreach($responseMap[$task['id']] as $response)  {  ?>
-                      <tr>
-                      <? foreach($responseKeys as $key) { ?>
-                        <td> <?= preg_replace('/\n/', '<br>', $response[$key]); ?></td>
-                      <? } ?>
-                      </tr>
-                    <? } ?>
+                <td style=border-top:0; colspan=<?= count($keylist); ?>>
+                  <table class='answer'>
+                    <? foreach($screentaskMap[$task['id']] as $screenId)  {  
+                        echo '<tr>';
+                        echo '<td style=width:100px;overflow:hidden>' . get_screen($screenId) . '</td>';
+                        $response = aget($responseMap, "$taskId.$screenId");
+                        if($response) {
+                          if(empty($response['response'])) {
+                            $response['response'] = 'ran';
+                          }
+                          foreach($responseKeys as $key) { ?>
+                            <td> <?= preg_replace('/\n/', '<br>', $response[$key]); ?></td>
+                         <? } 
+                        } else {
+                          $screen = $screenMap[$screenId];
+                          echo "<td style=width:80px>" . (($screen['last_task'] >= $taskId) ? "ran" : "") . "</td>";
+                          echo "<td>" . $screen['last_seen'] . "</td>";
+                        }
+                        echo "</tr>";     
+                     } ?>
                   </table>
-               </td>
+                </td>
               </tr> <?
             } 
           ?>
