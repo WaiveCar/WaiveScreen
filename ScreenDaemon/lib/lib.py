@@ -281,6 +281,12 @@ def get_gps(use_cache=False):
   return fallback
 
 
+def add_record(kind, value):
+  # This is kind of what we want..
+  #if kind not in ['upgrade', 'feature', 'state']:
+  #
+  return db.insert('history', { 'kind': kind, 'value': value })
+
 def task_response(which, payload):
   post('response', {
     'uid': get_uuid(),
@@ -374,7 +380,6 @@ def urlify(what):
   return "{}/{}".format(SERVER_URL, what)
 
 def sensor_store(data):
-
   precision = {'Temp': 2, 'Current': 2, 'Voltage': 2, 'Tres': 0, 'Pitch': 3, 'Roll': 3, 'Yaw': 3, 'Lat': 4, 'Lng': 4 }
   for k,v in precision.items():
     if k in data:
