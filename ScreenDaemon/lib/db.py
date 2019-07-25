@@ -33,6 +33,13 @@ _SCHEMA = {
     ('id', 'integer primary key'),
     ('data', 'text'),
   ],
+  'history' [
+    ('id', 'integer primary key'),
+    ('kind', 'text'),
+    ('value', 'text'),
+    ('extra', 'text'),
+    ('created_at', 'datetime default current_timestamp'),
+  ],
   'kv': [
     ('id', 'integer primary key'),
     ('key', 'text unique'),
