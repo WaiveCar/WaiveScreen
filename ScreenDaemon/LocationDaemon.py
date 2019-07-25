@@ -9,7 +9,7 @@ from lib.wifi_location import wifi_location, wifi_scan_shutdown, wifi_last_submi
 from lib.lib import get_gps
 import lib.db as db
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG) #TODO remove this after testing
 
 # location_loop sleep time - applies to GPS polling
 SLEEP_TIME = 10
@@ -71,7 +71,7 @@ def location_loop():
           save_location(location)
         else:
           location_source('none')
-          logging.info('Unable to determine our location.  GPS and Wifi failed.')
+          logging.warning('Unable to determine our location.  GPS and Wifi failed.')
     except Exception as ex:
       logging.error('Error in location_loop: {}'.format(ex))
 
