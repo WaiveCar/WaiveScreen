@@ -71,7 +71,7 @@ $fieldList = [
   'last' => 'last_local',
   'first' => 'first_local'
 ];
-$editable = ['car', 'serial', 'phone'];
+$editable = ['car', 'serial'];
 
 $props = [
   'version' => [ 
@@ -120,6 +120,8 @@ function split($str) {
     .edit { color: #999; cursor: pointer }
     .last { text-align: right }
     em { color: #555 }
+    .table td {padding: .75rem .2rem; }
+    td.edit { white-space: nowrap; }
     .modal-body span {
       min-width: 5rem; 
       display: inline-block;
@@ -147,7 +149,7 @@ function split($str) {
           <? foreach($fieldList as $key => $value) { ?>
             <th scope="col"><?= $key ?></th>
           <? } ?>
-          <th scope="col">command</th>
+          <th scope="col">cmd</th>
           </tr>
         </thead>
         <tbody>
@@ -183,16 +185,17 @@ function split($str) {
                    }
                  }
                  $dataVals = implode(' ', $dataVals);
+                 $canedit = array_search($key, $editable) !== false ? 'edit' : '';
             ?>
-              <td class="<?= $name?>" <?=$dataVals?>>
+              <td class="<?= $name?> <?=$canedit?>" <?=$dataVals?>>
                 <span><?= $screen[$key] ?></span>
-                <? if (array_search($key, $editable) !== false) { ?>
+                <? if ($canedit) { ?>
                   <a onclick="promptchange(<?=$screen['id']?>,'<?=$key?>',this)"><i class="edit fa fa-pencil"></i></a>
                 <? } ?>
               </td>
             <? } ?>
             <td>
-              <button onclick='command("<?=$screen['id']?>","<?=$screen['car']?>")' class="btn btn-secondary">command</button>
+              <button onclick='command("<?=$screen['id']?>","<?=$screen['car']?>")' class="btn btn-secondary">cmd</button>
             </td>
           </tr>
         <? } ?>
