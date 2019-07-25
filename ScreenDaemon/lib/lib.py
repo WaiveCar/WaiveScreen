@@ -596,11 +596,14 @@ def disk_monitor():
       #dcall('local_upgrade', path, '&')
 
 def get_latlng():
-  location = get_gps(use_cache=True)
-  if location:
-    return location
-  else:
+  location = {
+    'Lat': db.kv_get('lat'),
+    'Lng': db.kv_get('lng')
+  }
+  if location['Lat'] is None or location['Lng'] is None:
     return {}
+  else:
+    return location
 
 def get_brightness_map():
   # Fallback map if we can't get the lat/long from GPS
