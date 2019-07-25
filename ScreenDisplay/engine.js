@@ -80,6 +80,12 @@ var Engine = function(opts){
 
   _res.target.ratio = _res.target.width / _res.target.height;
 
+  function cleanTimeout(what, dur) {
+    return setTimeout(function() { 
+      what();
+    }, dur);
+  }
+
   function isString(obj) { 
     return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
   }
@@ -650,18 +656,19 @@ var Engine = function(opts){
     setTimeout(nextAsset, 2000);
   }
 
-  function setFallback (url) {
+  function setFallback (url, force) {
     // We look for a system default
-    if(!_res.fallback && !url) {
+    if(force || (!_res.fallback && !url)) {
       // If we have a server we can get it from there
       get('/default', function(res) {
         _fallback = makeJob(res.data.campaign);
         _res.system = res.data.system;
         trigger('system', _res.system);
-      }, function() { 
         setTimeout(function() {
-          setFallback();
-        }, _res.duration * 1000);
+          setFallback(false, true);
+        }, 3 * 60 * 1000);
+      }, function() { 
+        cleanTimeout(setFallback, _res.duration * 1000);
       });
 
     } else {
