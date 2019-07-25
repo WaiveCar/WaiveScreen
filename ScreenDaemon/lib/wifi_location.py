@@ -20,7 +20,6 @@ DBUS_PROPERTIES = 'org.freedesktop.DBus.Properties'
 _bss_array = False
 _cb_count = 0
 _signals = []
-_hostapd_was_running = None
 _current_macs = set()
 _previous_macs = set()
 _last_location = {}
@@ -53,29 +52,27 @@ def wifi_scan_startup():
   """ Check if wpa_supplicant already has control of the wifi interface.
   If not, we shutdown hostapd (which locks the interface) and then create
   it in wpa_supplicant. """
-  global _hostapd_was_running
   iface = dbus.Interface(_wpa_proxy, dbus_interface=WPA_BUS_NAME)
   try:
     iface.GetInterface(WIFI_IF)
-    _hostapd_was_running = False
   except: 
-    s = subprocess.run('sudo systemctl stop hostapd', shell=True, timeout=5)
-    _hostapd_was_running = True
+    logging.debug('hostapd was running')
+    s = subprocess.run('sudo systemctl stop isc-dhcp-server', shell=True, timeout=5)
+    s2 = subprocess.run('sudo systemctl stop hostapd', shell=True, timeout=5)
     try:
       iface.CreateInterface({'Ifname': WIFI_IF})
     except Exception as ex:
-      logging.warning('Error creating Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
+      logging.error('Error creating Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
   
 def wifi_scan_shutdown():
-  """ Remove the interface from wpa_supplicant, then start hostapd if it was
-  previously running. """
+  """ Remove the interface from wpa_supplicant, then start hostapd. """
   iface = dbus.Interface(_wpa_proxy, dbus_interface=WPA_BUS_NAME)
   try:
     iface.RemoveInterface(iface.GetInterface(WIFI_IF))
   except Exception as ex:
-    logging.warning('Error removing Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
-  if _hostapd_was_running:
-    s = subprocess.run('sudo systemctl start hostapd', shell=True, timeout=5)
+    logging.error('Error removing Wifi Interface in DBus wpa_supplicant: {}'.format(ex))
+  s = subprocess.run('sudo systemctl start hostapd', shell=True, timeout=5)
+  s2 = subprocess.run('sudo systemctl start isc-dhcp-server', shell=True, timeout=5)
 
 def dbus_wifi_if_array():
   props = dbus.Interface(_wpa_proxy, dbus_interface=DBUS_PROPERTIES)
@@ -125,7 +122,7 @@ def wifi_location(min_bss_count=2):
 
     # Initiate a scan on each wifi interface
     for wifi_if in dbus_wifi_if_array():
-      logging.debug('Scanning on interface: {}'.format(wifi_if))
+      logging.info('Scanning on interface: {}'.format(wifi_if))
       if_proxy = BUS.get_object(WPA_BUS_NAME, wifi_if)
       wpa_if = {
         'iface': dbus.Interface(if_proxy, dbus_interface=WPA_IF_NAME),
@@ -168,6 +165,6 @@ def wifi_location(min_bss_count=2):
 
     return { 'Lat': location['location']['lat'], 'Lng': location['location']['lng'], 'accuracy': location['accuracy'], 'raw_response': location }
   except Exception as ex:
-    logging.warning('There was an error while determing our location via Wifi: {}'.format(ex))
+    logging.error('There was an error while determing our location via Wifi: {}'.format(ex))
     return {}
 
