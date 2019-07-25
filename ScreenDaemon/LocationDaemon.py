@@ -19,18 +19,28 @@ MIN_WIFI_INTERVAL = 60 #TODO change back to 600 after testing
 
 def get_location_from_wifi():
   l = wifi_location()
-  return l
+  if float(l.get('accuracy', 100000)) <= 500.0:
+    logging.debug('Wifi Location Response: {}'.format(l))
+    return l
+  else:
+    logging.debug('Ignoring wifi_location with accuracy over 500: {}'.format(l))
+    return False
 
 def stop_wifi_location_service():
   wifi_scan_shutdown()
 
 def get_location_from_gps():
-  l = get_gps()
-  return l
+  l = get_gps(True)
+  if float(time.strftime('%H%M%S')) - float(l.get('Utc', 0)) <= SLEEP_TIME:
+    logging.debug('GPS Location Response: {}'.format(l))
+    return l
+  else:
+    logging.debug('Ignoring get_gps with stale UTC: {}'.format(l))
+    return False
 
 def save_location(location):
   # Save current location info to the database
-  logging.info("Saving location: lat:{} lng:{} accuracy:{}, source:{}".format(location['Lat'], location['Lng'], location.get('accuracy'), location_source()))
+  logging.info("Saving location: lat:{} lng:{} accuracy:{}, utc:{}, source:{}".format(location['Lat'], location['Lng'], location.get('accuracy'), location.get('Utc'), location_source()))
   db.kv_set('lat', location['Lat'])
   db.kv_set('lng', location['Lng'])
   db.kv_set('location_accuracy', location.get('accuracy', ''))
@@ -44,6 +54,7 @@ def location_source(set_it=False):
 def location_loop():
   # We prefer the location from the GPS.  If that fails,
   # we try and determine our location based on a Wifi scan.
+  logging.info('LocationDaemon.py starting...')
   while True:
     location = False
     try:
