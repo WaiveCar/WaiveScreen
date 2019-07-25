@@ -33,7 +33,7 @@ _SCHEMA = {
     ('id', 'integer primary key'),
     ('data', 'text'),
   ],
-  'history' [
+  'history': [
     ('id', 'integer primary key'),
     ('kind', 'text'),
     ('value', 'text'),
