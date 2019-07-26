@@ -220,7 +220,7 @@ function log_screen_changes($old, $new) {
     if(isset($new[$delta]) && $old[$delta] !== $new[$delta]) {
       db_insert('screen_history', [
         'screen_id' => $old['id'],
-        'action' => $delta,
+        'action' => db_string($delta),
         'value' => $new[$delta]
       ]);
     }
