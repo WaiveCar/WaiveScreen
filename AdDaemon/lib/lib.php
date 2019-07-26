@@ -212,6 +212,21 @@ function find_missing($obj, $fieldList) {
   return array_diff($fieldList, array_keys($obj));
 }
 
+function log_screen_changes($old, $new) {
+  // When certain values change we should log that
+  // they change.
+  $deltaList = ['phone', 'car', 'project', 'model', 'version', 'active', 'features'];
+  foreach($deltaList as $delta) {
+    if(isset($new[$delta]) && $old[$delta] !== $new[$delta]) {
+      db_insert('screen_history', [
+        'id' => $new['id'],
+        'action' => $delta,
+        'value' => $new[$delta]
+      ]);
+    }
+  }
+}
+
 // Whenever we get some communication we know
 // the screen is on and we may have things like
 // lat/lng if we're lucky so let's try to gleam
@@ -350,6 +365,9 @@ function ping($payload) {
   }
 
   $obj['pings'] = intval($screen['pings']) + 1;
+
+  log_screen_changes($screen, $obj);
+
   db_update('screen', $screen['id'], $obj);
   db_insert('ping_history', ['screen_id' => $screen['id']]);
 
@@ -447,6 +465,8 @@ function screen_edit($data) {
   foreach(array_intersect($whitelist, array_keys($data)) as $key) {
     $update[$key] = db_string($data[$key]);
   }
+  $old = Get::screen($data['id']);
+  log_screen_changes($old, $data);
   db_update('screen', $data['id'], $update);
   return Get::screen($data['id']);
 }
