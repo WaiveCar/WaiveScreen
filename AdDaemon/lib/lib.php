@@ -491,6 +491,10 @@ function update_campaign_completed($id) {
   }
 }
   
+function inject_priority($job, $screen, $campaign) {
+  return $job;
+}
+
 function sow($payload) {
   error_log(json_encode($payload));
   if(isset($payload['uid'])) {
@@ -560,12 +564,12 @@ function sow($payload) {
     }
     foreach($jobList as $job) {
       if(isset($job['id'])) {
-        $res = array_merge([
+        $job_res = array_merge([
           'job_id' => $job['id'],
           'campaign_id' => $campaign['id'],
           'asset' => $campaign['asset']
         ], $job);
-        return $res;
+        return inject_priority($job_res, $screen, $campaign);
       }
     }
   }, $nearby_campaigns);
