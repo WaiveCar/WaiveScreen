@@ -1,0 +1,11 @@
+<!DOCTYPE busconfig PUBLIC
+ "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <policy group="dialout">
+    <allow send_destination="org.freedesktop.ModemManager1"
+           send_interface="org.freedesktop.ModemManager1.Modem.Location"
+           send_member="InjectAssistanceData"/>
+  </policy>
+
+</busconfig>
