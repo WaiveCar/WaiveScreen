@@ -219,7 +219,7 @@ function log_screen_changes($old, $new) {
   foreach($deltaList as $delta) {
     if(isset($new[$delta]) && $old[$delta] !== $new[$delta]) {
       db_insert('screen_history', [
-        'id' => $new['id'],
+        'screen_id' => $old['id'],
         'action' => $delta,
         'value' => $new[$delta]
       ]);
