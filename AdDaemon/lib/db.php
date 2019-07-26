@@ -217,6 +217,7 @@ $SCHEMA = [
     'screen_id'   => 'integer',
     'action'      => 'text',
     'value'       => 'text',
+    'old'         => 'text',
     'created_at'  => 'datetime default current_timestamp'
   ],
 
