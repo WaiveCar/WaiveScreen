@@ -211,6 +211,15 @@ $SCHEMA = [
     'created_at'  => 'datetime default current_timestamp',
   ],
     
+  # 143
+  'screen_history' => [
+    'id'          => 'integer primary key autoincrement',
+    'screen_id'   => 'integer',
+    'action'      => 'text',
+    'value'       => 'text',
+    'created_at'  => 'datetime default current_timestamp'
+  ],
+
   // #65
   'job_history' => [
     'id'        => 'integer primary key autoincrement',
@@ -227,7 +236,7 @@ $SCHEMA = [
 
   // This is going to be a monstrosity really and will
   // be the majority of the storage.
-  'history' => [
+  'sensor_history' => [
     'id'        => 'integer primary key autoincrement',
     'job_id'    => 'integer',
     // this is duplicate but honestly I'm thinking this
