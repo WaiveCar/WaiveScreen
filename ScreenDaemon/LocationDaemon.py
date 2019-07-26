@@ -6,7 +6,7 @@
 import time
 import logging
 from lib.wifi_location import wifi_location, wifi_scan_shutdown, wifi_last_submission
-from lib.lib import get_gps
+from lib.lib import get_gps, update_gps_xtra_data
 import lib.db as db
 
 logging.basicConfig(level=logging.DEBUG) #TODO remove this after testing
@@ -51,10 +51,18 @@ def location_source(set_it=False):
   else:
     return db.kv_get('location_source')
 
+def system_uptime():
+  with open('/proc/uptime', 'r') as f:
+    return float(f.readline().split(' ')[0])
+
 def location_loop():
   # We prefer the location from the GPS.  If that fails,
   # we try and determine our location based on a Wifi scan.
   logging.info('LocationDaemon.py starting...')
+  sys_uptime = system_uptime()
+  if sys_uptime < 60:
+    time.sleep(60.0 - sys_uptime)
+    update_gps_xtra_data()
   while True:
     location = False
     try:

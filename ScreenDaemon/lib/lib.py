@@ -253,6 +253,23 @@ def post(url, payload):
   logging.info("{} {}".format(url, json.dumps(payload)))
   return requests.post(urlify(url), verify=False, headers=headers, json=payload)
 
+def update_gps_xtra_data():
+  """ Download the GPS's Xtra assistance data and inject it into the gps. """
+  modem = get_modem()
+  if modem:
+    try:
+      xtra_servers = modem['device'].Get('org.freedesktop.ModemManager1.Modem.Location', 'AssistanceDataServers')
+      for url in xtra_servers:
+        r = requests.get(url)
+        if r.status_code == 200:
+          logging.info('Updating GPS Xtra Data')
+          xtra_data = dbus.ByteArray(r.content)
+          modem['location'].InjectAssistanceData(xtra_data) #TODO check return value
+          return True
+    except Exception as ex:
+      logging.error('Failed to update GPS Xtra Data: {}'.format(ex))
+  return False
+
 
 def get_gpgga_dict(nmea_string):
   """ Parse the NMEA string from the GPS and return a Dict
