@@ -492,6 +492,7 @@ function update_campaign_completed($id) {
 }
   
 function inject_priority($job, $screen, $campaign) {
+  $job['priority'] = aget($campaign, 'priority');
   return $job;
 }
 
