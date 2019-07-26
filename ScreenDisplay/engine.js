@@ -128,6 +128,10 @@ var Engine = function(opts){
     src.src = asset.url;
     asset.dom = vid;
 
+    // This was to avoid some weird flashing bug
+    // before the videos loaded. However, there
+    // should be a way to do overrides. So this
+    // solution is insufficient
     asset.duration = 100;
     asset.cycles = 1;
     asset.run = function(noreset) {
@@ -160,7 +164,7 @@ var Engine = function(opts){
     vid.ondurationchange = function(e) {
       // This will only come if things are playable.
       let vid = e.target;
-      asset.duration = asset.duration || vid.duration;
+      asset.duration = vid.duration || asset.duration;
       asset.active = true;
       // if a video is really short then we force loop it.
       if(asset.duration < 0.8) {
