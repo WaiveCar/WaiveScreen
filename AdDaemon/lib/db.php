@@ -108,6 +108,7 @@ $SCHEMA = [
   //
   'campaign' => [
     'id'          => 'integer primary key autoincrement',
+    'ref_id'      => 'integer',
     'order_id'    => 'integer',
     'asset'       => 'text not null',
     'duration_seconds' => 'integer',

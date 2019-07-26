@@ -714,6 +714,30 @@ function campaign_new($opts) {
 function campaign_create($data, $fileList, $user = false) {
   global $DEALMAP, $PLACEMAP, $DAY;
 
+  # This means we do #141
+  if(aget($data,'secret') === 'b3nYlMMWTJGNz40K7jR5Hw') {
+    $ref_id = aget($data,'ref_id');
+    $campaign = Get::campaign(['ref_id' => $ref_id]);
+    $asset = db_string(aget($data, 'asset'));
+    if(!$campaign) {
+      $campaign_id = db_insert(
+        'campaign', [
+          'active' => 1,
+          'asset' => $asset,
+          'duration_seconds' => 240,
+          'lat' => 33.999819, 
+          'lng' => -118.390412,
+          'radius' => 5000,
+          'start_time' => time(),
+          'end_time' => time() + $DAY * 7
+        ]
+      );
+    } else {
+      db_update('campaign', ['asset' => $asset]);
+    }
+    return doSuccess(Get::campaign($campaign_id));
+  }
+
   // get the lat/lng radius of the location into the data.
   $data = array_merge($PLACEMAP[$data['location']], $data);
   // and the deal/contract
