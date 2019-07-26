@@ -217,10 +217,27 @@ function log_screen_changes($old, $new) {
   // they change.
   $deltaList = ['phone', 'car', 'project', 'model', 'version', 'active', 'features'];
   foreach($deltaList as $delta) {
-    if(isset($new[$delta]) && $old[$delta] !== $new[$delta]) {
+    if(!isset($new[$delta])) {
+      continue;
+    }
+    $compare_before = $old[$delta];
+    $compare_after = $new[$delta];
+
+    if(is_array($old[$delta])) {
+      $compare_before = json_encode($compare_before);
+    }
+    if(is_array($new[$delta])) {
+      $compare_after = json_encode($compare_after);
+    }
+
+    $compare_before = trim($compare_before, "'");
+    $compare_after = trim($compare_after, "'");
+    if($compare_before !== $compare_after) {
+      error_log("'$compare_before' != '$compare_after'");
       db_insert('screen_history', [
         'screen_id' => $old['id'],
         'action' => db_string($delta),
+        'old' => db_string($old[$delta]),
         'value' => db_string($new[$delta])
       ]);
     }
