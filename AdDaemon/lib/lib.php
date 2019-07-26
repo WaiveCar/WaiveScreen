@@ -221,7 +221,7 @@ function log_screen_changes($old, $new) {
       db_insert('screen_history', [
         'screen_id' => $old['id'],
         'action' => db_string($delta),
-        'value' => $new[$delta]
+        'value' => db_string($new[$delta])
       ]);
     }
   }
