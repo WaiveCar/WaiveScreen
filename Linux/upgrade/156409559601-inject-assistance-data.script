@@ -1,0 +1,11 @@
+#!/bin/bash
+
+upgradepost() {
+  local dir=/etc/dbus-1/system.d/
+  local file=org.freedesktop.ModemManager1-injectAssistanceData.conf
+  set -x
+  mkdir -p $dir
+  cp -puv /home/adorno/WaiveScreen/Linux/fai-config/files/$dir/$file/DEBIAN $dir/$file
+}
+
+eval $1
