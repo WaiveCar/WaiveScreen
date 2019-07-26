@@ -29,7 +29,7 @@ foreach($SCHEMA as $table_name => $table_schema) {
     $column_to_add_list = array_diff($new_column_name_list, $existing_column_name_list);
 
     if(count($column_to_add_list)) {
-      echo "Adding the following columns from $table_name:\n";
+      echo "Adding the following columns to $table_name:\n";
       echo "  " . implode(', ', $column_to_add_list) . "\n\n";
 
       $existing_schema_str = implode(',', $existing_schema);
@@ -41,7 +41,7 @@ foreach($SCHEMA as $table_name => $table_schema) {
         INSERT INTO my_backup SELECT $existing_rows_str FROM $table_name;
         DROP TABLE $table_name;
         CREATE TABLE $table_name($new_schema);
-        INSERT INTO $table_name SELECT $existing_rows_str FROM my_backup;
+        INSERT INTO $table_name ($existing_rows_str) SELECT $existing_rows_str FROM my_backup;
         DROP TABLE my_backup;
       ";
 
