@@ -51,6 +51,13 @@ DEBUG = os.environ.get('DEBUG')
 DISPLAY = os.environ.get('DISPLAY')
 SERVER_URL = os.environ.get('SERVER_URL') or 'http://waivescreen.com/api'
 
+GPS_DEVICE_ACCURACY = 5.0 # Assumed, but not verified
+GPGGA_FIELD_NAMES = ( 'utc_time', 'latitude', 'ns_indicator',
+                      'longitude', 'ew_indicator', 'fix_quality',
+                      'satellites_used', 'hdop', 'msl_altitude',
+                      'units', 'geoid_separation', 'units',
+                      'dgps', 'checksum' )
+
 storage_base = '/var/lib/waivescreen/'
 
 """
@@ -246,6 +253,31 @@ def post(url, payload):
   logging.info("{} {}".format(url, json.dumps(payload)))
   return requests.post(urlify(url), verify=False, headers=headers, json=payload)
 
+
+def get_gpgga_dict(nmea_string):
+  """ Parse the NMEA string from the GPS and return a Dict
+  of the GPGGA keys => values """
+  gpgga = {}
+  gpgga_start = nmea_string.find('$GPGGA')
+  gpgga_end = nmea_string.find('\r\n', gpgga_start)
+  gpgga_string = nmea_string[gpgga_start:gpgga_end]
+  for k, v in enumerate(gpgga_string.split(',')[1:]):
+    gpgga[GPGGA_FIELD_NAMES[k]] = v
+  return gpgga
+
+
+def gps_accuracy(nmea_string):
+  gpgga = get_gpgga_dict(nmea_string)
+  hdop = gpgga.get('hdop')
+  if hdop:
+    try:
+      return GPS_DEVICE_ACCURACY * float(hdop)
+    except:
+      return None
+  else:
+    return None
+
+
 def get_gps(all_fields=False):
   modem = get_modem()
 
@@ -257,14 +289,16 @@ def get_gps(all_fields=False):
       if not gps:
         return {}
       else:
+        nmea_string = location.get(4, '')
         location_dict = {
           'Lat': gps['latitude'],
           'Lng': gps['longitude'],
+          'accuracy': gps_accuracy(nmea_string)
         }
         if all_fields:
           location_dict.update( {
             'Utc': gps['utc-time'],
-            'Nmea': location.get(4),
+            'Nmea': nmea_string,
             '3gpp': location.get(1)
           } )
         return location_dict
