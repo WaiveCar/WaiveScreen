@@ -71,7 +71,7 @@ $fieldList = [
   'last' => 'last_local',
   'first' => 'first_local'
 ];
-$editable = ['car', 'serial', 'phone'];
+$editable = ['car', 'serial'];
 
 $props = [
   'version' => [ 
@@ -120,6 +120,13 @@ function split($str) {
     .edit { color: #999; cursor: pointer }
     .last { text-align: right }
     em { color: #555 }
+    .table td {padding: .75rem .2rem; }
+    td.edit { white-space: nowrap; }
+    .modal-body span {
+      min-width: 5rem; 
+      display: inline-block;
+      vertical-align: top;
+    }
     .edit:hover { color: #000 }
     #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
   </style>
@@ -142,7 +149,7 @@ function split($str) {
           <? foreach($fieldList as $key => $value) { ?>
             <th scope="col"><?= $key ?></th>
           <? } ?>
-          <th scope="col">command</th>
+          <th scope="col">cmd</th>
           </tr>
         </thead>
         <tbody>
@@ -178,16 +185,17 @@ function split($str) {
                    }
                  }
                  $dataVals = implode(' ', $dataVals);
+                 $canedit = array_search($key, $editable) !== false ? 'edit' : '';
             ?>
-              <td class="<?= $name?>" <?=$dataVals?>>
+              <td class="<?= $name?> <?=$canedit?>" <?=$dataVals?>>
                 <span><?= $screen[$key] ?></span>
-                <? if (array_search($key, $editable) !== false) { ?>
+                <? if ($canedit) { ?>
                   <a onclick="promptchange(<?=$screen['id']?>,'<?=$key?>',this)"><i class="edit fa fa-pencil"></i></a>
                 <? } ?>
               </td>
             <? } ?>
             <td>
-              <button onclick='command("<?=$screen['id']?>","<?=$screen['car']?>")' class="btn btn-secondary">command</button>
+              <button onclick='command("<?=$screen['id']?>","<?=$screen['car']?>")' class="btn btn-secondary">cmd</button>
             </td>
           </tr>
         <? } ?>
@@ -211,14 +219,11 @@ function split($str) {
           </div>
 
           <div class="modal-body">
-            ( a few redundant things ) <br/>
-            ( feature list ) <br/>
-            ( tag list ) (editable)
           </div>
 
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Update</button>
+            <!--<button type="button" class="btn btn-primary">Update</button>-->
           </div>
         </div>
       </div>
@@ -228,7 +233,10 @@ function split($str) {
     <script>
     var Data=<?=json_encode($screenList);?>
     </script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script
+    src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="/js/jquery.easing.min.js"></script>

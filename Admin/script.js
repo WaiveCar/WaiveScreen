@@ -70,8 +70,21 @@ function command(id, name) {
   }
 }
 
+function obj2span(obj) {
+  var out = [];
+  for(var key in obj) {
+    out.push(`<span>${key}</span><span>${obj[key]}</span>`);
+  }
+  return '<div>' + out.join('</div><div>') + '</div>';
+}
+
 function edit(id) {
   var screen = get(id);
+  var keylist = ['imei','pings','last_task'];
+  var out = keylist.map(row => `<span>${row}</span><span>${JSON.stringify(screen[row])}</span>`);
+  out.push(`<span>features</span><span>${obj2span(screen.features)}</span>`); 
+  
+  $("#editModal .modal-body").html('<div>' + out.join('</div><div>') + '</div>');
   $("#ModalLabel").html(screen.uid);
   $("#editModal").modal();
 }
