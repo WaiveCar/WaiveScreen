@@ -58,7 +58,7 @@ foreach($taskMap['task_screen'] as $obj) {
     </style>
   </head>
   <body>
-  <? include ('partials/sidebar.html'); ?>
+  <? include ('partials/sidebar.php'); ?>
   <div class="container">
     <div class="alert alert-primary" id="notice" role="alert"></div>
     <div class='row'>
