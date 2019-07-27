@@ -32,54 +32,57 @@ $height = $width * 675 / 1920;
     </style>
   </head>
   <body>
-    <div class="alert alert-primary" id="notice" role="alert"></div>
-    <div class='row'>
-    <? foreach($campaignList as $campaign) { 
-      $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
-      $isDefault = $campaign['is_default'];
-      ?>
-        <div class="card" style="width: <?=$width?>px">
-        <div class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
-        <div class="card-body">
-          <? if (!$isDefault) { ?>
-            <div class="progress">
-              <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-            <p><?= $campaign['completed_seconds'] ?>/<?= $campaign['duration_seconds'] ?>s complete<br/>
-            <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a><br/>
-            Radius: <?= $campaign['radius'] ?>m</p>
-            Start: <?= $campaign['start_time'] ?><br>
-            End: <?= $campaign['end_time'] ?>
-          <? } else { ?>
-            <h4>Default advertisement
-            <? foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
-              if ($value == $campaign['id']) { 
-                echo "<span class='badge badge-pill badge-dark'>$key</span> ";
-              }
-            } ?>
-            </h4>
-          <? } ?>
+    <? include ('partials/sidebar.html'); ?>
+    <div class="container">
+      <div class="alert alert-primary" id="notice" role="alert"></div>
+      <div class='row'>
+      <? foreach($campaignList as $campaign) { 
+        $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
+        $isDefault = $campaign['is_default'];
+        ?>
+          <div class="card" style="width: <?=$width?>px">
+          <div class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
+          <div class="card-body">
+            <? if (!$isDefault) { ?>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <p><?= $campaign['completed_seconds'] ?>/<?= $campaign['duration_seconds'] ?>s complete<br/>
+              <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a><br/>
+              Radius: <?= $campaign['radius'] ?>m</p>
+              Start: <?= $campaign['start_time'] ?><br>
+              End: <?= $campaign['end_time'] ?>
+            <? } else { ?>
+              <h4>Default advertisement
+              <? foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
+                if ($value == $campaign['id']) { 
+                  echo "<span class='badge badge-pill badge-dark'>$key</span> ";
+                }
+              } ?>
+              </h4>
+            <? } ?>
 
-          <p class="card-text"></p>
+            <p class="card-text"></p>
 
-          <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Actions
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <a href="#<?=$campaign['id']?>" class="dropdown-item">Disable</a>
-              <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Replace</label>
-              <label onclick="append()" class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Append</label>
-              <a class="dropdown-item" href="#">Make Default</a>
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Actions
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a href="#<?=$campaign['id']?>" class="dropdown-item">Disable</a>
+                <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Replace</label>
+                <label onclick="append()" class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Append</label>
+                <a class="dropdown-item" href="#">Make Default</a>
+              </div>
             </div>
+
+            <form id='form-<?=$campaign['id']?>'>
+              <input id="image-upload-<?=$campaign['id']?>" data-campaign=<?=$campaign['id']?> multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
+            </form>
           </div>
-
-          <form id='form-<?=$campaign['id']?>'>
-            <input id="image-upload-<?=$campaign['id']?>" data-campaign=<?=$campaign['id']?> multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
-          </form>
         </div>
+      <? } ?>
       </div>
-    <? } ?>
     </div>
     <script>
       var Data=<?=json_encode($campaignList);?>,width=<?=$width?>,height=<?=$height?>;

@@ -132,6 +132,7 @@ function split($str) {
   </style>
   <body id="page-top">
   <div id="wrapper">
+  <? include ('partials/sidebar.html'); ?>
   <div id="content-wrapper" class="d-flex flex-column">
 
     <h3>
