@@ -242,6 +242,13 @@ enable_gps() {
     # --location-enable-agps \
 }
 
+add_record() {
+  local key=$1
+  local value=$2
+  local extra=$3
+  sqlite3 $DB "insert into history(key, value, extra) values('$key','$value','$extra')" 
+}
+
 get_number() {
   # mmcli may not properly be reporting the phone number. T-mobile sends it to
   # us in our first text so we try to work it from there.
