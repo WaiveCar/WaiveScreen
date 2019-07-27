@@ -2,17 +2,24 @@
 
 upgradepost() {
   # Put everything you need here.
-  /usr/sbin/adduser adorno netdev
-  cp -puv /home/adorno/WaiveScreen/Linux/fai-config/files/etc/systemd/system/location-daemon.service /etc/systemd/system
+  local dir=/etc/sytemd/system/
+  local file=location-daemon.service
+  set -x
+  mkdir -p $dir
+  cp -puv /home/adorno/WaiveScreen/Linux/fai-config/files/$dir/$file/DEBIAN $dir/$file
+
   systemctl daemon-reload
   systemctl enable location-daemon
   systemctl start location-daemon
+
+  /usr/sbin/adduser adorno netdev
 }
 
 rollback() {
-  /usr/sbin/deluser adorno netdev
   systemctl stop location-daemon
   systemctl disable location-daemon
+
+  /usr/sbin/deluser adorno netdev
 }
 
 eval $1
