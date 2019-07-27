@@ -20,68 +20,74 @@ $height = $width * 675 / 1920;
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel='stylesheet' href='/engine.css'>
+    <link href="/css/sb-admin-2.min.css" rel="stylesheet">
     <title>Campaign admin</title>
     <style>
     form { float: right }
+    #content-wrapper h4 { color: #000 }
     .form-control-file { display: none }
     .asset-container { width: <?= $width; ?>px; position: relative; height: <?= $height; ?>px; }
     .upload-button { margin-bottom: 0 }
     #notice { position: fixed; top:0; left:0; width: 100%; z-index: 100;display:none}
     </style>
   </head>
-  <body>
-    <? include ('partials/sidebar.php'); ?>
-    <div class="container">
-      <div class="alert alert-primary" id="notice" role="alert"></div>
-      <div class='row'>
-      <? foreach($campaignList as $campaign) { 
-        $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
-        $isDefault = $campaign['is_default'];
-        ?>
-          <div class="card" style="width: <?=$width?>px">
-          <div class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
-          <div class="card-body">
-            <? if (!$isDefault) { ?>
-              <div class="progress">
-                <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
-              </div>
-              <p><?= $campaign['completed_seconds'] ?>/<?= $campaign['duration_seconds'] ?>s complete<br/>
-              <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a><br/>
-              Radius: <?= $campaign['radius'] ?>m</p>
-              Start: <?= $campaign['start_time'] ?><br>
-              End: <?= $campaign['end_time'] ?>
-            <? } else { ?>
-              <h4>Default advertisement
-              <? foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
-                if ($value == $campaign['id']) { 
-                  echo "<span class='badge badge-pill badge-dark'>$key</span> ";
-                }
-              } ?>
-              </h4>
-            <? } ?>
+  <body id="page-top">
+    <div id="wrapper">
+      <? include ('partials/sidebar.php'); ?>
+      <div id="content-wrapper" class="d-flex flex-column">
+          <div class="alert alert-primary" id="notice" role="alert"></div>
+          <div class='row'>
+          <? foreach($campaignList as $campaign) { 
+            $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
+            $isDefault = $campaign['is_default'];
+            ?>
+              <div class="card" style="width: <?=$width?>px">
+              <div class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
+              <div class="card-body">
+                <? if (!$isDefault) { ?>
+                  <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <p><?= $campaign['completed_seconds'] ?>/<?= $campaign['duration_seconds'] ?>s complete<br/>
+                  <a href="https://maps.google.com/?q=<?= $campaign['lat'] ?>,<?= $campaign['lng'] ?>"><?= $campaign['addr']; ?></a><br/>
+                  Radius: <?= $campaign['radius'] ?>m</p>
+                  Start: <?= $campaign['start_time'] ?><br>
+                  End: <?= $campaign['end_time'] ?>
+                <? } else { ?>
+                  <h4>Default advertisement
+                  <? foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
+                    if ($value == $campaign['id']) { 
+                      echo "<span class='badge badge-pill badge-dark'>$key</span> ";
+                    }
+                  } ?>
+                  </h4>
+                <? } ?>
 
-            <p class="card-text"></p>
+                <p class="card-text"></p>
 
-            <div class="dropdown">
-              <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Actions
-              </button>
-              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a href="#<?=$campaign['id']?>" class="dropdown-item">Disable</a>
-                <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Replace</label>
-                <label onclick="append()" class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Append</label>
-                <a class="dropdown-item" href="#">Make Default</a>
+                <div class="dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Actions
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a href="#<?=$campaign['id']?>" class="dropdown-item">Disable</a>
+                    <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Replace</label>
+                    <label onclick="append()" class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Append</label>
+                    <a class="dropdown-item" href="#">Make Default</a>
+                  </div>
+                </div>
+
+                <form id='form-<?=$campaign['id']?>'>
+                  <input id="image-upload-<?=$campaign['id']?>" data-campaign=<?=$campaign['id']?> multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
+                </form>
               </div>
             </div>
-
-            <form id='form-<?=$campaign['id']?>'>
-              <input id="image-upload-<?=$campaign['id']?>" data-campaign=<?=$campaign['id']?> multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
-            </form>
+          <? } ?>
           </div>
         </div>
-      <? } ?>
       </div>
     </div>
     <script>

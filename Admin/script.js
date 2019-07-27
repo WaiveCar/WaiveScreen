@@ -95,7 +95,7 @@ $(function() {
       stateSave: true,
       order: [[10, 'desc']]
     });
-  } else {
+  } else if(self.Data){
     for (var which of Data) {
       let id = which.id;
       let engine = Engine({
