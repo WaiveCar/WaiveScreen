@@ -36,7 +36,9 @@ check_sensor_daemon() {
   else
     last_read=$(sqlite3 $DB 'select created_at from sensor order by id desc limit 1;')
     db_delta=$(perl -e "use Date::Parse;print time() - str2time('$last_read');")
-    (( $db_delta > 240 )) && _as_user dcall sensor_daemon
+    # BUGBUG NOTE: If we change the minimum sensor heartbeat to be over 90 seconds
+    # this will make the sensor daemon go wacky
+    (( $db_delta > 180 )) && _as_user dcall sensor_daemon
   fi
 }
 
