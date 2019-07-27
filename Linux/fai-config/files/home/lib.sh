@@ -605,8 +605,8 @@ endl
 
   $SUDO pkill -f hostapd
   sleep 1
-  #$SUDO service hostapd restart #/etc/hostapd/hostapd.conf&
-  $SUDO hostapd /etc/hostapd/hostapd.conf&
+  $SUDO service hostapd restart #/etc/hostapd/hostapd.conf&
+  #$SUDO hostapd /etc/hostapd/hostapd.conf&
 
   $SUDO sysctl net.ipv4.conf.all.forwarding=1
 
