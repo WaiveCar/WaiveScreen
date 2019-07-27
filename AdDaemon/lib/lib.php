@@ -225,9 +225,11 @@ function log_screen_changes($old, $new) {
 
     if(is_array($old[$delta])) {
       $compare_before = json_encode($compare_before);
+      $old[$delta] = $compare_before;
     }
     if(is_array($new[$delta])) {
       $compare_after = json_encode($compare_after);
+      $new[$delta] = $compare_after;
     }
 
     $compare_before = trim($compare_before, "'");
