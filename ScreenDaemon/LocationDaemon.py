@@ -58,12 +58,13 @@ def system_uptime():
 def location_loop():
   # We prefer the location from the GPS.  If that fails,
   # we try and determine our location based on a Wifi scan.
+  failure_count = 0
   logging.info('LocationDaemon.py starting...')
   sys_uptime = system_uptime()
   if sys_uptime < 60:
     time.sleep(60.0 - sys_uptime)
     update_gps_xtra_data()
-  while True:
+  while failure_count < 60:
     location = False
     try:
       location = get_location_from_gps()
@@ -78,9 +79,11 @@ def location_loop():
           location_source('wifi')
           save_location(location)
         else:
+          failure_count += 1
           location_source('none')
           logging.warning('Unable to determine our location.  GPS and Wifi failed.')
     except Exception as ex:
+      failure_count += 1
       logging.error('Error in location_loop: {}'.format(ex))
 
     time.sleep(SLEEP_TIME)
