@@ -75,6 +75,7 @@ var Engine = function(opts){
     _nop = function(){},
     _isNetUp = true,
     _start = new Date(),
+    _stHandleMap = {},
     _last_sow = [+_start, +_start],
     _fallback;
 
@@ -484,7 +485,7 @@ var Engine = function(opts){
         // we come back around, _last.shown will be 
         // redefined.
         prev = _last.shown;
-        setTimeout(function() {
+        _stHandleMap.assetFade = setTimeout(function() {
           prev.container.classList.remove('fadeOut');
           if(prev.container.parentNode) {
             prev.container.parentNode.removeChild(prev.container);
@@ -517,7 +518,7 @@ var Engine = function(opts){
       _last = _current;
 
       if(!_res.pause) {
-        setTimeout(nextAsset, _current.shown.duration * 1000 - _res.fadeMs / 2);
+        _stHandleMap.assetNext = setTimeout(nextAsset, _current.shown.duration * 1000 - _res.fadeMs / 2);
       }
     }
   }
@@ -609,7 +610,8 @@ var Engine = function(opts){
       if(!_fallback) {
         // woops what do we do now?! 
         // I guess we just try this again?!
-        return setTimeout(nextJob, 1500);
+        _stHandleMap.nextJob = setTimeout(nextJob, 1500);
+        return _stHandleMap.nextJob;
       }
 
       _current = _fallback;
@@ -657,7 +659,7 @@ var Engine = function(opts){
     _last_sow[0] = _last_sow[1];
     _last_sow[1] = +new Date();
 
-    setTimeout(nextAsset, 2000);
+    _stHandleMap.assetNext = setTimeout(nextAsset, 2000);
   }
 
   function setFallback (url, force) {
@@ -668,11 +670,11 @@ var Engine = function(opts){
         _fallback = makeJob(res.data.campaign);
         _res.system = res.data.system;
         trigger('system', _res.system);
-        setTimeout(function() {
+        _stHandleMap.setFallback = setTimeout(function() {
           setFallback(false, true);
         }, 3 * 60 * 1000);
       }, function() { 
-        cleanTimeout(setFallback, _res.duration * 1000);
+        _stHandleMap.setFallback = cleanTimeout(setFallback, _res.duration * 1000);
       });
 
     } else {
@@ -705,6 +707,10 @@ var Engine = function(opts){
         isNetUp: _isNetUp 
       };
     }, 
+    Scrub: function(relative_time) {
+      if(relative_time < 0) {
+      }
+    },
     Start: function(){
       _res.container.classList.add('engine');
       // Try to initially contact the server
