@@ -485,14 +485,14 @@ var Engine = function(opts){
         // we come back around, _last.shown will be 
         // redefined.
         prev = _last.shown;
-        _stHandleMap.assetFade = setTimeout(function() {
+        _timeout(function() {
           prev.container.classList.remove('fadeOut');
           if(prev.container.parentNode) {
             prev.container.parentNode.removeChild(prev.container);
           } else {
             console.log("Not able to remove container");
           }
-        }, _res.fadeMs);
+        }, _res.fadeMs, 'assetFade');
         doFade = true;
       }
 
@@ -518,7 +518,7 @@ var Engine = function(opts){
       _last = _current;
 
       if(!_res.pause) {
-        _stHandleMap.assetNext = setTimeout(nextAsset, _current.shown.duration * 1000 - _res.fadeMs / 2);
+        _timeout(nextAsset, _current.shown.duration * 1000 - _res.fadeMs / 2, 'nextAsset');
       }
     }
   }
@@ -566,6 +566,16 @@ var Engine = function(opts){
     },
   }
 
+  function _timeout(fn, timeout, name) {
+    var handle = setTimeout(fn, timeout);
+    _stHandleMap[name] = {
+      ts: new Date(), 
+      handle: handle,
+      timeout: timeout
+    };
+    return handle
+  }
+
   function nextJob() {
     // We note something we call "breaks" which designate which asset to show.
     // This is a composite of what remains - this is two pass, eh, kill me.
@@ -610,8 +620,7 @@ var Engine = function(opts){
       if(!_fallback) {
         // woops what do we do now?! 
         // I guess we just try this again?!
-        _stHandleMap.nextJob = setTimeout(nextJob, 1500);
-        return _stHandleMap.nextJob;
+        return _timeout(nextJob, 1500, 'nextJob');
       }
 
       _current = _fallback;
@@ -659,7 +668,7 @@ var Engine = function(opts){
     _last_sow[0] = _last_sow[1];
     _last_sow[1] = +new Date();
 
-    _stHandleMap.assetNext = setTimeout(nextAsset, 2000);
+    _timeout(nextAsset, 2000, 'nextAsset');
   }
 
   function setFallback (url, force) {
@@ -670,9 +679,9 @@ var Engine = function(opts){
         _fallback = makeJob(res.data.campaign);
         _res.system = res.data.system;
         trigger('system', _res.system);
-        _stHandleMap.setFallback = setTimeout(function() {
+        _timeout(function() {
           setFallback(false, true);
-        }, 3 * 60 * 1000);
+        }, 3 * 60 * 1000, 'setFallback');
       }, function() { 
         _stHandleMap.setFallback = cleanTimeout(setFallback, _res.duration * 1000);
       });
@@ -697,6 +706,8 @@ var Engine = function(opts){
     },
     Pause: function() {
       _res.pause = !_res.pause;
+      console.log("Clearing setTimeout for the next asset");
+      clearTimeout(_stHandleMap.nextAsset.handle);
       _current.shown.dom.pause();
     },
 
