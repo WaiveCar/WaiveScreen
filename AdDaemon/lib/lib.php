@@ -758,15 +758,17 @@ function campaign_new($opts) {
 function campaign_create($data, $fileList, $user = false) {
   global $DEALMAP, $PLACEMAP, $DAY;
 
+  error_log("campaign new: " . json_encode($data));
   # This means we do #141
   if(aget($data,'secret') === 'b3nYlMMWTJGNz40K7jR5Hw') {
-    $ref_id = aget($data,'ref_id');
+    $ref_id = db_string(aget($data,'ref_id'));
     $campaign = Get::campaign(['ref_id' => $ref_id]);
-    $asset = db_string(aget($data, 'asset'));
+    $asset = db_string(json_encode([aget($data, 'asset')]));
     if(!$campaign) {
       $campaign_id = db_insert(
         'campaign', [
-          'active' => 1,
+          'active' => 0,
+          'ref_id' => $ref_id,
           'asset' => $asset,
           'duration_seconds' => 240,
           'lat' => 33.999819, 

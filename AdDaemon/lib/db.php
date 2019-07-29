@@ -5,12 +5,17 @@ $RULES = [
   'campaign' => [ 
     'asset' => [
       'post' => function($v) {
+         $v = json_decode($v, true);
+         if(!is_array($v)) {
+           $v = [ $v ];
+         }
+
          return array_map(function($m) {
            if(strpos($m, 'http') === false) {
              return 'http://waivecar-prod.s3.amazonaws.com/' . $m;
            } 
            return $m;
-        }, json_decode($v, true));
+         }, $v);
       }
     ]
   ],
