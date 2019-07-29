@@ -566,8 +566,8 @@ var Engine = function(opts){
     },
   }
 
-  function _timeout(fn, timeout, name) {
-    var handle = setTimeout(fn, timeout);
+  function _timeout(fn, timeout, name, override) {
+    var handle = override ? fn : setTimeout(fn, timeout);
     _stHandleMap[name] = {
       ts: new Date(), 
       handle: handle,
@@ -683,7 +683,7 @@ var Engine = function(opts){
           setFallback(false, true);
         }, 3 * 60 * 1000, 'setFallback');
       }, function() { 
-        _stHandleMap.setFallback = cleanTimeout(setFallback, _res.duration * 1000);
+        _timeout(cleanTimeout(setFallback, _res.duration * 1000), _res.duration * 1000, 'setFallback', true);
       });
 
     } else {
