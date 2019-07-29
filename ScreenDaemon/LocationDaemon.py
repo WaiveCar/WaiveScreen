@@ -4,9 +4,10 @@
 # Despite the name, we are not running as a daemon.  We will rely on systemd to manage the process.
 
 import time
+import json
 import logging
 from lib.wifi_location import wifi_location, wifi_scan_shutdown, wifi_last_submission
-from lib.lib import get_gps, update_gps_xtra_data
+from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict
 import lib.db as db
 
 logging.basicConfig(level=logging.DEBUG) #TODO remove this after testing
@@ -44,6 +45,7 @@ def save_location(location):
   db.kv_set('lat', location['Lat'])
   db.kv_set('lng', location['Lng'])
   db.kv_set('location_accuracy', location.get('accuracy', ''))
+  db.kv_set('gps_gpgga', json.dumps(get_gpgga_dict(location.get('Nmea', ''))))
 
 def location_source(set_it=False):
   if set_it:
