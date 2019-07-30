@@ -13,6 +13,11 @@ get_db() {
 }
 
 db_stage() {
+  set -x
+  db=/var/db/waivescreen/main.db
+  ssh waivescreen.com "sqlite3 $db .dump > /tmp/sql"
+  scp waivescreen.com:/tmp/sql staging.waivescreen.com:/tmp/sql
+  ssh staging.waivescreen.com "sudo rm $db; sudo sqlite3 $db < /tmp/sql; sudo chown www-data.www-data $db"
 }
 
 if ! declare -f $1 > /dev/null; then
