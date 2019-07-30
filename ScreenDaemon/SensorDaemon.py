@@ -39,7 +39,6 @@ ix_hb = 0
 first = True
 avg = 0
 _arduinoConnectionDown = False
-_arduinoDownTime = None
 
 if lib.DEBUG:
   lib.set_logger(sys.stderr)
@@ -118,7 +117,6 @@ while True:
       raise Exception('arduino_read() returned no data')
     elif _arduinoConnectionDown:
       _arduinoConnectionDown = False
-      _arduinoDownTime = None
       # We could wake the screen up here, but I'm assuming the pm_if_needed call below will do the right thing
       logging.info('Connection to arduino reestablished')
 
@@ -161,35 +159,36 @@ while True:
       lib.sensor_store(all)
 
     # If we need to go into/get out of a low power mode
-		# We also need to make sure that we are looking at a nice
-		# window of time. Let's not make it the window_size just
-		# in case our tidiness algorithm breaks.
-  	if sensor and len(window) > WINDOW_SIZE * 0.8:
+    # We also need to make sure that we are looking at a nice
+    # window of time. Let's not make it the window_size just
+    # in case our tidiness algorithm breaks.
+    if sensor and len(window) > WINDOW_SIZE * 0.8:
       arduino.pm_if_needed(avg, all.get('Voltage'))
 
+    # Now you'd think that we just sleep on the frequency, that'd be wrong.
+    # Thanks, try again. Instead we need to use the baseline time from start
+    # up multiplied by the counter, then subtracted from the time to account
+    # for the skew that is introduced from the sensor reads.
+    ix += 1
+    naptime = (START + ix * FREQUENCY) - time.time()
+    if naptime > 0:
+      time.sleep(naptime)
+
+    arduino.clear()
+
   # We are unable to communicate with the arduino.  We will assume that the screen is on
-  # at max brightness and shutdown the screen sooner than usual.
+  # at max brightness and shutdown the screen immediately.
   except Exception as ex:
     if not _arduinoConnectionDown:
       logging.error('Arduino communication down: {}'.format(ex))
       _arduinoConnectionDown = True
-      _arduinoDownTime = time.time()
       # TODO Add more logic to guess the state of the car before we lost contact.
-      #      We should adjust ARDUINO_DOWN_SECONDS accordingly
-    elif db.sess_get('power') == 'awake':
-      if time.time() - _arduinoDownTime >= ARDUINO_DOWN_SECONDS:
-        try:
-          arduino.do_sleep()
-        except: # TODO catch the specific exception
-          pass  # The call should turn off the display but fail trying to turn off the backlight.  That's okay.
+      try:
+        arduino.do_sleep()
+      except:
+        # The call should turn off the display but fail trying to turn off the backlight.  That's okay.
+        pass
+      # if _arduino isn't set to false, we won't reconnect
+      arduino.arduino_disconnect()
+    time.sleep(1)
 
-  # Now you'd think that we just sleep on the frequency, that'd be wrong.
-  # Thanks, try again. Instead we need to use the baseline time from start
-  # up multiplied by the counter, then subtracted from the time to account
-  # for the skew that is introduced from the sensor reads.
-  ix += 1
-  naptime = (START + ix * FREQUENCY) - time.time()
-  if naptime > 0:
-    time.sleep(naptime)
-
-  arduino.clear()
