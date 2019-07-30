@@ -417,6 +417,11 @@ def get_move_status(last_read, last_smooth):
 
   return moving, smooth_move
 
+def arduino_disconnect():
+  global _arduino
+  if _arduino:
+    _arduino.close()
+    _arduino = False
 
 """
 pseudo code for main logic:
