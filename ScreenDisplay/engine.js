@@ -63,10 +63,12 @@ var Engine = function(opts){
       target: { width: 1920, height: 675 },
 
       listeners: {},
-      data: {}
+      data: {},
+
+      _debug: false,
+      _current: false
 
     }, opts || {}),
-    _current = false,
     _last = false,
     _playCount = 0,
     _id = 0,
@@ -116,6 +118,10 @@ var Engine = function(opts){
     asset.run = function() {
       _playCount ++;
     }
+    asset.active = true;
+    asset.duration = _res.duration * 100;
+    obj.duration += asset.duration * 100;
+    obj.active = true;
     return asset;
   }
   
@@ -275,6 +281,7 @@ var Engine = function(opts){
         asset.run = _nop;
         asset.dom = img;
       }
+      console.log(asset);
       asset.container = container;
       asset.container.appendChild(asset.dom);
       return asset;
@@ -438,7 +445,10 @@ var Engine = function(opts){
     // be transitioning away from a previous job
     //
     // so this is is when we do the reporting.
-    if(_current.position === 0) {
+    if(_res.debug) {
+      console.log(_res._current);
+    }
+    if(_res._current.position === 0) {
 
       // If this exists then it'd be set at the last asset
       // previous job.
@@ -456,7 +466,7 @@ var Engine = function(opts){
           completed_seconds: _last.completed_seconds
         });
 
-        if(_last.job_id !== _current.job_id) {
+        if(_last.job_id !== _res._current.job_id) {
           // we reset the downweight -- it can come back
           _last.downweight = 1;
         }
@@ -465,7 +475,7 @@ var Engine = function(opts){
 
     // If we are at the end then our next function should be to
     // choose the next job.
-    if(_current.position === _current.assetList.length) {
+    if(_res._current.position === _res._current.assetList.length) {
       if(!_res.pause) {
         nextJob();
       }
@@ -475,11 +485,11 @@ var Engine = function(opts){
       // ****
       //
       // We may (quite likely) will
-      // have (_last === _current) most of the time. This means
+      // have (_last === _res._current) most of the time. This means
       // that we are "passing the torch" of the .shown pointer,
       // being more than likely just one.
-      if(_last && (_current.position > 0 || _last.id !== _current.id)) {
-        console.log(_current.position, _last.id, _current.id);
+      if(_last && (_res._current.position > 0 || _last.id !== _res._current.id)) {
+        //console.log(_res._current.position, _last.id, _res._current.id);
         _last.shown.container.classList.add('fadeOut');
 
         // This is NEEDED because by the time 
@@ -500,26 +510,26 @@ var Engine = function(opts){
 
       // Now we're ready to show the asset. This is done through
       // a pointer as follows:
-      _current.shown = _current.assetList[_current.position];
-      console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
+      _res._current.shown = _res._current.assetList[_res._current.position];
+      //console.log(new Date() - _start, _playCount, "Job #" + _res._current.id, "Asset #" + _res._current.position, "Duration " + _res._current.shown.duration, _res._current.shown.url, _res._current.shown.cycles);
       
       if(doFade) {
-        _current.shown.container.classList.add('fadeIn');
+        _res._current.shown.container.classList.add('fadeIn');
       } else {
-        _current.shown.container.classList.remove('fadeIn');
+        _res._current.shown.container.classList.remove('fadeIn');
       }
-      _current.shown.run();
-      _res.container.appendChild(_current.shown.container);
+      _res._current.shown.run();
+      _res.container.appendChild(_res._current.shown.container);
 
       // And we increment the position to show the next asset
       // when we come back around
-      _current.position ++;
+      _res._current.position ++;
 
       // These will EQUAL each other EXCEPT when the position is 0.
-      _last = _current;
+      _last = _res._current;
 
       if(!_res.pause) {
-        _timeout(nextAsset, _current.shown.duration * 1000 - _res.fadeMs / 2, 'nextAsset');
+        _timeout(nextAsset, _res._current.shown.duration * 1000 - _res.fadeMs / 2, 'nextAsset');
       }
     }
   }
@@ -614,9 +624,14 @@ var Engine = function(opts){
       // We do this "dice roll" to see 
       breakpoint = Math.random() * range;
 
+    if(_res._debug) {
+      console.log({active: activeList, range: range, priority: maxPriority});
+    }
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
-      console.log("Range < 0, using fallback");
+      if(_res.server) {
+        console.log("Range < 0, using fallback");
+      }
 
       if(!_fallback) {
         // woops what do we do now?! 
@@ -624,43 +639,42 @@ var Engine = function(opts){
         return _timeout(nextJob, 1500, 'nextJob');
       }
 
-      _current = _fallback;
+      _res._current = _fallback;
 
       if(!_firstRun && activeList.length == 0 && Object.values(_res.db) > 1) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
-        setAssetDuration(_current, 0, 0.2);
+        setAssetDuration(_res._current, 0, 0.2);
       } else {
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
         // this out to some significant number
-        setAssetDuration(_current, 0, _res.duration);
+        setAssetDuration(_res._current, 0, _res.duration);
       }
 
     } else {
       // This is needed for the end case.
       _firstRun = true;
-      _current = false;
+      _res._current = false;
       for(row of activeList) {
 
         accum += row.downweight * (row.goal - row.completed_seconds);
         if(accum > breakpoint) {
-          _current = row;
+          _res._current = row;
           break;
         }
       }
-      if(!_current) {
-        _current = row;
+      if(!_res._current) {
+        _res._current = row;
       }
-      console.log('>>>', _current);
     }
 
     // 
     // By this time we know what we plan on showing.
     //
-    _current.downweight *= _downweight;
-    _current.position = 0;
-    //console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration);
+    _res._current.downweight *= _downweight;
+    _res._current.position = 0;
+    //console.log(new Date() - _start, "Showing " + _res._current.id + " duration " + _res._current.duration);
     //
     // We set the start time of the showing of this ad
     // so we can cross-correlate the gps from the ScreenDaemon
@@ -702,19 +716,19 @@ var Engine = function(opts){
   return merge(_res, {
     Play: function() {
       _res.pause = false;
-      _current.shown.dom.play();
+      _res._current.shown.dom.play();
       nextAsset();
     },
     Pause: function() {
       _res.pause = !_res.pause;
       console.log("Clearing setTimeout for the next asset");
       clearTimeout(_stHandleMap.nextAsset.handle);
-      _current.shown.dom.pause();
+      _res._current.shown.dom.pause();
     },
 
     Debug: function() {
       return {
-        current: _current,
+        current: _res._current,
         last: _last,
         isNetUp: _isNetUp 
       };
