@@ -1,6 +1,5 @@
 <?
 include_once('db.php');
-include_once('email.php');
 
 class User {
   public static function me() {

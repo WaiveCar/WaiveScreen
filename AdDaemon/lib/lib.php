@@ -8,7 +8,6 @@ use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 $mypath = $_SERVER['DOCUMENT_ROOT'] . 'AdDaemon/lib/';
 include_once($mypath . 'const.php');
 include_once($mypath . 'db.php');
-include_once($mypath . 'email.php');
 include_once($mypath . 'user.php');
 
 $PORT_OFFSET = 7000;
