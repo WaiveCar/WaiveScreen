@@ -29,7 +29,7 @@ install() {
   # }
 
   sudo phpenmod sqlite3
-  sudo a2enmod php$PHP
+  sudo a2enmod php$PHP rewrite headers
   sudo apachectl restart
 
   sudo cp $BASE/tools/server/server-backup.sh /etc/cron.daily/server-backup
