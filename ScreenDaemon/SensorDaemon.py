@@ -16,9 +16,6 @@ from datetime import datetime
 FREQUENCY = 0.1 if 'FREQUENCY' not in os.environ else os.environ['FREQUENCY']
 WINDOW_SIZE = int(12.0 / FREQUENCY)
 
-# Number of seconds to keep the screen running when disconnected from the arduino
-ARDUINO_DOWN_SECONDS = 30
-
 # If all the sensor deltas reach this percentage
 # (multiplied by 100) from the baseline, then we
 # call this a "significant event" and store it.
