@@ -116,6 +116,7 @@ var Engine = function(opts){
     asset.run = function() {
       _playCount ++;
     }
+    return asset;
   }
   
   function video(asset, obj) {
@@ -566,7 +567,7 @@ var Engine = function(opts){
     },
   }
 
-  function _timeout(fn, timeout, name, override) {
+  function _timeout(fn, timeout,  name, override) {
     var handle = override ? fn : setTimeout(fn, timeout);
     _stHandleMap[name] = {
       ts: new Date(), 
