@@ -29,33 +29,6 @@ $RULES = [
 ];
 
 $SCHEMA = [
-  'user' => [
-    'id'          => 'integer primary key autoincrement', 
-    'email'       => 'text not null',
-    'phone'       => 'text', 
-    'stripe_id'   => 'text not null',
-    'created_at'  => 'datetime default current_timestamp', 
-    'last_seen'   => 'datetime default current_timestamp'
-  ],
-
-  'orders' => [
-    'id'          => 'integer primary key autoincrement', 
-    'user_id'     => 'integer',
-    'campaign_id' => 'integer',
-    'amount'      => 'integer', 
-    'charge_id'   => 'text',
-    'status'      => 'text',
-    'created_at'  => 'datetime default current_timestamp'
-  ],
-
-  'subscription' => [
-    'id'          => 'integer primary key autoincrement', 
-    'user_id'     => 'integer',
-    'campaign_id' => 'integer',
-    'amount'      => 'integer', 
-    'created_at'  => 'datetime default current_timestamp'
-  ],
-
   'screen' => [
     'id'          => 'integer primary key autoincrement', 
 
