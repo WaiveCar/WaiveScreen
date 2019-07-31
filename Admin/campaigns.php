@@ -12,7 +12,7 @@ for($ix = 0; $ix < count($campaignList); $ix++){
   $campaignList[$ix]['addr'] = $addrList[$ix];
 }
 
-$width = 700;
+$width = 450;
 $height = $width * 675 / 1920;
 ?>
 <!doctype html>
