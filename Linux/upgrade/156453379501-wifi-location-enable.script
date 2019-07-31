@@ -2,7 +2,7 @@
 
 upgradepost() {
   # Put everything you need here.
-  local dir=/etc/sytemd/system/
+  local dir=/etc/systemd/system/
   local file=location-daemon.service
   set -x
   mkdir -p $dir
