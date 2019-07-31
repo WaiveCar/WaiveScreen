@@ -845,16 +845,6 @@ function campaign_activate($campaign_id, $data) {
   $info = $data['paymentInfo'];
   $campaign = Get::campaign($campaign_id);
 
-  $user = Get::user(['email' => $payer['email']]);
-  if(!$user) {
-    $user_id = User::create([
-      'name' => "${payer['first_name']} ${payer['last_name']}",
-      'email' => $payer['email'],
-      'phone' => $payer['phone']
-    ]);
-    $user = Get::user($user_id);
-  }
-
   $campaign = Get::campaign($campaign_id);
   db_update('orders', $campaign['order_id'], [
     'status' => 'completed',
