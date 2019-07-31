@@ -69,16 +69,29 @@ $height = $width * 675 / 1920;
 
                 <p class="card-text"></p>
 
-                <div class="dropdown">
-                  <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Actions
-                  </button>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a href="#<?=$campaign['id']?>" class="dropdown-item">Disable</a>
-                    <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Replace</label>
-                    <label onclick="append()" class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Append</label>
-                    <a class="dropdown-item" href="#">Make Default</a>
+                <div class="btn-group" role="group" aria-label="Basic example">
+                  <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Actions
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <a href="#<?=$campaign['id']?>" class="dropdown-item">Disable</a>
+                      <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Replace</label>
+                      <label onclick="append()" class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Append</label>
+                      <a class="dropdown-item" href="#">Make Default</a>
+                    </div>
                   </div>
+<? 
+                    if ($campaign['active']) {
+                      $word = 'active';
+                      $style = 'info'; 
+                    } else {
+                      $word = 'inactive';
+                      $style = 'light';
+                    }
+?>
+
+                  <h3><span class="badge badge-<?=$style?>" style=margin-left:1rem><?= $word ?></span></h3>
                 </div>
 
                 <form id='form-<?=$campaign['id']?>'>
