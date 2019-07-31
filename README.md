@@ -1,3 +1,11 @@
+Maelstroms:
+
+  * Before Instagram - Done before the first tracer-bullet instagram way to buy ads
+  * Before Product - Done before a hard-launch of a product that is intended to be advertised
+  * Before Expansion - Done before any X-fold growth of screen deploys
+
+The third is not strictly after the first two although it probably is.
+
 Some terms:
 
   * Contract - What someone has paid us for displaying in a specific region at a specific time range. There's assets and an account associated with it. It's either satisfying, completed, failed, or pending.
