@@ -116,7 +116,7 @@ function split($str) {
     <title>Screen Admin</title>
   </head>
   <style>
-    #content-wrapper * { color: #000 }
+    #content-wrapper span { color: #000 }
     .id,.version { font-family: monospace }
     .edit { color: #999; cursor: pointer }
     .last { text-align: right }
@@ -135,7 +135,7 @@ function split($str) {
   <div id="wrapper">
   <? include ('partials/sidebar.php'); ?>
   <div id="content-wrapper" class="d-flex flex-column">
-  <? include ('partials/topbar.php'); ?>
+    <? include ('partials/topbar.php'); ?>
 
     <h3>
     <div class="alert alert-primary" id="notice" role="alert"></div>
