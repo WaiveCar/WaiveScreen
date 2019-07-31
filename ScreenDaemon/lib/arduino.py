@@ -159,9 +159,9 @@ def do_sleep():
   _log.info("Going to sleep")
   _log.info("Changetime set {}".format(time.time()))
 
+  os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force suspend".format(DISPLAY))
   set_backlight(0)
   db.sess_set('backlight', 0)
-  os.system("/usr/bin/sudo /usr/bin/xset -display {} dpms force suspend".format(DISPLAY))
 
   set_fanspeed(0)
   #
@@ -417,6 +417,11 @@ def get_move_status(last_read, last_smooth):
 
   return moving, smooth_move
 
+def arduino_disconnect():
+  global _arduino
+  if _arduino:
+    _arduino.close()
+    _arduino = False
 
 """
 pseudo code for main logic:
