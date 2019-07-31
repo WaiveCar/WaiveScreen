@@ -135,6 +135,7 @@ function split($str) {
   <div id="wrapper">
   <? include ('partials/sidebar.php'); ?>
   <div id="content-wrapper" class="d-flex flex-column">
+  <? include ('partials/topbar.php'); ?>
 
     <h3>
     <div class="alert alert-primary" id="notice" role="alert"></div>
