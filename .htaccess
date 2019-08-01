@@ -4,7 +4,7 @@ RewriteBase /
 Header set Access-Control-Allow-Origin "*"
 
 RewriteRule ^$ MadisonAve/static/index.html
-RewriteRule "^api/(.*)$" "AdDaemon/lib/ep.php?func=$1&%{QUERY_STRING}" [L]
+RewriteRule "^api/(.*)$" "AdDaemon/lib/ep.php?_VxiXw3BaQ4WAQClBoAsNTg_func=$1&%{QUERY_STRING}" [L]
 RewriteRule "js/(.*)$" "MadisonAve/static/js/$1" [L]
 RewriteRule "css/(.*)$" "MadisonAve/static/css/$1" [L]
 RewriteRule "webfonts/(.*)$" "MadisonAve/static/webfonts/$1" [L]

@@ -2,7 +2,8 @@
 session_start();
 include('lib.php');
 
-$func = $_REQUEST['func'];
+$func = $_REQUEST['_VxiXw3BaQ4WAQClBoAsNTg_func'];
+unset($_REQUEST['_VxiXw3BaQ4WAQClBoAsNTg_func']);
 $verb = $_SERVER['REQUEST_METHOD'];
 $input_raw = file_get_contents('php://input');
 $json_payload = @json_decode($input_raw, true);
