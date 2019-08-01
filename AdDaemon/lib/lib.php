@@ -284,8 +284,6 @@ function default_campaign($screen) {
 function ping($payload) {
   global $VERSION, $LASTCOMMIT;
 
-  error_log(json_encode($payload));
-
   // features/modem/gps
   foreach([
     'version', // consistent
