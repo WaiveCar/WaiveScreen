@@ -673,6 +673,7 @@ function campaign_new($opts) {
       'active' => 1,//false,
       'asset' => db_string($opts['asset']),
       'duration_seconds' => $opts['duration'],
+      'project' => 'LA',
       'lat' => $opts['lat'],
       'lng' => $opts['lng'],
       'radius' => $opts['radius'],
