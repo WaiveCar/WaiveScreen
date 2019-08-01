@@ -545,6 +545,7 @@ function sow($payload) {
     }
   }, $nearby_campaigns);
   
+  error_log("jobs: " . json_encode($server_response));
   return $server_response; 
 }
 
