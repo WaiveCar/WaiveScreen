@@ -508,7 +508,7 @@ function sow($payload) {
     }
   }
   // error_log(json_encode($uniqueCampaignList));
-	
+  
   $active = active_campaigns($screen);
   // If we didn't get lat/lng from the sensor then we just any ad
   if(empty($payload['lat'])) {
@@ -574,7 +574,7 @@ function get_available_slots($start_query, $duration) {
 
 function upload_s3($file) {
   // lol we deploy this line of code with every screen. what awesome.
-	$credentials = new Aws\Credentials\Credentials('AKIAIL6YHEU5IWFSHELQ', 'q7Opcl3BSveH8TU9MR1W27pWuczhy16DqRg3asAd');
+  $credentials = new Aws\Credentials\Credentials('AKIAIL6YHEU5IWFSHELQ', 'q7Opcl3BSveH8TU9MR1W27pWuczhy16DqRg3asAd');
 
   // this means there was an error uploading the file
   // currently we'll let this routine fail and then hit
@@ -585,11 +585,11 @@ function upload_s3($file) {
   $ext = array_pop($parts);
   $name = implode('.', [Uuid::uuid4()->toString(), $ext]);
 
-	$s3 = new Aws\S3\S3Client([
-		'version'     => 'latest',
-		'region'	    => 'us-east-1',
-		'credentials' => $credentials
-	]);
+  $s3 = new Aws\S3\S3Client([
+    'version'     => 'latest',
+    'region'      => 'us-east-1',
+    'credentials' => $credentials
+  ]);
   try {
     $res = $s3->putObject([
       'Bucket' => 'waivecar-prod',
@@ -616,7 +616,7 @@ function active_campaigns($screen) {
     end_time > current_timestamp     and 
     start_time < current_timestamp   and 
     completed_seconds < duration_seconds 
-    order start_time desc");
+    order by start_time desc");
 }
 
 function campaigns_list($opts = []) {
