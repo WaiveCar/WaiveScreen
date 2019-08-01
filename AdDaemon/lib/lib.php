@@ -6,7 +6,6 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 $mypath = $_SERVER['DOCUMENT_ROOT'] . 'AdDaemon/lib/';
-include_once($mypath . 'const.php');
 include_once($mypath . 'db.php');
 include_once($mypath . 'user.php');
 
@@ -22,27 +21,6 @@ $DEFAULT_CAMPAIGN_MAP = [
 
 // Play time in seconds of one ad.
 $PLAYTIME = 7.5;
-
-$DEALMAP = [
-  'testdrive' => [ 
-    "total" => 100,
-    "duration" => $PLAYTIME * 25
-  ],
-  'shoestring' => [ 
-    "total" => 999,
-    "duration" => $PLAYTIME * 300
-  ],
-  'standard' => [ 
-    "total" => 2999,
-    "duration" => $PLAYTIME * 1050
-  ]
-]; 
-
-$PLACEMAP = [
-  'la' => ['lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000],
-  'hollywood' => ['lat' => 34.093053, 'lng' => -118.343259, 'radius' => 4500],
-  'santamonica' => ['lat' => 34.024353, 'lng' => -118.478620, 'radius' => 3000]
-];
 
 function aget($source, $keyList, $default = null) {
   if(!is_array($keyList)) {
@@ -146,13 +124,11 @@ function create_screen($uid, $data = []) {
 }
 
 function find_unfinished_job($campaignId, $screenId) {
-  $res = Many::job([
+  return Many::job([
     'campaign_id' => $campaignId,
     'screen_id' => $screenId,
     'completed_seconds < goal'
   ]);
-  //error_log(json_encode([$campaignId,$screenId, $res]));
-  return $res;
 }
 
 function tag_update($screen) {
@@ -755,7 +731,7 @@ function campaign_new($opts) {
 // According to our current flow we may not know the user at the time
 // of creating this
 function campaign_create($data, $fileList, $user = false) {
-  global $DEALMAP, $PLACEMAP, $DAY;
+  global $DAY;
 
   error_log("campaign new: " . json_encode($data));
   # This means we do #141
@@ -784,7 +760,10 @@ function campaign_create($data, $fileList, $user = false) {
   }
 
   // get the lat/lng radius of the location into the data.
-  $data = array_merge($PLACEMAP[$data['location']], $data);
+  $data = array_merge(
+    ['lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000]
+    ['total' => 999, 'duration' => $PLAYTIME * 300 ],
+    $data);
   // and the deal/contract
   $data = array_merge($DEALMAP[$data['option']], $data);
 
@@ -838,22 +817,3 @@ function campaign_update($data, $fileList, $user = false) {
   return $campaign_id;
 }
 
-// By the time we get here we should already have the asset
-// and we should have our monies
-function campaign_activate($campaign_id, $data) {
-  $payer = $data['payer']['payer_info'];
-  $info = $data['paymentInfo'];
-  $campaign = Get::campaign($campaign_id);
-
-  $campaign = Get::campaign($campaign_id);
-  db_update('orders', $campaign['order_id'], [
-    'status' => 'completed',
-    // is this different?
-    'charge_id' => $info['orderID']
-  ]);
-
-  db_update('campaign', $campaign_id, [
-    'active' => true,
-    'user_id' => $user['id']
-  ]);
-}
