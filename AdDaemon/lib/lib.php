@@ -487,6 +487,8 @@ function sow($payload) {
     } else if($job_id) {
       if (! update_job($job_id, $job['completed_seconds']) ) {
         error_log("could not process job: " . json_encode($job));
+      } else {
+        db_insert_many('sensor_history', $job['sensor']);
       }
 
       if(!isset($job['campaign_id'])) {
