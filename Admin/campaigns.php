@@ -75,7 +75,11 @@ $height = $width * 675 / 1920;
                       Actions
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      <a href="#<?=$campaign['id']?>" class="dropdown-item">Disable</a>
+<?                   if ($campaign['active']) {?>
+                      <a onclick="update_campaign({id:<?=$campaign['id']?>,active:false})" class="dropdown-item">Disable</a>
+<?} else { ?>
+                      <a onclick="update_campaign({id:<?=$campaign['id']?>,active:true})" class="dropdown-item">Enable</a>
+<? } ?>
                       <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Replace</label>
                       <label onclick="append()" class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Append</label>
                       <a class="dropdown-item" href="#">Make Default</a>

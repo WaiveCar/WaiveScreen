@@ -108,7 +108,7 @@ $(function() {
   }
   $('.form-control-file').on('change', function(e) {
     let uploadInput = e.target;
-    update_campaign($(e.target).data('campaign'), e.target);
+    update_campaign_files($(e.target).data('campaign'), e.target);
   });
 });
 
@@ -117,7 +117,17 @@ function append() {
   _append = true;
 }
 
-function update_campaign(campaign, el) {
+function update_campaign(obj) {
+  return axios({
+    method: 'post',
+    url: '/api/campaign_update',
+    data: obj
+  }).then(function(resp) {
+    show("Updated campaign");
+  });
+}
+
+function update_campaign_files(campaign, el) {
   // Before the payment is processed by paypal, a user's purchase is sent to the server with 
   // the information that has so far been obtained including the picture.
   let formData = new FormData();

@@ -779,16 +779,26 @@ function campaign_update($data, $fileList, $user = false) {
   $assetList = [];
   $campaign_id = $data['campaign_id'];
 
-  if(aget($data, 'append')) {
-    $campaign = Get::campaign($campaign_id);
-    $assetList = $campaign['asset'];
-  }
+  if(!$fileList) {
+    $obj = [];
+    foreach($data as $k => $v) {
+      if (in_array($k, ['active','lat','lng','radius'])) {
+        $obj[$k] = db_string($v);
+      }
+    }
+    db_update('campaign', $campaign_id, $obj);
+  } else {
+    if(aget($data, 'append')) {
+      $campaign = Get::campaign($campaign_id);
+      $assetList = $campaign['asset'];
+    }
 
-  foreach($fileList as $file) {
-    $assetList[] = upload_s3($file);
-  }
+    foreach($fileList as $file) {
+      $assetList[] = upload_s3($file);
+    }
 
-  db_update('campaign', $campaign_id, ['asset' => db_string(json_encode($assetList))]);
+    db_update('campaign', $campaign_id, ['asset' => db_string(json_encode($assetList))]);
+  }
   return $campaign_id;
 }
 
