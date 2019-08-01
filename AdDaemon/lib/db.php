@@ -502,6 +502,9 @@ function db_delete($table, $kv) {
 }
 
 function db_insert_many($table, $kvList) {
+  if(count($kvList) === 0) {
+    return null;
+  }
   $fields = [];
   $valueList = [];
   $isFirst = true;
