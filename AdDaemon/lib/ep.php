@@ -39,7 +39,7 @@ try {
       jemit(screen_edit($all));
     }
   } 
-  else if(array_search($func, ['jobs', 'campaigns', 'screens', 'tasks']) !== false) {
+  else if(array_search($func, ['jobs', 'sensor_history', 'campaigns', 'screens', 'tasks']) !== false) {
     jemit(show(rtrim($func, 's')));
   }
   else if(array_search($func, ['active_campaigns', 'campaign_history', 'sow', 'task_dump', 'screen_tag', 'tag', 'ping', 'command', 'response']) !== false) { 
