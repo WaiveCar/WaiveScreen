@@ -21,6 +21,14 @@ $DEFAULT_CAMPAIGN_MAP = [
 // Play time in seconds of one ad.
 $PLAYTIME = 7.5;
 
+function mapBy($obj, $key) {
+  $res = [];
+  foreach($obj as $row) {
+    $res[$key] = $row;
+  }
+  return $res;
+}
+
 function aget($source, $keyList, $default = null) {
   if(!is_array($keyList)) {
     $keyStr = $keyList;
@@ -672,6 +680,24 @@ function campaign_new($opts) {
   return $campaign_id;
 }
 
+
+function campaign_history($data) {
+  $campaign = Get::campaign($data);
+  $jobList = Many::job([ 'campaign_id' => $campaignId ]);
+  $jobMap = mapBy($jobList, 'id');
+  $jobHistory = Many::job_history(['job_id in (' . implode(',', array_keys($jobMap)) .')']);
+
+  foreach($jobHistory as $row) {
+    $job = $jobMap[$row['job_id']];
+    if(!array_key_exists('log', $job)) {
+      $job['log'] = [];
+    }
+    $job['log'][] = $row;
+  }
+
+  $campaign['jobs'] = $jobList;
+  return $campaign;
+}
 
 // This is the first entry point ... I know naming and caching
 // are the hardest things.

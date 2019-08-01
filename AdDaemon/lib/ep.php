@@ -41,7 +41,7 @@ try {
   else if(array_search($func, ['jobs', 'campaigns', 'screens', 'tasks']) !== false) {
     jemit(show(rtrim($func, 's')));
   }
-  else if(array_search($func, ['sow', 'task_dump', 'screen_tag', 'tag', 'ping', 'command', 'response']) !== false) { 
+  else if(array_search($func, ['campaign_history', 'sow', 'task_dump', 'screen_tag', 'tag', 'ping', 'command', 'response']) !== false) { 
     jemit($func($all, $verb));
   } else {
     jemit([
