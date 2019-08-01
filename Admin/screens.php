@@ -1,6 +1,5 @@
 <?
 include('../MadisonAve/lib/lib.php');
-include('../AdDaemon/lib/const.php');
 include('lib.php');
 
 $screenList = get('screens');
