@@ -777,7 +777,7 @@ function campaign_create($data, $fileList, $user = false) {
 
 function campaign_update($data, $fileList, $user = false) {
   $assetList = [];
-  $campaign_id = $data['campaign_id'];
+  $campaign_id = aget($data,'campaign_id|id');
 
   if(!$fileList) {
     $obj = [];
