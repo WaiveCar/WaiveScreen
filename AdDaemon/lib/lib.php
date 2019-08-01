@@ -539,7 +539,6 @@ function sow($payload) {
 
   // so if we have existing outstanding jobs with the
   // screen id and campaign then we can just re-use them.
-  error_log("nearby: " . json_encode($nearby_campaigns));
   $server_response = task_inject($screen, ['res' => true]);
   $server_response['data'] = array_map(function($campaign) use ($screen) {
     $jobList = find_unfinished_job($campaign['id'], $screen['id']);
@@ -558,7 +557,6 @@ function sow($payload) {
     }
   }, $nearby_campaigns);
   
-  error_log("jobs: " . json_encode($server_response));
   return $server_response; 
 }
 
@@ -619,11 +617,11 @@ function show($what, $clause = '') {
 }
 
 function active_campaigns($screen) {
+  //  end_time > current_timestamp     and 
   return show('campaign', "where 
     active = 1                       and 
     is_default = 0                   and
     project = '{$screen["project"]}' and
-    end_time > current_timestamp     and 
     start_time < current_timestamp   and 
     completed_seconds < duration_seconds 
     order by start_time desc");
