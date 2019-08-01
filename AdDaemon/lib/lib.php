@@ -731,7 +731,7 @@ function campaign_new($opts) {
 // According to our current flow we may not know the user at the time
 // of creating this
 function campaign_create($data, $fileList, $user = false) {
-  global $DAY;
+  global $DAY, $PLAYTIME;
 
   error_log("campaign new: " . json_encode($data));
   # This means we do #141
@@ -761,11 +761,10 @@ function campaign_create($data, $fileList, $user = false) {
 
   // get the lat/lng radius of the location into the data.
   $data = array_merge(
-    ['lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000]
+    ['lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000],
     ['total' => 999, 'duration' => $PLAYTIME * 300 ],
-    $data);
-  // and the deal/contract
-  $data = array_merge($DEALMAP[$data['option']], $data);
+    $data
+  );
 
   // currently (2019,10,29) all durations are 1 week.
   $data['start_time'] =  time();
