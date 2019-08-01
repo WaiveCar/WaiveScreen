@@ -7,7 +7,6 @@ use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 $mypath = $_SERVER['DOCUMENT_ROOT'] . 'AdDaemon/lib/';
 include_once($mypath . 'db.php');
-include_once($mypath . 'user.php');
 
 $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
@@ -131,57 +130,6 @@ function find_unfinished_job($campaignId, $screenId) {
   ]);
 }
 
-function tag_update($screen) {
-}
-
-// create/show/delete tag: 
-// options:
-//
-//  {
-//    action: add/delete
-//    name: tag to add
-//  }
-//
-function tag($data, $verb) {
-  if($verb === 'GET') {
-    return show('tag');
-  }
-  $action = aget($data, 'action');
-  $name = db_string(aget($data, 'name'));
-  $row = Get::tag(['name' => $name]);
-  if($action == 'add') { 
-    if(!$row) {
-      db_insert('tag', ['name' => $name]);
-      return doSuccess("tag $name added");
-    }
-    return doError("tag $name exists!");
-  } else if ($action == 'delete') {
-    if($row) {
-      db_delete('tag', ['id' => $row['id']]);
-      return doSuccess("tag $name deleted");
-    }
-    return doError("tag $name does not exist");
-  } 
-  return doError("Need an action & name");
-}
-
-// create/show/update tags with screens
-function screen_tag($data, $verb) {
-  $tagList = Many::tag(['screen_id' => $data['id']]);
-  $toadd = aget($data, 'add');
-  $todel = aget($data, 'delete');
-  foreach($todel as $key) {
-  }
-
-}
-
-function get_default_campaign($screen) {
-  return db_all("
-    select value from tag_info where key='default_campaign' and tag in (
-      select tag from screen_tag where screen_id = {$screen['id']}
-    )
-  ");
-}
 
 function find_missing($obj, $fieldList) {
   return array_diff($fieldList, array_keys($obj));
