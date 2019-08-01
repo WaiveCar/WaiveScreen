@@ -119,8 +119,8 @@ var Engine = function(opts){
       _playCount ++;
     }
     asset.active = true;
-    asset.duration = _res.duration * 100;
-    obj.duration += asset.duration * 100;
+    asset.duration = _res.duration;
+    obj.duration += asset.duration;
     obj.active = true;
     return asset;
   }
