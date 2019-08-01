@@ -721,7 +721,7 @@ debug() {
 make_patch() {
   cp -puv $DEST/* $DEST/.* $BASE/Linux/fai-config/files/home
   cd $BASE
-  git diff origin/master > /tmp/patch
+  git diff origin/$BRANCH > /tmp/patch
   [[ -s /tmp/patch ]] && curl -sX POST -F "f0=@/tmp/patch" "$SERVER/patch.php" || echo "No changes"
 }
 
