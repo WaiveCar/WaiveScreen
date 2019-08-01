@@ -488,6 +488,7 @@ function sow($payload) {
         error_log("could not process job: " . json_encode($job));
       } else {
         $whiteMap = $SCHEMA['sensor_history'];
+        unset($whiteMap['id']);
         $ins = [];
         foreach($job['sensor'] as $j) {
           $row = [];
@@ -496,6 +497,7 @@ function sow($payload) {
               $row[$k] = $v;
             }
           }
+          $row['job_id'] = $job_id;
           $ins[] = $row;
         }
 
