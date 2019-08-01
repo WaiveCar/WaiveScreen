@@ -488,15 +488,18 @@ function sow($payload) {
         error_log("could not process job: " . json_encode($job));
       } else {
         $whiteMap = $SCHEMA['sensor_history'];
+        $ins = [];
         foreach($job['sensor'] as $j) {
+          $row = [];
           foreach($j as $k => $v) {
-            if(!isset($whiteMap[$k])) {
-              unset($j[$k]);
+            if(isset($whiteMap[$k])) {
+              $row[$k] = $v;
             }
           }
+          $ins[] = $row;
         }
 
-        db_insert_many('sensor_history', $job['sensor']);
+        db_insert_many('sensor_history', $ins);
       }
 
       if(!isset($job['campaign_id'])) {
