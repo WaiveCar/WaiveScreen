@@ -612,7 +612,7 @@ function active_campaigns($screen) {
   return show('campaign', "where 
     active = 1                       and 
     is_default = 0                   and
-    (project is null or project = '{$screen["project"]}') and
+    project = '{$screen["project"]}' and
     end_time > current_timestamp     and 
     start_time < current_timestamp   and 
     completed_seconds < duration_seconds 
