@@ -723,9 +723,7 @@ function campaign_history($data) {
     $jobMap[$job_id]['log'][] = $row;
   }
 
-  error_log(json_encode($jobMap));
-  error_log(json_encode($jobList));
-  $campaign['jobs'] = $jobList;
+  $campaign['jobs'] = array_values($jobMap);
   return $campaign;
 }
 
