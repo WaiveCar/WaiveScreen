@@ -690,13 +690,11 @@ function campaign_create($data, $fileList, $user = false) {
     if(!$campaign) {
       $campaign_id = db_insert(
         'campaign', [
-          'active' => 0,
+          'active' => 1,
           'ref_id' => $ref_id,
           'asset' => $asset,
           'duration_seconds' => 240,
-          'lat' => 33.999819, 
-          'lng' => -118.390412,
-          'radius' => 5000,
+          'lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000,
           'start_time' => time(),
           'end_time' => time() + $DAY * 7
         ]
@@ -711,19 +709,13 @@ function campaign_create($data, $fileList, $user = false) {
   $data = array_merge(
     ['lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000],
     ['total' => 999, 'duration' => $PLAYTIME * 300 ],
+    ['start_time' => time(), 'end_time' => time() + $DAY * 7, 'asset' => []],
     $data
   );
 
-  // currently (2019,10,29) all durations are 1 week.
-  $data['start_time'] =  time();
-  $data['end_time'] = time() + $DAY * 7;
-  $data['asset'] = [];
-
   foreach($fileList as $file) {
-    //$asset = 'fakename.png';
     $data['asset'][] = upload_s3($file);
   }
-
 
   $campaign_id = campaign_new($data);
   if($campaign_id) {

@@ -43,9 +43,6 @@ try {
   }
   else if(array_search($func, ['sow', 'task_dump', 'screen_tag', 'tag', 'ping', 'command', 'response']) !== false) { 
     jemit($func($all, $verb));
-  }
-  else if($func == 'setup') {
-    jemit(setup($_POST));
   } else {
     jemit([
       'res' => false,
