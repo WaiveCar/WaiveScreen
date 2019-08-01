@@ -24,8 +24,12 @@ $RULES = [
       'pre' => function($v) { return db_string(json_encode($v)); },
       'post' => function($v) { return json_decode($v, true); }
     ]
-  ]
-  
+  ],
+  'sensor_history' => [
+    'created_at' => [
+      'pre' => function($v) { return db_date($v); },
+     ]
+   ]
 ];
 
 $SCHEMA = [
