@@ -713,7 +713,7 @@ function campaign_history($data) {
 
   $jobList = Many::job([ 'campaign_id' => $campaignId ]);
   $jobMap = mapBy($jobList, 'id');
-  $jobHistory = Many::job_history(['job_id in (' . implode(',', array_keys($jobMap)) .')']);
+  $jobHistory = Many::sensor_history(['job_id in (' . implode(',', array_keys($jobMap)) .')']);
 
   foreach($jobHistory as $row) {
     $job = $jobMap[$row['job_id']];
