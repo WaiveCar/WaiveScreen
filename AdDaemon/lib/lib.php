@@ -683,6 +683,16 @@ function campaign_new($opts) {
 
 function campaign_history($data) {
   $campaign = Get::campaign($data);
+
+  if($campaign) {
+    $campaignId = $campaign['id'];
+  } else if(isset($data['id'])) {
+    $campaign = [];
+    $campaignId = $data['id'];
+  } else {
+    return doError("Campaign not found");
+  }  
+
   $jobList = Many::job([ 'campaign_id' => $campaignId ]);
   $jobMap = mapBy($jobList, 'id');
   $jobHistory = Many::job_history(['job_id in (' . implode(',', array_keys($jobMap)) .')']);
