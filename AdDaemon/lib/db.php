@@ -27,7 +27,7 @@ $RULES = [
   ],
   'sensor_history' => [
     'created_at' => [
-      'pre' => function($v) { return db_date($v); },
+      'pre' => function($v) { return db_string($v); },
      ]
    ]
 ];
