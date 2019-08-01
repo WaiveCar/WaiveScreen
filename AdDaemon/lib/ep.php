@@ -30,7 +30,7 @@ try {
   }
   else if($func == 'campaign_update') {
     $assetList = array_values($_FILES);
-    jemit(campaign_update($_POST, $assetList));
+    jemit(campaign_update($all, $assetList));
   }
   else if($func == 'screens') {
     if($verb == 'GET') {

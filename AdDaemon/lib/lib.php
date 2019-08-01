@@ -778,6 +778,9 @@ function campaign_create($data, $fileList, $user = false) {
 function campaign_update($data, $fileList, $user = false) {
   $assetList = [];
   $campaign_id = aget($data,'campaign_id|id');
+  if(empty($campaign_id)) {
+    return doError("Need to set the campaign id");
+  }
 
   if(!$fileList) {
     $obj = [];
