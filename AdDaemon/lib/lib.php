@@ -616,7 +616,7 @@ function active_campaigns($screen) {
     end_time > current_timestamp     and 
     start_time < current_timestamp   and 
     completed_seconds < duration_seconds 
-    order by active desc, start_time desc");
+    order start_time desc");
 }
 
 function campaigns_list($opts = []) {
