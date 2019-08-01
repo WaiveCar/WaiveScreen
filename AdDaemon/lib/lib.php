@@ -516,10 +516,12 @@ function sow($payload) {
   } else {
     // right now we are being realllly stupid.
     $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
+      /*
       if(isset($payload['lat'])) {
         // under 1.5km
         return distance($campaign, $payload) < ($campaign['radius'] * 100);
       } 
+       */
       // essentially this is for debugging
       return true;
     });
@@ -527,6 +529,7 @@ function sow($payload) {
 
   // so if we have existing outstanding jobs with the
   // screen id and campaign then we can just re-use them.
+  error_log("nearby: " . json_encode($nearby_campaigns));
   $server_response = task_inject($screen, ['res' => true]);
   $server_response['data'] = array_map(function($campaign) use ($screen) {
     $jobList = find_unfinished_job($campaign['id'], $screen['id']);
