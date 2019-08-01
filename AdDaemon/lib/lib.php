@@ -465,6 +465,7 @@ function inject_priority($job, $screen, $campaign) {
 }
 
 function sow($payload) {
+  global $SCHEMA;
   error_log(json_encode($payload));
   if(isset($payload['uid'])) {
     $screen = upsert_screen($payload['uid'], $payload);
@@ -486,6 +487,15 @@ function sow($payload) {
       if (! update_job($job_id, $job['completed_seconds']) ) {
         error_log("could not process job: " . json_encode($job));
       } else {
+        $whiteMap = $SCHEMA['sensor_history'];
+        foreach($job['sensor'] as $j) {
+          foreach($j as $k => $v) {
+            if(!isset($whiteMap[$k])) {
+              unset($j[$k]);
+            }
+          }
+        }
+
         db_insert_many('sensor_history', $job['sensor']);
       }
 
