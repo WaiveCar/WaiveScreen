@@ -24,7 +24,7 @@ $PLAYTIME = 7.5;
 function mapBy($obj, $key) {
   $res = [];
   foreach($obj as $row) {
-    $res[$row[key]] = $row;
+    $res[$row[$key]] = $row;
   }
   return $res;
 }
