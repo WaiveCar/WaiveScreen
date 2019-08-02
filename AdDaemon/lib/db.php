@@ -320,21 +320,6 @@ function setup() {
   return $res;
 }
 
-function truncate() {
-  $dbPath = "/var/db/waivescreen/main.db";
-  if (!unlink($dbPath)) {
-    return [
-      'res' => false,
-      'data' => "Couldn't delete file $dbPath"
-    ];
-  }
-
-  return [
-    'res' => true,
-    'data' => setup()
-  ];
-}
-
 function get_campaign_remaining($id) {
   $res = (db_connect())->querySingle("
     select 
@@ -347,16 +332,6 @@ function get_campaign_remaining($id) {
     return (db_connect())->querySingle("select duration_seconds from campaign where id=$id");
   }
   return $res;
-}
-
-function get_campaign_completion($id) {
-  return (db_connect())->querySingle("
-    select 
-      sum(completion_seconds) / duration_seconds        as shown, 
-      end_time - date('now') / (end_time - start_time)  as lapsed
-      from campaign join job on campaign_id = campaign.id
-      where campaign.id = $id 
-    ");
 }
 
 class Get {

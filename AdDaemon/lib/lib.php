@@ -448,15 +448,14 @@ function task_inject($screen, $res) {
 
 
 function update_campaign_completed($id) {
-  if(!$id) {
-    error_log("Not updating an invalid campaign: $id");
-  } else {
+  if($id) {
     // only update campaign totals that aren't our defaults
-    _query("update campaign 
+    return _query("update campaign 
       set completed_seconds=(
         select sum(completed_seconds) from job where campaign_id=$id
       ) where id=$id and is_default=0");
   }
+  error_log("Not updating an invalid campaign: $id");
 }
   
 function inject_priority($job, $screen, $campaign) {
