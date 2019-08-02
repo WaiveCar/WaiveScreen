@@ -1,5 +1,4 @@
 <?
-include('../MadisonAve/lib/lib.php');
 include('../AdDaemon/lib/lib.php');
 include('lib.php');
 
