@@ -64,8 +64,13 @@ function curldo($url, $params = false, $verb = false, $opts = []) {
   return $res;
 }
 
-function get($ep) {
-  return json_decode(file_get_contents("http://{$_SERVER['HTTP_HOST']}/api/$ep"), true);
+function get($ep, $kv=false) {
+  if($kv) {
+    $kv = '?' . http_build_query($kv);
+  } else {
+    $kv = '';
+  }
+  return json_decode(file_get_contents("http://{$_SERVER['HTTP_HOST']}/api/$ep$kv"), true);
 }
 function get_addressList($list) {
   $url="http://basic.waivecar.com/location.php?multi=" . urlencode(json_encode($list));
