@@ -390,10 +390,6 @@ function task_master($screen) {
 //
 // ----
 
-function screens() {
-  return show('screen');
-}
-
 function tasks() {
   return show('task');
 }
@@ -617,6 +613,13 @@ function upload_s3($file) {
 }
 
 function show($what, $clause = '') {
+  if(is_array($clause)) {
+    if( !empty($clause) ) {
+      $clause = " where " . implode(' and ', sql_kv($clause));
+    } else {
+      $clause = '';
+    }
+  }
   return db_all("select * from $what $clause", $what);
 }
 
