@@ -32,15 +32,11 @@ try {
     $assetList = array_values($_FILES);
     jemit(campaign_update($all, $assetList));
   }
-  else if($func == 'screens') {
-    if($verb == 'GET') {
-      jemit(screens($all));
-    } elseif ($verb == 'POST' || $verb == 'PUT') {
-      jemit(screen_edit($all));
-    }
+  else if($func == 'screens' && ($verb == 'POST' || $verb == 'PUT')) {
+    jemit(screen_edit($all));
   } 
   else if(array_search($func, ['jobs', 'sensor_history', 'campaigns', 'screens', 'tasks']) !== false) {
-    jemit(show(rtrim($func, 's')));
+    jemit(show(rtrim($func, 's'), $all));
   }
   else if(array_search($func, ['active_campaigns', 'campaign_history', 'sow', 'task_dump', 'screen_tag', 'tag', 'ping', 'command', 'response']) !== false) { 
     jemit($func($all, $verb));
