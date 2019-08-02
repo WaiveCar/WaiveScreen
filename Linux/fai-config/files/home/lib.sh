@@ -433,7 +433,7 @@ get_state() {
   mkdir -p $path
 
   cp -r $SMSDIR $LOG $path
-  cp /proc/uptime /etc/bootcount /etc/UUID $path
+  cp /var/log/wtmp /proc/uptime /etc/bootcount /etc/UUID $path
   $SUDO cp /var/log/daemon.log $path
   $SUDO chmod 0666 $path/daemon.log
 
