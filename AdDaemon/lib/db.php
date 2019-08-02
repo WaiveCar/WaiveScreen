@@ -58,6 +58,7 @@ $SCHEMA = [
     'pings'       => 'integer default 0',
     'port'        => 'integer', 
     'active'      => 'boolean default true',
+    'removed'     => 'boolean default false',
     'features'    => 'text',
     'first_seen'  => 'datetime', 
     'last_task'   => 'integer default 0',
