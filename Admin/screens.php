@@ -1,7 +1,7 @@
 <?
 include('lib.php');
 
-$screenList = get('screens');
+$screenList = get('screens', ['active' => 1]);
 $addrList = get_addressList(array_map(function($row) { 
   if($row['lat'] && $row['lng']) {
     return [$row['lat'],$row['lng']]; 
