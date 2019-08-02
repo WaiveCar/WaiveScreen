@@ -309,17 +309,6 @@ function get_column_list($table_name) {
   }, db_all($res));
 }
 
-function setup() {
-  $db = db_connect();
-  global $SCHEMA;
-  $res = [];
-  foreach(array_values($SCHEMA) as $table) {
-    $table = preg_replace('/\s+/', ' ', $table);
-    $res[] = [$db->exec($table), $table];
-  }
-  return $res;
-}
-
 function get_campaign_remaining($id) {
   $res = (db_connect())->querySingle("
     select 
@@ -465,19 +454,6 @@ function db_all($qstr, $table = false) {
     } 
   }
   return $rowList;
-}
-
-function db_delete($table, $kv) {
-  $fields = [];
-
-  foreach($kv as $k => $v) {
-    $fields[] = "$k=$v";
-  } 
-
-  $fieldString = implode(' and ', $fields);
-
-  $qstr = "delete from $table where $fieldString";
-  return _query($qstr);
 }
 
 function db_insert_many($table, $kvList) {
