@@ -12,6 +12,7 @@ import sys
 import glob
 import base64
 import subprocess
+import magic
 from threading import Lock
 from pprint import pprint
 from datetime import datetime
@@ -38,6 +39,7 @@ VERSIONDATE = os.popen("/usr/bin/git log -1 --format='%at'").read().strip()
 UUID = False
 
 _pinglock = Lock()
+_mime = magic.Magic(mime=True)
 
 USER = os.environ.get('USER')
 if not USER or USER == 'root':
@@ -459,7 +461,15 @@ def asset_cache(check):
       except:
         pass
 
-    res.append(name)
+    # see #154 - we're restructuring this away from a string and
+    # into an object - eventually we have to assume that
+    # we're getting an object and then just injecting the mime
+    # type on ... but not yet my sweetie.
+    res.append({
+      'duration': 7.5,
+      'mime': mime.from_file(name),
+      'url': name
+    })
 
   check['asset'] = res
   return check
