@@ -6,6 +6,10 @@ die() {
   exit
 }
 
+checkfor() {
+  which $1 > /dev/null || sudo apt install -y $1
+}
+
 list() {
   local qstr='.[]'
   if [[ -n "$1" ]]; then
@@ -16,6 +20,7 @@ list() {
     fi
   fi
 
+  checkfor jq
   curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq "$qstr"
 }
 
@@ -32,6 +37,7 @@ connect() {
   if [[ $1 =~ ^[0-9]*$ ]]; then
     port=$1
   else
+    checkfor jq
     port=$(curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'${1,,}'") | .port')
   fi
 
