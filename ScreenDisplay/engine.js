@@ -5,6 +5,11 @@
 // If you're reading this and it's like 2022 or something, then go ahead and reconsider it,
 // it'll probably be fine by then.
 //
+// Also it's worth noting that the instagram ad basically discards any notion of compatibility
+// and uses css animations, css calc, the vw/vh units and a bunch of other fancy modern css3 
+// stuff - doing that with a bunch of javascript setIntervals was a waste of time ... I really
+// don't care that much - people will be viewing that on a smartphone and those usually aren't
+// crufty old crap browsers.
 
 
 // 2 mutually exclusive ways to timeline:
@@ -25,16 +30,6 @@ var Engine = function(opts){
       a[k] = b[k];
     }
     return a;
-  }
-
-  // Edge 14 FF 43 (2016)
-  // Note: Not a true polyfill, this is just how I use it in practice.
-  if(!Array.prototype.includes) {
-    Object.defineProperty(Array.prototype, 'includes', {
-      value: function(valueToFind) {
-        return this.indexOf(valueToFind) !== -1;
-      }
-    });
   }
   // } End of support.
 
@@ -239,15 +234,13 @@ var Engine = function(opts){
       obj.url = [ obj.url ];
     }
 
-    obj.assetList = obj.url.map(function(url) {
-      var asset = {url: url};
-      var ext = url.split('.').pop();
+    obj.assetList = obj.url.map(function(asset) {
       var container = document.createElement('div');
       container.classList.add('container');
 
-      if(['html'].includes(ext.toLowerCase()) ) {
+      if(asset.mime.match(/text/) ) {
         asset = iframe(asset, obj);
-      } else if(['mp4','ogv','mpeg','webm','flv','3gp','avi'].includes(ext.toLowerCase()) ) {
+      } else if(asset.mime.match(/video/) ) {
         asset = video(asset, obj);
       } else {
 
