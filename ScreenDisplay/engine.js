@@ -114,7 +114,7 @@ var Engine = function(opts){
       _playCount ++;
     }
     asset.active = true;
-    asset.duration = _res.duration;
+    asset.duration = asset.duration || _res.duration;
     obj.duration += asset.duration;
     obj.active = true;
     return asset;
@@ -135,7 +135,7 @@ var Engine = function(opts){
     // before the videos loaded. However, there
     // should be a way to do overrides. So this
     // solution is insufficient
-    asset.duration = 100;
+    asset.duration = asset.duration || 100;
     asset.cycles = 1;
     asset.run = function(noreset) {
       if(!noreset) {
@@ -167,7 +167,16 @@ var Engine = function(opts){
     vid.ondurationchange = function(e) {
       // This will only come if things are playable.
       let vid = e.target;
-      asset.duration = vid.duration || asset.duration;
+      // This is probably wrong since we are making a decision this
+      // far down the line.  Essentially what I want to do is allow
+      // for a partial video to show if it's really long but also
+      // be smart enough to show a short video smoothly.  It also
+      // doesn't sound like something that can be done with such
+      // little logic since there's ultimately an "opinion" here
+      // of a threshold which means that it requires a numerical value
+      // whose existence is clearly mysteriously absent. Ah, we'll
+      // figure it out later, like most things in life.
+      asset.duration = Math.min(vid.duration, asset.duration);
       asset.active = true;
       // if a video is really short then we force loop it.
       if(asset.duration < 0.8) {
@@ -269,7 +278,7 @@ var Engine = function(opts){
 
         asset.active = true;
         // TODO: per asset custom duration 
-        asset.duration = _res.duration;
+        asset.duration = asset.duration || _res.duration;
         obj.duration += asset.duration;
         asset.run = _nop;
         asset.dom = img;
