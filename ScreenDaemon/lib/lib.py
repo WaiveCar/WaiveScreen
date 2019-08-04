@@ -467,7 +467,7 @@ def asset_cache(check):
     # type on ... but not yet my sweetie.
     res.append({
       'duration': 7.5,
-      'mime': mime.from_file(name),
+      'mime': _mime.from_file(name),
       'url': name
     })
 
