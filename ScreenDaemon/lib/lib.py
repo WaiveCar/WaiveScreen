@@ -31,7 +31,7 @@ MYPATH = os.path.dirname(os.path.realpath(__file__))
 ROOT = os.path.dirname(os.path.dirname(MYPATH))
 
 os.chdir(MYPATH)
-VERSION = os.popen("/usr/bin/git describe").read().strip()
+VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.popen("/usr/bin/git rev-parse --abbrev-ref HEAD").read().strip() )
 
 # The unix time of the last commit
 VERSIONDATE = os.popen("/usr/bin/git log -1 --format='%at'").read().strip()
