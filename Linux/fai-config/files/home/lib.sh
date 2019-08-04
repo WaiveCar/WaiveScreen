@@ -439,7 +439,7 @@ get_state() {
 
   sqlite3 $DB .dump > $path/backup.sql
 
-  ( cd $BASE && git describe > $path/version )
+  get_version > $path/version 
 
   cd /tmp/
   tar cjf /tmp/$archive $uuid/$now
@@ -654,7 +654,7 @@ upgrade_scripts() {
 }
 
 _upgrade_post() {
-  local version=$(cd $BASE && git describe)
+  local version=$(get_version)
   perlcall install_list | xargs $SUDO apt -y install
   pycall db.upgrade
   pycall add_record "upgrade,$version"
