@@ -8,7 +8,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 dir=$HOME/usb
-file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe).iso
+file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe)-$(git rev-parse --abbrev-ref HEAD).iso
 backup=/home/chris/backup-test
 
 die() {
@@ -35,7 +35,7 @@ if [[ -z "$NODISK" ]]; then
   fi
 fi
 
-preexist=$(ls $HOME/WaiveScreen-*$(git describe).iso 2> /dev/null)
+preexist=$(ls $HOME/WaiveScreen-*$(git describe)-$(git rev-parse --abbrev-ref HEAD).iso 2> /dev/null)
 [[ -n "$preexist" ]] && die "$preexist already exists. Either run with ONLYDISK or remove the iso(s)."
 [[ -z "$NOPIP" ]] && ( NONET=1 $DIR/syncer.sh pip || die "Can't sync" )
 
