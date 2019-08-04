@@ -274,7 +274,7 @@ var Engine = function(opts){
           asset.active = true;
           obj.active = true;
         }
-        img.src = url;
+        img.src = asset.url;
 
         asset.active = true;
         // TODO: per asset custom duration 
