@@ -32,10 +32,6 @@ ROOT = os.path.dirname(os.path.dirname(MYPATH))
 
 os.chdir(MYPATH)
 VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.popen("/usr/bin/git rev-parse --abbrev-ref HEAD").read().strip() )
-
-# The unix time of the last commit
-VERSIONDATE = os.popen("/usr/bin/git log -1 --format='%at'").read().strip()
-
 UUID = False
 
 _pinglock = Lock()
@@ -504,7 +500,6 @@ def ping():
     'uid': get_uuid(),
     'uptime': get_uptime(),
     'version': VERSION,
-    'version_time': VERSIONDATE,
     'last_task': db.kv_get('last_task') or 0,
     'features': feature_detect(),
     'modem': get_modem_info(),
