@@ -424,12 +424,7 @@ def get_number():
   return re.sub('[^\d]', '', db.kv_get('number') or '')
 
 def asset_cache(check):
-  #
   # Now we have the campaign in the database, yay us I guess
-  # On the FAi partition, assuming we have 2, most crap goes
-  # into the home directory which can derive from our global
-  # USER variable
-  #
   path = "/var/cache/assets"
   if not os.path.exists(path):
     os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(path))
@@ -457,13 +452,37 @@ def asset_cache(check):
       except:
         pass
 
+    #
+    # As it turns out, the browser thinks a file is text/plain unless
+    # the server can give it a content-type or if served locally 
+    # there's extension hinting.
+    #
+    # So what's that mean for us?! If we are looking at text/html
+    # and we don't have an extension then we should either serve it
+    # ourselves (unlikely) or just tack an extension on to it.
+    #
+    # But wait, we can't /just move/ the file otherwise our caching
+    # system above would eat shit each time. So we exploit the fact
+    # that hard drives are big and HTML files are small and we just
+    # copy it over, insulting every programmer who used blood sweat
+    # and tears to cram say 215 bytes to 211 in a bygone era.
+    #
+    mime = _mime.from_file(name)
+
+    duration = 7.5
+    if 'html' in mime and 'html' not in name:
+      happybrowser = "{}.html".format(name)
+      shutil.copyfile(name, happybrowser)
+      name = happybrowser
+      duration = 15
+
     # see #154 - we're restructuring this away from a string and
     # into an object - eventually we have to assume that
     # we're getting an object and then just injecting the mime
     # type on ... but not yet my sweetie.
     res.append({
-      'duration': 7.5,
-      'mime': _mime.from_file(name),
+      'duration': duration,
+      'mime': mime,
       'url': name
     })
 
