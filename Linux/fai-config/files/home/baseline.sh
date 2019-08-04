@@ -22,6 +22,10 @@ _git() {
   _as_user git $*
 }
 
+get_version() {
+  ( cd $BASE && echo $(git describe)/$(git rev-parse --abbrev-ref HEAD) )
+}
+
 local_sync() {
   # Since everything is in memory and already loaded
   # we can try to just pull things down
