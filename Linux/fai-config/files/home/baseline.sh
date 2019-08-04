@@ -23,7 +23,7 @@ _git() {
 }
 
 get_version() {
-  ( cd $BASE && echo $(git describe)/$(git rev-parse --abbrev-ref HEAD) )
+  ( cd $BASE && echo $(git describe)-$(git rev-parse --abbrev-ref HEAD) )
 }
 
 local_sync() {
