@@ -286,9 +286,9 @@ var Engine = function(opts){
       var container = document.createElement('div');
       container.classList.add('container');
 
-      if(assetText(asset, 'image', ['png','jpg','jpeg'])) {
+      if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
         asset = image(asset, obj);
-      } else if(assetText(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
+      } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
         asset = video(asset, obj);
       } else {
         asset = iframe(asset, obj);
