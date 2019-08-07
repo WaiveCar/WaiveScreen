@@ -246,8 +246,10 @@ var Engine = function(opts){
   }
     
   function assetTest(asset, mime, ext) {
-    return (asset.mime && asset.mime.match('/' + mime + '/')) || 
-      (!asset.mime && asset.match('/(' + ext.join('|') + ')/'));
+    if(asset.mime) { 
+      return asset.mime.match(mime);
+    }
+    return asset.url.match('(' + ext.join('|') + ')');
   }
 
   // All the things returned from this have 2 properties
@@ -284,6 +286,9 @@ var Engine = function(opts){
 
     obj.assetList = obj.url.map(function(asset) {
       var container = document.createElement('div');
+      if(isString(asset)) {
+        asset = {url: asset};
+      }
       container.classList.add('container');
 
       if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
