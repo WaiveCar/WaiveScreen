@@ -246,7 +246,7 @@ var Engine = function(opts){
   }
     
   function assetTest(asset, mime, ext) {
-    return (asset.mime && asset.mime.match('/' + mime + '//)) || 
+    return (asset.mime && asset.mime.match('/' + mime + '/')) || 
       (!asset.mime && asset.match('/(' + ext.join('|') + ')/'));
   }
 
