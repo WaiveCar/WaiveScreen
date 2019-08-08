@@ -478,7 +478,7 @@ def asset_cache(check):
         shutil.copyfile(name, happybrowser)
 
       name = happybrowser
-      duration = 15
+      duration = 150
 
     # see #154 - we're restructuring this away from a string and
     # into an object - eventually we have to assume that
