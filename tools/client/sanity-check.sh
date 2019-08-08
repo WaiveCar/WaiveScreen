@@ -7,7 +7,7 @@ export PATH=$DEST:$PATH
 
 doit() {
   _as_user dcall $1
-  _as_user dcall add_history restart $1 "$2"
+  #_as_user dcall add_history restart $1 "$2"
 }
 
 pycall() {
