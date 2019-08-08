@@ -13,6 +13,7 @@ import glob
 import base64
 import subprocess
 import magic
+from urllib.parse import quote
 from threading import Lock
 from pprint import pprint
 from datetime import datetime
@@ -433,7 +434,7 @@ def asset_cache(check):
 
   res = []
   for asset in check['asset']:
-    name = "{}/{}".format(path, asset.split('/')[-1])
+    name = "{}/{}".format(path, quote(asset.split('/')[-1]))
     if (not os.path.exists(name)) or os.path.getsize(name) == 0:
       r = requests.get(asset, allow_redirects=True)
       # 
@@ -473,7 +474,9 @@ def asset_cache(check):
     if 'html' in mime and 'html' not in name:
       import shutil
       happybrowser = "{}.html".format(name)
-      shutil.copyfile(name, happybrowser)
+      if not os.path.exists(happybrowser):
+        shutil.copyfile(name, happybrowser)
+
       name = happybrowser
       duration = 15
 
