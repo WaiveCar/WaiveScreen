@@ -167,8 +167,10 @@ def next_ad(work = False):
 
         lib.task_ingest(data)
 
+        logging.debug("success: {}".format(json.dumps(job_list))
         return success(job_list)
       else:
+        logging.debug("failure: {}".format(json.dumps(data))
         return failure(data['data'])
 
     except Exception as ex:
