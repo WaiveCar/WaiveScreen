@@ -148,7 +148,7 @@ var Engine = function(opts){
       _playCount ++;
     }
     asset.active = true;
-    asset.duration = asset.duration || _res.duration;
+    asset.duration = asset.duration || 100 * _res.duration;
     obj.duration += asset.duration;
     obj.active = true;
     return asset;
@@ -420,9 +420,6 @@ var Engine = function(opts){
   function sow(payload, cb) {
     // no server is set
     if(!_res.server) {
-      if(remote.ix == 0) {
-        console.info("No server is set.");
-      }
       remote.ix++;
       return;
     }
