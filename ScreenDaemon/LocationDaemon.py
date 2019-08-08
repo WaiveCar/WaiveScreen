@@ -18,6 +18,12 @@ SLEEP_TIME = 10
 # We don't want to spam MLS and hit their 100,000 daily request limit
 MIN_WIFI_INTERVAL = 60 #TODO change back to 600 after testing
 
+def utc_secs(utc):
+  secs = int(utc[4:6])
+  secs += int(utc[2:4]) * 60
+  secs += int(utc[0:2]) * 3600
+  return secs
+
 def get_location_from_wifi():
   l = wifi_location()
   if float(l.get('accuracy', 100000)) <= 500.0:
@@ -32,7 +38,17 @@ def stop_wifi_location_service():
 
 def get_location_from_gps():
   l = get_gps(True)
-  if float(time.strftime('%H%M%S')) - float(l.get('Utc', 0)) <= SLEEP_TIME:
+  utc = l.get('Utc')
+  if utc is None:
+    logging.debug('GPS location has no UTC timestamp: {}'.format(l))
+    return False
+  gps_secs = utc_secs(utc)
+  my_secs = utc_secs(time.strftime('%H%M%S'))
+  # Catch if the time just ticked over (24 hour clock)
+  if my_secs < SLEEP_TIME and gps_secs > SLEEP_TIME:
+    gps_secs -= 86400
+  logging.debug('Comparing UTC secs: local({}) gps({})'.format(my_secs, gps_secs))
+  if my_secs - gps_secs <= SLEEP_TIME: #TODO comparison is wrong (60->00)
     logging.debug('GPS Location Response: {}'.format(l))
     return l
   else:
