@@ -30,7 +30,7 @@ def get_location_from_wifi():
     logging.debug('Wifi Location Response: {}'.format(l))
     return l
   else:
-    logging.debug('Ignoring wifi_location with accuracy over 500: {}'.format(l))
+    logging.warning('Ignoring wifi_location with accuracy over 500: {}'.format(l))
     return False
 
 def stop_wifi_location_service():
@@ -39,8 +39,15 @@ def stop_wifi_location_service():
 def get_location_from_gps():
   l = get_gps(True)
   utc = l.get('Utc')
+  accuracy = l.get('accuracy')
   if utc is None:
-    logging.debug('GPS location has no UTC timestamp: {}'.format(l))
+    logging.warning('GPS location has no UTC timestamp: {}'.format(l))
+    return False
+  elif accuracy is None:
+    logging.warning('GPS location has no accuracy: {}'.format(l))
+    return False
+  elif float(accuracy) > 500.0:
+    logging.warning('Ignoring GPS location with accuracy over 500: {}'.format(l))
     return False
   gps_secs = utc_secs(utc)
   my_secs = utc_secs(time.strftime('%H%M%S'))
@@ -48,11 +55,11 @@ def get_location_from_gps():
   if my_secs < SLEEP_TIME and gps_secs > SLEEP_TIME:
     gps_secs -= 86400
   logging.debug('Comparing UTC secs: local({}) gps({})'.format(my_secs, gps_secs))
-  if my_secs - gps_secs <= SLEEP_TIME: #TODO comparison is wrong (60->00)
+  if my_secs - gps_secs <= SLEEP_TIME:
     logging.debug('GPS Location Response: {}'.format(l))
     return l
   else:
-    logging.debug('Ignoring get_gps with stale UTC: {}'.format(l))
+    logging.warning('Ignoring get_gps with stale UTC: {}'.format(l))
     return False
 
 def save_location(location):
