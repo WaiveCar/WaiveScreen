@@ -715,7 +715,7 @@ def get_suntimes():
       return {}
 
     a = Astral()
-    suntimes = a.sun_utc(datetime.today(), location['Lat'], location['Lng'])
+    suntimes = a.sun_utc(datetime.today(), float(location['Lat']), float(location['Lng']))
     return suntimes
   else:
     return {}
@@ -729,7 +729,7 @@ def get_timezone():
 
   location = get_latlng()
   if location:
-    return TimezoneFinder().timezone_at(lat=location['Lat'], lng=location['Lng'])
+    return TimezoneFinder().timezone_at(lat=float(location['Lat']), lng=float(location['Lng']))
   else:
     return None
 
