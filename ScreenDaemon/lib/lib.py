@@ -471,6 +471,7 @@ def asset_cache(check):
 
     duration = 7.5
     if 'html' in mime and 'html' not in name:
+      import shutil
       happybrowser = "{}.html".format(name)
       shutil.copyfile(name, happybrowser)
       name = happybrowser
