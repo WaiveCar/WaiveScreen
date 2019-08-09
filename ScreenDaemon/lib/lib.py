@@ -289,7 +289,7 @@ def get_gps(use_cache=False):
   return fallback
 
 
-def add_record(kind, value):
+def add_history(kind, value):
   # This is kind of what we want..
   #if kind not in ['upgrade', 'feature', 'state']:
   #

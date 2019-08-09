@@ -242,7 +242,7 @@ enable_gps() {
     # --location-enable-agps \
 }
 
-add_record() {
+add_history() {
   local key=$1
   local value=$2
   local extra=$3
@@ -663,7 +663,7 @@ _upgrade_post() {
   local version=$(get_version)
   perlcall install_list | xargs $SUDO apt -y install
   pycall db.upgrade
-  pycall add_record "upgrade,$version"
+  pycall add_history "upgrade,$version"
 
   upgrade_scripts
   stack_restart 
