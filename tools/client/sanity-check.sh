@@ -62,12 +62,13 @@ check_screen_display() {
 }
 
 check_online() {
-  if ! ping -c 1 -i 0.3 waivescreen.com; then
+  host=8.8.8.8
+  if ! ping -c 1 -i 0.3 $host; then
     # we try to do a one-shot reconnection thing
     doit modem_connect no-ping
 
     # if things still suck
-    if ! ping -c 1 -i 0.3 waivescreen.com; then
+    if ! ping -c 1 -i 0.3 $host; then
       # if we fail to do multiple times
       if (( $(pycall sess_incr ping_fail) > 6 )); then
         /bin/true
