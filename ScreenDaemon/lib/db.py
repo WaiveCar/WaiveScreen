@@ -30,18 +30,26 @@ _PROCESSOR = {
 
 _SCHEMA = {
   'queue': [
-    ('id', 'integer primary key'),
+    ('id', 'integer primary key autoincrement'),
     ('data', 'text'),
   ],
+  'command_history': [
+    ('id', 'integer primary key autoincrement'),
+    ('ref_id', 'integer'),
+    ('command', 'text'),
+    ('args', 'text'),
+    ('response', 'text'),
+    ('created_at', 'datetime default current_timestamp')
+  ],
   'history': [
-    ('id', 'integer primary key'),
+    ('id', 'integer primary key autoincrement'),
     ('kind', 'text'),
     ('value', 'text'),
     ('extra', 'text'),
     ('created_at', 'datetime default current_timestamp'),
   ],
   'kv': [
-    ('id', 'integer primary key'),
+    ('id', 'integer primary key autoincrement'),
     ('key', 'text unique'),
     ('value', 'text'),
     ('bootcount', 'integer'),
