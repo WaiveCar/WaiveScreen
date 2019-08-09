@@ -489,7 +489,13 @@ _screen_display_single() {
 
   [[ -e $app ]] || die "Can't find $app. Exiting"
 
-  _as_user chromium --start-fullscreen --kiosk --incognito --noerrdialogs --disable-translate --fast --fast-start --disable-infobars --disable-features=TranslateUI --no-first-run --non-secure --default-background-color='#000' file://$app &
+  _as_user chromium --kiosk \
+    --incognito \
+    --disable-translate --disable-features=TranslateUI \
+    --fast --fast-start \
+    --disable-infobars --noerrdialogs \
+    --remote-debugging-port=9222 --user-data-dir=remote-profile \
+    --no-first-run --non-secure --default-background-color='#000' file://$app &
   set_event screen_display
 }
 
