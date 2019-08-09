@@ -346,7 +346,8 @@ def task_ingest(data):
 
     elif action == 'screenon':
       db.sess_del('force_sleep')
-      arduino.do_awake(_reading)
+      global _reading
+      arduino.do_awake(_reading or 0.7)
       task_response(id, True)
 
     elif action == 'autobright':
