@@ -1,0 +1,127 @@
+#!/bin/bash
+#
+
+if [ -e hotspot.secrets ]; then
+  . hotspot.secrets
+fi
+
+# set if you want DHCP
+DHCP=
+
+# Set up wired internet (DHCP will do this automatically)
+WIRED=1
+
+# set if you want an access point
+AP=
+# set if you want a bridged interface
+BRIDGE=
+FORWARDING=1
+
+
+# This is where the internet is
+DEV_INTERNET=wlp3s0
+
+# This is what you are listening on.
+DEV_AP=enp0s25
+
+# We are nat'ing so we need an IP
+IP_START=172.16.10
+IP_END=.1
+IP_AP=$IP_START$IP_END
+
+MASK_AP=255.255.255.0
+CLASS_AP=24
+
+ap() {
+  cat > /etc/hostapd/hostapd.conf << endl
+  interface=$DEV_AP
+  driver=nl80211
+  ssid=$SSID
+  auth_algs=1
+  channel=11
+  hw_mode=g
+  country_code=US
+  bridge=br0
+  wpa=1
+  eap_server=0
+  wpa_passphrase=$PASS
+  wpa_key_mgmt=WPA-PSK
+  wpa_pairwise=CCMP
+  macaddr_acl=0
+  logger_stdout=-1
+  logger_stdout_level=1
+  beacon_int=100
+  dtim_period=2
+  ignore_broadcast_ssid=0
+endl
+  pkill hostapd
+  sleep 1
+  hostapd /etc/hostapd/hostapd.conf&
+}
+
+wired() {
+  ifconfig $DEV_AP $IP_AP netmask $MASK_AP
+  ip route add ${IP_START}.0/$CLASS_AP dev $DEV_AP
+}
+
+dhcp() {
+  sed -i -r 's/(INTERFACESv4=).*/INTERFACESv4="'$DEV_AP'"/' /etc/default/isc-dhcp-server
+  
+  cat > /etc/dhcp/dhcpd.conf << endl
+  ddns-update-style none;
+  default-lease-time 600;
+  subnet ${IP_START}.0 netmask $MASK_AP {
+    range ${IP_START}.5 ${IP_START}.30;
+    option domain-name-servers 8.8.8.8,74.82.42.42,68.94.156.1;
+    option routers $IP_AP;
+    option broadcast-address ${IP_START}.255;
+    default-lease-time 60000;
+    max-lease-time 720000;
+  }
+endl
+  service isc-dhcp-server stop
+  [ -e /var/run/dhcpd.pid ] && rm /var/run/dhcpd.pid
+  sleep 1
+  service isc-dhcp-server start
+  wired
+}
+
+bridge_1() {
+  ifconfig br0 down
+  ifconfig $DEV_AP down
+  ifconfig $DEV_AP 0.0.0.0
+  pkill hostapd
+  pkill dhclient
+  brctl delbr br0
+  brctl addbr br0
+}
+
+forwarding() {
+  sysctl net.ipv4.conf.all.forwarding=1
+  iptables -F
+  iptables --table nat -F
+  iptables -A INPUT -i $DEV_AP -j ACCEPT
+  iptables -t nat --append POSTROUTING --out-interface $DEV_INTERNET -j MASQUERADE
+  iptables --append FORWARD --in-interface $DEV_AP -j ACCEPT
+}
+
+bridge_2() {
+  iw dev $DEV_INTERNET set 4addr on
+  brctl addif br0 $DEV_AP
+  brctl addif br0 $DEV_INTERNET
+  ifconfig $DEV_INTERNET down
+  ifconfig $DEV_INTERNET 0.0.0.0
+  dhclient -d br0
+  ifconfig $DEV_AP 0.0.0.0
+}
+
+set -x
+
+[ -n "$DHCP" ] 		&& dhcp
+[ -n "$BRIDGE" ] 	&& bridge_1
+[ -n "$FORWARDING" ] 	&& forwarding
+[ -n "$BRIDGE" ] 	&& bridge_2
+[ -n "$AP" ] 		&& ap
+[ -n "$WIRED" ] 	&& wired
+service isc-dhcp-server start
+
