@@ -106,6 +106,40 @@ var Engine = function(opts){
     console.log("Making " + obj.url + " inactive");
   }
 
+  function image(asset, obj) {
+    var img = document.createElement('img');
+    img.onerror = function(e) {
+      assetError(asset, e);
+    }
+    img.onload = function(e) {
+      if(e.target.width) {
+        var ratio = e.target.width / e.target.height;
+        if(ratio > _res.target.ratio) {
+          var maxHeight = _res.target.width * e.target.height / e.target.width;
+          e.target.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
+          e.target.style.width = _res.target.width + "px";
+          //console.log(_res.target.width, e.target.height, e.target.width, e.target.src);
+        } else { 
+          var maxWidth = _res.target.height * e.target.width / e.target.height;
+          e.target.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
+          e.target.style.height = _res.target.height + "px";
+        }
+      }
+      asset.active = true;
+      obj.active = true;
+    }
+    img.src = asset.url;
+
+    asset.active = true;
+    // TODO: per asset custom duration 
+    asset.duration = asset.duration || _res.duration;
+    obj.duration += asset.duration;
+    asset.run = _nop;
+    asset.dom = img;
+
+    return asset;
+  }
+
   function iframe(asset, obj) {
     var dom = document.createElement('iframe');
     dom.src = asset.url;
@@ -114,7 +148,7 @@ var Engine = function(opts){
       _playCount ++;
     }
     asset.active = true;
-    asset.duration = asset.duration || _res.duration;
+    asset.duration = asset.duration || 100 * _res.duration;
     obj.duration += asset.duration;
     obj.active = true;
     return asset;
@@ -211,6 +245,13 @@ var Engine = function(opts){
     return asset;
   }
     
+  function assetTest(asset, mime, ext) {
+    if(asset.mime) { 
+      return asset.mime.match(mime);
+    }
+    return asset.url.match('(' + ext.join('|') + ')');
+  }
+
   // All the things returned from this have 2 properties
   // 
   //  run() - for videos it resets the time and starts the video
@@ -245,45 +286,18 @@ var Engine = function(opts){
 
     obj.assetList = obj.url.map(function(asset) {
       var container = document.createElement('div');
+      if(isString(asset)) {
+        asset = {url: asset};
+      }
       container.classList.add('container');
 
-      if(asset.mime.match(/text/) ) {
-        asset = iframe(asset, obj);
-      } else if(asset.mime.match(/video/) ) {
+      if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
+        asset = image(asset, obj);
+      } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
         asset = video(asset, obj);
       } else {
-
-        var img = document.createElement('img');
-        img.onerror = function(e) {
-          assetError(asset, e);
-        }
-        img.onload = function(e) {
-          if(e.target.width) {
-            var ratio = e.target.width / e.target.height;
-            if(ratio > _res.target.ratio) {
-              var maxHeight = _res.target.width * e.target.height / e.target.width;
-              e.target.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
-              e.target.style.width = _res.target.width + "px";
-              //console.log(_res.target.width, e.target.height, e.target.width, e.target.src);
-            } else { 
-              var maxWidth = _res.target.height * e.target.width / e.target.height;
-              e.target.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
-              e.target.style.height = _res.target.height + "px";
-            }
-          }
-          asset.active = true;
-          obj.active = true;
-        }
-        img.src = asset.url;
-
-        asset.active = true;
-        // TODO: per asset custom duration 
-        asset.duration = asset.duration || _res.duration;
-        obj.duration += asset.duration;
-        asset.run = _nop;
-        asset.dom = img;
+        asset = iframe(asset, obj);
       }
-      console.log(asset);
       asset.container = container;
       asset.container.appendChild(asset.dom);
       return asset;
@@ -406,9 +420,6 @@ var Engine = function(opts){
   function sow(payload, cb) {
     // no server is set
     if(!_res.server) {
-      if(remote.ix == 0) {
-        console.info("No server is set.");
-      }
       remote.ix++;
       return;
     }

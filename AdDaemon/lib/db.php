@@ -311,12 +311,7 @@ function get_column_list($table_name) {
 }
 
 function get_campaign_remaining($id) {
-  $res = (db_connect())->querySingle("
-    select 
-      duration_seconds - sum(campaign.completed_seconds) as remaining
-      from campaign left join job on campaign_id = campaign.id
-      where campaign.id = $id 
-    ");
+  $res = (db_connect())->querySingle("select duration_seconds - completed_seconds as remaining from campaign where campaign.id = $id");
 
   if($res === null) {
     return (db_connect())->querySingle("select duration_seconds from campaign where id=$id");

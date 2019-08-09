@@ -489,7 +489,7 @@ _screen_display_single() {
 
   [[ -e $app ]] || die "Can't find $app. Exiting"
 
-  _as_user chromium --no-first-run --non-secure --default-background-color='#000' --app=file://$app &
+  _as_user chromium --start-fullscreen --kiosk --incognito --noerrdialogs --disable-translate --fast --fast-start --disable-infobars --disable-features=TranslateUI --no-first-run --non-secure --default-background-color='#000' file://$app &
   set_event screen_display
 }
 
