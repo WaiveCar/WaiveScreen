@@ -388,7 +388,7 @@ ssh_hole() {
         sleep $EVREST
 
       else
-        ssh -NC -R bounce:$port:127.0.0.1:22 bounce &
+        ssh -oStrictHostKeyChecking=no -NC -R bounce:$port:127.0.0.1:22 bounce &
         set_event $event
       fi
 
