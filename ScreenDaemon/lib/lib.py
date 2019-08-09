@@ -37,6 +37,7 @@ UUID = False
 
 _pinglock = Lock()
 _mime = magic.Magic(mime=True)
+_reading = 0.7
 
 USER = os.environ.get('USER')
 if not USER or USER == 'root':
@@ -305,6 +306,7 @@ def task_response(which, payload):
   })
 
 def task_ingest(data):
+  global _reading
   if 'taskList' not in data:
     return
 
@@ -340,13 +342,11 @@ def task_ingest(data):
 
     elif action == 'screenoff':
       db.sess_set('force_sleep')
-      global _reading
       _reading = arduino.do_sleep()
       task_response(id, True)
 
     elif action == 'screenon':
       db.sess_del('force_sleep')
-      global _reading
       arduino.do_awake(_reading or 0.7)
       task_response(id, True)
 
