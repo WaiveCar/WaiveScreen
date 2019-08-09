@@ -296,6 +296,8 @@ def add_history(kind, value):
   return db.insert('history', { 'kind': kind, 'value': value })
 
 def task_response(which, payload):
+  db.update('command_history', {'ref_id': which}, {'response': payload})
+
   post('response', {
     'uid': get_uuid(),
     'task_id': which,
@@ -318,11 +320,16 @@ def task_ingest(data):
       continue
 
     db.kv_set('last_task', id)
-
     ## TODO: expiry check
 
     action = task.get('command')
     args = task.get('args')
+
+    db.insert('command_history', {
+      'ref_id': id,
+      'command': action,
+      'args': args
+    })
 
     if action == 'upgrade':
       task_response(id, True)
