@@ -243,10 +243,10 @@ enable_gps() {
 }
 
 add_history() {
-  local key=$1
+  local kind=$1
   local value=$2
   local extra=$3
-  sqlite3 $DB "insert into history(key, value, extra) values('$key','$value','$extra')" 
+  sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
 }
 
 get_number() {
@@ -663,7 +663,7 @@ _upgrade_post() {
   local version=$(get_version)
   perlcall install_list | xargs $SUDO apt -y install
   pycall db.upgrade
-  pycall add_history "upgrade,$version"
+  add_history upgrade "$version"
 
   upgrade_scripts
   stack_restart 
