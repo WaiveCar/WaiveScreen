@@ -565,26 +565,6 @@ function sow($payload) {
   return $server_response; 
 }
 
-function get_available_slots($start_query, $duration) {
-  if(!$start_query) {
-    $start_query = date();
-  }
-  if($duration) {
-    $duration = 7 * $DAY;
-  }
-  $end_query = $start_query + $duration;
-  //
-  // This is more or less a functional ceiling on our commitment for a time period if we are to assume that we can get everything
-  // done by the end of the duration, not the end of the campaign.
-  //
-  $committed_seconds = run("select sum(completed_seconds - duration_seconds) from campaigns where $start_time > $start_query or $end_time < $end_query");
-  $available_seconds = $duration - $committed_seconds;
-
-  // This is really rudimentary
-  return $committed_seconds;
-}
-
-
 function upload_s3($file) {
   // lol we deploy this line of code with every screen. what awesome.
   $credentials = new Aws\Credentials\Credentials('AKIAIL6YHEU5IWFSHELQ', 'q7Opcl3BSveH8TU9MR1W27pWuczhy16DqRg3asAd');
@@ -628,6 +608,8 @@ function show($what, $clause = '') {
   return db_all("select * from $what $clause", $what);
 }
 
+function make_infinite($campaign) {
+  db_update(
 function active_campaigns($screen) {
   //  end_time > current_timestamp     and 
   return show('campaign', "where 
@@ -761,7 +743,8 @@ function campaign_create($data, $fileList, $user = false) {
         ]
       );
     } else {
-      db_update('campaign', ['asset' => $asset]);
+      $campaign_id = $campaign['id'];
+      db_update('campaign', $campaign_id, ['asset' => $asset]);
     }
     return doSuccess(Get::campaign($campaign_id));
   }
