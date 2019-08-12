@@ -608,8 +608,13 @@ function show($what, $clause = '') {
   return db_all("select * from $what $clause", $what);
 }
 
-function make_infinite($campaign) {
-  db_update(
+function make_infinite($campaign_id) {
+  db_update('campaign', $campaign_id, [
+    'duration_seconds' => pow(2,31),
+    'end_time' => '2100-01-01 00:00:00'
+  ]);
+}
+
 function active_campaigns($screen) {
   //  end_time > current_timestamp     and 
   return show('campaign', "where 
