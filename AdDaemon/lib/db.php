@@ -289,6 +289,7 @@ function db_string($what) {
 function db_date($what) {
  return "datetime($what,'unixepoch')";
 }
+
 function _query($qstr, $func='exec') {
   $db = db_connect();
   try {
