@@ -1,8 +1,14 @@
 <?php
 date_default_timezone_set('UTC');
 
+$JSON = [
+  'pre' => function($v) { if (!$v) { return $v } ; return db_string(json_encode($v)); },
+  'post' => function($v) { if (!$v) { return $v } ; return json_decode($v, true); }
+]
+
 $RULES = [
   'campaign' => [ 
+    'point_list' => $JSON
     'asset' => [
       'post' => function($v) {
          $v = json_decode($v, true);
@@ -20,10 +26,7 @@ $RULES = [
     ]
   ],
   'screen' => [
-    'features' => [
-      'pre' => function($v) { return db_string(json_encode($v)); },
-      'post' => function($v) { return json_decode($v, true); }
-    ]
+    'features' => $JSON
   ],
   'sensor_history' => [
     'created_at' => [
@@ -101,6 +104,7 @@ $SCHEMA = [
     'lat'         => 'float default null',
     'lng'         => 'float default null',
     'radius'      => 'float default null',
+    'point_list'  => 'text',
     'start_minute'=> 'integer default null',
     'end_minute'  => 'integer default null',
     'active'      => 'boolean default false',
