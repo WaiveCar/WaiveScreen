@@ -721,7 +721,7 @@ function campaign_new($opts) {
       'active' => 1,//false,
       'asset' => db_string($opts['asset']),
       'duration_seconds' => $opts['duration'],
-      'project' => 'LA',
+      'project' => db_string('LA'),
       'lat' => $opts['lat'],
       'lng' => $opts['lng'],
       'radius' => $opts['radius'],
@@ -808,6 +808,7 @@ function campaign_create($data, $fileList, $user = false) {
   }
 
   $campaign_id = campaign_new($data);
+  /*
   if($campaign_id) {
     $order = [
       'campaign_id' => $campaign_id,
@@ -826,6 +827,7 @@ function campaign_create($data, $fileList, $user = false) {
 
     db_update('campaign', $campaign_id, ['order_id' => $order_id]);
   }
+   */
   return $campaign_id;
 }
 
