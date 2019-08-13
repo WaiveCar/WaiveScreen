@@ -9,7 +9,7 @@
     $color = [
       'ads.waivecar.com' => 'secondary',
       'staging.waivescreen.com' => 'warning',
-      'waivecsreen.com' => 'danger'
+      'waivescreen.com' => 'danger'
     ][$_SERVER['HTTP_HOST']];
   ?>
   <div class="alert alert-<?=$color?>" role="alert"><?= $_SERVER['HTTP_HOST']; ?></div>
