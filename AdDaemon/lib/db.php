@@ -2,13 +2,19 @@
 date_default_timezone_set('UTC');
 
 $JSON = [
-  'pre' => function($v) { if (!$v) { return $v } ; return db_string(json_encode($v)); },
-  'post' => function($v) { if (!$v) { return $v } ; return json_decode($v, true); }
-]
+  'pre' => function($v) { 
+    if (!$v) { return $v; } 
+    return db_string(json_encode($v)); 
+  },
+  'post' => function($v) { 
+    if (!$v) { return $v; } 
+    return json_decode($v, true); 
+  }
+];
 
 $RULES = [
   'campaign' => [ 
-    'point_list' => $JSON
+    'polygon_list' => $JSON,
     'asset' => [
       'post' => function($v) {
          $v = json_decode($v, true);
@@ -90,7 +96,7 @@ $SCHEMA = [
   // these and can bleed over in either direction if it 
   // gets to that.
   // 
-  // If they are empty', then it means that it's 24 hours a day
+  // If they are empty, then it means that it's 24 hours a day
   //
   'campaign' => [
     'id'          => 'integer primary key autoincrement',
@@ -104,7 +110,12 @@ $SCHEMA = [
     'lat'         => 'float default null',
     'lng'         => 'float default null',
     'radius'      => 'float default null',
-    'point_list'  => 'text',
+    // polygon_list is a list of polygons, not a list of points.
+    // This means it's a list of a list of points:
+    // polygon = [ [lat, lng], ... ]
+    // polygon_list = [ polygon, ... ]
+    //
+    'polygon_list'  => 'text',
     'start_minute'=> 'integer default null',
     'end_minute'  => 'integer default null',
     'active'      => 'boolean default false',

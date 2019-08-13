@@ -481,7 +481,6 @@ function task_inject($screen, $res) {
   return $res;
 }
 
-
 function update_campaign_completed($id) {
   if($id) {
     // only update campaign totals that aren't our defaults
@@ -565,6 +564,18 @@ function sow($payload) {
   } else {
     // right now we are being realllly stupid.
     $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
+      if(!empty($campaign['polygon_list']) && $payload['lat']) {
+        $test = [$payload['lat'], $payload['lng']];
+        foreach($campaign['polygon_list'] as $polygon) {
+          if(inside_polygon($polygon, $test)) {
+            return true;
+          }
+        }
+        // This is important because if we have a polygon definition
+        // then we actually don't want to show the ad outside that 
+        // polygon.
+        return false;
+      }
       /*
       if(isset($payload['lat'])) {
         // under 1.5km
