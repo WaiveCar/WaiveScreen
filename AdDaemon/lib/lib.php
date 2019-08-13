@@ -449,9 +449,6 @@ function screen_edit($data) {
   return Get::screen($data['id']);
 }
 
-function blackout_check($screen, $res) {
-  return $res;
-}
 
 // we need to find out if the screen has tasks we need
 // to inject and then do so
@@ -477,7 +474,6 @@ function task_inject($screen, $res) {
   if ($tasks) {
     error_log($screen['uid'] . ' ' . json_encode($tasks));
   }
-  $res = blackhout_check($screen, $res);
   return $res;
 }
 

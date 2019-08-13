@@ -233,12 +233,6 @@ $SCHEMA = [
     'created_at'=> 'datetime default current_timestamp',
   ],
 
-  'blackout' => [
-    'id'        => 'integer primary key autoincrement',
-    'shape'     => 'text',
-    'created_at'=> 'datetime default current_timestamp',
-  ],
-
   // This is going to be a monstrosity really and will
   // be the majority of the storage.
   'sensor_history' => [
