@@ -1,4 +1,5 @@
-var _append = false;
+var _append = false,
+    _screen = false;
 function get(id) {
   var res = Data.filter(row => row.id == id);
   return res ? res[0] : null;
@@ -33,7 +34,7 @@ function show(res, timeout) {
 
 function change(id, what, el) {
   post('screens', {id: id, [what]: el.value}, res => {
-    show({data: 'Updated project'}, 1000);
+    show({data: 'Updated screen'}, 1000);
   });
 }
 
@@ -78,12 +79,23 @@ function obj2span(obj) {
   return '<div>' + out.join('</div><div>') + '</div>';
 }
 
+function remove() {
+  if(confirm(`Are you sure you want to remove ${_screen.uid}?`)) {
+    post('screens', {id: _screen.id, removed: true }, res => {
+      show({data: 'Updated screen'}, 1000);
+    });
+    $("#editModal").modal('hide');
+  }
+}
+
 function edit(id) {
   var screen = get(id);
   var keylist = ['imei','pings','last_task'];
   var out = keylist.map(row => `<span>${row}</span><span>${JSON.stringify(screen[row])}</span>`);
   out.push(`<span>features</span><span>${obj2span(screen.features)}</span>`); 
   
+  _screen = screen;
+
   $("#editModal .modal-body").html('<div>' + out.join('</div><div>') + '</div>');
   $("#ModalLabel").html(screen.uid);
   $("#editModal").modal();
