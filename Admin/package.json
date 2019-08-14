@@ -2,8 +2,8 @@
   "name": "screenadmin",
   "version": "1.0.0",
   "scripts": {
-    "start": "parcel index.html",
-    "build": "parcel build --public-url . index.html"
+    "start": "parcel map.html",
+    "build": "parcel build --public-url . map.html"
   },
   "dependencies": {
     "ol": "^5.3.3"
