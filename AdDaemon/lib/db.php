@@ -115,7 +115,7 @@ $SCHEMA = [
     // polygon = [ [lat, lng], ... ]
     // polygon_list = [ polygon, ... ]
     //
-    'polygon_list'  => 'text',
+    'polygon_list'=> 'text',
     'start_minute'=> 'integer default null',
     'end_minute'  => 'integer default null',
     'active'      => 'boolean default false',
