@@ -180,7 +180,7 @@ function find_missing($obj, $fieldList) {
 function log_screen_changes($old, $new) {
   // When certain values change we should log that
   // they change.
-  $deltaList = ['phone', 'car', 'project', 'model', 'version', 'active', 'features'];
+  $deltaList = ['phone', 'removed', 'car', 'project', 'model', 'version', 'active', 'features'];
   foreach($deltaList as $delta) {
     if(!isset($new[$delta])) {
       continue;
@@ -222,7 +222,12 @@ function upsert_screen($screen_uid, $payload) {
     $screen = create_screen($screen_uid);
   }
 
-  $data = ['last_seen' => 'current_timestamp'];
+  $data = [
+    // I don't care if it was manually removed, if we see it again
+    // we are activating it again. That's how it works.
+    'removed' => 0,
+    'last_seen' => 'current_timestamp'
+  ];
   if(!empty($payload['lat']) && floatval($payload['lat'])) {
     $data['lat'] = floatval($payload['lat']);
     $data['lng'] = floatval($payload['lng']);
@@ -258,7 +263,7 @@ function response($payload) {
 
 // This is called from the admin UX
 function command($payload) {
-  $scope_whitelist = ['id', 'project', 'model', 'version'];
+  $scope_whitelist = ['id', 'removed', 'project', 'model', 'version'];
   $idList = [];
   
   $field_raw = aget($payload, 'field');
@@ -438,7 +443,7 @@ function task_dump() {
 }
 
 function screen_edit($data) {
-  $whitelist = ['car', 'phone', 'serial', 'project', 'model'];
+  $whitelist = ['car', 'removed', 'phone', 'serial', 'project', 'model'];
   $update = [];
   foreach(array_intersect($whitelist, array_keys($data)) as $key) {
     $update[$key] = db_string($data[$key]);
