@@ -58,7 +58,6 @@ ethtool
 python3-pip
 python3-gi
 python3-setuptools
-python3-magic
 git
 
 # This is needed for ainsl which is used
