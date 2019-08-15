@@ -5,6 +5,9 @@ import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
 import {OSM, Vector as VectorSource} from 'ol/source.js';
 import {Circle as CircleStyle, Fill, Stroke, Style} from 'ol/style.js';
 import {fromLonLat, toLonLat} from 'ol/proj';
+import Feature from 'ol/Feature';
+import Polygon from 'ol/geom/Polygon';
+import Circle from 'ol/geom/Circle';
 
 var raster = new TileLayer({
   source: new OSM()
@@ -15,10 +18,10 @@ var vector = new VectorLayer({
   source: source,
   style: new Style({
     fill: new Fill({
-      color: 'rgba(255, 255, 255, 0.2)'
+      color: 'rgba(255, 255, 255, 0.4)'
     }),
     stroke: new Stroke({
-      color: '#ffcc33',
+      color: '#000000',
       width: 2
     }),
     image: new CircleStyle({
@@ -30,8 +33,6 @@ var vector = new VectorLayer({
   })
 });
 
-self.v = vector;
-self.shape = [];
 // eventually use geoip
 var map = new Map({
   layers: [raster, vector],
@@ -58,16 +59,55 @@ function addInteractions() {
   map.addInteraction(snap);
 
 }
+function getShapes() {
+  let shapes = vector.getSource().getFeatures().map(row => {
+    var kind = row.getGeometry();
+    if (kind instanceof Polygon) {
+      return ['Polygon', kind.getCoordinates()[0].map(coor => toLonLat(coor))];
+    } else {
+      return ['Circle', toLonLat(kind.getCenter()), kind.getRadius()];
+    }
+  });
+
+  return shapes;
+}
+
+function drawShapes(list) {
+  list.forEach(shape => {
+    var feature;
+    if(shape[0] === 'Circle') {
+      feature = new Feature({
+        geometry: new Circle(fromLonLat(shape[1]), shape[2])
+      });
+    }
+    else if(shape[0] === 'Polygon') {
+      feature = new Feature({
+        geometry: new Polygon([shape[1].map(coor => fromLonLat(coor))])
+      });
+    }
+    vector.getSource().addFeature(feature);
+  });
+}
+
+self.save = function() {
+  localStorage['shapes'] = JSON.stringify(getShapes());
+}
+
+self.load = function() {
+  let shapes = JSON.parse(localStorage['shapes']);
+  drawShapes(shapes);
+}
+
 window.onkeyup = function(e) {
   if(e.key === 'Delete') {
-    console.log(draw.removeLastPoint());
+    draw.removeLastPoint();
   }
-  self.m = draw.getOverlay();
-  self.shapes = vector.getSource().getFeatures().map(row => {
-    return row.getGeometry().getCoordinates().map(shape => {
-      return shape.map(coor => toLonLat(coor));
-    })
-  });
+  if(e.key === 'Escape') {
+    let shapeList = vector.getSource().getFeatures();
+    if(shapeList) {
+      vector.getSource().removeFeature(shapeList.slice(-1)[0]);
+    }
+  }
 }
 typeSelect.onchange = function() {
   map.removeInteraction(draw);
