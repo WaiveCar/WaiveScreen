@@ -180,11 +180,14 @@ while True:
       logging.error('Arduino communication down: {}'.format(ex))
       _arduinoConnectionDown = True
       # TODO Add more logic to guess the state of the car before we lost contact.
+      # This is incorrect
+      """
       try:
         arduino.do_sleep()
       except:
         # The call should turn off the display but fail trying to turn off the backlight.  That's okay.
         pass
+      """
       # if _arduino isn't set to false, we won't reconnect
       arduino.arduino_disconnect()
     time.sleep(1)
