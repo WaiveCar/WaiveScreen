@@ -225,7 +225,6 @@ function split($str) {
           <div class="modal-footer">
             <button type="button" class="btn btn-danger btn-sm mr-auto" onclick=remove()>Remove Screen</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <!--<button type="button" class="btn btn-primary">Update</button>-->
           </div>
         </div>
       </div>
