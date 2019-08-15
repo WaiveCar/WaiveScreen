@@ -213,7 +213,7 @@ function split($str) {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="ModalLabel">screen naem</h5>
+            <h5 class="modal-title" id="ModalLabel">screen</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>

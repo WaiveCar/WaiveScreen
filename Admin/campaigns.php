@@ -20,6 +20,7 @@ $height = $width * 675 / 1920;
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://openlayers.org/en/v5.3.0/css/ol.css" type="text/css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel='stylesheet' href='/engine.css'>
     <link href="/css/sb-admin-2.min.css" rel="stylesheet">
@@ -66,13 +67,13 @@ $height = $width * 675 / 1920;
 
                 <p class="card-text"></p>
 
-                <div class="btn-group" role="group" aria-label="Basic example">
+                <div class="btn-group" role="group" aria-label="Actions">
                   <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       Actions
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      <a onclick="geofence({id:<?=$campaign['id']?>})" style=color:#000 class="dropdown-item">Geofence</a>
+                      <a onclick="geofence(<?=$campaign['id']?>)" style=color:#000 class="dropdown-item">Geofence</a>
 <?                   if ($campaign['active']) {?>
                       <a onclick="update_campaign({id:<?=$campaign['id']?>,active:false})" class="dropdown-item">Disable</a>
 <?} else { ?>
@@ -107,21 +108,26 @@ $height = $width * 675 / 1920;
       </div>
     </div>
     <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="ModalLabel">screen naem</h5>
+            <h5 class="modal-title" id="ModalLabel">Edit Geofence</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
 
           <div class="modal-body">
+      <select id="type">
+        <option value="Circle">Circle</option>
+        <option value="Polygon">Geofence</option>
+      </select>
+            <div style='width:100%;height:20vw' id='map'></div>
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-danger btn-sm mr-auto" onclick=remove()>Remove Screen</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-danger btn-sm mr-auto" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-secondary" onclick=geosave()>Update</button>
           </div>
         </div>
       </div>
@@ -137,5 +143,6 @@ $height = $width * 675 / 1920;
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="/js/sb-admin-2.min.js"></script>
     <script src="/Admin/script.js?1"></script>
+    <script src="/Admin/campaigns.js?1"></script>
   </body>
 </html>
