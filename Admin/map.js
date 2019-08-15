@@ -140,5 +140,4 @@ window.map = function(opts) {
     load: drawShapes,
     clear: clear
   };
-
 }
