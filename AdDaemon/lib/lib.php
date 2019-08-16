@@ -851,9 +851,8 @@ function campaign_update($data, $fileList, $user = false) {
       }
     }
     if(!empty($data['geofence'])) {
-      $geofence_list = json_decode($data['geofence'], true);
       // first we filter for circles to do lat/lng/radius
-      foreach($geofence_list as $geo) {
+      foreach($data['geofence'] as $geo) {
         if($geo[0] === 'Circle') {
           // the overlay system is lng/lat
           list($obj['lng'], $obj['lat']) = $geo[1];
