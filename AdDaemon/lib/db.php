@@ -4,7 +4,8 @@ date_default_timezone_set('UTC');
 $JSON = [
   'pre' => function($v) { 
     if (!$v) { return $v; } 
-    return db_string(json_encode($v)); 
+    if (!is_string($v)) { $v = json_encode($v); }
+    return db_string($v); 
   },
   'post' => function($v) { 
     if (!$v) { return $v; } 
@@ -108,6 +109,16 @@ $SCHEMA = [
     'project'     => 'text default "dev"',
 
     //
+    // For now, until we get a geo db system
+    // this makes things easily queriable
+    //
+    // Stuff will be duplicated into shapelists
+    //
+    'lat'         => 'float default null',
+    'lng'         => 'float default null',
+    'radius'      => 'float default null',
+
+    //
     // shape_list := [ polygon | circle ]* 
     //  polygon   := [ "Polygon", [ coord, ... ] ]
     //  circle    := [ "Circle", coord, radius ]
@@ -115,11 +126,13 @@ $SCHEMA = [
     //  radius    := integer (meters)
     //
     'shape_list'  => 'text',
+
     'start_minute'=> 'integer default null',
     'end_minute'  => 'integer default null',
     'active'      => 'boolean default false',
     'is_default'  => 'boolean default false',
     'priority'    => 'integer default 0',
+
     'start_time'  => 'datetime default current_timestamp',
     'end_time'    => 'datetime'
   ],
