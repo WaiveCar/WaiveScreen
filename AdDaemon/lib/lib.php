@@ -850,6 +850,20 @@ function campaign_update($data, $fileList, $user = false) {
         $obj[$k] = db_string($v);
       }
     }
+    if(!empty($data['geofence'])) {
+      $geofence_list = json_decode($data['geofence'], true);
+      // first we filter for circles to do lat/lng/radius
+      foreach($geofence_list as $geo) {
+        if($geo[0] === 'Circle') {
+          // the overlay system is lng/lat
+          list($obj['lng'], $obj['lat']) = $geo[1];
+          $obj['radius'] = $geo[2];
+          break;
+        }
+      }
+      // then we assign everything to the list.
+      $obj['shape_list'] = $data['geofence'];
+    }
     db_update('campaign', $campaign_id, $obj);
   } else {
     if(aget($data, 'append')) {
