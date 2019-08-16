@@ -15,7 +15,7 @@ $JSON = [
 
 $RULES = [
   'campaign' => [ 
-    'polygon_list' => $JSON,
+    'shape_list' => $JSON,
     'asset' => [
       'post' => function($v) {
          $v = json_decode($v, true);
