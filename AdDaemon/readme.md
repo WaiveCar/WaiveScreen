@@ -1,5 +1,17 @@
-req:
-  sudo apt install php7.3-xml
+### redesign
+
+The php diy system has been ok up to this point but its hitting the limit and some kind of frameworky-ish thing should be used. My current thoughts are
+
+ * jinja        - templates
+ * flask        - routing
+ * flask-login  - user management
+ * sqlalchemy   - orm/routing
+
+There's also zend, slim, and django
+
+Installation:
+
+  See ../tools/server/server-setup.sh
 
 Screens are assigned tasks and timelines for completion.
 Screens query the server for at most, the next (for now) 15 minutes of ads
@@ -15,7 +27,4 @@ Installation notes:
 
   Remember to increase the max upload file size in the php.ini
 
-The default ad should be inactive:
- 
- update campaign set active=false where id=30; // or whatever the default becomes
 

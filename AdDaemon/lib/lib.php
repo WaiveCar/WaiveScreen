@@ -6,10 +6,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 $mypath = $_SERVER['DOCUMENT_ROOT'] . 'AdDaemon/lib/';
-include_once($mypath . 'const.php');
 include_once($mypath . 'db.php');
-include_once($mypath . 'email.php');
-include_once($mypath . 'user.php');
 
 $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
@@ -24,26 +21,13 @@ $DEFAULT_CAMPAIGN_MAP = [
 // Play time in seconds of one ad.
 $PLAYTIME = 7.5;
 
-$DEALMAP = [
-  'testdrive' => [ 
-    "total" => 100,
-    "duration" => $PLAYTIME * 25
-  ],
-  'shoestring' => [ 
-    "total" => 999,
-    "duration" => $PLAYTIME * 300
-  ],
-  'standard' => [ 
-    "total" => 2999,
-    "duration" => $PLAYTIME * 1050
-  ]
-]; 
-
-$PLACEMAP = [
-  'la' => ['lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000],
-  'hollywood' => ['lat' => 34.093053, 'lng' => -118.343259, 'radius' => 4500],
-  'santamonica' => ['lat' => 34.024353, 'lng' => -118.478620, 'radius' => 3000]
-];
+function mapBy($obj, $key) {
+  $res = [];
+  foreach($obj as $row) {
+    $res[$row[$key]] = $row;
+  }
+  return $res;
+}
 
 function aget($source, $keyList, $default = null) {
   if(!is_array($keyList)) {
@@ -106,6 +90,40 @@ function missing($what, $list) {
   }
 }
 
+function inside_polygon($test_point, $points) {
+  $p0 = end($points);
+  $ctr = 0;
+  foreach ( $points as $p1 ) {
+    // there is a bug with this algorithm, when a point in "on" a vertex
+    // in that case just add an epsilon
+    if ($test_point[1] == $p0[1]) {
+      $test_point[1] += 0.0000000001; #epsilon
+    }
+
+    // ignore edges of constant latitude (yes, this is correct!)
+    if ( $p0[1] != $p1[1] ) {
+      // scale latitude of $test_point so that $p0 maps to 0 and $p1 to 1:
+      $interp = ($test_point[1] - $p0[1]) / ($p1[1] - $p0[1]);
+
+      // does the edge intersect the latitude of $test_point?
+      // (note: use >= and < to avoid double-counting exact endpoint hits)
+      if ( $interp >= 0 && $interp < 1 ) {
+        // longitude of the edge at the latitude of the test point:
+        // (could use fancy spherical interpolation here, but for small
+        // regions linear interpolation should be fine)
+        $long = $interp * $p1[0] + (1 - $interp) * $p0[0];
+        // is the intersection east of the test point?
+        if ( $long > $test_point[0] ) {
+          // if so, count it:
+          $ctr++;
+        }
+      }
+    }
+    $p0 = $p1;
+  }
+  return ($ctr & 1);
+}
+
 function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
   if(!$lat2) {
     if(empty($lon1['lng']) && empty($lat1['lng'])) {
@@ -147,66 +165,13 @@ function create_screen($uid, $data = []) {
 }
 
 function find_unfinished_job($campaignId, $screenId) {
-  $res = Many::job([
+  return Many::job([
     'campaign_id' => $campaignId,
     'screen_id' => $screenId,
     'completed_seconds < goal'
   ]);
-  //error_log(json_encode([$campaignId,$screenId, $res]));
-  return $res;
 }
 
-function tag_update($screen) {
-}
-
-// create/show/delete tag: 
-// options:
-//
-//  {
-//    action: add/delete
-//    name: tag to add
-//  }
-//
-function tag($data, $verb) {
-  if($verb === 'GET') {
-    return show('tag');
-  }
-  $action = aget($data, 'action');
-  $name = db_string(aget($data, 'name'));
-  $row = Get::tag(['name' => $name]);
-  if($action == 'add') { 
-    if(!$row) {
-      db_insert('tag', ['name' => $name]);
-      return doSuccess("tag $name added");
-    }
-    return doError("tag $name exists!");
-  } else if ($action == 'delete') {
-    if($row) {
-      db_delete('tag', ['id' => $row['id']]);
-      return doSuccess("tag $name deleted");
-    }
-    return doError("tag $name does not exist");
-  } 
-  return doError("Need an action & name");
-}
-
-// create/show/update tags with screens
-function screen_tag($data, $verb) {
-  $tagList = Many::tag(['screen_id' => $data['id']]);
-  $toadd = aget($data, 'add');
-  $todel = aget($data, 'delete');
-  foreach($todel as $key) {
-  }
-
-}
-
-function get_default_campaign($screen) {
-  return db_all("
-    select value from tag_info where key='default_campaign' and tag in (
-      select tag from screen_tag where screen_id = {$screen['id']}
-    )
-  ");
-}
 
 function find_missing($obj, $fieldList) {
   return array_diff($fieldList, array_keys($obj));
@@ -215,7 +180,7 @@ function find_missing($obj, $fieldList) {
 function log_screen_changes($old, $new) {
   // When certain values change we should log that
   // they change.
-  $deltaList = ['phone', 'car', 'project', 'model', 'version', 'active', 'features'];
+  $deltaList = ['phone', 'removed', 'car', 'project', 'model', 'version', 'active', 'features'];
   foreach($deltaList as $delta) {
     if(!isset($new[$delta])) {
       continue;
@@ -257,7 +222,12 @@ function upsert_screen($screen_uid, $payload) {
     $screen = create_screen($screen_uid);
   }
 
-  $data = ['last_seen' => 'current_timestamp'];
+  $data = [
+    // I don't care if it was manually removed, if we see it again
+    // we are activating it again. That's how it works.
+    'removed' => 0,
+    'last_seen' => 'current_timestamp'
+  ];
   if(!empty($payload['lat']) && floatval($payload['lat'])) {
     $data['lat'] = floatval($payload['lat']);
     $data['lng'] = floatval($payload['lng']);
@@ -293,7 +263,7 @@ function response($payload) {
 
 // This is called from the admin UX
 function command($payload) {
-  $scope_whitelist = ['id', 'project', 'model', 'version'];
+  $scope_whitelist = ['id', 'removed', 'project', 'model', 'version'];
   $idList = [];
   
   $field_raw = aget($payload, 'field');
@@ -352,8 +322,6 @@ function default_campaign($screen) {
 
 function ping($payload) {
   global $VERSION, $LASTCOMMIT;
-
-  error_log(json_encode($payload));
 
   // features/modem/gps
   foreach([
@@ -461,10 +429,6 @@ function task_master($screen) {
 //
 // ----
 
-function screens() {
-  return show('screen');
-}
-
 function tasks() {
   return show('task');
 }
@@ -479,7 +443,7 @@ function task_dump() {
 }
 
 function screen_edit($data) {
-  $whitelist = ['car', 'phone', 'serial', 'project', 'model'];
+  $whitelist = ['car', 'removed', 'phone', 'serial', 'project', 'model'];
   $update = [];
   foreach(array_intersect($whitelist, array_keys($data)) as $key) {
     $update[$key] = db_string($data[$key]);
@@ -489,6 +453,7 @@ function screen_edit($data) {
   db_update('screen', $data['id'], $update);
   return Get::screen($data['id']);
 }
+
 
 // we need to find out if the screen has tasks we need
 // to inject and then do so
@@ -517,17 +482,15 @@ function task_inject($screen, $res) {
   return $res;
 }
 
-
 function update_campaign_completed($id) {
-  if(!$id) {
-    error_log("Not updating an invalid campaign: $id");
-  } else {
+  if($id) {
     // only update campaign totals that aren't our defaults
-    _query("update campaign 
+    return _query("update campaign 
       set completed_seconds=(
         select sum(completed_seconds) from job where campaign_id=$id
       ) where id=$id and is_default=0");
   }
+  error_log("Not updating an invalid campaign: $id");
 }
   
 function inject_priority($job, $screen, $campaign) {
@@ -536,6 +499,7 @@ function inject_priority($job, $screen, $campaign) {
 }
 
 function sow($payload) {
+  global $SCHEMA;
   error_log(json_encode($payload));
   if(isset($payload['uid'])) {
     $screen = upsert_screen($payload['uid'], $payload);
@@ -556,6 +520,22 @@ function sow($payload) {
     } else if($job_id) {
       if (! update_job($job_id, $job['completed_seconds']) ) {
         error_log("could not process job: " . json_encode($job));
+      } else {
+        $whiteMap = $SCHEMA['sensor_history'];
+        unset($whiteMap['id']);
+        $ins = [];
+        foreach($job['sensor'] as $j) {
+          $row = [];
+          foreach($j as $k => $v) {
+            if(isset($whiteMap[$k])) {
+              $row[$k] = $v;
+            }
+          }
+          $row['job_id'] = $job_id;
+          $ins[] = $row;
+        }
+
+        db_insert_many('sensor_history', $ins);
       }
 
       if(!isset($job['campaign_id'])) {
@@ -577,7 +557,7 @@ function sow($payload) {
     }
   }
   // error_log(json_encode($uniqueCampaignList));
-	
+  
   $active = active_campaigns($screen);
   // If we didn't get lat/lng from the sensor then we just any ad
   if(empty($payload['lat'])) {
@@ -585,10 +565,24 @@ function sow($payload) {
   } else {
     // right now we are being realllly stupid.
     $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
+      if(!empty($campaign['polygon_list']) && $payload['lat']) {
+        $test = [$payload['lat'], $payload['lng']];
+        foreach($campaign['polygon_list'] as $polygon) {
+          if(inside_polygon($polygon, $test)) {
+            return true;
+          }
+        }
+        // This is important because if we have a polygon definition
+        // then we actually don't want to show the ad outside that 
+        // polygon.
+        return false;
+      }
+      /*
       if(isset($payload['lat'])) {
         // under 1.5km
         return distance($campaign, $payload) < ($campaign['radius'] * 100);
       } 
+       */
       // essentially this is for debugging
       return true;
     });
@@ -617,29 +611,9 @@ function sow($payload) {
   return $server_response; 
 }
 
-function get_available_slots($start_query, $duration) {
-  if(!$start_query) {
-    $start_query = date();
-  }
-  if($duration) {
-    $duration = 7 * $DAY;
-  }
-  $end_query = $start_query + $duration;
-  //
-  // This is more or less a functional ceiling on our commitment for a time period if we are to assume that we can get everything
-  // done by the end of the duration, not the end of the campaign.
-  //
-  $committed_seconds = run("select sum(completed_seconds - duration_seconds) from campaigns where $start_time > $start_query or $end_time < $end_query");
-  $available_seconds = $duration - $committed_seconds;
-
-  // This is really rudimentary
-  return $committed_seconds;
-}
-
-
 function upload_s3($file) {
   // lol we deploy this line of code with every screen. what awesome.
-	$credentials = new Aws\Credentials\Credentials('AKIAIL6YHEU5IWFSHELQ', 'q7Opcl3BSveH8TU9MR1W27pWuczhy16DqRg3asAd');
+  $credentials = new Aws\Credentials\Credentials('AKIAIL6YHEU5IWFSHELQ', 'q7Opcl3BSveH8TU9MR1W27pWuczhy16DqRg3asAd');
 
   // this means there was an error uploading the file
   // currently we'll let this routine fail and then hit
@@ -650,11 +624,11 @@ function upload_s3($file) {
   $ext = array_pop($parts);
   $name = implode('.', [Uuid::uuid4()->toString(), $ext]);
 
-	$s3 = new Aws\S3\S3Client([
-		'version'     => 'latest',
-		'region'	    => 'us-east-1',
-		'credentials' => $credentials
-	]);
+  $s3 = new Aws\S3\S3Client([
+    'version'     => 'latest',
+    'region'      => 'us-east-1',
+    'credentials' => $credentials
+  ]);
   try {
     $res = $s3->putObject([
       'Bucket' => 'waivecar-prod',
@@ -670,18 +644,32 @@ function upload_s3($file) {
 }
 
 function show($what, $clause = '') {
+  if(is_array($clause)) {
+    if( !empty($clause) ) {
+      $clause = " where " . implode(' and ', sql_kv($clause));
+    } else {
+      $clause = '';
+    }
+  }
   return db_all("select * from $what $clause", $what);
 }
 
+function make_infinite($campaign_id) {
+  db_update('campaign', $campaign_id, [
+    'duration_seconds' => pow(2,31),
+    'end_time' => '2100-01-01 00:00:00'
+  ]);
+}
+
 function active_campaigns($screen) {
+  //  end_time > current_timestamp     and 
   return show('campaign', "where 
     active = 1                       and 
     is_default = 0                   and
     project = '{$screen["project"]}' and
-    end_time > current_timestamp     and 
     start_time < current_timestamp   and 
     completed_seconds < duration_seconds 
-    order by active desc, start_time desc");
+    order by start_time desc");
 }
 
 function campaigns_list($opts = []) {
@@ -738,6 +726,7 @@ function campaign_new($opts) {
       'active' => 1,//false,
       'asset' => db_string($opts['asset']),
       'duration_seconds' => $opts['duration'],
+      'project' => db_string('LA'),
       'lat' => $opts['lat'],
       'lng' => $opts['lng'],
       'radius' => $opts['radius'],
@@ -750,55 +739,81 @@ function campaign_new($opts) {
 }
 
 
+function campaign_history($data) {
+  $campaign = Get::campaign($data);
+
+  if($campaign) {
+    $campaignId = $campaign['id'];
+  } else if(isset($data['id'])) {
+    $campaign = [];
+    $campaignId = $data['id'];
+  } else {
+    return doError("Campaign not found");
+  }  
+
+  $jobList = Many::job([ 'campaign_id' => $campaignId ]);
+  $jobMap = mapBy($jobList, 'id');
+  $jobHistory = Many::sensor_history(['job_id in (' . implode(',', array_keys($jobMap)) .')']);
+
+  foreach($jobHistory as $row) {
+    $job_id = $row['job_id'];
+    if(!array_key_exists('log', $jobMap[$job_id])) {
+      $jobMap[$job_id]['log'] = [];
+    }
+    $jobMap[$job_id]['log'][] = $row;
+  }
+
+  $campaign['jobs'] = array_values($jobMap);
+  return $campaign;
+}
+
 // This is the first entry point ... I know naming and caching
 // are the hardest things.
 //
 // According to our current flow we may not know the user at the time
 // of creating this
 function campaign_create($data, $fileList, $user = false) {
-  global $DEALMAP, $PLACEMAP, $DAY;
+  global $DAY, $PLAYTIME;
 
+  error_log("campaign new: " . json_encode($data));
   # This means we do #141
   if(aget($data,'secret') === 'b3nYlMMWTJGNz40K7jR5Hw') {
-    $ref_id = aget($data,'ref_id');
+    $ref_id = db_string(aget($data,'ref_id'));
     $campaign = Get::campaign(['ref_id' => $ref_id]);
-    $asset = db_string(aget($data, 'asset'));
+    $asset = db_string(json_encode([aget($data, 'asset')]));
     if(!$campaign) {
       $campaign_id = db_insert(
         'campaign', [
           'active' => 1,
+          'ref_id' => $ref_id,
           'asset' => $asset,
           'duration_seconds' => 240,
-          'lat' => 33.999819, 
-          'lng' => -118.390412,
-          'radius' => 5000,
+          'lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000,
           'start_time' => time(),
           'end_time' => time() + $DAY * 7
         ]
       );
     } else {
-      db_update('campaign', ['asset' => $asset]);
+      $campaign_id = $campaign['id'];
+      db_update('campaign', $campaign_id, ['asset' => $asset]);
     }
     return doSuccess(Get::campaign($campaign_id));
   }
 
   // get the lat/lng radius of the location into the data.
-  $data = array_merge($PLACEMAP[$data['location']], $data);
-  // and the deal/contract
-  $data = array_merge($DEALMAP[$data['option']], $data);
-
-  // currently (2019,10,29) all durations are 1 week.
-  $data['start_time'] =  time();
-  $data['end_time'] = time() + $DAY * 7;
-  $data['asset'] = [];
+  $data = array_merge(
+    ['lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000],
+    ['total' => 999, 'duration' => $PLAYTIME * 300 ],
+    ['start_time' => time(), 'end_time' => time() + $DAY * 7, 'asset' => []],
+    $data
+  );
 
   foreach($fileList as $file) {
-    //$asset = 'fakename.png';
     $data['asset'][] = upload_s3($file);
   }
 
-
   $campaign_id = campaign_new($data);
+  /*
   if($campaign_id) {
     $order = [
       'campaign_id' => $campaign_id,
@@ -817,52 +832,37 @@ function campaign_create($data, $fileList, $user = false) {
 
     db_update('campaign', $campaign_id, ['order_id' => $order_id]);
   }
+   */
   return $campaign_id;
 }
 
 function campaign_update($data, $fileList, $user = false) {
   $assetList = [];
-  $campaign_id = $data['campaign_id'];
-
-  if(aget($data, 'append')) {
-    $campaign = Get::campaign($campaign_id);
-    $assetList = $campaign['asset'];
+  $campaign_id = aget($data,'campaign_id|id');
+  if(empty($campaign_id)) {
+    return doError("Need to set the campaign id");
   }
 
-  foreach($fileList as $file) {
-    $assetList[] = upload_s3($file);
-  }
+  if(!$fileList) {
+    $obj = [];
+    foreach($data as $k => $v) {
+      if (in_array($k, ['active','lat','lng','radius'])) {
+        $obj[$k] = db_string($v);
+      }
+    }
+    db_update('campaign', $campaign_id, $obj);
+  } else {
+    if(aget($data, 'append')) {
+      $campaign = Get::campaign($campaign_id);
+      $assetList = $campaign['asset'];
+    }
 
-  db_update('campaign', $campaign_id, ['asset' => db_string(json_encode($assetList))]);
+    foreach($fileList as $file) {
+      $assetList[] = upload_s3($file);
+    }
+
+    db_update('campaign', $campaign_id, ['asset' => db_string(json_encode($assetList))]);
+  }
   return $campaign_id;
 }
 
-// By the time we get here we should already have the asset
-// and we should have our monies
-function campaign_activate($campaign_id, $data) {
-  $payer = $data['payer']['payer_info'];
-  $info = $data['paymentInfo'];
-  $campaign = Get::campaign($campaign_id);
-
-  $user = Get::user(['email' => $payer['email']]);
-  if(!$user) {
-    $user_id = User::create([
-      'name' => "${payer['first_name']} ${payer['last_name']}",
-      'email' => $payer['email'],
-      'phone' => $payer['phone']
-    ]);
-    $user = Get::user($user_id);
-  }
-
-  $campaign = Get::campaign($campaign_id);
-  db_update('orders', $campaign['order_id'], [
-    'status' => 'completed',
-    // is this different?
-    'charge_id' => $info['orderID']
-  ]);
-
-  db_update('campaign', $campaign_id, [
-    'active' => true,
-    'user_id' => $user['id']
-  ]);
-}

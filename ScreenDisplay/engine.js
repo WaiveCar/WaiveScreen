@@ -5,6 +5,11 @@
 // If you're reading this and it's like 2022 or something, then go ahead and reconsider it,
 // it'll probably be fine by then.
 //
+// Also it's worth noting that the instagram ad basically discards any notion of compatibility
+// and uses css animations, css calc, the vw/vh units and a bunch of other fancy modern css3 
+// stuff - doing that with a bunch of javascript setIntervals was a waste of time ... I really
+// don't care that much - people will be viewing that on a smartphone and those usually aren't
+// crufty old crap browsers.
 
 
 // 2 mutually exclusive ways to timeline:
@@ -25,16 +30,6 @@ var Engine = function(opts){
       a[k] = b[k];
     }
     return a;
-  }
-
-  // Edge 14 FF 43 (2016)
-  // Note: Not a true polyfill, this is just how I use it in practice.
-  if(!Array.prototype.includes) {
-    Object.defineProperty(Array.prototype, 'includes', {
-      value: function(valueToFind) {
-        return this.indexOf(valueToFind) !== -1;
-      }
-    });
   }
   // } End of support.
 
@@ -63,10 +58,12 @@ var Engine = function(opts){
       target: { width: 1920, height: 675 },
 
       listeners: {},
-      data: {}
+      data: {},
+
+      _debug: false,
+      _current: false
 
     }, opts || {}),
-    _current = false,
     _last = false,
     _playCount = 0,
     _id = 0,
@@ -75,6 +72,7 @@ var Engine = function(opts){
     _nop = function(){},
     _isNetUp = true,
     _start = new Date(),
+    _stHandleMap = {},
     _last_sow = [+_start, +_start],
     _fallback;
 
@@ -108,6 +106,40 @@ var Engine = function(opts){
     console.log("Making " + obj.url + " inactive");
   }
 
+  function image(asset, obj) {
+    var img = document.createElement('img');
+    img.onerror = function(e) {
+      assetError(asset, e);
+    }
+    img.onload = function(e) {
+      if(e.target.width) {
+        var ratio = e.target.width / e.target.height;
+        if(ratio > _res.target.ratio) {
+          var maxHeight = _res.target.width * e.target.height / e.target.width;
+          e.target.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
+          e.target.style.width = _res.target.width + "px";
+          //console.log(_res.target.width, e.target.height, e.target.width, e.target.src);
+        } else { 
+          var maxWidth = _res.target.height * e.target.width / e.target.height;
+          e.target.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
+          e.target.style.height = _res.target.height + "px";
+        }
+      }
+      asset.active = true;
+      obj.active = true;
+    }
+    img.src = asset.url;
+
+    asset.active = true;
+    // TODO: per asset custom duration 
+    asset.duration = asset.duration || _res.duration;
+    obj.duration += asset.duration;
+    asset.run = _nop;
+    asset.dom = img;
+
+    return asset;
+  }
+
   function iframe(asset, obj) {
     var dom = document.createElement('iframe');
     dom.src = asset.url;
@@ -115,6 +147,11 @@ var Engine = function(opts){
     asset.run = function() {
       _playCount ++;
     }
+    asset.active = true;
+    asset.duration = asset.duration || 100 * _res.duration;
+    obj.duration += asset.duration;
+    obj.active = true;
+    return asset;
   }
   
   function video(asset, obj) {
@@ -132,7 +169,7 @@ var Engine = function(opts){
     // before the videos loaded. However, there
     // should be a way to do overrides. So this
     // solution is insufficient
-    asset.duration = 100;
+    asset.duration = asset.duration || 100;
     asset.cycles = 1;
     asset.run = function(noreset) {
       if(!noreset) {
@@ -164,7 +201,16 @@ var Engine = function(opts){
     vid.ondurationchange = function(e) {
       // This will only come if things are playable.
       let vid = e.target;
-      asset.duration = vid.duration || asset.duration;
+      // This is probably wrong since we are making a decision this
+      // far down the line.  Essentially what I want to do is allow
+      // for a partial video to show if it's really long but also
+      // be smart enough to show a short video smoothly.  It also
+      // doesn't sound like something that can be done with such
+      // little logic since there's ultimately an "opinion" here
+      // of a threshold which means that it requires a numerical value
+      // whose existence is clearly mysteriously absent. Ah, we'll
+      // figure it out later, like most things in life.
+      asset.duration = Math.min(vid.duration, asset.duration);
       asset.active = true;
       // if a video is really short then we force loop it.
       if(asset.duration < 0.8) {
@@ -199,6 +245,13 @@ var Engine = function(opts){
     return asset;
   }
     
+  function assetTest(asset, mime, ext) {
+    if(asset.mime) { 
+      return asset.mime.match(mime);
+    }
+    return asset.url.match('(' + ext.join('|') + ')');
+  }
+
   // All the things returned from this have 2 properties
   // 
   //  run() - for videos it resets the time and starts the video
@@ -231,47 +284,19 @@ var Engine = function(opts){
       obj.url = [ obj.url ];
     }
 
-    obj.assetList = obj.url.map(function(url) {
-      var asset = {url: url};
-      var ext = url.split('.').pop();
+    obj.assetList = obj.url.map(function(asset) {
       var container = document.createElement('div');
+      if(isString(asset)) {
+        asset = {url: asset};
+      }
       container.classList.add('container');
 
-      if(['html'].includes(ext.toLowerCase()) ) {
-        asset = iframe(asset, obj);
-      } else if(['mp4','ogv','mpeg','webm','flv','3gp','avi'].includes(ext.toLowerCase()) ) {
+      if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
+        asset = image(asset, obj);
+      } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
         asset = video(asset, obj);
       } else {
-
-        var img = document.createElement('img');
-        img.onerror = function(e) {
-          assetError(asset, e);
-        }
-        img.onload = function(e) {
-          if(e.target.width) {
-            var ratio = e.target.width / e.target.height;
-            if(ratio > _res.target.ratio) {
-              var maxHeight = _res.target.width * e.target.height / e.target.width;
-              e.target.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
-              e.target.style.width = _res.target.width + "px";
-              //console.log(_res.target.width, e.target.height, e.target.width, e.target.src);
-            } else { 
-              var maxWidth = _res.target.height * e.target.width / e.target.height;
-              e.target.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
-              e.target.style.height = _res.target.height + "px";
-            }
-          }
-          asset.active = true;
-          obj.active = true;
-        }
-        img.src = url;
-
-        asset.active = true;
-        // TODO: per asset custom duration 
-        asset.duration = _res.duration;
-        obj.duration += asset.duration;
-        asset.run = _nop;
-        asset.dom = img;
+        asset = iframe(asset, obj);
       }
       asset.container = container;
       asset.container.appendChild(asset.dom);
@@ -395,9 +420,6 @@ var Engine = function(opts){
   function sow(payload, cb) {
     // no server is set
     if(!_res.server) {
-      if(remote.ix == 0) {
-        console.info("No server is set.");
-      }
       remote.ix++;
       return;
     }
@@ -436,7 +458,10 @@ var Engine = function(opts){
     // be transitioning away from a previous job
     //
     // so this is is when we do the reporting.
-    if(_current.position === 0) {
+    if(_res.debug) {
+      console.log(_res._current);
+    }
+    if(_res._current.position === 0) {
 
       // If this exists then it'd be set at the last asset
       // previous job.
@@ -454,7 +479,7 @@ var Engine = function(opts){
           completed_seconds: _last.completed_seconds
         });
 
-        if(_last.job_id !== _current.job_id) {
+        if(_last.job_id !== _res._current.job_id) {
           // we reset the downweight -- it can come back
           _last.downweight = 1;
         }
@@ -463,7 +488,7 @@ var Engine = function(opts){
 
     // If we are at the end then our next function should be to
     // choose the next job.
-    if(_current.position === _current.assetList.length) {
+    if(_res._current.position === _res._current.assetList.length) {
       if(!_res.pause) {
         nextJob();
       }
@@ -473,51 +498,51 @@ var Engine = function(opts){
       // ****
       //
       // We may (quite likely) will
-      // have (_last === _current) most of the time. This means
+      // have (_last === _res._current) most of the time. This means
       // that we are "passing the torch" of the .shown pointer,
       // being more than likely just one.
-      if(_last && (_current.position > 0 || _last.id !== _current.id)) {
-        console.log(_current.position, _last.id, _current.id);
+      if(_last && (_res._current.position > 0 || _last.id !== _res._current.id)) {
+        //console.log(_res._current.position, _last.id, _res._current.id);
         _last.shown.container.classList.add('fadeOut');
 
         // This is NEEDED because by the time 
         // we come back around, _last.shown will be 
         // redefined.
         prev = _last.shown;
-        setTimeout(function() {
+        _timeout(function() {
           prev.container.classList.remove('fadeOut');
           if(prev.container.parentNode) {
             prev.container.parentNode.removeChild(prev.container);
           } else {
             console.log("Not able to remove container");
           }
-        }, _res.fadeMs);
+        }, _res.fadeMs, 'assetFade');
         doFade = true;
       }
 
 
       // Now we're ready to show the asset. This is done through
       // a pointer as follows:
-      _current.shown = _current.assetList[_current.position];
-      console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
+      _res._current.shown = _res._current.assetList[_res._current.position];
+      //console.log(new Date() - _start, _playCount, "Job #" + _res._current.id, "Asset #" + _res._current.position, "Duration " + _res._current.shown.duration, _res._current.shown.url, _res._current.shown.cycles);
       
       if(doFade) {
-        _current.shown.container.classList.add('fadeIn');
+        _res._current.shown.container.classList.add('fadeIn');
       } else {
-        _current.shown.container.classList.remove('fadeIn');
+        _res._current.shown.container.classList.remove('fadeIn');
       }
-      _current.shown.run();
-      _res.container.appendChild(_current.shown.container);
+      _res._current.shown.run();
+      _res.container.appendChild(_res._current.shown.container);
 
       // And we increment the position to show the next asset
       // when we come back around
-      _current.position ++;
+      _res._current.position ++;
 
       // These will EQUAL each other EXCEPT when the position is 0.
-      _last = _current;
+      _last = _res._current;
 
       if(!_res.pause) {
-        setTimeout(nextAsset, _current.shown.duration * 1000 - _res.fadeMs / 2);
+        _timeout(nextAsset, _res._current.shown.duration * 1000 - _res.fadeMs / 2, 'nextAsset');
       }
     }
   }
@@ -565,6 +590,16 @@ var Engine = function(opts){
     },
   }
 
+  function _timeout(fn, timeout,  name, override) {
+    var handle = override ? fn : setTimeout(fn, timeout);
+    _stHandleMap[name] = {
+      ts: new Date(), 
+      handle: handle,
+      timeout: timeout
+    };
+    return handle
+  }
+
   function nextJob() {
     // We note something we call "breaks" which designate which asset to show.
     // This is a composite of what remains - this is two pass, eh, kill me.
@@ -602,53 +637,57 @@ var Engine = function(opts){
       // We do this "dice roll" to see 
       breakpoint = Math.random() * range;
 
+    if(_res._debug) {
+      console.log({active: activeList, range: range, priority: maxPriority});
+    }
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
-      console.log("Range < 0, using fallback");
+      if(_res.server) {
+        console.log("Range < 0, using fallback");
+      }
 
       if(!_fallback) {
         // woops what do we do now?! 
         // I guess we just try this again?!
-        return setTimeout(nextJob, 1500);
+        return _timeout(nextJob, 1500, 'nextJob');
       }
 
-      _current = _fallback;
+      _res._current = _fallback;
 
       if(!_firstRun && activeList.length == 0 && Object.values(_res.db) > 1) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
-        setAssetDuration(_current, 0, 0.2);
+        setAssetDuration(_res._current, 0, 0.2);
       } else {
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
         // this out to some significant number
-        setAssetDuration(_current, 0, _res.duration);
+        setAssetDuration(_res._current, 0, _res.duration);
       }
 
     } else {
       // This is needed for the end case.
       _firstRun = true;
-      _current = false;
+      _res._current = false;
       for(row of activeList) {
 
         accum += row.downweight * (row.goal - row.completed_seconds);
         if(accum > breakpoint) {
-          _current = row;
+          _res._current = row;
           break;
         }
       }
-      if(!_current) {
-        _current = row;
+      if(!_res._current) {
+        _res._current = row;
       }
-      console.log('>>>', _current);
     }
 
     // 
     // By this time we know what we plan on showing.
     //
-    _current.downweight *= _downweight;
-    _current.position = 0;
-    //console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration);
+    _res._current.downweight *= _downweight;
+    _res._current.position = 0;
+    //console.log(new Date() - _start, "Showing " + _res._current.id + " duration " + _res._current.duration);
     //
     // We set the start time of the showing of this ad
     // so we can cross-correlate the gps from the ScreenDaemon
@@ -657,7 +696,7 @@ var Engine = function(opts){
     _last_sow[0] = _last_sow[1];
     _last_sow[1] = +new Date();
 
-    setTimeout(nextAsset, 2000);
+    _timeout(nextAsset, 2000, 'nextAsset');
   }
 
   function setFallback (url, force) {
@@ -668,11 +707,11 @@ var Engine = function(opts){
         _fallback = makeJob(res.data.campaign);
         _res.system = res.data.system;
         trigger('system', _res.system);
-        setTimeout(function() {
+        _timeout(function() {
           setFallback(false, true);
-        }, 3 * 60 * 1000);
+        }, 3 * 60 * 1000, 'setFallback');
       }, function() { 
-        cleanTimeout(setFallback, _res.duration * 1000);
+        _timeout(cleanTimeout(setFallback, _res.duration * 1000), _res.duration * 1000, 'setFallback', true);
       });
 
     } else {
@@ -690,21 +729,27 @@ var Engine = function(opts){
   return merge(_res, {
     Play: function() {
       _res.pause = false;
-      _current.shown.dom.play();
+      _res._current.shown.dom.play();
       nextAsset();
     },
     Pause: function() {
       _res.pause = !_res.pause;
-      _current.shown.dom.pause();
+      console.log("Clearing setTimeout for the next asset");
+      clearTimeout(_stHandleMap.nextAsset.handle);
+      _res._current.shown.dom.pause();
     },
 
     Debug: function() {
       return {
-        current: _current,
+        current: _res._current,
         last: _last,
         isNetUp: _isNetUp 
       };
     }, 
+    Scrub: function(relative_time) {
+      if(relative_time < 0) {
+      }
+    },
     Start: function(){
       _res.container.classList.add('engine');
       // Try to initially contact the server

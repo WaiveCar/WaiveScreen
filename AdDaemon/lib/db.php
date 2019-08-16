@@ -1,56 +1,47 @@
 <?php
 date_default_timezone_set('UTC');
 
+$JSON = [
+  'pre' => function($v) { 
+    if (!$v) { return $v; } 
+    return db_string(json_encode($v)); 
+  },
+  'post' => function($v) { 
+    if (!$v) { return $v; } 
+    return json_decode($v, true); 
+  }
+];
+
 $RULES = [
   'campaign' => [ 
+    'polygon_list' => $JSON,
     'asset' => [
       'post' => function($v) {
+         $v = json_decode($v, true);
+         if(!is_array($v)) {
+           $v = [ $v ];
+         }
+
          return array_map(function($m) {
            if(strpos($m, 'http') === false) {
              return 'http://waivecar-prod.s3.amazonaws.com/' . $m;
            } 
            return $m;
-        }, json_decode($v, true));
+         }, $v);
       }
     ]
   ],
   'screen' => [
-    'features' => [
-      'pre' => function($v) { return db_string(json_encode($v)); },
-      'post' => function($v) { return json_decode($v, true); }
-    ]
-  ]
-  
+    'features' => $JSON
+  ],
+  'sensor_history' => [
+    'created_at' => [
+      'pre' => function($v) { return db_string($v); },
+     ]
+   ]
 ];
 
 $SCHEMA = [
-  'user' => [
-    'id'          => 'integer primary key autoincrement', 
-    'email'       => 'text not null',
-    'phone'       => 'text', 
-    'stripe_id'   => 'text not null',
-    'created_at'  => 'datetime default current_timestamp', 
-    'last_seen'   => 'datetime default current_timestamp'
-  ],
-
-  'orders' => [
-    'id'          => 'integer primary key autoincrement', 
-    'user_id'     => 'integer',
-    'campaign_id' => 'integer',
-    'amount'      => 'integer', 
-    'charge_id'   => 'text',
-    'status'      => 'text',
-    'created_at'  => 'datetime default current_timestamp'
-  ],
-
-  'subscription' => [
-    'id'          => 'integer primary key autoincrement', 
-    'user_id'     => 'integer',
-    'campaign_id' => 'integer',
-    'amount'      => 'integer', 
-    'created_at'  => 'datetime default current_timestamp'
-  ],
-
   'screen' => [
     'id'          => 'integer primary key autoincrement', 
 
@@ -76,6 +67,7 @@ $SCHEMA = [
     'pings'       => 'integer default 0',
     'port'        => 'integer', 
     'active'      => 'boolean default true',
+    'removed'     => 'boolean default false',
     'features'    => 'text',
     'first_seen'  => 'datetime', 
     'last_task'   => 'integer default 0',
@@ -104,11 +96,11 @@ $SCHEMA = [
   // these and can bleed over in either direction if it 
   // gets to that.
   // 
-  // If they are empty', then it means that it's 24 hours a day
+  // If they are empty, then it means that it's 24 hours a day
   //
   'campaign' => [
     'id'          => 'integer primary key autoincrement',
-    'ref_id'      => 'integer',
+    'ref_id'      => 'text',
     'order_id'    => 'integer',
     'asset'       => 'text not null',
     'duration_seconds' => 'integer',
@@ -118,6 +110,12 @@ $SCHEMA = [
     'lat'         => 'float default null',
     'lng'         => 'float default null',
     'radius'      => 'float default null',
+    // polygon_list is a list of polygons, not a list of points.
+    // This means it's a list of a list of points:
+    // polygon = [ [lat, lng], ... ]
+    // polygon_list = [ polygon, ... ]
+    //
+    'polygon_list'=> 'text',
     'start_minute'=> 'integer default null',
     'end_minute'  => 'integer default null',
     'active'      => 'boolean default false',
@@ -300,6 +298,7 @@ function db_string($what) {
 function db_date($what) {
  return "datetime($what,'unixepoch')";
 }
+
 function _query($qstr, $func='exec') {
   $db = db_connect();
   try {
@@ -327,54 +326,13 @@ function get_column_list($table_name) {
   }, db_all($res));
 }
 
-function setup() {
-  $db = db_connect();
-  global $SCHEMA;
-  $res = [];
-  foreach(array_values($SCHEMA) as $table) {
-    $table = preg_replace('/\s+/', ' ', $table);
-    $res[] = [$db->exec($table), $table];
-  }
-  return $res;
-}
-
-function truncate() {
-  $dbPath = "/var/db/waivescreen/main.db";
-  if (!unlink($dbPath)) {
-    return [
-      'res' => false,
-      'data' => "Couldn't delete file $dbPath"
-    ];
-  }
-
-  return [
-    'res' => true,
-    'data' => setup()
-  ];
-}
-
 function get_campaign_remaining($id) {
-  $res = (db_connect())->querySingle("
-    select 
-      duration_seconds - sum(campaign.completed_seconds) as remaining
-      from campaign left join job on campaign_id = campaign.id
-      where campaign.id = $id 
-    ");
+  $res = (db_connect())->querySingle("select duration_seconds - completed_seconds as remaining from campaign where campaign.id = $id");
 
   if($res === null) {
     return (db_connect())->querySingle("select duration_seconds from campaign where id=$id");
   }
   return $res;
-}
-
-function get_campaign_completion($id) {
-  return (db_connect())->querySingle("
-    select 
-      sum(completion_seconds) / duration_seconds        as shown, 
-      end_time - date('now') / (end_time - start_time)  as lapsed
-      from campaign join job on campaign_id = campaign.id
-      where campaign.id = $id 
-    ");
 }
 
 class Get {
@@ -510,20 +468,10 @@ function db_all($qstr, $table = false) {
   return $rowList;
 }
 
-function db_delete($table, $kv) {
-  $fields = [];
-
-  foreach($kv as $k => $v) {
-    $fields[] = "$k=$v";
-  } 
-
-  $fieldString = implode(' and ', $fields);
-
-  $qstr = "delete from $table where $fieldString";
-  return _query($qstr);
-}
-
 function db_insert_many($table, $kvList) {
+  if(count($kvList) === 0) {
+    return null;
+  }
   $fields = [];
   $valueList = [];
   $isFirst = true;
@@ -548,6 +496,7 @@ function db_insert_many($table, $kvList) {
   $fields = implode(',', $fields);
   $values = implode(',', $valueList);
   $qstr = "insert into $table($fields) values $values";
+  error_log($qstr);
 
   if(_query($qstr)) {
     return $db->lastInsertRowID();

@@ -1,4 +1,5 @@
-var _append = false;
+var _append = false,
+    _screen = false;
 function get(id) {
   var res = Data.filter(row => row.id == id);
   return res ? res[0] : null;
@@ -33,7 +34,7 @@ function show(res, timeout) {
 
 function change(id, what, el) {
   post('screens', {id: id, [what]: el.value}, res => {
-    show({data: 'Updated project'}, 1000);
+    show({data: 'Updated screen'}, 1000);
   });
 }
 
@@ -78,12 +79,23 @@ function obj2span(obj) {
   return '<div>' + out.join('</div><div>') + '</div>';
 }
 
+function remove() {
+  if(confirm(`Are you sure you want to remove ${_screen.uid}?`)) {
+    post('screens', {id: _screen.id, removed: true }, res => {
+      show({data: 'Updated screen'}, 1000);
+    });
+    $("#editModal").modal('hide');
+  }
+}
+
 function edit(id) {
   var screen = get(id);
   var keylist = ['imei','pings','last_task'];
   var out = keylist.map(row => `<span>${row}</span><span>${JSON.stringify(screen[row])}</span>`);
   out.push(`<span>features</span><span>${obj2span(screen.features)}</span>`); 
   
+  _screen = screen;
+
   $("#editModal .modal-body").html('<div>' + out.join('</div><div>') + '</div>');
   $("#ModalLabel").html(screen.uid);
   $("#editModal").modal();
@@ -95,7 +107,7 @@ $(function() {
       stateSave: true,
       order: [[10, 'desc']]
     });
-  } else {
+  } else if(self.Data){
     for (var which of Data) {
       let id = which.id;
       let engine = Engine({
@@ -108,7 +120,7 @@ $(function() {
   }
   $('.form-control-file').on('change', function(e) {
     let uploadInput = e.target;
-    update_campaign($(e.target).data('campaign'), e.target);
+    update_campaign_files($(e.target).data('campaign'), e.target);
   });
 });
 
@@ -117,7 +129,17 @@ function append() {
   _append = true;
 }
 
-function update_campaign(campaign, el) {
+function update_campaign(obj) {
+  return axios({
+    method: 'post',
+    url: '/api/campaign_update',
+    data: obj
+  }).then(function(resp) {
+    show("Updated campaign");
+  });
+}
+
+function update_campaign_files(campaign, el) {
   // Before the payment is processed by paypal, a user's purchase is sent to the server with 
   // the information that has so far been obtained including the picture.
   let formData = new FormData();

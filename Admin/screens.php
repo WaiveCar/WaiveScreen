@@ -1,9 +1,7 @@
 <?
-include('../MadisonAve/lib/lib.php');
-include('../AdDaemon/lib/const.php');
 include('lib.php');
 
-$screenList = get('screens');
+$screenList = get('screens', ['removed' => 0, 'active' => 1]);
 $addrList = get_addressList(array_map(function($row) { 
   if($row['lat'] && $row['lng']) {
     return [$row['lat'],$row['lng']]; 
@@ -108,14 +106,15 @@ function split($str) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel=stylesheet href=https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
     <link href="/css/sb-admin-2.min.css" rel="stylesheet">
+		<link rel=stylesheet href=https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css>
     <link href="/css/dataTables.bootstrap4.min.css" rel="stylesheet">
     <title>Screen Admin</title>
   </head>
   <style>
-    body,* { color: #000 }
+    #content-wrapper span { color: #000 }
     .id,.version { font-family: monospace }
     .edit { color: #999; cursor: pointer }
     .last { text-align: right }
@@ -132,7 +131,9 @@ function split($str) {
   </style>
   <body id="page-top">
   <div id="wrapper">
+  <? include ('partials/sidebar.php'); ?>
   <div id="content-wrapper" class="d-flex flex-column">
+    <? include ('partials/topbar.php'); ?>
 
     <h3>
     <div class="alert alert-primary" id="notice" role="alert"></div>
@@ -212,7 +213,7 @@ function split($str) {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="ModalLabel">screen naem</h5>
+            <h5 class="modal-title" id="ModalLabel">screen</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -222,8 +223,8 @@ function split($str) {
           </div>
 
           <div class="modal-footer">
+            <button type="button" class="btn btn-danger btn-sm mr-auto" onclick=remove()>Remove Screen</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <!--<button type="button" class="btn btn-primary">Update</button>-->
           </div>
         </div>
       </div>

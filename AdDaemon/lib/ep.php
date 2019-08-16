@@ -2,7 +2,8 @@
 session_start();
 include('lib.php');
 
-$func = $_REQUEST['func'];
+$func = $_REQUEST['_VxiXw3BaQ4WAQClBoAsNTg_func'];
+unset($_REQUEST['_VxiXw3BaQ4WAQClBoAsNTg_func']);
 $verb = $_SERVER['REQUEST_METHOD'];
 $input_raw = file_get_contents('php://input');
 $json_payload = @json_decode($input_raw, true);
@@ -29,23 +30,16 @@ try {
   }
   else if($func == 'campaign_update') {
     $assetList = array_values($_FILES);
-    jemit(campaign_update($_POST, $assetList));
+    jemit(campaign_update($all, $assetList));
   }
-  else if($func == 'screens') {
-    if($verb == 'GET') {
-      jemit(screens($all));
-    } elseif ($verb == 'POST' || $verb == 'PUT') {
-      jemit(screen_edit($all));
-    }
+  else if($func == 'screens' && ($verb == 'POST' || $verb == 'PUT')) {
+    jemit(screen_edit($all));
   } 
-  else if(array_search($func, ['jobs', 'campaigns', 'screens', 'tasks']) !== false) {
-    jemit(show(rtrim($func, 's')));
+  else if(array_search($func, ['jobs', 'sensor_history', 'campaigns', 'screens', 'tasks']) !== false) {
+    jemit(show(rtrim($func, 's'), $all));
   }
-  else if(array_search($func, ['sow', 'task_dump', 'screen_tag', 'tag', 'ping', 'command', 'response']) !== false) { 
+  else if(array_search($func, ['active_campaigns', 'campaign_history', 'sow', 'task_dump', 'screen_tag', 'tag', 'ping', 'command', 'response']) !== false) { 
     jemit($func($all, $verb));
-  }
-  else if($func == 'setup') {
-    jemit(setup($_POST));
   } else {
     jemit([
       'res' => false,
