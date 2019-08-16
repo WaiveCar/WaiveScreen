@@ -27,6 +27,7 @@ foreach($SCHEMA as $table_name => $table_schema) {
     // Otherwise we may need to add columns to the table
     $new_column_name_list = array_keys($table_schema);
     $column_to_add_list = array_diff($new_column_name_list, $existing_column_name_list);
+    $shared_column_list = array_intersect($new_column_name_list, $existing_column_name_list);
 
     if(count($column_to_add_list)) {
       echo "Adding the following columns to $table_name:\n";
@@ -34,17 +35,19 @@ foreach($SCHEMA as $table_name => $table_schema) {
 
       $existing_schema_str = implode(',', $existing_schema);
       $existing_rows_str = implode(',', $existing_column_name_list);
-
+      $shared_rows_str = implode(',', $shared_column_list);
+ 
       $add_column_sql = "
         DROP TABLE IF EXISTS my_backup;
         CREATE TEMPORARY TABLE my_backup($existing_schema_str);
         INSERT INTO my_backup SELECT $existing_rows_str FROM $table_name;
         DROP TABLE $table_name;
         CREATE TABLE $table_name($new_schema);
-        INSERT INTO $table_name ($existing_rows_str) SELECT $existing_rows_str FROM my_backup;
+        INSERT INTO $table_name ($shared_rows_str) SELECT $shared_rows_str FROM my_backup;
         DROP TABLE my_backup;
       ";
 
+      //echo $add_column_sql;
       $db->exec($add_column_sql);
 
       // If we added columns then we need to revisit our pragma
@@ -70,6 +73,7 @@ foreach($SCHEMA as $table_name => $table_schema) {
         DROP TABLE my_backup;
       ";
 
+      //echo $drop_column_sql;
       $db->exec($drop_column_sql);
     }
   }
