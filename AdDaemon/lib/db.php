@@ -105,17 +105,16 @@ $SCHEMA = [
     'asset'       => 'text not null',
     'duration_seconds' => 'integer',
     'completed_seconds' => 'integer default 0',
-    'place_id'    => 'integer default null',
     'project'     => 'text default "dev"',
-    'lat'         => 'float default null',
-    'lng'         => 'float default null',
-    'radius'      => 'float default null',
-    // polygon_list is a list of polygons, not a list of points.
-    // This means it's a list of a list of points:
-    // polygon = [ [lat, lng], ... ]
-    // polygon_list = [ polygon, ... ]
+
     //
-    'polygon_list'=> 'text',
+    // shape_list := [ polygon | circle ]* 
+    //  polygon   := [ "Polygon", [ coord, ... ] ]
+    //  circle    := [ "Circle", coord, radius ]
+    //  coord     := [ lon, lat ]
+    //  radius    := integer (meters)
+    //
+    'shape_list'  => 'text',
     'start_minute'=> 'integer default null',
     'end_minute'  => 'integer default null',
     'active'      => 'boolean default false',
