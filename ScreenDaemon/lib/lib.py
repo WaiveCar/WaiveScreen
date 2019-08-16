@@ -12,6 +12,8 @@ import sys
 import glob
 import base64
 import subprocess
+import magic
+from urllib.parse import quote
 from threading import Lock
 from pprint import pprint
 from datetime import datetime
@@ -30,14 +32,12 @@ MYPATH = os.path.dirname(os.path.realpath(__file__))
 ROOT = os.path.dirname(os.path.dirname(MYPATH))
 
 os.chdir(MYPATH)
-VERSION = os.popen("/usr/bin/git describe").read().strip()
-
-# The unix time of the last commit
-VERSIONDATE = os.popen("/usr/bin/git log -1 --format='%at'").read().strip()
-
+VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.popen("/usr/bin/git rev-parse --abbrev-ref HEAD").read().strip() )
 UUID = False
 
 _pinglock = Lock()
+_mime = magic.Magic(mime=True)
+_reading = 0.7
 
 USER = os.environ.get('USER')
 if not USER or USER == 'root':
@@ -49,7 +49,7 @@ SANITYCHECK = os.environ.get('SANITYCHECK')
 NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
 DISPLAY = os.environ.get('DISPLAY')
-SERVER_URL = os.environ.get('SERVER_URL') or 'http://waivescreen.com/api'
+SERVER_URL = "http://{}/api".format(os.environ.get('SERVER') or 'waivescreen.com')
 
 GPS_DEVICE_ACCURACY = 5.0 # Assumed, but not verified
 GPGGA_FIELD_NAMES = ( 'utc_time', 'latitude', 'ns_indicator',
@@ -325,13 +325,15 @@ def get_gps(all_fields=False):
   return {}
 
 
-def add_record(kind, value):
+def add_history(kind, value):
   # This is kind of what we want..
   #if kind not in ['upgrade', 'feature', 'state']:
   #
   return db.insert('history', { 'kind': kind, 'value': value })
 
 def task_response(which, payload):
+  db.update('command_history', {'ref_id': which}, {'response': payload})
+
   post('response', {
     'uid': get_uuid(),
     'task_id': which,
@@ -339,6 +341,7 @@ def task_response(which, payload):
   })
 
 def task_ingest(data):
+  global _reading
   if 'taskList' not in data:
     return
 
@@ -354,11 +357,16 @@ def task_ingest(data):
       continue
 
     db.kv_set('last_task', id)
-
     ## TODO: expiry check
 
     action = task.get('command')
     args = task.get('args')
+
+    db.insert('command_history', {
+      'ref_id': id,
+      'command': action,
+      'args': args
+    })
 
     if action == 'upgrade':
       task_response(id, True)
@@ -369,13 +377,12 @@ def task_ingest(data):
 
     elif action == 'screenoff':
       db.sess_set('force_sleep')
-      global _reading
       _reading = arduino.do_sleep()
       task_response(id, True)
 
     elif action == 'screenon':
       db.sess_del('force_sleep')
-      arduino.do_awake(_reading)
+      arduino.do_awake(_reading or 0.7)
       task_response(id, True)
 
     elif action == 'autobright':
@@ -470,12 +477,7 @@ def get_number():
   return re.sub('[^\d]', '', db.kv_get('number') or '')
 
 def asset_cache(check):
-  #
   # Now we have the campaign in the database, yay us I guess
-  # On the FAi partition, assuming we have 2, most crap goes
-  # into the home directory which can derive from our global
-  # USER variable
-  #
   path = "/var/cache/assets"
   if not os.path.exists(path):
     os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(path))
@@ -484,7 +486,7 @@ def asset_cache(check):
 
   res = []
   for asset in check['asset']:
-    name = "{}/{}".format(path, asset.split('/')[-1])
+    name = "{}/{}".format(path, quote(asset.split('/')[-1]))
     if (not os.path.exists(name)) or os.path.getsize(name) == 0:
       r = requests.get(asset, allow_redirects=True)
       # 
@@ -503,7 +505,42 @@ def asset_cache(check):
       except:
         pass
 
-    res.append(name)
+    #
+    # As it turns out, the browser thinks a file is text/plain unless
+    # the server can give it a content-type or if served locally 
+    # there's extension hinting.
+    #
+    # So what's that mean for us?! If we are looking at text/html
+    # and we don't have an extension then we should either serve it
+    # ourselves (unlikely) or just tack an extension on to it.
+    #
+    # But wait, we can't /just move/ the file otherwise our caching
+    # system above would eat shit each time. So we exploit the fact
+    # that hard drives are big and HTML files are small and we just
+    # copy it over, insulting every programmer who used blood sweat
+    # and tears to cram say 215 bytes to 211 in a bygone era.
+    #
+    mime = _mime.from_file(name)
+
+    duration = 7.5
+    if 'html' in mime and 'html' not in name:
+      import shutil
+      happybrowser = "{}.html".format(name)
+      if not os.path.exists(happybrowser):
+        shutil.copyfile(name, happybrowser)
+
+      name = happybrowser
+      duration = 150
+
+    # see #154 - we're restructuring this away from a string and
+    # into an object - eventually we have to assume that
+    # we're getting an object and then just injecting the mime
+    # type on ... but not yet my sweetie.
+    res.append({
+      'duration': duration,
+      'mime': mime,
+      'url': name
+    })
 
   check['asset'] = res
   return check
@@ -538,7 +575,6 @@ def ping():
     'uid': get_uuid(),
     'uptime': get_uptime(),
     'version': VERSION,
-    'version_time': VERSIONDATE,
     'last_task': db.kv_get('last_task') or 0,
     'features': feature_detect(),
     'modem': get_modem_info(),

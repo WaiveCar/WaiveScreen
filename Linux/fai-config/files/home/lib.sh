@@ -242,6 +242,13 @@ enable_gps() {
     --location-disable-cdma-bs
 }
 
+add_history() {
+  local kind=$1
+  local value=$2
+  local extra=$3
+  sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
+}
+
 get_number() {
   # mmcli may not properly be reporting the phone number. T-mobile sends it to
   # us in our first text so we try to work it from there.
@@ -342,7 +349,7 @@ EPERL
 
     hasip=$( ip addr show $wwan | grep inet | wc -l )
 
-    (( hasip > 0 )) && _warn "Data plan/SIM issues." || "No IP assigned."
+    (( hasip > 0 )) && _warn "Data plan/SIM issues." || _warn "No IP assigned."
   fi
   pycall db.sess_set modem,1 
 }
@@ -382,7 +389,7 @@ ssh_hole() {
         sleep $EVREST
 
       else
-        ssh -NC -R bounce:$port:127.0.0.1:22 bounce &
+        ssh -oStrictHostKeyChecking=no -NC -R bounce:$port:127.0.0.1:22 bounce &
         set_event $event
       fi
 
@@ -427,13 +434,13 @@ get_state() {
   mkdir -p $path
 
   cp -r $SMSDIR $LOG $path
-  cp /proc/uptime /etc/bootcount /etc/UUID $path
+  cp $DEST/.bash_history /var/log/wtmp /proc/uptime /etc/bootcount /etc/UUID $path
   $SUDO cp /var/log/daemon.log $path
   $SUDO chmod 0666 $path/daemon.log
 
   sqlite3 $DB .dump > $path/backup.sql
 
-  ( cd $BASE && git describe > $path/version )
+  get_version > $path/version 
 
   cd /tmp/
   tar cjf /tmp/$archive $uuid/$now
@@ -483,7 +490,13 @@ _screen_display_single() {
 
   [[ -e $app ]] || die "Can't find $app. Exiting"
 
-  _as_user chromium --no-first-run --non-secure --default-background-color='#000' --app=file://$app &
+  _as_user chromium --kiosk \
+    --incognito \
+    --disable-translate --disable-features=TranslateUI \
+    --fast --fast-start \
+    --disable-infobars --noerrdialogs \
+    --remote-debugging-port=9222 --user-data-dir=remote-profile \
+    --no-first-run --non-secure --default-background-color='#000' file://$app &
   set_event screen_display
 }
 
@@ -648,10 +661,10 @@ upgrade_scripts() {
 }
 
 _upgrade_post() {
-  local version=$(cd $BASE && git describe)
+  local version=$(get_version)
   perlcall install_list | xargs $SUDO apt -y install
   pycall db.upgrade
-  pycall add_record "upgrade,$version"
+  add_history upgrade "$version"
 
   upgrade_scripts
   stack_restart 
@@ -715,7 +728,7 @@ debug() {
 make_patch() {
   cp -puv $DEST/* $DEST/.* $BASE/Linux/fai-config/files/home
   cd $BASE
-  git diff origin/master > /tmp/patch
+  git diff origin/$BRANCH > /tmp/patch
   [[ -s /tmp/patch ]] && curl -sX POST -F "f0=@/tmp/patch" "$SERVER/patch.php" || echo "No changes"
 }
 

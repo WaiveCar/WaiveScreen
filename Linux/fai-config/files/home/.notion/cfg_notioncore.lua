@@ -23,16 +23,12 @@ defbindings("WScreen", {
     }),
 
     
-    bdoc("Create a new workspace of chosen default type."),
     kpress(META.."equal", "ioncore.create_ws(_)"),
     kpress(OTHERMETA.."equal", "ioncore.create_ws(_)"),
     
-    bdoc("Display the main menu."),
-    kpress(ALTMETA.."F12", "mod_query.query_menu(_, _sub, 'mainmenu', 'Main menu:')"),
-    --kpress(ALTMETA.."F12", "mod_menu.menu(_, _sub, 'mainmenu', {big=true})"),
+    kpress(ALTMETA.."F12", "notioncore.exec_on(_, 'exec /usr/bin/chromium --start-fullscreen http://localhost:9222')"),
     mpress("Button3", "mod_menu.pmenu(_, _sub, 'mainmenu')"),
     
-    bdoc("Display the window list menu."),
     mpress("Button2", "mod_menu.pmenu(_, _sub, 'windowlist')"),
 
     bdoc("Forward-circulate focus."),
@@ -100,10 +96,6 @@ defbindings("WMPlex.toplevel", {
     
     submap(META.."K", {
         bdoc("Detach (float) or reattach an object to its previous location."),
-        -- By using _chld instead of _sub, we can detach/reattach queries
-        -- attached to a group. The detach code checks if the parameter 
-        -- (_chld) is a group 'bottom' and detaches the whole group in that
-        -- case.
         kpress("D", "ioncore.detach(_chld, 'toggle')", "_chld:non-nil"),
     }),
 })

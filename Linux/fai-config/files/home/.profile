@@ -7,6 +7,7 @@ esac
 shopt -s histappend
 HISTSIZE=1000
 HISTFILESIZE=2000
+HISTTIMEFORMAT="%F%T"
 shopt -s checkwinsize
 PS1='\u@\h:\w\$ '
 

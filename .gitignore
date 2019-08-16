@@ -5,7 +5,6 @@ node_modules
 *.swp
 *.swo
 vendor
-AdDaemon/lib/const.php
 tools/package-lock.json
 ScreenDisplay/assets/
 power-history
