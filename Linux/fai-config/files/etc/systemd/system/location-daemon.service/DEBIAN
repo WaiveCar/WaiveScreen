@@ -1,8 +1,6 @@
 [Unit]
 Description=Location Daemon for updating WaiveScreen's location
 After=syslog.target dbus.service ModemManager.service
-StartLimitIntervalSec=60
-StartLimitBurst=9
 
 [Service]
 Type=simple
