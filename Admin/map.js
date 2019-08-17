@@ -19,14 +19,12 @@ window.map = function(opts) {
   //  clear() - remove all the shapes
   //  
 
-  opts = opts || {};
-
-  Object.assign({}, {
+  opts = Object.assign({}, {
     target: 'map',
     center: [-118.3, 34.02],
     zoom: 13,
     typeSelect: 'type',
-  }, opts);
+  }, opts || {});
 
   var raster = new TileLayer({
     source: new OSM()
@@ -114,17 +112,19 @@ window.map = function(opts) {
       vector.getSource().removeFeature(feature);
     }
   }
+  function removeShape() {
+    let shapeList = vector.getSource().getFeatures();
+    if(shapeList) {
+      vector.getSource().removeFeature(shapeList.slice(-1)[0]);
+    }
+  }
+  function removePoint() {
+    _draw.removeLastPoint();
+  }
 
   dom.onkeyup = function(e) {
-    if(e.key === 'Delete') {
-      _draw.removeLastPoint();
-    }
-    if(e.key === 'Backspace') {
-      let shapeList = vector.getSource().getFeatures();
-      if(shapeList) {
-        vector.getSource().removeFeature(shapeList.slice(-1)[0]);
-      }
-    }
+    if(e.key === 'Delete') { removePoint(); }
+    if(e.key === 'Backspace') { removeShape(); }
   }
 
   typeSelect.onchange = function() {
@@ -137,6 +137,11 @@ window.map = function(opts) {
 
   return {
     _map: _map,
+    center: function(coor) {
+      return _map.getView().setCenter(fromLonLat(coor));
+    },
+    removeShape: removeShape,
+    removePoint: removePoint,
     save: getShapes,
     load: drawShapes,
     clear: clear
