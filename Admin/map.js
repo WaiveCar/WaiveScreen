@@ -137,8 +137,11 @@ window.map = function(opts) {
 
   return {
     _map: _map,
-    center: function(coor) {
-      return _map.getView().setCenter(fromLonLat(coor));
+    center: function(coor, zoom) {
+      _map.getView().setCenter(fromLonLat(coor));
+      if(zoom) {
+        _map.getView().setZoom(zoom);
+      }
     },
     removeShape: removeShape,
     removePoint: removePoint,

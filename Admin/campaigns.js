@@ -14,7 +14,7 @@ $(function() {
       }
       _map.load(_campaign.shape_list);
     } else {
-      _map.center([-118,34]);
+      _map.center([-118.34,34.06], 11);
     }
   });
 });
