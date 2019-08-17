@@ -58,11 +58,6 @@ $height = $width * 675 / 1920;
                   End: <?= $campaign['end_time'] ?>
                 <? } else { ?>
                   <h4>Default advertisement
-                  <? foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
-                    if ($value == $campaign['id']) { 
-                      echo "<span class='badge badge-pill badge-dark'>$key</span> ";
-                    }
-                  } ?>
                   </h4>
                 <? } ?>
 
@@ -97,7 +92,16 @@ $height = $width * 675 / 1920;
                     }
 ?>
 
-                  <h3><span class="badge badge-<?=$style?>" style=margin-left:1rem><?= $word ?></span></h3>
+                  <h3><span class="badge badge-<?=$style?>" style=margin-left:1rem><?= $word ?></span>
+                  <? 
+                    foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
+                      if ($value == $campaign['id']) { 
+                        echo "<span class='badge badge-pill badge-dark'>$key</span> ";
+                      }
+                    } 
+                  ?>
+                  <span class='badge badge-pill badge-dark'><?= $campaign['project']; ?></span>
+                  </h3>
                 </div>
 
                 <form id='form-<?=$campaign['id']?>'>
