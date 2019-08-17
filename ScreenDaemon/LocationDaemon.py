@@ -7,13 +7,13 @@ import time
 import json
 import logging
 from lib.wifi_location import wifi_location, wifi_scan_shutdown, wifi_last_submission
-from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict
+from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict, DEBUG, set_logger
 import lib.db as db
 
-if lib.DEBUG:
-  lib.set_logger(sys.stderr)
+if DEBUG:
+  set_logger(sys.stderr)
 else:
-  lib.set_logger('/var/log/screen/locationdaemon.log')
+  set_logger('/var/log/screen/locationdaemon.log')
 
 
 # location_loop sleep time - applies to GPS polling
