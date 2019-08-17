@@ -146,11 +146,11 @@ def wifi_location(min_bss_count=2):
 
 
     if len(d['wifiAccessPoints']) < min_bss_count:
-      logging.debug("Minimum number of BSS stations ({}) not found: {}".format(min_bss_count, len(d)))
+      logging.warning("Minimum number of BSS stations ({}) not found: {}".format(min_bss_count, len(d)))
       wifi_scan_shutdown()
       return {}
     elif is_same_scan_data():
-      logging.debug("Scan data looks the same.  Skipping Submission")
+      logging.info("Scan data looks the same.  Skipping Submission")
       location = _last_location
     else:
       url = 'https://location.services.mozilla.com/v1/geolocate?key=test'

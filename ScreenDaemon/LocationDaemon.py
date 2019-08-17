@@ -10,7 +10,11 @@ from lib.wifi_location import wifi_location, wifi_scan_shutdown, wifi_last_submi
 from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict
 import lib.db as db
 
-logging.basicConfig(level=logging.DEBUG) #TODO remove this after testing
+if lib.DEBUG:
+  lib.set_logger(sys.stderr)
+else:
+  lib.set_logger('/var/log/screen/locationdaemon.log')
+
 
 # location_loop sleep time - applies to GPS polling
 SLEEP_TIME = 10
