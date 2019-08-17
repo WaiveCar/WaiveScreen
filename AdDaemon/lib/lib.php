@@ -500,13 +500,14 @@ function inject_priority($job, $screen, $campaign) {
 
 function sow($payload) {
   global $SCHEMA;
-  error_log(json_encode($payload));
+  //error_log(json_encode($payload));
   if(isset($payload['uid'])) {
     $screen = upsert_screen($payload['uid'], $payload);
   } else {
     return doError("UID needs to be set before continuing");
   }
 
+  error_log($payload['uid']);
   $jobList = aget($payload, 'jobs', []);
   $campaignsToUpdateList = [];
 
@@ -565,11 +566,13 @@ function sow($payload) {
   } else {
     // right now we are being realllly stupid.
     $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
-      if(!empty($campaign['polygon_list']) && $payload['lat']) {
-        $test = [$payload['lat'], $payload['lng']];
-        foreach($campaign['polygon_list'] as $polygon) {
-          if(inside_polygon($polygon, $test)) {
-            return true;
+      if(!empty($campaign['shape_list']) && $payload['lat']) {
+        $test = [floatval($payload['lng']), floatval($payload['lat'])];
+        foreach($campaign['shape_list'] as $polygon) {
+          if($polygon[0] === 'Polygon') {
+            if(inside_polygon($test, $polygon[1])) {
+              return true;
+            }
           }
         }
         // This is important because if we have a polygon definition
@@ -586,6 +589,7 @@ function sow($payload) {
       // essentially this is for debugging
       return true;
     });
+    error_log(json_encode($nearby_campaigns));
   }
 
   // so if we have existing outstanding jobs with the
@@ -651,6 +655,7 @@ function show($what, $clause = '') {
       $clause = '';
     }
   }
+  //error_log(preg_replace('/\s+/', ' ', "select * from $what $clause"));
   return db_all("select * from $what $clause", $what);
 }
 
