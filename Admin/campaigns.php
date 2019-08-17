@@ -32,6 +32,7 @@ $height = $width * 675 / 1920;
     .asset-container { width: <?= $width; ?>px; position: relative; height: <?= $height; ?>px; }
     .upload-button { margin-bottom: 0 }
     #notice { position: fixed; top:0; left:0; width: 100%; z-index: 100;display:none}
+    .dropdown-menu > a.dark { color: #000;cursor: default }
     </style>
   </head>
   <body id="page-top">
@@ -73,14 +74,16 @@ $height = $width * 675 / 1920;
                       Actions
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      <a onclick="geofence(<?=$campaign['id']?>)" style=color:#000 class="dropdown-item">Geofence</a>
+                      <a onclick="geofence(<?=$campaign['id']?>)" class="dropdown-item dark">Geofence</a>
 <?                   if ($campaign['active']) {?>
-                      <a onclick="update_campaign({id:<?=$campaign['id']?>,active:false})" class="dropdown-item">Disable</a>
+                      <a onclick="update_campaign({id:<?=$campaign['id']?>,active:false})" class="dropdown-item dark">Disable</a>
 <?} else { ?>
-                      <a onclick="update_campaign({id:<?=$campaign['id']?>,active:true})" class="dropdown-item">Enable</a>
+                      <a onclick="update_campaign({id:<?=$campaign['id']?>,active:true})" class="dropdown-item dark">Enable</a>
 <? } ?>
+                      <div class="dropdown-divider"></div>
                       <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Replace</label>
                       <label onclick="append()" class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Append</label>
+                      <div class="dropdown-divider"></div>
                       <a class="dropdown-item" href="#">Make Default</a>
                     </div>
                   </div>
