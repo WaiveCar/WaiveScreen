@@ -128,6 +128,7 @@ $height = $width * 675 / 1920;
           <div class="modal-footer">
             <button type="button" class="btn btn-danger btn-sm mr-auto" data-dismiss="modal">Cancel</button>
             <button type="button" class="btn btn-outline-secondary btn-sm mr-auto" onclick=clearmap()>Clear</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm mr-auto" onclick=removeShape()>Remove Most Recent Shape</button>
             <button type="button" class="btn btn-secondary" onclick=geosave()>Update</button>
           </div>
         </div>
