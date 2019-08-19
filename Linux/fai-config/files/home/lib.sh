@@ -341,17 +341,36 @@ EPERL
   else
     _warn "$SERVER unresolvable!"
 
-    local ix=0
-    while ! $MM; do
-      (( ++ix < 4 )) && _info "Waiting for modem"
-      sleep 9
-    done
+    # Well let's see if that small stanford project is still resolvable
+    if ping -c 1 -i 0.3 yahoo.com; then
+      _warn "Server likely down."
+    else
+      local ix=0
+      while ! $MM; do
+        (( ++ix < 4 )) && _info "Waiting for modem"
+        sleep 9
+      done
 
-    hasip=$( ip addr show $wwan | grep inet | wc -l )
+      hasip=$( ip addr show $wwan | grep inet | wc -l )
 
-    (( hasip > 0 )) && _warn "Data plan/SIM issues." || _warn "No IP assigned."
+      (( hasip > 0 )) && _warn "Data plan/SIM issues." || _warn "No IP assigned."
+    fi
   fi
   pycall db.sess_set modem,1 
+}
+
+## test this later.
+network_check() {
+  PING="ping -c 1 -i 0.3"
+  if $PING $SERVER; then
+    echo UP
+  elif $PING yahoo.com; then
+    echo SERVER_DOWN
+  elif $PING 8.8.8.8; then
+    echo DNS
+  else
+    echo DOWN
+  fi
 }
 
 first_run() {

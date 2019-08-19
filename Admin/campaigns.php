@@ -32,6 +32,7 @@ $height = $width * 675 / 1920;
     .asset-container { width: <?= $width; ?>px; position: relative; height: <?= $height; ?>px; }
     .upload-button { margin-bottom: 0 }
     #notice { position: fixed; top:0; left:0; width: 100%; z-index: 100;display:none}
+    .dropdown-menu > a.dark { color: #000;cursor: default }
     </style>
   </head>
   <body id="page-top">
@@ -57,11 +58,6 @@ $height = $width * 675 / 1920;
                   End: <?= $campaign['end_time'] ?>
                 <? } else { ?>
                   <h4>Default advertisement
-                  <? foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
-                    if ($value == $campaign['id']) { 
-                      echo "<span class='badge badge-pill badge-dark'>$key</span> ";
-                    }
-                  } ?>
                   </h4>
                 <? } ?>
 
@@ -73,14 +69,16 @@ $height = $width * 675 / 1920;
                       Actions
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      <a onclick="geofence(<?=$campaign['id']?>)" style=color:#000 class="dropdown-item">Geofence</a>
+                      <a onclick="geofence(<?=$campaign['id']?>)" class="dropdown-item dark">Geofence</a>
 <?                   if ($campaign['active']) {?>
-                      <a onclick="update_campaign({id:<?=$campaign['id']?>,active:false})" class="dropdown-item">Disable</a>
+                      <a onclick="update_campaign({id:<?=$campaign['id']?>,active:false})" class="dropdown-item dark">Disable</a>
 <?} else { ?>
-                      <a onclick="update_campaign({id:<?=$campaign['id']?>,active:true})" class="dropdown-item">Enable</a>
+                      <a onclick="update_campaign({id:<?=$campaign['id']?>,active:true})" class="dropdown-item dark">Enable</a>
 <? } ?>
+                      <div class="dropdown-divider"></div>
                       <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Replace</label>
                       <label onclick="append()" class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Append</label>
+                      <div class="dropdown-divider"></div>
                       <a class="dropdown-item" href="#">Make Default</a>
                     </div>
                   </div>
@@ -94,7 +92,16 @@ $height = $width * 675 / 1920;
                     }
 ?>
 
-                  <h3><span class="badge badge-<?=$style?>" style=margin-left:1rem><?= $word ?></span></h3>
+                  <h3><span class="badge badge-<?=$style?>" style=margin-left:1rem><?= $word ?></span>
+                  <? 
+                    foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
+                      if ($value == $campaign['id']) { 
+                        echo "<span class='badge badge-pill badge-dark'>$key</span> ";
+                      }
+                    } 
+                  ?>
+                  <span class='badge badge-pill badge-dark'><?= $campaign['project']; ?></span>
+                  </h3>
                 </div>
 
                 <form id='form-<?=$campaign['id']?>'>
@@ -128,6 +135,7 @@ $height = $width * 675 / 1920;
           <div class="modal-footer">
             <button type="button" class="btn btn-danger btn-sm mr-auto" data-dismiss="modal">Cancel</button>
             <button type="button" class="btn btn-outline-secondary btn-sm mr-auto" onclick=clearmap()>Clear</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm mr-auto" onclick=removeShape()>Remove Most Recent Shape</button>
             <button type="button" class="btn btn-secondary" onclick=geosave()>Update</button>
           </div>
         </div>
