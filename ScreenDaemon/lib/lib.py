@@ -684,8 +684,8 @@ def disk_monitor():
 
 def get_latlng():
   location = {
-    'Lat': db.kv_get('lat'),
-    'Lng': db.kv_get('lng')
+    'Lat': db.kv_get('Lat'),
+    'Lng': db.kv_get('Lng')
   }
   if location['Lat'] is None or location['Lng'] is None:
     return {}
