@@ -37,7 +37,9 @@ fi
 
 preexist=$(ls $HOME/WaiveScreen-*$(git describe)-$(git rev-parse --abbrev-ref HEAD).iso 2> /dev/null)
 [[ -n "$preexist" ]] && die "$preexist already exists. Either run with ONLYDISK or remove the iso(s)."
-[[ -z "$NOPIP" ]] && ( NONET=1 $DIR/syncer.sh pip || die "Can't sync" )
+if [[ -z "$NOPIP" ]]; then
+  NONET=1 $DIR/syncer.sh pip || die "Can't install the pip requirements, check requirements.txt" 
+fi
 
 if [ "$MIRROR" -o ! -e $dir ]; then
   [ -d $usb ] && rm -fr $usb
