@@ -442,7 +442,6 @@ def get_number():
 def asset_cache(check):
   import magic
   # Now we have the campaign in the database, yay us I guess
-  _mime = magic.Magic(mime=True)
   path = "/var/cache/assets"
   if not os.path.exists(path):
     os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(path))
@@ -485,7 +484,7 @@ def asset_cache(check):
     # copy it over, insulting every programmer who used blood sweat
     # and tears to cram say 215 bytes to 211 in a bygone era.
     #
-    mime = _mime.from_file(name)
+    mime = magic.from_file(name)
 
     duration = 7.5
     if 'html' in mime and 'html' not in name:
