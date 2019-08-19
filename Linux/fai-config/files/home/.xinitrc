@@ -1,5 +1,5 @@
 resize() {
-  eval $(xrandr -q | grep \ connected | awk ' { print "SC"NR"="$1 } ')
+  eval $(xrandr -q | grep \ connected | tail -2 | awk ' { print "SC"NR"="$1 } ')
   xrandr --newmode "1920x675_60.00"  104.25  1920 2008 2200 2480  675 678 688 702 -hsync +vsync
   xrandr --addmode $SC1 "1920x675_60.00"
   xrandr --addmode $SC2 "1920x675_60.00"
