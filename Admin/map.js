@@ -21,7 +21,7 @@ window.map = function(opts) {
 
   opts = opts || {};
 
-  Object.assign(opts, {
+  Object.assign({}, {
     target: 'map',
     center: [-118.3, 34.02],
     zoom: 13,
@@ -119,7 +119,7 @@ window.map = function(opts) {
     if(e.key === 'Delete') {
       _draw.removeLastPoint();
     }
-    if(e.key === 'Escape') {
+    if(e.key === 'Backspace') {
       let shapeList = vector.getSource().getFeatures();
       if(shapeList) {
         vector.getSource().removeFeature(shapeList.slice(-1)[0]);
@@ -136,6 +136,7 @@ window.map = function(opts) {
   addInteractions();
 
   return {
+    _map: _map,
     save: getShapes,
     load: drawShapes,
     clear: clear

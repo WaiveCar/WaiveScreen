@@ -4,7 +4,8 @@ date_default_timezone_set('UTC');
 $JSON = [
   'pre' => function($v) { 
     if (!$v) { return $v; } 
-    return db_string(json_encode($v)); 
+    if (!is_string($v)) { $v = json_encode($v); }
+    return db_string($v); 
   },
   'post' => function($v) { 
     if (!$v) { return $v; } 
@@ -14,7 +15,7 @@ $JSON = [
 
 $RULES = [
   'campaign' => [ 
-    'polygon_list' => $JSON,
+    'shape_list' => $JSON,
     'asset' => [
       'post' => function($v) {
          $v = json_decode($v, true);
@@ -105,22 +106,33 @@ $SCHEMA = [
     'asset'       => 'text not null',
     'duration_seconds' => 'integer',
     'completed_seconds' => 'integer default 0',
-    'place_id'    => 'integer default null',
     'project'     => 'text default "dev"',
+
+    //
+    // For now, until we get a geo db system
+    // this makes things easily queriable
+    //
+    // Stuff will be duplicated into shapelists
+    //
     'lat'         => 'float default null',
     'lng'         => 'float default null',
     'radius'      => 'float default null',
-    // polygon_list is a list of polygons, not a list of points.
-    // This means it's a list of a list of points:
-    // polygon = [ [lat, lng], ... ]
-    // polygon_list = [ polygon, ... ]
+
     //
-    'polygon_list'=> 'text',
+    // shape_list := [ polygon | circle ]* 
+    //  polygon   := [ "Polygon", [ coord, ... ] ]
+    //  circle    := [ "Circle", coord, radius ]
+    //  coord     := [ lon, lat ]
+    //  radius    := integer (meters)
+    //
+    'shape_list'  => 'text',
+
     'start_minute'=> 'integer default null',
     'end_minute'  => 'integer default null',
     'active'      => 'boolean default false',
     'is_default'  => 'boolean default false',
     'priority'    => 'integer default 0',
+
     'start_time'  => 'datetime default current_timestamp',
     'end_time'    => 'datetime'
   ],

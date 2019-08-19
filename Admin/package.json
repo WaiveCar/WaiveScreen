@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "parcel map.html",
-    "build": "parcel build --public-url . map.html"
+    "build": "parcel build map.js"
   },
   "dependencies": {
     "ol": "^5.3.3"

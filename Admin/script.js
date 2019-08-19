@@ -1,5 +1,6 @@
 var _append = false,
     _screen = false;
+
 function get(id) {
   var res = Data.filter(row => row.id == id);
   return res ? res[0] : null;
