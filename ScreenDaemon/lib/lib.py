@@ -12,7 +12,6 @@ import sys
 import glob
 import base64
 import subprocess
-import magic
 from urllib.parse import quote
 from threading import Lock
 from pprint import pprint
@@ -36,7 +35,6 @@ VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.p
 UUID = False
 
 _pinglock = Lock()
-_mime = magic.Magic(mime=True)
 _reading = 0.7
 
 USER = os.environ.get('USER')
@@ -442,7 +440,9 @@ def get_number():
   return re.sub('[^\d]', '', db.kv_get('number') or '')
 
 def asset_cache(check):
+  import magic
   # Now we have the campaign in the database, yay us I guess
+  _mime = magic.Magic(mime=True)
   path = "/var/cache/assets"
   if not os.path.exists(path):
     os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(path))
