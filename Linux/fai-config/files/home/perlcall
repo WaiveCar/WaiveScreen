@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use Scalar::Util qw/reftype/;
+use Scalar::Util qw(looks_like_number);
 
 my $home = '/home/adorno/';
 my $modem = 0;
@@ -130,7 +131,7 @@ body {
   for (my $ix = 0; $ix < scalar @features; $ix += 2) {
     my $key = $features[$ix];
     my $value = $features[$ix + 1];
-    if (!$value || $value <= 1) {
+    if (!$value || (looks_like_number($value) && $value <= 1)) {
       my $class = $value ? 'good' : 'bad';
       my $character = ($class eq 'bad') ? '&#x2717;' : '&#x2714;';
       print $html "<div class=$class><span class=mark>$character</span> $key</div>";
@@ -166,7 +167,7 @@ sub detect_features {
     }
   }
 
-  for($ix = 0; $ix < 4; $ix ++) {
+  for(my $ix = 0; $ix < 4; $ix ++) {
     if (!$camera_count[$ix]) {
       $camera_count[$ix] = 0;
     }
