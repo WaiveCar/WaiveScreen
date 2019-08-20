@@ -134,10 +134,17 @@ body {
     if (!$value || (looks_like_number($value) && $value <= 1)) {
       my $class = $value ? 'good' : 'bad';
       my $character = ($class eq 'bad') ? '&#x2717;' : '&#x2714;';
-      print $html "<div class=$class><span class=mark>$character</span> $key</div>";
+      print $html "<div class=$class><span class=mark>$character</span> $key";
     } else {
-      print $html "<div class=value><span class='mark mini'>$value</span> $key</div>";
+      print $html "<div class=value><span class='mark mini'>$value</span> $key";
     }
+    if($key == 'camera') {
+      $ix +=2;
+      my $key = $features[$ix];
+      my $value = $features[$ix + 1];
+      print $html "<small>$layout</small>";
+    }
+    print $html "</div>";
   }
 
   print $html qq(
