@@ -25,8 +25,11 @@ function show(res, timeout) {
   } else {
     notice.className = 'alert alert-danger';
   }
-
-  notice.innerHTML = res.data || "OK";
+  if('data' in res) {
+    notice.innerHTML = res.data || 'OK';
+  } else {
+    notice.innerHTML = res;
+  }
   notice.style.display = 'block';
   setTimeout(function() {
     notice.style.display = 'none';
