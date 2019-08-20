@@ -157,6 +157,22 @@ sub detect_features {
   my $hasSim = qx(mmcli -m $modem --output-keyvalue | grep sim | grep org | wc -l);
   my $signal = qx(mmcli -m $modem --output-keyvalue | grep signal-quality.value | awk -F : ' { print \$2 } ');
 
+  my $camera_layout = qx(grep -l uvc /sys/bus/usb/devices/*/uevent | cut -c 24 | uniq -c);
+  my @camera_count;
+  foreach(split(/\n/, $camera_layout)) {
+    my @parts = split(' ', $_);
+    if (length $parts[1]) {
+      $camera_count[$parts[1] - 1] = $parts[0] / 2;
+    }
+  }
+
+  for($ix = 0; $ix < 4; $ix ++) {
+    if (!$camera_count[$ix]) {
+      $camera_count[$ix] = 0;
+    }
+  }
+
+  $camera_layout = join(',', @camera_count);
   # * btle - todo
   my @features = (
     "arduino", -e "/dev/ttyACM0" ? 1 : 0,
@@ -166,6 +182,7 @@ sub detect_features {
     "sim", $hasSim,
     "ip", qx(mmcli -b 0| grep address | wc -l) > 0,
     "cameras", ($#videoList + 1) / 2,
+    "layout", $camera_layout,
     'gps', qx(mmcli -m $modem --location-get --output-keyvalue | grep longitude | grep -v -- -- | wc -l)
   );
   for (my $ix = 1; $ix < scalar @features; $ix += 2) {
