@@ -701,49 +701,6 @@ function campaigns_list($opts = []) {
   return show('campaign', $append);
 }
 
-function campaign_new($opts) {
-  //
-  // Currently we don't care about radius ... eventually we'll be using
-  // spatial systems anyway so let's be simple.
-  //
-  // Also we eventually need a user system here.
-  //
-  $missing = missing($opts, ['duration', 'asset', 'lat', 'lng', 'start_time', 'end_time']);
-  if($missing) {
-    return doError('Missing parameters: ' . implode(', ', $missing));
-  }
-  if(is_array($opts['asset'])) {
-    $opts['asset'] = json_encode($opts['asset']);
-  }
-  // make sure things aren't arrays when they are passed in here.
-  $opts = db_clean($opts);
-
-  // by default active gets set to false
-  // which means that we don't consider this 
-  foreach(["start_time", "end_time"] as $key) {
-    if(is_numeric($opts[$key])) {
-      $opts[$key] = db_date($opts[$key]);
-    }
-  }
-  //error_log(json_encode($opts));
-  $campaign_id = db_insert(
-    'campaign', [
-      'active' => 1,//false,
-      'asset' => db_string($opts['asset']),
-      'duration_seconds' => $opts['duration'],
-      'project' => db_string('LA'),
-      'lat' => $opts['lat'],
-      'lng' => $opts['lng'],
-      'radius' => $opts['radius'],
-      'start_time' => $opts['start_time'],
-      'end_time' => $opts['end_time']
-    ]
-  );
-
-  return $campaign_id;
-}
-
-
 function campaign_history($data) {
   $campaign = Get::campaign($data);
 
@@ -772,6 +729,13 @@ function campaign_history($data) {
   return $campaign;
 }
 
+function circle($lng = -118.390412, $lat = 33.999819, $radius = 3500) {
+  return [
+    'lat' => $lat, 'lng' => $lng, 'radius' => $radius,
+    'shape_list' => [ 'Circle', [$lng, $lat], $radius]
+  ];
+}
+
 // This is the first entry point ... I know naming and caching
 // are the hardest things.
 //
@@ -780,24 +744,30 @@ function campaign_history($data) {
 function campaign_create($data, $fileList, $user = false) {
   global $DAY, $PLAYTIME;
 
-  error_log("campaign new: " . json_encode($data));
+  $props = array_merge(circle(),
+    [
+      'project' => db_string('LA'),
+      'active' => 1,
+      'start_time' => db_date(time()),
+      'end_time' => db_date(time() + $DAY * 7),
+      'asset' => [],
+    ],
+  );
+
   # This means we do #141
-  if(aget($data,'secret') === 'b3nYlMMWTJGNz40K7jR5Hw') {
-    $ref_id = db_string(aget($data,'ref_id'));
-    $campaign = Get::campaign(['ref_id' => $ref_id]);
-    $asset = db_string(json_encode([aget($data, 'asset')]));
+  if(aget($data, 'secret') === 'b3nYlMMWTJGNz40K7jR5Hw') {
+    $ref_id = db_string(aget($data, 'ref_id'));
+
+    if($ref_id) {
+      $campaign = Get::campaign(['ref_id' => $ref_id]);
+      $asset = db_string(json_encode([aget($data, 'asset')]));
+      $props['ref_id'] = $ref_id;
+      $props['asset'] = $asset;
+    }
+
     if(!$campaign) {
-      $campaign_id = db_insert(
-        'campaign', [
-          'active' => 1,
-          'ref_id' => $ref_id,
-          'asset' => $asset,
-          'duration_seconds' => 240,
-          'lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000,
-          'start_time' => time(),
-          'end_time' => time() + $DAY * 7
-        ]
-      );
+      $props['duration_seconds'] = 240;
+      $campaign_id = db_insert( 'campaign', $props );
     } else {
       $campaign_id = $campaign['id'];
       db_update('campaign', $campaign_id, ['asset' => $asset]);
@@ -805,40 +775,11 @@ function campaign_create($data, $fileList, $user = false) {
     return doSuccess(Get::campaign($campaign_id));
   }
 
-  // get the lat/lng radius of the location into the data.
-  $data = array_merge(
-    ['lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000],
-    ['total' => 999, 'duration' => $PLAYTIME * 300 ],
-    ['start_time' => time(), 'end_time' => time() + $DAY * 7, 'asset' => []],
-    $data
-  );
-
   foreach($fileList as $file) {
-    $data['asset'][] = upload_s3($file);
+    $props['asset'][] = upload_s3($file);
   }
 
-  $campaign_id = campaign_new($data);
-  /*
-  if($campaign_id) {
-    $order = [
-      'campaign_id' => $campaign_id,
-      'amount' => $data['total'], 
-      'status' => db_string('open')
-    ];
-
-    if(!empty($data['charge_id'])) {
-      $order['charge_id'] = $data['charge_id'];
-    }
-
-    if($user) {
-      $row['user_id'] = $user['id'];
-    }
-    $order_id = db_insert('orders', $order);
-
-    db_update('campaign', $campaign_id, ['order_id' => $order_id]);
-  }
-   */
-  return $campaign_id;
+  return db_insert('campaign', $props);
 }
 
 function campaign_update($data, $fileList, $user = false) {
