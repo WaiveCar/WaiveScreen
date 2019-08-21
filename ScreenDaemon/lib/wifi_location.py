@@ -45,7 +45,7 @@ def wifi_last_submission(set_it=False):
   if set_it:
     db.kv_set('wifi_last_submission', time.time())
   else:
-    t = db.kv_get('wifi_last_submission')
+    t = db.kv_get('wifi_last_submission', use_cache=True)
     return 0.0 if t is None else float(t)
 
 def wifi_scan_startup():
