@@ -56,7 +56,7 @@ sub acceptance_screen {
   my $out = qx($home/WaiveScreen/ScreenDaemon/dcall kv_get | sed -E s"/[\'=;]/ /"g);
   my %values;
   my $uptime = qx(awk ' { print \$1 } ' /proc/uptime);
-  my $version = qx(cd $home/WaiveScreen && git describe);
+  my $version = qx(cd $home/WaiveScreen && git describe) . "-" . qx(cd $home/WaiveScreen && git rev-parse --abbrev-ref HEAD);
   my @all = eval "qw($out)";
   for(my $ix = 0; $ix < $#all; $ix += 2) {
     $values{$all[$ix]} = $all[$ix + 1];
