@@ -165,12 +165,7 @@ small {
   close $html;
 }
 
-# see #73
-sub detect_features {
-  my @videoList = glob("/dev/video*");
-  my $hasSim = qx(mmcli -m $modem --output-keyvalue | grep sim | grep org | wc -l);
-  my $signal = qx(mmcli -m $modem --output-keyvalue | grep signal-quality.value | awk -F : ' { print \$2 } ');
-
+sub camera_layout {
   my $camera_layout = qx(grep -l uvc /sys/bus/usb/devices/*/uevent | cut -c 24 | uniq -c);
   my @camera_count;
   foreach(split(/\n/, $camera_layout)) {
@@ -186,7 +181,16 @@ sub detect_features {
     }
   }
 
-  $camera_layout = join(',', @camera_count);
+  return join(',', @camera_count);
+}
+
+# see #73
+sub detect_features {
+  my @videoList = glob("/dev/video*");
+  my $hasSim = qx(mmcli -m $modem --output-keyvalue | grep sim | grep org | wc -l);
+  my $signal = qx(mmcli -m $modem --output-keyvalue | grep signal-quality.value | awk -F : ' { print \$2 } ');
+
+  $camera_layout = camera_layout();
   # * btle - todo
   my @features = (
     "arduino", -e "/dev/ttyACM0" ? 1 : 0,
