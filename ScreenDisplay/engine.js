@@ -89,7 +89,7 @@ var Engine = function(opts){
   }
 
   function trigger(what, data) {
-    console.log('>> trigger ' + what);
+    //console.log('>> trigger ' + what);
     _res.data[what] = data;
     if(_res.listeners[what]) {
       _res.listeners[what].forEach(function(cb) {
@@ -448,17 +448,18 @@ var Engine = function(opts){
   // to do that work ... when nextAsset has no more assets for a particular job
   // it calls nextJob again.
   function nextAsset() {
+    var prev;
+    var doFade = false;
+
     if(_res.pause) {
       return;
     }
-    var prev;
-    var doFade = false;
     // If we are at the start of our job
     // then this is the only valid time we'd
     // be transitioning away from a previous job
     //
-    // so this is is when we do the reporting.
-    if(_res.debug) {
+    // so this is when we do the reporting.
+    if(_res._debug) {
       console.log(_res._current);
     }
     if(_res._current.position === 0) {
@@ -556,7 +557,7 @@ var Engine = function(opts){
 
     // This returns if thre is a next slot without looping.
     hasNext: function() {
-     return Timeline._data.length > Timeline.position;
+      return Timeline._data.length > Timeline.position;
     },
 
     // This is different, this will loop.
@@ -584,13 +585,20 @@ var Engine = function(opts){
       Timeline.bath();
     },
 
+    mostRecent: function() {
+      if(Timeline._data.length > 1) {
+        var last = (Timeline.position + Timeline._data.length - 1) % Timeline._data.length;
+        return Timeline._data[last];
+      }
+    },
+
     addAtEnd: function(job) {
       Timeline._data.push(job);
       Timeline.bath();
     },
   }
 
-  function _timeout(fn, timeout,  name, override) {
+  function _timeout(fn, timeout, name, override) {
     var handle = override ? fn : setTimeout(fn, timeout);
     _stHandleMap[name] = {
       ts: new Date(), 
@@ -643,7 +651,7 @@ var Engine = function(opts){
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
       if(_res.server) {
-        console.log("Range < 0, using fallback");
+        //console.log("Range < 0, using fallback");
       }
 
       if(!_fallback) {

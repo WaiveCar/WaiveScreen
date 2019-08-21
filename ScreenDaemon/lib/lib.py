@@ -484,7 +484,7 @@ def asset_cache(check):
     # copy it over, insulting every programmer who used blood sweat
     # and tears to cram say 215 bytes to 211 in a bygone era.
     #
-    mime = magic.from_file(name)
+    mime = magic.from_file(name, mime=True)
 
     duration = 7.5
     if 'html' in mime and 'html' not in name:
