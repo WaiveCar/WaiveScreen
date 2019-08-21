@@ -111,7 +111,7 @@ def sanity_check(location):
   if last_lat is None or last_lng is None:
     logging.info('Last location not in kv db. (This should only happen ONCE)')
     return True
-  dist = Haversine([float(last_lat), float(last_lng)], [float(location['Lat']), float(location['Lng'])])
+  dist = Haversine([float(last_lng), float(last_lat)], [float(location['Lng']), float(location['Lat'])])
   miles_per_second = dist.miles / time_diff
   logging.info('Calculated speed: {} miles/second, {} miles/hour'.format(miles_per_second, miles_per_second * (60 * 60)))
   if miles_per_second > 100.0 / (60 * 60):  # Faster than 100 mph
