@@ -3,7 +3,7 @@ date_default_timezone_set('UTC');
 
 $JSON = [
   'pre' => function($v) { 
-    if (!$v) { return $v; } 
+    if ($v === null) { return $v; } 
     if (!is_string($v)) { $v = json_encode($v); }
     return db_string($v); 
   },
@@ -17,6 +17,7 @@ $RULES = [
   'campaign' => [ 
     'shape_list' => $JSON,
     'asset' => [
+      'pre' => $JSON['pre'],
       'post' => function($v) {
          $v = json_decode($v, true);
          if(!is_array($v)) {
