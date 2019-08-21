@@ -46,6 +46,15 @@ The SCREEN parts:
       * Sends over location readings from the Screen sensor and retrieves assets to display
       * Talks to the Screen display to display specific assets
       * Gets the duration of time an asset was displayed on the screen and reports back to the Ad daemon
+  * Location daemon
+    * Started by systemd on boot and restarted if it happens to die.
+    * On first startup after boot, waits 60 seconds for modem and network to become available.
+      * Downloads GPS Xtra data and injects it into the GPS module.
+    * Polls the GPS every 10 seconds for location data
+    * On GPS failure, initiates a wifi scan
+      * Stops hostapd and isc-dhcp-server (freeing up the wifi interface)
+      * Scans for APs and submits the results to the MLS geolocation service
+    * Saves current location information to the kv db.  ( Lat, Lng, location_accuracy, location_source, location_time, gps_gpgga )
 
 The SERVER parts:
 
