@@ -120,9 +120,9 @@ body {
 }
 small {
   display: block;
-  font-weight: normal
+  font-weight: normal;
   font-size:0.75rem;
-  text-indent: 2rem;
+  text-indent: 1.5rem;
 }
 </style>
 <body>
