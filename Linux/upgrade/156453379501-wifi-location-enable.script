@@ -8,11 +8,11 @@ upgradepost() {
   mkdir -p $dir
   cp -puv /home/adorno/WaiveScreen/Linux/fai-config/files/$dir/$file/DEBIAN $dir/$file
 
+  /usr/sbin/adduser adorno netdev
+
   systemctl daemon-reload
   systemctl enable location-daemon
   systemctl start location-daemon
-
-  /usr/sbin/adduser adorno netdev
 }
 
 rollback() {
