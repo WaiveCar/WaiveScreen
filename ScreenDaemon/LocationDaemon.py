@@ -3,9 +3,10 @@
 # We use '-u' so stdout/stderr are unbuffered, for logging purposes.
 # Despite the name, we are not running as a daemon.  We will rely on systemd to manage the process.
 
-import time
 import json
 import logging
+import math
+import time
 from lib.wifi_location import wifi_location, wifi_scan_shutdown, wifi_last_submission
 from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict, DEBUG, set_logger
 import lib.db as db
@@ -21,6 +22,36 @@ SLEEP_TIME = 10
 # extra time to wait if we're using the wifi location service
 # We don't want to spam MLS and hit their 100,000 daily request limit
 MIN_WIFI_INTERVAL = 60 #TODO change back to 600 after testing
+
+class Haversine:
+  """
+  use the haversine class to calculate the distance between
+  two lon/lat coordnate pairs.
+  output distance available in kilometers, meters, miles, and feet.
+  example usage: Haversine([lon1,lat1],[lon2,lat2]).feet
+
+  Source: https://github.com/nathanrooy/spatial-analysis/blob/master/haversine.py
+  """
+  def __init__(self,coord1,coord2):
+    lon1,lat1=coord1
+    lon2,lat2=coord2
+
+    R=6371000                               # radius of Earth in meters
+    phi_1=math.radians(lat1)
+    phi_2=math.radians(lat2)
+
+    delta_phi=math.radians(lat2-lat1)
+    delta_lambda=math.radians(lon2-lon1)
+
+    a=math.sin(delta_phi/2.0)**2+\
+       math.cos(phi_1)*math.cos(phi_2)*\
+       math.sin(delta_lambda/2.0)**2
+    c=2*math.atan2(math.sqrt(a),math.sqrt(1-a))
+
+    self.meters=R*c                         # output distance in meters
+    self.km=self.meters/1000.0              # output distance in kilometers
+    self.miles=self.meters*0.000621371      # output distance in miles
+    self.feet=self.miles*5280               # output distance in feet
 
 def utc_secs(utc):
   secs = int(utc[4:6])
@@ -66,11 +97,34 @@ def get_location_from_gps():
     logging.warning('Ignoring get_gps with stale UTC: {}'.format(l))
     return False
 
+def sanity_check(location):
+  last_location_time = db.kv_get('location_time', use_cache=True)
+  if last_location_time is None:
+    return True
+  time_diff = time.time() - float(last_location_time)
+  if time_diff > 60 * 10:  # More than 10 minutes
+    return True
+  last_lat = db.kv_get('Lat', use_cache=True)
+  last_lng = db.kv_get('Lng', use_cache=True)
+  if last_lat is None or last_lng is None:
+    return True
+  dist = Haversine([float(last_lat), float(last_lng)], [float(location['Lat']), float(location['Lng'])])
+  miles_per_second = dist.miles / time_diff
+  logging.info('Calculated speed: {} miles/second, {} miles/hour'.format(miles_per_second, miles_per_second * (60 * 60)))
+  if miles_per_second > 100.0 / (60 * 60):  # Faster than 100 mph
+    return False
+  else:
+    return True
+
 def save_location(location):
-  # Save current location info to the database
+  """ Save current location info to the database """
+  if not sanity_check(location):
+    logging.warning('New location failed sanity_check: {}'.format(location))
+    return False
   logging.info("Saving location: lat:{} lng:{} accuracy:{} utc:{} source:{}".format(location['Lat'], location['Lng'], location.get('accuracy'), location.get('Utc'), location_source()))
   db.kv_set('Lat', location['Lat'])
   db.kv_set('Lng', location['Lng'])
+  db.kv_set('location_time', time.time())
   db.kv_set('location_accuracy', location.get('accuracy', ''))
   db.kv_set('gps_gpgga', json.dumps(get_gpgga_dict(location.get('Nmea', ''))))
 
@@ -85,8 +139,10 @@ def system_uptime():
     return float(f.readline().split(' ')[0])
 
 def location_loop():
-  # We prefer the location from the GPS.  If that fails,
-  # we try and determine our location based on a Wifi scan.
+  """
+  We prefer the location from the GPS.  If that fails,
+  we try and determine our location based on a Wifi scan.
+  """
   failure_count = 0
   logging.info('LocationDaemon.py starting...')
   sys_uptime = system_uptime()
