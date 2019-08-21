@@ -22,7 +22,7 @@ else:
 SLEEP_TIME = 10
 # extra time to wait if we're using the wifi location service
 # We don't want to spam MLS and hit their 100,000 daily request limit
-MIN_WIFI_INTERVAL = 60 #TODO change back to 600 after testing
+MIN_WIFI_INTERVAL = 600
 
 class Haversine:
   """
