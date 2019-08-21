@@ -62,6 +62,8 @@ sub acceptance_screen {
     $values{$all[$ix]} = $all[$ix + 1];
   }
 
+  $values{'uuid'} = qx(cat /etc/UUID);
+
   open(my $html, '>', '/tmp/acceptance.html');
   print $html qq(<style>
 html {
