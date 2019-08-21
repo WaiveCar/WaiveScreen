@@ -223,9 +223,9 @@ def next_sms():
   _loop = GLib.MainLoop()
   _loop.run()
 
-def dcall(*kvarg, method='popen'):
+def dcall(*kvarg, method='popen', what="dcall"):
   home = '/home/{}'.format(USER)
-  dcall = '{}/dcall'.format(home)
+  dcall = '{}/{}'.format(home, what)
   res = ''
 
   if method == 'subprocess':
@@ -587,12 +587,14 @@ def ping():
 def feature_detect():
   videoList = glob.glob("/dev/video*")
   hasSim = int(os.popen('mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l').read().strip())
+  layout = dcall('camera_layout', what='perlcall').split(',')
 
   # * btle - todo
   return {
     'modem'   : os.path.exists("/dev/cdc-wdm0") or os.path.exists('/dev/cdc-wdm1'),
     'arduino' : os.path.exists("/dev/ttyACM0"),
     'cameras' : int(len(videoList) / 2),
+    'layout'  : layout,
     'wifi'    : os.path.exists("/proc/sys/net/ipv4/conf/wlp1s0"),
     'sim'     : hasSim > 0,
     'size'    : int(os.popen('df -m --output=size / | tail -1').read().strip())
