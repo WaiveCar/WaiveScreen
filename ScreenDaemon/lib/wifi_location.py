@@ -43,7 +43,7 @@ def is_same_scan_data():
 
 def wifi_last_submission(set_it=False):
   if set_it:
-    db.kv_set('wifi_last_submission', time.time())
+    db.kv_set('wifi_last_submission', int(time.time()))
   else:
     t = db.kv_get('wifi_last_submission', use_cache=True)
     return 0.0 if t is None else float(t)

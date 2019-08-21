@@ -6,6 +6,7 @@
 import json
 import logging
 import math
+import sys
 import time
 from lib.wifi_location import wifi_location, wifi_scan_shutdown, wifi_last_submission
 from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict, DEBUG, set_logger
@@ -114,6 +115,8 @@ def sanity_check(location):
   dist = Haversine([float(last_lng), float(last_lat)], [float(location['Lng']), float(location['Lat'])])
   miles_per_second = dist.miles / time_diff
   logging.info('Calculated speed: {} miles/second, {} miles/hour'.format(miles_per_second, miles_per_second * (60 * 60)))
+  logging.debug('last_lat:{} last_lng:{} lat:{} lng:{} dist.meters:{} dist.miles:{} time_diff:{}'.format(float(last_lat), \
+                float(last_lng), float(location['Lat']), float(location['Lng']), dist.meters, dist.miles, time_diff))
   if miles_per_second > 100.0 / (60 * 60):  # Faster than 100 mph
     return False
   else:
@@ -127,7 +130,7 @@ def save_location(location):
   logging.info("Saving location: lat:{} lng:{} accuracy:{} utc:{} source:{}".format(location['Lat'], location['Lng'], location.get('accuracy'), location.get('Utc'), location_source()))
   db.kv_set('Lat', location['Lat'])
   db.kv_set('Lng', location['Lng'])
-  db.kv_set('location_time', time.time())
+  db.kv_set('location_time', int(time.time()))
   db.kv_set('location_accuracy', location.get('accuracy', ''))
   db.kv_set('gps_gpgga', json.dumps(get_gpgga_dict(location.get('Nmea', ''))))
 
