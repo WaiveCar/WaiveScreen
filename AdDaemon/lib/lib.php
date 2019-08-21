@@ -747,8 +747,8 @@ function campaign_create($data, $fileList, $user = false) {
   $props = array_merge(circle(),
     [
       'project' => db_string('LA'),
-      'active' => 1,
       'start_time' => db_date(time()),
+      'duration_seconds' => 240,
       'end_time' => db_date(time() + $DAY * 7),
       'asset' => [],
     ],
@@ -760,17 +760,16 @@ function campaign_create($data, $fileList, $user = false) {
 
     if($ref_id) {
       $campaign = Get::campaign(['ref_id' => $ref_id]);
-      $asset = db_string(json_encode([aget($data, 'asset')]));
       $props['ref_id'] = $ref_id;
-      $props['asset'] = $asset;
+      $props['asset'] = [aget($data, 'asset')];
     }
 
     if(!$campaign) {
-      $props['duration_seconds'] = 240;
       $campaign_id = db_insert( 'campaign', $props );
     } else {
-      $campaign_id = $campaign['id'];
-      db_update('campaign', $campaign_id, ['asset' => $asset]);
+      error_log("Don't know how to proceed");
+      //$campaign_id = $campaign['id'];
+      //db_update('campaign', $campaign_id, ['asset' => $asset]);
     }
     return doSuccess(Get::campaign($campaign_id));
   }
