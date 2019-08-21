@@ -13,5 +13,8 @@ StandardError=syslog
 Restart=always
 RestartSec=10
 
+# Uncomment to enable debugging
+#Environment="DEBUG=1"
+
 [Install]
 WantedBy=multi-user.target

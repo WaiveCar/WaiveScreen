@@ -17,12 +17,15 @@ if DEBUG:
 else:
   set_logger('/var/log/screen/locationdaemon.log')
 
-
 # location_loop sleep time - applies to GPS polling
 SLEEP_TIME = 10
+
 # extra time to wait if we're using the wifi location service
 # We don't want to spam MLS and hit their 100,000 daily request limit
-MIN_WIFI_INTERVAL = 600
+if DEBUG:
+  MIN_WIFI_INTERVAL = 60
+else:
+  MIN_WIFI_INTERVAL = 600
 
 class Haversine:
   """
@@ -153,6 +156,7 @@ def location_loop():
   logging.info('LocationDaemon.py starting...')
   sys_uptime = system_uptime()
   if sys_uptime < 60:
+    #  Allow time for modem, network and gps to become active
     time.sleep(60.0 - sys_uptime)
     update_gps_xtra_data()
   while failure_count < 60:
