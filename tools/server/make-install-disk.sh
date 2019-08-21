@@ -8,7 +8,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 dir=$HOME/usb
-file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe)-$(git rev-parse --abbrev-ref HEAD).iso
+file=$HOME/installs/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe)-$(git rev-parse --abbrev-ref HEAD).iso
 backup=/home/chris/backup-test
 
 die() {
@@ -30,7 +30,7 @@ if [[ -z "$NODISK" ]]; then
   sudo fdisk -l $disk
 
   if [[ -n "$ONLYDISK" ]]; then
-    eval $(ddcmd $(ls -tr1 $HOME/Wai*| tail -1) $disk) 
+    eval $(ddcmd $(ls -tr1 $HOME/installs/Wai*| tail -1) $disk) 
     exit
   fi
 fi
