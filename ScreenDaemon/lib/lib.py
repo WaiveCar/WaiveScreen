@@ -587,7 +587,7 @@ def ping():
 def feature_detect():
   videoList = glob.glob("/dev/video*")
   hasSim = int(os.popen('mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l').read().strip())
-  layout = dcall('camera_layout', what='perlcall').split(',')
+  layout = dcall('camera_layout', what='perlcall')
 
   # * btle - todo
   return {
