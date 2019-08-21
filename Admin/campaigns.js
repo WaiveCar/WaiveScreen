@@ -32,6 +32,24 @@ function removeShape() {
   _map.removeShape();
 }
 
+function change_time(id, current) {
+  var newValStr = prompt("Change to what value?", current), 
+      newValNum;
+
+  if(!newValStr) {
+    return show("Canceled");
+  }
+
+  newValNum = parseInt(newValStr, 10);
+  if(isNaN(newValNum)) {
+    show(newValStr + " is not a number");
+  } else {
+    post('campaign_update', {id: _id, duration_seconds: newValNum}, res => {
+      show({data: 'Updated Campaign'}, 1000);
+    });
+  }
+}
+
 function geosave() {
   var coords = _map.save();
   // If we click on the map again we should show the updated coords

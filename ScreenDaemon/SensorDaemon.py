@@ -123,6 +123,7 @@ while True:
 
     if first:
       logging.info("Got first arduino read")
+      db.kv_set('arduino_seen', 1)
 
     # Put data in if we have it
     location = lib.get_gps()
@@ -180,14 +181,16 @@ while True:
       logging.error('Arduino communication down: {}'.format(ex))
       _arduinoConnectionDown = True
       # TODO Add more logic to guess the state of the car before we lost contact.
-      # This is incorrect
-      """
-      try:
-        arduino.do_sleep()
-      except:
-        # The call should turn off the display but fail trying to turn off the backlight.  That's okay.
-        pass
-      """
+      arduino_seen = db.kv_get('arduino_seen')
+      if arduino_seen is not None:
+        logging.info('Arduino disconnected: Putting the screen to sleep')
+        try:
+          arduino.do_sleep()
+        except:
+          # The call should turn off the display but fail trying to turn off the backlight.  That's okay.
+          pass
+      else:
+        logging.info('Arduino has never been detected: Leaving the screen on')
       # if _arduino isn't set to false, we won't reconnect
       arduino.arduino_disconnect()
     time.sleep(1)

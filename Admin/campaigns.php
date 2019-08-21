@@ -39,8 +39,15 @@ $height = $width * 675 / 1920;
     <div id="wrapper">
       <? include ('partials/sidebar.php'); ?>
       <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+
         <? include ('partials/topbar.php'); ?>
+        <div class="container-fluid">
           <div class="alert alert-primary" id="notice" role="alert"></div>
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Campaigns</h1>
+            <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> New</a>
+          </div>
           <div class='row'>
           <? foreach($campaignList as $campaign) { 
             $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
@@ -53,7 +60,7 @@ $height = $width * 675 / 1920;
                   <div class="progress">
                     <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
                   </div>
-                  <p><?= $campaign['completed_seconds'] ?>/<?= $campaign['duration_seconds'] ?>s complete<br/>
+                  <p><?= $campaign['completed_seconds'] ?>/<a href=# onclick="change_time(<?=$campaign['id']?>,<?= $campaign['duration_seconds'] ?>)"><?= $campaign['duration_seconds'] ?></a><br/>
                   Start: <?= $campaign['start_time'] ?><br>
                   End: <?= $campaign['end_time'] ?>
                 <? } else { ?>
