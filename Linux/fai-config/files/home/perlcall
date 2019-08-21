@@ -190,7 +190,7 @@ sub detect_features {
   my $hasSim = qx(mmcli -m $modem --output-keyvalue | grep sim | grep org | wc -l);
   my $signal = qx(mmcli -m $modem --output-keyvalue | grep signal-quality.value | awk -F : ' { print \$2 } ');
 
-  $camera_layout = camera_layout();
+  my $camera_layout = camera_layout();
   # * btle - todo
   my @features = (
     "arduino", -e "/dev/ttyACM0" ? 1 : 0,

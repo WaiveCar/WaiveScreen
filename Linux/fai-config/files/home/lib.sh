@@ -790,9 +790,12 @@ _raw() {
 
 acceptance_test() {
   _bigtext 'Loading...⌛'
-  perlcall acceptance_screen
   set_brightness 1
-  _as_user chromium --app=file:///tmp/acceptance.html
+  if perlcall acceptance_screen; then
+    _as_user chromium --app=file:///tmp/acceptance.html
+  else
+    _warn "Acceptance test failed!"
+  fi
 }
 
 get_location() {
