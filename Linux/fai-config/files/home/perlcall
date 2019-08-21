@@ -53,7 +53,7 @@ sub capture_all_cameras {
 }
 
 sub acceptance_screen {
-  my $out= qx($home/WaiveScreen/ScreenDaemon/dcall kv_get | sed -E s"/[\'=;]/ /"g);
+  my $out = qx($home/WaiveScreen/ScreenDaemon/dcall kv_get | sed -E s"/[\'=;]/ /"g);
   my %values;
   my $uptime = qx(awk ' { print \$1 } ' /proc/uptime);
   my $version = qx(cd $home/WaiveScreen && git describe);
@@ -79,6 +79,7 @@ body {
   color:rgb(170,64,64);
   display:inline-block;
   font-weight: bold;
+  vertical-align: top;
 }
 .mark {
   font-size: 1.5rem;
@@ -117,6 +118,12 @@ body {
   background: #eee;
   margin-top: 0.4rem;
 }
+small {
+  display: block;
+  font-weight: normal
+  font-size:0.75rem;
+  text-indent: 2rem;
+}
 </style>
 <body>
 <span id='box'>
@@ -134,15 +141,15 @@ body {
     if (!$value || (looks_like_number($value) && $value <= 1)) {
       my $class = $value ? 'good' : 'bad';
       my $character = ($class eq 'bad') ? '&#x2717;' : '&#x2714;';
-      print $html "<div class=$class><span class=mark>$character</span> $key";
+      print $html "<div class=$class><span class=mark>$character</span><span class=term>$key</span>";
     } else {
-      print $html "<div class=value><span class='mark mini'>$value</span> $key";
+      print $html "<div class=value><span class='mark mini'>$value</span><span class=term>$key</span>";
     }
-    if($key == 'camera') {
-      $ix +=2;
+    if($key =~ 'camera') {
+      $ix += 2;
       my $key = $features[$ix];
       my $value = $features[$ix + 1];
-      print $html "<small>$layout</small>";
+      print $html "<small>$value</small>";
     }
     print $html "</div>";
   }
