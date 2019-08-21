@@ -100,13 +100,16 @@ def get_location_from_gps():
 def sanity_check(location):
   last_location_time = db.kv_get('location_time', use_cache=True)
   if last_location_time is None:
+    logging.info('Last location time not saved in kv db (This should only happen ONCE)')
     return True
   time_diff = time.time() - float(last_location_time)
   if time_diff > 60 * 10:  # More than 10 minutes
+    logging.info('Last location older than 10 minutes.')
     return True
   last_lat = db.kv_get('Lat', use_cache=True)
   last_lng = db.kv_get('Lng', use_cache=True)
   if last_lat is None or last_lng is None:
+    logging.info('Last location not in kv db. (This should only happen ONCE)')
     return True
   dist = Haversine([float(last_lat), float(last_lng)], [float(location['Lat']), float(location['Lng'])])
   miles_per_second = dist.miles / time_diff
