@@ -238,8 +238,7 @@ enable_gps() {
     --location-enable-gps-nmea \
     --location-enable-gps-raw \
     --location-enable-3gpp \
-    --location-disable-agps \
-    --location-disable-cdma-bs
+    --location-disable-agps
 }
 
 add_history() {
