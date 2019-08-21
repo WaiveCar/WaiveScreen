@@ -50,6 +50,12 @@ function change_time(id, current) {
   }
 }
 
+function create_campaign() {
+  post('campaign', {}, res => {
+    show({data: 'Created Campaign'}, 1000);
+  });
+}
+
 function geosave() {
   var coords = _map.save();
   // If we click on the map again we should show the updated coords
