@@ -3,6 +3,7 @@ import os
 import time
 import cv2
 from matplotlib import pyplot as plt
+import numpy as np
 
 OUT_DIR='/tmp/camera_recordings'
 try:
@@ -224,6 +225,41 @@ class Camera():
   brightness = property(brightness, brightness)
   exposure = property(exposure, exposure)
   auto_exposure = property(auto_exposure, auto_exposure)
+
+
+def record_all():
+  """ Record all cameras to a 2x2 grid while continually calibrating the camera settings """
+  t = time.strftime('%Y%m%d-%H%M%S')
+  w = 640
+  h = 480
+  fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+  out = cv2.VideoWriter('{}/video{}-{}.mkv'.format(OUT_DIR, 'all', t), fourcc, 30.0, (w*2,h*2))
+  grid = np.zeros([h*2, w*2, 3], np.uint8)
+  cams = {}
+  for cam_num in [0, 2, 4, 6]:
+    cams[cam_num] = Camera(cam_num)
+    cams[cam_num].frame_num = 1
+  try:
+    while True:
+      for cam in cams.values():
+        ret, cam.cframe = cam.cap.read()
+        if not ret:
+          pass
+        elif cam.calibrating_brightness:
+          cam.calibrate_brightness()
+        elif cam.frame_num % cam.CALIBRATION_INTERVAL == 0:
+          cam.check_calibration()
+        cam.frame_num += 1
+      grid[0:h, 0:w] = cams[0].cframe
+      grid[0:h, w:w*2] = cams[2].cframe
+      grid[h:h*2, 0:w] = cams[4].cframe
+      grid[h:h*2, w:w*2] = cams[6].cframe
+      out.write(grid)
+  except Exception as ex:
+    logging.error('Stopped with: {}'.format(ex))
+  except:  # Keyboard
+    pass
+  out.release()
 
 
 def calibrate_cameras():
