@@ -236,10 +236,9 @@ enable_gps() {
   $SUDO $MM \
     --location-set-enable-signal \
     --location-enable-gps-nmea \
-    --location-disable-agps \
-    --location-enable-gps-raw 
-
-    # --location-enable-agps \
+    --location-enable-gps-raw \
+    --location-enable-3gpp \
+    --location-disable-agps
 }
 
 add_history() {
@@ -377,6 +376,7 @@ first_run() {
   if [[ -z $(kv_get first_run) ]]; then
     set -x
     $SUDO systemctl disable hostapd
+    $SUDO systemctl enable location-daemon
     $SUDO apt -y update || die "Can't find network" info
     kv_set first_run,1
   fi
@@ -636,8 +636,8 @@ endl
 
   $SUDO pkill -f hostapd
   sleep 1
-  #$SUDO service hostapd restart #/etc/hostapd/hostapd.conf&
-  $SUDO hostapd /etc/hostapd/hostapd.conf&
+  $SUDO service hostapd restart #/etc/hostapd/hostapd.conf&
+  #$SUDO hostapd /etc/hostapd/hostapd.conf&
 
   $SUDO sysctl net.ipv4.conf.all.forwarding=1
 
