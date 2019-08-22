@@ -15,6 +15,9 @@ log_format = '%(asctime)s %(levelname)s:%(message)s'
 logging.basicConfig(filename='{}/camera.log'.format(OUT_DIR), format=log_format, level=logging.DEBUG)
 #logging.basicConfig(format=log_format, level=logging.DEBUG)
 
+W = 640
+H = 480
+
 class Camera():
   MAX_VALUE_PERCENTAGE = 0.15
   HIST_BINS = 32
@@ -23,6 +26,7 @@ class Camera():
   DEFAULT_SATURATION = 0.6
   DEFAULT_BRIGHTNESS = 0.4
   CALIBRATION_INTERVAL = 120  # Frames
+  BLANK_FRAME = np.zeros([H, W, 3], np.uint8)
 
   def __init__(self, cam_num):
     device = '/dev/video{}'.format(cam_num)
@@ -39,6 +43,7 @@ class Camera():
     self.calibrating_brightness = False
     self.ae_req_count = 0
     self.frame_num = 1
+    self.disabled = False
 
   def calibrate(self):
     self.ae_req_count = 0
@@ -172,6 +177,21 @@ class Camera():
     self.frame = cv2.imread(fname, 0)
     self.calc_hist()
 
+  def read_to_self(self, grab_only=False):
+    if self.disabled:
+      return False
+    elif grab_only:
+      res = self.cap.grab()
+    else:
+      res, self.cframe = self.cap.read()
+    if not res:
+      logging.info('Camera {} is not working.  Disableing'.format(self.cam_num))
+      self.disabled = True
+      self.cframe = self.BLANK_FRAME
+      return False
+    else:
+      return True
+
   @property
   def pre_roll(self):
     preroll = self.AE_PREROLL if self.auto_exposure else self.ME_PREROLL
@@ -230,11 +250,9 @@ class Camera():
 def record_all():
   """ Record all cameras to a 2x2 grid while continually calibrating the camera settings """
   t = time.strftime('%Y%m%d-%H%M%S')
-  w = 640
-  h = 480
   fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-  out = cv2.VideoWriter('{}/video{}-{}.mkv'.format(OUT_DIR, 'all', t), fourcc, 30.0, (w*2,h*2))
-  grid = np.zeros([h*2, w*2, 3], np.uint8)
+  out = cv2.VideoWriter('{}/video{}-{}.mkv'.format(OUT_DIR, 'all', t), fourcc, 15.0, (W*2,H*2))
+  grid = np.zeros([H*2, W*2, 3], np.uint8)
   cams = {}
   for cam_num in [0, 2, 4, 6]:
     cams[cam_num] = Camera(cam_num)
@@ -242,18 +260,19 @@ def record_all():
   try:
     while True:
       for cam in cams.values():
-        ret, cam.cframe = cam.cap.read()
-        if not ret:
-          pass
+        cam.read_to_self(grab_only=True)
+      for cam in cams.values():
+        if not cam.read_to_self():
+          continue
         elif cam.calibrating_brightness:
           cam.calibrate_brightness()
         elif cam.frame_num % cam.CALIBRATION_INTERVAL == 0:
           cam.check_calibration()
         cam.frame_num += 1
-      grid[0:h, 0:w] = cams[0].cframe
-      grid[0:h, w:w*2] = cams[2].cframe
-      grid[h:h*2, 0:w] = cams[4].cframe
-      grid[h:h*2, w:w*2] = cams[6].cframe
+      grid[0:H, 0:W] = cams[0].cframe
+      grid[0:H, W:W*2] = cams[2].cframe
+      grid[H:H*2, 0:W] = cams[4].cframe
+      grid[H:H*2, W:W*2] = cams[6].cframe
       out.write(grid)
   except Exception as ex:
     logging.error('Stopped with: {}'.format(ex))
