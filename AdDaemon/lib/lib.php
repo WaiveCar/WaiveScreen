@@ -732,7 +732,7 @@ function campaign_history($data) {
 function circle($lng = -118.390412, $lat = 33.999819, $radius = 3500) {
   return [
     'lat' => $lat, 'lng' => $lng, 'radius' => $radius,
-    'shape_list' => [ 'Circle', [$lng, $lat], $radius]
+    'shape_list' => [[ 'Circle', [$lng, $lat], $radius ]]
   ];
 }
 
