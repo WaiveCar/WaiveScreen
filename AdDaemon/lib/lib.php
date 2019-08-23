@@ -124,16 +124,9 @@ function inside_polygon($test_point, $points) {
   return ($ctr & 1);
 }
 
-function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
-  if(!$lat2) {
-    if(empty($lon1['lng']) && empty($lat1['lng'])) {
-      return false;
-    }
-    $lon2 = $lon1['lng'];
-    $lat2 = $lon1['lat'];
-    $lon1 = $lat1['lng'];
-    $lat1 = $lat1['lat'];
-  }
+function distance($pos1, $pos2) {
+  list($lon1, $lat1) = $pos1;
+  list($lon2, $lat2) = $pos2;
 
   $theta = $lon1 - $lon2;
   $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
@@ -322,6 +315,7 @@ function default_campaign($screen) {
 
 function ping($payload) {
   global $VERSION, $LASTCOMMIT;
+  error_log(json_encode($payload));
 
   // features/modem/gps
   foreach([
@@ -330,7 +324,8 @@ function ping($payload) {
     'modem.imei', 'modem.phone', 'gps.lat', 'gps.lng', // >v0.2-Bakeneko-347-g277611a
     'version_time',                                    // >v0.2-Bakeneko-378-gf6697e1
     'uptime', 'features',                              // >v0.2-Bakeneko-384-g4e32e37
-    'last_task'                                        // >v0.2-Bakeneko-623-g8989622
+    'last_task',                                       // >v0.2-Bakeneko-623-g8989622
+    'location', 'location.Lat', 'location.Lng',        // >v0.3-Chukwa-473-g725fa2c
   ] as $key) {
     $val = aget($payload, $key);
 
@@ -500,7 +495,7 @@ function inject_priority($job, $screen, $campaign) {
 
 function sow($payload) {
   global $SCHEMA;
-  //error_log(json_encode($payload));
+  error_log(json_encode($payload));
   if(isset($payload['uid'])) {
     $screen = upsert_screen($payload['uid'], $payload);
   } else {
@@ -560,6 +555,7 @@ function sow($payload) {
   // error_log(json_encode($uniqueCampaignList));
   
   $active = active_campaigns($screen);
+  error_log(json_encode($active));
   // If we didn't get lat/lng from the sensor then we just any ad
   if(empty($payload['lat'])) {
     $nearby_campaigns = $active;
@@ -568,12 +564,20 @@ function sow($payload) {
     $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
       if(!empty($campaign['shape_list']) && $payload['lat']) {
         $test = [floatval($payload['lng']), floatval($payload['lat'])];
+        $isMatch = false;
         foreach($campaign['shape_list'] as $polygon) {
+          error_log(json_encode($polygon));
           if($polygon[0] === 'Polygon') {
-            if(inside_polygon($test, $polygon[1])) {
-              return true;
-            }
+            $isMatch |= inside_polygon($test, $polygon[1]); 
+          } else if ($polygon[0] === 'Circle') {
+            $isMatch |= distance($test, $polygon[1]) < $polygon[2];
           }
+          if($isMatch) {
+            break;
+          }
+        }
+        if($isMatch) {
+          return true;
         }
         // This is important because if we have a polygon definition
         // then we actually don't want to show the ad outside that 
@@ -597,6 +601,7 @@ function sow($payload) {
   $server_response = task_inject($screen, ['res' => true]);
   $server_response['data'] = array_map(function($campaign) use ($screen) {
     $jobList = find_unfinished_job($campaign['id'], $screen['id']);
+    error_log(json_encode($jobList));
     if(!$jobList) {
       $jobList = [ create_job($campaign['id'], $screen['id']) ];
     }
@@ -611,6 +616,7 @@ function sow($payload) {
       }
     }
   }, $nearby_campaigns);
+  error_log(json_encode($server_response));
   
   return $server_response; 
 }
@@ -671,8 +677,6 @@ function active_campaigns($screen) {
   return show('campaign', "where 
     active = 1                       and 
     is_default = 0                   and
-    project = '{$screen["project"]}' and
-    start_time < current_timestamp   and 
     completed_seconds < duration_seconds 
     order by start_time desc");
 }
@@ -732,7 +736,7 @@ function campaign_history($data) {
 function circle($lng = -118.390412, $lat = 33.999819, $radius = 3500) {
   return [
     'lat' => $lat, 'lng' => $lng, 'radius' => $radius,
-    'shape_list' => [ 'Circle', [$lng, $lat], $radius]
+    'shape_list' => [[ 'Circle', [$lng, $lat], $radius ]]
   ];
 }
 
@@ -791,7 +795,7 @@ function campaign_update($data, $fileList, $user = false) {
   if(!$fileList) {
     $obj = [];
     foreach($data as $k => $v) {
-      if (in_array($k, ['active','lat','lng','radius'])) {
+      if (in_array($k, ['duration_seconds','active','lat','lng','radius'])) {
         $obj[$k] = db_string($v);
       }
     }
