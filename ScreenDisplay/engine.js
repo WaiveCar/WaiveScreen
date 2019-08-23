@@ -76,6 +76,7 @@ var Engine = function(opts){
     _isNetUp = true,
     _start = new Date(),
     _stHandleMap = {},
+    _consider_new_job = false,
     _key = '-xA8tAY4YSBmn2RTQqnnXXw',
     _last_sow = [+_start, +_start],
     _fallback;
@@ -430,9 +431,11 @@ var Engine = function(opts){
 
     post('sow', payload, function(res) {
       if(res.res) {
+        _res.db = {};
         res.data.forEach(function(row) {
           addJob(row);
         })
+        //_consider_new_job = true;
       }
       if(cb) {
         cb();
@@ -551,7 +554,8 @@ var Engine = function(opts){
 
     // If we are at the end then our next function should be to
     // choose the next job.
-    if(_current.position === _current.assetList.length) {
+    if(_consider_new_job || _current.position === _current.assetList.length) {
+      _consider_new_job = false;
       return nextJob();
     } 
 
@@ -564,12 +568,14 @@ var Engine = function(opts){
       // we come back around, _last.shown will be 
       // redefined.
       prev = _last_container;
-      prev.classList.add('fadeOut' + _key);
-      _timeout(function() {
-        prev.classList.remove('fadeOut' + _key);
-        _res.container.removeChild(prev);
-      }, _res.fadeMs, 'assetFade');
-      doFade = true;
+      if(prev) {
+        prev.classList.add('fadeOut' + _key);
+        _timeout(function() {
+          prev.classList.remove('fadeOut' + _key);
+          _res.container.removeChild(prev);
+        }, _res.fadeMs, 'assetFade');
+        doFade = true;
+      }
     }
     _last_uniq = _current.shown.uniq;
     _last_container = _current.shown.container;
@@ -626,12 +632,12 @@ var Engine = function(opts){
       breakpoint = Math.random() * range;
 
     if(_res._debug) {
-      console.log({active: activeList, range: range, priority: maxPriority});
+      console.log({active: activeList, db:_res.db, range: range, priority: maxPriority});
     }
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
-      if(_res.server) {
-        //console.log("Range < 0, using fallback");
+      if(_res.server &&_res._debug) {
+        console.log("Range < 0, using fallback");
       }
 
       if(!_fallback) {
@@ -728,6 +734,7 @@ var Engine = function(opts){
     },
 
     Debug: function() {
+      _res._debug = true;
       return {
         current: _current,
         last: _last,
