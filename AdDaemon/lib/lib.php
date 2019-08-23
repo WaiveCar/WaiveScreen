@@ -124,16 +124,9 @@ function inside_polygon($test_point, $points) {
   return ($ctr & 1);
 }
 
-function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
-  if(!$lat2) {
-    if(empty($lon1['lng']) && empty($lat1['lng'])) {
-      return false;
-    }
-    $lon2 = $lon1['lng'];
-    $lat2 = $lon1['lat'];
-    $lon1 = $lat1['lng'];
-    $lat1 = $lat1['lat'];
-  }
+function distance($pos1, $pos2) {
+  list($lon1, $lat1) = $pos1;
+  list($lon2, $lat2) = $pos2;
 
   $theta = $lon1 - $lon2;
   $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
@@ -562,6 +555,7 @@ function sow($payload) {
   // error_log(json_encode($uniqueCampaignList));
   
   $active = active_campaigns($screen);
+  error_log(json_encode($active));
   // If we didn't get lat/lng from the sensor then we just any ad
   if(empty($payload['lat'])) {
     $nearby_campaigns = $active;
@@ -570,12 +564,20 @@ function sow($payload) {
     $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
       if(!empty($campaign['shape_list']) && $payload['lat']) {
         $test = [floatval($payload['lng']), floatval($payload['lat'])];
+        $isMatch = false;
         foreach($campaign['shape_list'] as $polygon) {
+          error_log(json_encode($polygon));
           if($polygon[0] === 'Polygon') {
-            if(inside_polygon($test, $polygon[1])) {
-              return true;
-            }
+            $isMatch |= inside_polygon($test, $polygon[1]); 
+          } else if ($polygon[0] === 'Circle') {
+            $isMatch |= distance($test, $polygon[1]) < $polygon[2];
           }
+          if($isMatch) {
+            break;
+          }
+        }
+        if($isMatch) {
+          return true;
         }
         // This is important because if we have a polygon definition
         // then we actually don't want to show the ad outside that 
@@ -675,8 +677,6 @@ function active_campaigns($screen) {
   return show('campaign', "where 
     active = 1                       and 
     is_default = 0                   and
-    project = '{$screen["project"]}' and
-    start_time < current_timestamp   and 
     completed_seconds < duration_seconds 
     order by start_time desc");
 }
@@ -795,7 +795,7 @@ function campaign_update($data, $fileList, $user = false) {
   if(!$fileList) {
     $obj = [];
     foreach($data as $k => $v) {
-      if (in_array($k, ['active','lat','lng','radius'])) {
+      if (in_array($k, ['duration_seconds','active','lat','lng','radius'])) {
         $obj[$k] = db_string($v);
       }
     }

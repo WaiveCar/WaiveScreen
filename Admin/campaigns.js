@@ -51,7 +51,7 @@ function change_time(id, current) {
   if(isNaN(newValNum)) {
     show(newValStr + " is not a number");
   } else {
-    post('campaign_update', {id: _id, duration_seconds: newValNum}, res => {
+    post('campaign_update', {id: id, duration_seconds: newValNum}, res => {
       show({data: 'Updated Campaign'}, 1000);
     });
   }
