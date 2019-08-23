@@ -695,14 +695,12 @@ def get_location():
   return location
 
 def get_latlng():
-  location = {
-    'Lat': db.kv_get('Lat'),
-    'Lng': db.kv_get('Lng')
-  }
-  if location['Lat'] is None or location['Lng'] is None:
+  lat = db.kv_get('Lat')
+  lng = db.kv_get('Lng')
+  if lat is None or lng is None:
     return {}
   else:
-    return location
+    return { 'Lat': float(lat), 'Lng': float(lng) }
 
 def get_brightness_map():
   # Fallback map if we can't get the lat/long from GPS
