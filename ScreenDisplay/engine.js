@@ -51,7 +51,7 @@ var Engine = function(opts){
       // animation delay in the engine.css file. There's
       // really complicated ways to edit it dynamically 
       // but no thanks.
-      fadeMs: 1000,
+      fadeMs: 500,
 
       pause: false,
 
@@ -64,9 +64,12 @@ var Engine = function(opts){
 
     }, opts || {}),
     _last = false,
+    _uniq = 0,
+    _last_uniq = false,
+    _last_container = false,
     _current = false,
     _playCount = 0,
-    _id = 0,
+    _job_id = 0,
     _downweight = 0.7,
     _firstRun = false,
     _nop = function(){},
@@ -75,7 +78,6 @@ var Engine = function(opts){
     _stHandleMap = {},
     _key = '-xA8tAY4YSBmn2RTQqnnXXw',
     _last_sow = [+_start, +_start],
-    _asset_id = 0,
     _fallback;
 
   _res.target.ratio = _res.target.width / _res.target.height;
@@ -167,11 +169,6 @@ var Engine = function(opts){
     src.src = asset.url;
     asset.dom = vid;
 
-    // This was to avoid some weird flashing bug
-    // before the videos loaded. However, there
-    // should be a way to do overrides. So this
-    // solution is insufficient
-    asset.duration = asset.duration || 100;
     asset.cycles = 1;
     asset.run = function(noreset) {
       if(!noreset) {
@@ -212,7 +209,11 @@ var Engine = function(opts){
       // of a threshold which means that it requires a numerical value
       // whose existence is clearly mysteriously absent. Ah, we'll
       // figure it out later, like most things in life.
-      asset.duration = Math.min(vid.duration, asset.duration);
+      if(!asset.duration) {
+        asset.duration = vid.duration;
+      } else {
+        asset.duration = Math.min(vid.duration, asset.duration);
+      }
       asset.active = true;
       // if a video is really short then we force loop it.
       if(asset.duration < 0.8) {
@@ -273,7 +274,7 @@ var Engine = function(opts){
     // assets included in this job.
     obj.duration = 0;
 
-    obj.id = obj.id || (_id ++);
+    obj.id = obj.id || (_job_id ++);
     //
     // We don't want to manually set this.
     // obj.goal
@@ -300,6 +301,7 @@ var Engine = function(opts){
       } else {
         asset = iframe(asset, obj);
       }
+      asset.uniq = _uniq++;
       asset.container = container;
       asset.container.appendChild(asset.dom);
       return asset;
@@ -522,7 +524,6 @@ var Engine = function(opts){
     // be transitioning away from a previous job
     //
     // so this is when we do the reporting.
-    /*
     if(_current.position === 0) {
 
       // If this exists then it'd be set at the last asset
@@ -547,7 +548,6 @@ var Engine = function(opts){
         }
       }
     }
-    */
 
     // If we are at the end then our next function should be to
     // choose the next job.
@@ -555,42 +555,35 @@ var Engine = function(opts){
       return nextJob();
     } 
 
-    // ****
-    // This ordering is important! 
-    // ****
-    //
-    // We may (quite likely) will
-    // have (_last === _current) most of the time. This means
-    // that we are "passing the torch" of the .shown pointer,
-    // being more than likely just one.
-    if(_last && (_current.position > 0 || _last.id !== _current.id)) {
+    _current.shown = _current.assetList[_current.position];
+    _current.shown.run();
+    _res.container.appendChild(_current.shown.container);
+
+    if(_current.shown.uniq != _last_uniq) {
       // This is NEEDED because by the time 
       // we come back around, _last.shown will be 
       // redefined.
-      prev = _last.shown.container;
-      //prev.classList.add('fadeOut' + _key);
+      prev = _last_container;
+      prev.classList.add('fadeOut' + _key);
       _timeout(function() {
-        //prev.classList.remove('fadeOut' + _key);
+        prev.classList.remove('fadeOut' + _key);
         _res.container.removeChild(prev);
       }, _res.fadeMs, 'assetFade');
       doFade = true;
     }
+    _last_uniq = _current.shown.uniq;
+    _last_container = _current.shown.container;
 
-    // Now we're ready to show the asset. This is done through
-    // a pointer as follows:
-    _current.shown = _current.assetList[_current.position];
     _current.shown.container.classList[doFade ? 'add' : 'remove' ]('fadeIn' + _key );
-    _current.shown.run();
-    _res.container.appendChild(_current.shown.container);
 
     //console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
+
+    // These will EQUAL each other EXCEPT when the position is 0.
+    _last = _current;
 
     // And we increment the position to show the next asset
     // when we come back around
     _current.position ++;
-
-    // These will EQUAL each other EXCEPT when the position is 0.
-    _last = _current;
 
     _timeout(nextAsset, Math.max(_current.shown.duration * 1000 - _res.fadeMs / 2, 1000), 'nextAsset');
   }
@@ -623,7 +616,7 @@ var Engine = function(opts){
     //
     var 
       maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0)),
-      activeList = Object.values(_res.db).filter(row => row.active),// && row.filter === maxPriority),
+      activeList = Object.values(_res.db).filter(row => row.active && row.duration),// && row.filter === maxPriority),
 
       // Here's the range of numbers, calculated by looking at all the remaining things we have to satisfy
       range = activeList.reduce( (a,b) => a + b.downweight * (b.goal - b.completed_seconds), 0),
