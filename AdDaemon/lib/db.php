@@ -34,7 +34,8 @@ $RULES = [
     ]
   ],
   'screen' => [
-    'features' => $JSON
+    'features' => $JSON,
+    'location' => $JSON
   ],
   'sensor_history' => [
     'created_at' => [
@@ -63,6 +64,7 @@ $SCHEMA = [
     'model'       => 'text',
     'lat'         => 'float default null',
     'lng'         => 'float default null',
+    'location'    => 'text',
     'version'     => 'text',
     'version_time'=> 'integer',
     'uptime'      => 'integer',

@@ -322,6 +322,7 @@ function default_campaign($screen) {
 
 function ping($payload) {
   global $VERSION, $LASTCOMMIT;
+  error_log(json_encode($payload));
 
   // features/modem/gps
   foreach([
@@ -330,7 +331,8 @@ function ping($payload) {
     'modem.imei', 'modem.phone', 'gps.lat', 'gps.lng', // >v0.2-Bakeneko-347-g277611a
     'version_time',                                    // >v0.2-Bakeneko-378-gf6697e1
     'uptime', 'features',                              // >v0.2-Bakeneko-384-g4e32e37
-    'last_task'                                        // >v0.2-Bakeneko-623-g8989622
+    'last_task',                                       // >v0.2-Bakeneko-623-g8989622
+    'location', 'location.Lat', 'location.Lng',        // >v0.3-Chukwa-473-g725fa2c
   ] as $key) {
     $val = aget($payload, $key);
 
@@ -500,7 +502,7 @@ function inject_priority($job, $screen, $campaign) {
 
 function sow($payload) {
   global $SCHEMA;
-  //error_log(json_encode($payload));
+  error_log(json_encode($payload));
   if(isset($payload['uid'])) {
     $screen = upsert_screen($payload['uid'], $payload);
   } else {
@@ -597,6 +599,7 @@ function sow($payload) {
   $server_response = task_inject($screen, ['res' => true]);
   $server_response['data'] = array_map(function($campaign) use ($screen) {
     $jobList = find_unfinished_job($campaign['id'], $screen['id']);
+    error_log(json_encode($jobList));
     if(!$jobList) {
       $jobList = [ create_job($campaign['id'], $screen['id']) ];
     }
@@ -611,6 +614,7 @@ function sow($payload) {
       }
     }
   }, $nearby_campaigns);
+  error_log(json_encode($server_response));
   
   return $server_response; 
 }
