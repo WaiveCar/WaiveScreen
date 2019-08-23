@@ -577,7 +577,7 @@ def ping():
     'last_task': db.kv_get('last_task') or 0,
     'features': feature_detect(),
     'modem': get_modem_info(),
-    'gps': get_gps(),
+    'location': get_location(),
   }
 
   try: 
@@ -682,6 +682,17 @@ def disk_monitor():
       print(path)
       sys.exit(0)
       #dcall('local_upgrade', path, '&')
+
+def get_location():
+  location = {
+    'Lat': db.kv_get('Lat'),
+    'Lng': db.kv_get('Lng'),
+    'accuracy': db.kv_get('location_accuracy'),
+    'source': db.kv_get('location_source'),
+    'time': db.kv_get('location_time'),
+    'gps_gpgga': db.kv_get('gps_gpgga')
+  }
+  return location
 
 def get_latlng():
   location = {
