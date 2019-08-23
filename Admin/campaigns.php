@@ -81,11 +81,11 @@ $height = $width * 675 / 1920;
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                       <a onclick="geofence(<?=$campaign['id']?>)" class="dropdown-item dark">Geofence</a>
-<?                   if ($campaign['active']) {?>
+                    <? if ($campaign['active']) {?>
                       <a onclick="update_campaign({id:<?=$campaign['id']?>,active:false})" class="dropdown-item dark">Disable</a>
-<?} else { ?>
+                    <? } else { ?>
                       <a onclick="update_campaign({id:<?=$campaign['id']?>,active:true})" class="dropdown-item dark">Enable</a>
-<? } ?>
+                    <? } ?>
                       <div class="dropdown-divider"></div>
                       <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Replace</label>
                       <label onclick="append()" class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Append</label>
@@ -93,7 +93,7 @@ $height = $width * 675 / 1920;
                       <a class="dropdown-item" href="#">Make Default</a>
                     </div>
                   </div>
-<? 
+                  <? 
                     if ($campaign['active']) {
                       $word = 'active';
                       $style = 'info'; 
@@ -101,17 +101,20 @@ $height = $width * 675 / 1920;
                       $word = 'inactive';
                       $style = 'light';
                     }
-?>
-
+                  ?>
                   <h3><span class="badge badge-<?=$style?>" style=margin-left:1rem><?= $word ?></span>
                   <? 
+                    $matched = false;
                     foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
                       if ($value == $campaign['id']) { 
                         echo "<span class='badge badge-pill badge-dark'>$key</span> ";
+                        $matched = true;
                       }
                     } 
+                    if(!$matched) {
+                      echo "<span class='badge badge-pill badge-dark'>${campaign['project']}</span>";
+                    }
                   ?>
-                  <span class='badge badge-pill badge-dark'><?= $campaign['project']; ?></span>
                   </h3>
                 </div>
 
