@@ -50,11 +50,15 @@ $height = $width * 675 / 1920;
           </div>
           <div class='row'>
           <? foreach($campaignList as $campaign) { 
-            $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
+            if( $campaign['duration_seconds'] ) {
+              $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
+            } else {
+              $done = 0;
+            }
             $isDefault = $campaign['is_default'];
             ?>
               <div class="card" style="width: <?=$width?>px">
-              <div class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
+              <div title=<?=$campaign['id']?> class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
               <div class="card-body">
                 <? if (!$isDefault) { ?>
                   <div class="progress">
