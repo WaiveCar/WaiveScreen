@@ -5,7 +5,7 @@ export DEST=/home/$WHO
 export BASE=$DEST/WaiveScreen
 
 export SERVER=waivescreen.com
-export BRANCH=master
+export BRANCH=release
 export CACHE=/var/cache/assets
 export DB=/var/db/config.db
 export DEV=$BASE.sshfs

@@ -680,7 +680,12 @@ upgrade_scripts() {
 
 _upgrade_post() {
   local version=$(get_version)
+
+  $SUDO dpkg –configure -a
+  $SUDO apt install -fy
   perlcall install_list | xargs $SUDO apt -y install
+  $SUDO apt -y autoremove
+
   pycall db.upgrade
   add_history upgrade "$version"
 
@@ -709,6 +714,9 @@ local_upgrade() {
 
       _info "Disk can be removed"
       pip_install
+
+      # cleanup the old files
+      cd $BASE && git clean -fxd
 
       _info "Reinstalling base"
       sync_scripts $BASE/Linux/fai-config/files/home/

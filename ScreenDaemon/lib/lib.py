@@ -577,7 +577,7 @@ def ping():
     'last_task': db.kv_get('last_task') or 0,
     'features': feature_detect(),
     'modem': get_modem_info(),
-    'gps': get_gps(),
+    'location': get_location(),
   }
 
   try: 
@@ -683,15 +683,29 @@ def disk_monitor():
       sys.exit(0)
       #dcall('local_upgrade', path, '&')
 
-def get_latlng():
+def get_location():
+  try:
+    gpgga = json.loads(db.kv_get('gps_gpgga'))
+  except:
+    gpgga = db.kv_get('gps_gpgga')
+
   location = {
     'Lat': db.kv_get('Lat'),
-    'Lng': db.kv_get('Lng')
+    'Lng': db.kv_get('Lng'),
+    'accuracy': db.kv_get('location_accuracy'),
+    'source': db.kv_get('location_source'),
+    'time': db.kv_get('location_time'),
+    'gps_gpgga': gpgga
   }
-  if location['Lat'] is None or location['Lng'] is None:
+  return location
+
+def get_latlng():
+  lat = db.kv_get('Lat')
+  lng = db.kv_get('Lng')
+  if lat is None or lng is None:
     return {}
   else:
-    return location
+    return { 'Lat': float(lat), 'Lng': float(lng) }
 
 def get_brightness_map():
   # Fallback map if we can't get the lat/long from GPS

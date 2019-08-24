@@ -126,7 +126,7 @@ while True:
       db.kv_set('arduino_seen', 1)
 
     # Put data in if we have it
-    location = lib.get_gps()
+    location = lib.get_latlng()
 
     try:
       if location and not _autobright_set:

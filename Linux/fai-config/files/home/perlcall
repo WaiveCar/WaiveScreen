@@ -57,12 +57,14 @@ sub acceptance_screen {
   my %values;
   my $uptime = qx(awk ' { print \$1 } ' /proc/uptime);
   my $version = qx(cd $home/WaiveScreen && git describe) . "-" . qx(cd $home/WaiveScreen && git rev-parse --abbrev-ref HEAD);
+  $version =~ s/\s//g;
   my @all = eval "qw($out)";
   for(my $ix = 0; $ix < $#all; $ix += 2) {
     $values{$all[$ix]} = $all[$ix + 1];
   }
 
   $values{'uuid'} = qx(cat /etc/UUID);
+  $values{'runcount'} = qx(cat /etc/bootcount);
 
   open(my $html, '>', '/tmp/acceptance.html');
   print $html qq(<style>
@@ -74,6 +76,14 @@ body {
   text-align:center;
   padding:.5rem;
   background:url('file://$home/WaiveScreen/tools/client/test-bg.gif') repeat;
+}
+#chart {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  border: 2px solid #000;
+  padding: 1px;
+  background: #fff;
 }
 .bad,.good,.value {
   width:45%;
@@ -127,6 +137,7 @@ small {
 }
 </style>
 <body>
+<img id=chart src=file://$home/WaiveScreen/tools/client/usb-chart.jpg>
 <span id='box'>
 <div id='header'>
   <div >$values{'uuid'}</div>
@@ -168,22 +179,10 @@ small {
 }
 
 sub camera_layout {
-  my $camera_layout = qx(grep -l uvc /sys/bus/usb/devices/*/uevent | cut -c 24 | uniq -c);
-  my @camera_count;
-  foreach(split(/\n/, $camera_layout)) {
-    my @parts = split(' ', $_);
-    if (length $parts[1]) {
-      $camera_count[$parts[1] - 1] = $parts[0] / 2;
-    }
-  }
-
-  for(my $ix = 0; $ix < 4; $ix ++) {
-    if (!$camera_count[$ix]) {
-      $camera_count[$ix] = 0;
-    }
-  }
-
-  return join(',', @camera_count);
+  my $camera_layout = qx(grep -l uvc /sys/bus/usb/devices/*/uevent | grep -v ':1.0' | grep -Po '(\\d\\.?\\d?(?=:))');
+  my $bus_type = qx(cut -d ' ' -f 1 /sys/bus/usb/devices/usb1/product);
+  $camera_layout =~ s/\./:/g;
+  return join '| ', split(/\s+/, "$bus_type $camera_layout");
 }
 
 # see #73
