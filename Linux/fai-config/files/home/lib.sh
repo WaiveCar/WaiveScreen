@@ -710,6 +710,9 @@ local_upgrade() {
       _info "Disk can be removed"
       pip_install
 
+      # cleanup the old files
+      cd $BASE && git clean -fxd
+
       _info "Reinstalling base"
       sync_scripts $BASE/Linux/fai-config/files/home/
       _upgrade_post
