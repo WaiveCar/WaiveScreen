@@ -242,6 +242,7 @@ function upsert_screen($screen_uid, $payload) {
 // After a screen runs a task it's able to respond... kind of 
 // have a dialog if you will.
 function response($payload) {
+  error_log(json_encode($payload));
   $missing = find_missing($payload, ['task_id', 'uid', 'response']);
   if($missing) {
     return doError("Missing fields: " . implode(', ', $missing));

@@ -303,7 +303,7 @@ function db_string($what) {
   if ($where === false) {
     return "'$what'";
   } else if ($where != 0) {
-    return '"' . SQLite3::escapeString($what) . '"';
+    return "'" . SQLite3::escapeString($what) . "'";
   }
   return $what;
 }
