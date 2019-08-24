@@ -77,6 +77,11 @@ body {
   padding:.5rem;
   background:url('file://$home/WaiveScreen/tools/client/test-bg.gif') repeat;
 }
+#chart {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+}
 .bad,.good,.value {
   width:45%;
   font-size:1.1rem;
@@ -129,6 +134,7 @@ small {
 }
 </style>
 <body>
+<img id=chart src=file://$home/WaiveScreen/tools/client/usb-chart.jpg>
 <span id='box'>
 <div id='header'>
   <div >$values{'uuid'}</div>
