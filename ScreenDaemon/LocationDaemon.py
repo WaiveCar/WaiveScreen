@@ -120,7 +120,7 @@ def sanity_check(location):
   logging.info('Calculated speed: {} miles/second, {} miles/hour'.format(miles_per_second, miles_per_second * (60 * 60)))
   logging.debug('last_lat:{} last_lng:{} lat:{} lng:{} dist.meters:{} dist.miles:{} time_diff:{}'.format(float(last_lat), \
                 float(last_lng), float(location['Lat']), float(location['Lng']), dist.meters, dist.miles, time_diff))
-  if miles_per_second > 100.0 / (60 * 60):  # Faster than 100 mph
+  if miles_per_second > 150.0 / (60 * 60):  # Faster than 150 mph
     return False
   else:
     return True
