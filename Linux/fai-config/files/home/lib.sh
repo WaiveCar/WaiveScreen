@@ -236,10 +236,9 @@ enable_gps() {
   $SUDO $MM \
     --location-set-enable-signal \
     --location-enable-gps-nmea \
-    --location-disable-agps \
-    --location-enable-gps-raw 
-
-    # --location-enable-agps \
+    --location-enable-gps-raw \
+    --location-enable-3gpp \
+    --location-disable-agps
 }
 
 add_history() {
@@ -341,23 +340,43 @@ EPERL
   else
     _warn "$SERVER unresolvable!"
 
-    local ix=0
-    while ! $MM; do
-      (( ++ix < 4 )) && _info "Waiting for modem"
-      sleep 9
-    done
+    # Well let's see if that small stanford project is still resolvable
+    if ping -c 1 -i 0.3 yahoo.com; then
+      _warn "Server likely down."
+    else
+      local ix=0
+      while ! $MM; do
+        (( ++ix < 4 )) && _info "Waiting for modem"
+        sleep 9
+      done
 
-    hasip=$( ip addr show $wwan | grep inet | wc -l )
+      hasip=$( ip addr show $wwan | grep inet | wc -l )
 
-    (( hasip > 0 )) && _warn "Data plan/SIM issues." || _warn "No IP assigned."
+      (( hasip > 0 )) && _warn "Data plan/SIM issues." || _warn "No IP assigned."
+    fi
   fi
   pycall db.sess_set modem,1 
+}
+
+## test this later.
+network_check() {
+  PING="ping -c 1 -i 0.3"
+  if $PING $SERVER; then
+    echo UP
+  elif $PING yahoo.com; then
+    echo SERVER_DOWN
+  elif $PING 8.8.8.8; then
+    echo DNS
+  else
+    echo DOWN
+  fi
 }
 
 first_run() {
   if [[ -z $(kv_get first_run) ]]; then
     set -x
     $SUDO systemctl disable hostapd
+    $SUDO systemctl enable location-daemon
     $SUDO apt -y update || die "Can't find network" info
     kv_set first_run,1
   fi
@@ -617,8 +636,8 @@ endl
 
   $SUDO pkill -f hostapd
   sleep 1
-  #$SUDO service hostapd restart #/etc/hostapd/hostapd.conf&
-  $SUDO hostapd /etc/hostapd/hostapd.conf&
+  $SUDO service hostapd restart #/etc/hostapd/hostapd.conf&
+  #$SUDO hostapd /etc/hostapd/hostapd.conf&
 
   $SUDO sysctl net.ipv4.conf.all.forwarding=1
 
@@ -661,7 +680,12 @@ upgrade_scripts() {
 
 _upgrade_post() {
   local version=$(get_version)
+
+  $SUDO dpkg –configure -a
+  $SUDO apt install -fy
   perlcall install_list | xargs $SUDO apt -y install
+  $SUDO apt -y autoremove
+
   pycall db.upgrade
   add_history upgrade "$version"
 
@@ -690,6 +714,9 @@ local_upgrade() {
 
       _info "Disk can be removed"
       pip_install
+
+      # cleanup the old files
+      cd $BASE && git clean -fxd
 
       _info "Reinstalling base"
       sync_scripts $BASE/Linux/fai-config/files/home/
@@ -771,9 +798,12 @@ _raw() {
 
 acceptance_test() {
   _bigtext 'Loading...⌛'
-  perlcall acceptance_screen
   set_brightness 1
-  _as_user chromium --app=file:///tmp/acceptance.html
+  if perlcall acceptance_screen; then
+    _as_user chromium --app=file:///tmp/acceptance.html
+  else
+    _warn "Acceptance test failed!"
+  fi
 }
 
 get_location() {
