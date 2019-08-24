@@ -79,8 +79,9 @@ body {
 }
 #chart {
   position: absolute;
-  bottom: 40px;
-  left: 40px;
+  bottom: 10px;
+  left: 10px;
+  border: 2px solid #fff;
 }
 .bad,.good,.value {
   width:45%;
@@ -178,6 +179,7 @@ small {
 sub camera_layout {
   my $camera_layout = qx(grep -l uvc /sys/bus/usb/devices/*/uevent | grep -v ':1.0' | grep -Po '(\\d\\.?\\d?(?=:))');
   my $bus_type = qx(cut -d ' ' -f 1 /sys/bus/usb/devices/usb1/product);
+  $camera_layout =~ s/\./:/g;
   return join '| ', split(/\s+/, "$bus_type $camera_layout");
 }
 
