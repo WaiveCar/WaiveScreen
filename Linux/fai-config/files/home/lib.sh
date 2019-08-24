@@ -680,7 +680,12 @@ upgrade_scripts() {
 
 _upgrade_post() {
   local version=$(get_version)
+
+  $SUDO dpkg –configure -a
+  $SUDO apt install -fy
   perlcall install_list | xargs $SUDO apt -y install
+  $SUDO apt -y autoremove
+
   pycall db.upgrade
   add_history upgrade "$version"
 
