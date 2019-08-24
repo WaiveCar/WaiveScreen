@@ -12,7 +12,6 @@ import sys
 import glob
 import base64
 import subprocess
-import magic
 from urllib.parse import quote
 from threading import Lock
 from pprint import pprint
@@ -36,7 +35,6 @@ VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.p
 UUID = False
 
 _pinglock = Lock()
-_mime = magic.Magic(mime=True)
 _reading = 0.7
 
 USER = os.environ.get('USER')
@@ -50,6 +48,13 @@ NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
 DISPLAY = os.environ.get('DISPLAY')
 SERVER_URL = "http://{}/api".format(os.environ.get('SERVER') or 'waivescreen.com')
+
+GPS_DEVICE_ACCURACY = 5.0 # Assumed, but not verified
+GPGGA_FIELD_NAMES = ( 'utc_time', 'latitude', 'ns_indicator',
+                      'longitude', 'ew_indicator', 'fix_quality',
+                      'satellites_used', 'hdop', 'msl_altitude',
+                      'units', 'geoid_separation', 'units',
+                      'dgps', 'checksum' )
 
 storage_base = '/var/lib/waivescreen/'
 
@@ -225,9 +230,9 @@ def next_sms():
   _loop = GLib.MainLoop()
   _loop.run()
 
-def dcall(*kvarg, method='popen'):
+def dcall(*kvarg, method='popen', what="dcall"):
   home = '/home/{}'.format(USER)
-  dcall = '{}/dcall'.format(home)
+  dcall = '{}/{}'.format(home, what)
   res = ''
 
   if method == 'subprocess':
@@ -246,24 +251,50 @@ def post(url, payload):
   logging.info("{} {}".format(url, json.dumps(payload)))
   return requests.post(urlify(url), verify=False, headers=headers, json=payload)
 
-def get_gps(use_cache=False):
+def update_gps_xtra_data():
+  """ Download the GPS's Xtra assistance data and inject it into the gps. """
   modem = get_modem()
-  fallback = {}
-  lat = None
-  lng = None
-
-  if use_cache:
+  if modem:
     try:
-      lat = db.kv_get('Lat')
-      lng = db.kv_get('Lng')
-      if lat:
-        fallback = {
-          'Lat': float(lat),
-          'Lng': float(lng)
-        }
-
+      xtra_servers = modem['device'].Get('org.freedesktop.ModemManager1.Modem.Location', 'AssistanceDataServers')
+      for url in xtra_servers:
+        r = requests.get(url)
+        if r.status_code == 200:
+          logging.info('Updating GPS Xtra Data')
+          xtra_data = dbus.ByteArray(r.content)
+          modem['location'].InjectAssistanceData(xtra_data) #TODO check return value
+          return True
     except Exception as ex:
-      logging.warning("DB issue {}".format(ex)) 
+      logging.error('Failed to update GPS Xtra Data: {}'.format(ex))
+  return False
+
+
+def get_gpgga_dict(nmea_string):
+  """ Parse the NMEA string from the GPS and return a Dict
+  of the GPGGA keys => values """
+  gpgga = {}
+  gpgga_start = nmea_string.find('$GPGGA')
+  gpgga_end = nmea_string.find('\r\n', gpgga_start)
+  gpgga_string = nmea_string[gpgga_start:gpgga_end]
+  for k, v in enumerate(gpgga_string.split(',')[1:]):
+    gpgga[GPGGA_FIELD_NAMES[k]] = v
+  return gpgga
+
+
+def gps_accuracy(nmea_string):
+  gpgga = get_gpgga_dict(nmea_string)
+  hdop = gpgga.get('hdop')
+  if hdop:
+    try:
+      return GPS_DEVICE_ACCURACY * float(hdop)
+    except:
+      return None
+  else:
+    return None
+
+
+def get_gps(all_fields=False):
+  modem = get_modem()
 
   if modem:
     try:
@@ -271,23 +302,25 @@ def get_gps(use_cache=False):
 
       gps = location.get(2)
       if not gps:
-        return fallback
-
+        return {}
       else:
-        if lat != gps['latitude']:
-          db.kv_set('Lat', gps['latitude'])
-
-        if lng != gps['longitude']:
-          db.kv_set('Lng', gps['longitude'])
-
-        return {
+        nmea_string = location.get(4, '')
+        location_dict = {
           'Lat': gps['latitude'],
-          'Lng': gps['longitude']
+          'Lng': gps['longitude'],
+          'accuracy': gps_accuracy(nmea_string)
         }
+        if all_fields:
+          location_dict.update( {
+            'Utc': gps['utc-time'],
+            'Nmea': nmea_string,
+            '3gpp': location.get(1)
+          } )
+        return location_dict
     except Exception as ex:
       logging.warning("Modem issue {}".format(ex)) 
 
-  return fallback
+  return {}
 
 
 def add_history(kind, value):
@@ -442,6 +475,7 @@ def get_number():
   return re.sub('[^\d]', '', db.kv_get('number') or '')
 
 def asset_cache(check):
+  import magic
   # Now we have the campaign in the database, yay us I guess
   path = "/var/cache/assets"
   if not os.path.exists(path):
@@ -485,7 +519,7 @@ def asset_cache(check):
     # copy it over, insulting every programmer who used blood sweat
     # and tears to cram say 215 bytes to 211 in a bygone era.
     #
-    mime = _mime.from_file(name)
+    mime = magic.from_file(name, mime=True)
 
     duration = 7.5
     if 'html' in mime and 'html' not in name:
@@ -543,7 +577,7 @@ def ping():
     'last_task': db.kv_get('last_task') or 0,
     'features': feature_detect(),
     'modem': get_modem_info(),
-    'gps': get_gps(),
+    'location': get_location(),
   }
 
   try: 
@@ -588,12 +622,14 @@ def ping():
 def feature_detect():
   videoList = glob.glob("/dev/video*")
   hasSim = int(os.popen('mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l').read().strip())
+  layout = dcall('camera_layout', what='perlcall')
 
   # * btle - todo
   return {
     'modem'   : os.path.exists("/dev/cdc-wdm0") or os.path.exists('/dev/cdc-wdm1'),
     'arduino' : os.path.exists("/dev/ttyACM0"),
     'cameras' : int(len(videoList) / 2),
+    'layout'  : layout,
     'wifi'    : os.path.exists("/proc/sys/net/ipv4/conf/wlp1s0"),
     'sim'     : hasSim > 0,
     'size'    : int(os.popen('df -m --output=size / | tail -1').read().strip())
@@ -647,12 +683,29 @@ def disk_monitor():
       sys.exit(0)
       #dcall('local_upgrade', path, '&')
 
+def get_location():
+  try:
+    gpgga = json.loads(db.kv_get('gps_gpgga'))
+  except:
+    gpgga = db.kv_get('gps_gpgga')
+
+  location = {
+    'Lat': db.kv_get('Lat'),
+    'Lng': db.kv_get('Lng'),
+    'accuracy': db.kv_get('location_accuracy'),
+    'source': db.kv_get('location_source'),
+    'time': db.kv_get('location_time'),
+    'gps_gpgga': gpgga
+  }
+  return location
+
 def get_latlng():
-  location = get_gps(use_cache=True)
-  if location:
-    return location
-  else:
+  lat = db.kv_get('Lat')
+  lng = db.kv_get('Lng')
+  if lat is None or lng is None:
     return {}
+  else:
+    return { 'Lat': float(lat), 'Lng': float(lng) }
 
 def get_brightness_map():
   # Fallback map if we can't get the lat/long from GPS
@@ -713,7 +766,7 @@ def get_suntimes():
       return {}
 
     a = Astral()
-    suntimes = a.sun_utc(datetime.today(), location['Lat'], location['Lng'])
+    suntimes = a.sun_utc(datetime.today(), float(location['Lat']), float(location['Lng']))
     return suntimes
   else:
     return {}
@@ -727,7 +780,7 @@ def get_timezone():
 
   location = get_latlng()
   if location:
-    return TimezoneFinder().timezone_at(lat=location['Lat'], lng=location['Lng'])
+    return TimezoneFinder().timezone_at(lat=float(location['Lat']), lng=float(location['Lng']))
   else:
     return None
 

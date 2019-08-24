@@ -39,30 +39,36 @@ $height = $width * 675 / 1920;
     <div id="wrapper">
       <? include ('partials/sidebar.php'); ?>
       <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+
         <? include ('partials/topbar.php'); ?>
+        <div class="container-fluid">
           <div class="alert alert-primary" id="notice" role="alert"></div>
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Campaigns</h1>
+            <a onclick="create_campaign()" href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> New</a>
+          </div>
           <div class='row'>
           <? foreach($campaignList as $campaign) { 
-            $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
+            if( $campaign['duration_seconds'] ) {
+              $done = min($campaign['completed_seconds'] / $campaign['duration_seconds'], 1) * 100;
+            } else {
+              $done = 0;
+            }
             $isDefault = $campaign['is_default'];
             ?>
               <div class="card" style="width: <?=$width?>px">
-              <div class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
+              <div title=<?=$campaign['id']?> class='asset-container' id='asset-container-<?=$campaign['id']?>'/> </div>
               <div class="card-body">
                 <? if (!$isDefault) { ?>
                   <div class="progress">
                     <div class="progress-bar" role="progressbar" style="width: <?= $done ?>%" aria-valuenow="<?= $done ?>" aria-valuemin="0" aria-valuemax="100"></div>
                   </div>
-                  <p><?= $campaign['completed_seconds'] ?>/<?= $campaign['duration_seconds'] ?>s complete<br/>
+                  <p><?= $campaign['completed_seconds'] ?>/<a href=# onclick="change_time(<?=$campaign['id']?>,<?= $campaign['duration_seconds'] ?>)"><?= $campaign['duration_seconds'] ?></a><br/>
                   Start: <?= $campaign['start_time'] ?><br>
                   End: <?= $campaign['end_time'] ?>
                 <? } else { ?>
                   <h4>Default advertisement
-                  <? foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
-                    if ($value == $campaign['id']) { 
-                      echo "<span class='badge badge-pill badge-dark'>$key</span> ";
-                    }
-                  } ?>
                   </h4>
                 <? } ?>
 
@@ -75,11 +81,11 @@ $height = $width * 675 / 1920;
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                       <a onclick="geofence(<?=$campaign['id']?>)" class="dropdown-item dark">Geofence</a>
-<?                   if ($campaign['active']) {?>
+                    <? if ($campaign['active']) {?>
                       <a onclick="update_campaign({id:<?=$campaign['id']?>,active:false})" class="dropdown-item dark">Disable</a>
-<?} else { ?>
+                    <? } else { ?>
                       <a onclick="update_campaign({id:<?=$campaign['id']?>,active:true})" class="dropdown-item dark">Enable</a>
-<? } ?>
+                    <? } ?>
                       <div class="dropdown-divider"></div>
                       <label class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Replace</label>
                       <label onclick="append()" class="dropdown-item upload-button" for="image-upload-<?=$campaign['id']?>">Append</label>
@@ -87,7 +93,7 @@ $height = $width * 675 / 1920;
                       <a class="dropdown-item" href="#">Make Default</a>
                     </div>
                   </div>
-<? 
+                  <? 
                     if ($campaign['active']) {
                       $word = 'active';
                       $style = 'info'; 
@@ -95,9 +101,21 @@ $height = $width * 675 / 1920;
                       $word = 'inactive';
                       $style = 'light';
                     }
-?>
-
-                  <h3><span class="badge badge-<?=$style?>" style=margin-left:1rem><?= $word ?></span></h3>
+                  ?>
+                  <h3><span class="badge badge-<?=$style?>" style=margin-left:1rem><?= $word ?></span>
+                  <? 
+                    $matched = false;
+                    foreach( $DEFAULT_CAMPAIGN_MAP as $key => $value) { 
+                      if ($value == $campaign['id']) { 
+                        echo "<span class='badge badge-pill badge-dark'>$key</span> ";
+                        $matched = true;
+                      }
+                    } 
+                    if(!$matched) {
+                      echo "<span class='badge badge-pill badge-dark'>${campaign['project']}</span>";
+                    }
+                  ?>
+                  </h3>
                 </div>
 
                 <form id='form-<?=$campaign['id']?>'>
