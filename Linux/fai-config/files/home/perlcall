@@ -168,10 +168,9 @@ small {
 }
 
 sub camera_layout {
-  my $camera_layout = qx(grep -l uvc /sys/bus/usb/devices/*/uevent | grep -v ':1.0' | grep -Po '(\d\.?\d?(?=:))');
+  my $camera_layout = qx(grep -l uvc /sys/bus/usb/devices/*/uevent | grep -v ':1.0' | grep -Po '(\\d\\.?\\d?(?=:))');
   my $bus_type = qx(cut -d ' ' -f 1 /sys/bus/usb/devices/usb1/product);
-  my $layout = join ' ', split(/\n/, $camera_layout);
-  return "$bus_type $layout";
+  return join ' ', split(/\s+/, "$bus_type $camera_layout");
 }
 
 # see #73
