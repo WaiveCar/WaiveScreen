@@ -168,22 +168,10 @@ small {
 }
 
 sub camera_layout {
-  my $camera_layout = qx(grep -l uvc /sys/bus/usb/devices/*/uevent | cut -c 24 | uniq -c);
-  my @camera_count;
-  foreach(split(/\n/, $camera_layout)) {
-    my @parts = split(' ', $_);
-    if (length $parts[1]) {
-      $camera_count[$parts[1] - 1] = $parts[0] / 2;
-    }
-  }
-
-  for(my $ix = 0; $ix < 4; $ix ++) {
-    if (!$camera_count[$ix]) {
-      $camera_count[$ix] = 0;
-    }
-  }
-
-  return join(',', @camera_count);
+  my $camera_layout = qx(grep -l uvc /sys/bus/usb/devices/*/uevent | grep -v ':1.0' | grep -Po '(\d\.?\d?(?=:))');
+  my $bus_type = qx(cut -d ' ' -f 1 /sys/bus/usb/devices/usb1/product);
+  my $layout = join ' ', split(/\n/, $camera_layout);
+  return "$bus_type $layout";
 }
 
 # see #73
