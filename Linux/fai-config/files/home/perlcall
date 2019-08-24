@@ -57,12 +57,14 @@ sub acceptance_screen {
   my %values;
   my $uptime = qx(awk ' { print \$1 } ' /proc/uptime);
   my $version = qx(cd $home/WaiveScreen && git describe) . "-" . qx(cd $home/WaiveScreen && git rev-parse --abbrev-ref HEAD);
+  $version =~ s/\s//g;
   my @all = eval "qw($out)";
   for(my $ix = 0; $ix < $#all; $ix += 2) {
     $values{$all[$ix]} = $all[$ix + 1];
   }
 
   $values{'uuid'} = qx(cat /etc/UUID);
+  $values{'runcount'} = qx(cat /etc/bootcount);
 
   open(my $html, '>', '/tmp/acceptance.html');
   print $html qq(<style>
@@ -170,7 +172,7 @@ small {
 sub camera_layout {
   my $camera_layout = qx(grep -l uvc /sys/bus/usb/devices/*/uevent | grep -v ':1.0' | grep -Po '(\\d\\.?\\d?(?=:))');
   my $bus_type = qx(cut -d ' ' -f 1 /sys/bus/usb/devices/usb1/product);
-  return join ' ', split(/\s+/, "$bus_type $camera_layout");
+  return join '| ', split(/\s+/, "$bus_type $camera_layout");
 }
 
 # see #73
