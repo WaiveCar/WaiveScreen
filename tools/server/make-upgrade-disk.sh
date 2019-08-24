@@ -4,6 +4,7 @@
 # NOCLONE - Will skip over cloning
 # NOPIP   - Skips over pip install
 # LOCAL   - Just use local code
+# BRANCH  - Branch to use (defaults to release)
 
 die() {
   exit $1
@@ -19,21 +20,30 @@ path=/tmp/upgradedisk
 package=/tmp/upgrade.package
 mount=/tmp/mount
 dest_home=$path/Linux/fai-config/files/home
+BRANCH=${BRANCH:-release}
+
+_mkdir() {
+  [[ -d $1 ]] && sudo rm -fr $1
+  mkdir -p $1
+}
 
 if [[ -z "$NOCLONE" ]]; then
-  [[ -d $path ]] && sudo rm -fr $path
-  mkdir -p $path
+  _mkdir $path
 
   if [[ -n "$LOCAL" ]]; then
     echo "Using local code"
     cp -puvr $DIR/../../* $path
-
   else
+    echo "Using $BRANCH"
     git clone git@github.com:WaiveCar/WaiveScreen.git $path
-    mkdir -p $dest_home/pip
-    [[ -z "$NOPIP" ]] && pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
-    cd $path
+    cd $path && git checkout --track origin/$BRANCH
   fi
+
+  if [[ -z "$NOPIP" ]]; then 
+    _mkdir $dest_home/pip
+    pip3 download -d $dest_home/pip -r $path/ScreenDaemon/requirements.txt
+  fi
+  cd $path
 
   #
   # This is not a mistake, this was tested among xz, compress, bzip2, 
