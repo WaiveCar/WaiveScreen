@@ -558,16 +558,15 @@ function sow($payload) {
   $active = active_campaigns($screen);
   error_log(json_encode($active));
   // If we didn't get lat/lng from the sensor then we just any ad
-  if(empty($payload['lat'])) {
+  if(!$payload['lat']) {
     $nearby_campaigns = $active;
   } else {
     // right now we are being realllly stupid.
     $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
-      if(!empty($campaign['shape_list']) && $payload['lat']) {
+      if(!empty($campaign['shape_list'])) {
         $test = [floatval($payload['lng']), floatval($payload['lat'])];
         $isMatch = false;
         foreach($campaign['shape_list'] as $polygon) {
-          error_log(json_encode($polygon));
           if($polygon[0] === 'Polygon') {
             $isMatch |= inside_polygon($test, $polygon[1]); 
           } else if ($polygon[0] === 'Circle') {
@@ -594,7 +593,7 @@ function sow($payload) {
       // essentially this is for debugging
       return false;//true;
     });
-    error_log(json_encode($nearby_campaigns));
+    // error_log(json_encode($nearby_campaigns));
   }
 
   // so if we have existing outstanding jobs with the
