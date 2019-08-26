@@ -10,9 +10,10 @@ upgradepost() {
 
   /usr/sbin/adduser adorno netdev
 
+  systemctl unmask hostapd
   systemctl daemon-reload
   systemctl enable location-daemon
-  systemctl start location-daemon
+  systemctl restart location-daemon
 }
 
 rollback() {
