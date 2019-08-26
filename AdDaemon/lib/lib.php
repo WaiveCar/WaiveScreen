@@ -592,7 +592,7 @@ function sow($payload) {
       } 
        */
       // essentially this is for debugging
-      return true;
+      return false;//true;
     });
     error_log(json_encode($nearby_campaigns));
   }
