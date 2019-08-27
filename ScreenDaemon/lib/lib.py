@@ -677,16 +677,15 @@ def disk_monitor():
   monitor = pyudev.Monitor.from_netlink(context)
 
   for action, device in monitor:
-    pprint([device.get('DEVNAME'), device.get('DEVTYPE')])
-    if action == 'bind' and device.get('DEVTYPE') == 'usb_device': 
-      state = "enabled" if db.sess_get('keyboard_allowed') else "disabled"
-      dcall("_info", "Keyboard is {}".format(state))
-
     if action == 'add' and device.get('DEVTYPE') == 'partition':
       path = device.get('DEVNAME')
       print(path)
       sys.exit(0)
       #dcall('local_upgrade', path, '&')
+
+    elif action == 'bind' and device.get('DEVTYPE') == 'usb_device': 
+      state = "enabled" if db.sess_get('keyboard_allowed') else "disabled"
+      dcall("_info", "Keyboard is {}".format(state))
 
 def get_location():
   try:
