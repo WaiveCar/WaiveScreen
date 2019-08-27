@@ -709,6 +709,7 @@ local_upgrade() {
     if [[ -e $mountpoint/voHCPtpJS9izQxt3QtaDAQ_make_keyboard_work ]]; then
       $SUDO modprobe usbhid
       pycall db.sess_set keyboard_allowed,1 
+      _info "Keyboards are now enabled"
 
     elif [[ -e $package ]]; then
       _sanityafter
