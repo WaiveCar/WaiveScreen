@@ -1,7 +1,7 @@
 #!/bin/bash
 
 die() {
-  exit $1
+  echo $1
   exit
 }
 
@@ -15,5 +15,5 @@ magic_override_file=voHCPtpJS9izQxt3QtaDAQ_make_keyboard_work
 [[ -e $mount ]] || mkdir $mount
 sudo umount $mount >& /dev/null 
 sudo mount $disk $mount || die "Can't mount $disk on $mount - fix this and then rerun with the NOCLONE=1 env variable to skip the cloning"
-sudo touch $mount/$magic_override_file
+sudo touch $mount/$magic_override_file && echo "Made keyboard override file on $disk"
 sudo umount $mount
