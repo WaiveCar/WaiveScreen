@@ -33,7 +33,6 @@ curl
 sudo
 locate
 vim
-xinput
 #powertop
 
 # wireless stuff

@@ -669,31 +669,6 @@ def upgrades_to_run():
     print(" ".join(to_run))
   
   
-def keyboard_guard():
-  if db.sess_get('keyboard_allowed'):
-    verb = 'enable'
-    dcall('_info "Keyboard is enabled"');
-
-  else:
-    verb = 'disable'
-    dcall('_info "Keyboard is disabled"');
-
-  os.popen('xinput list | grep keyboard | xargs -P 8 -n 1 xinput {}'.format(verb)).read()
-
-
-def keyboard_monitor(): 
-  import pyudev
-  import shutil
-
-  context = pyudev.Context()
-  monitor = pyudev.Monitor.from_netlink(context)
-
-  for action, device in monitor:
-    #pprint([device, device.get('driver'), device.get('DEVTYPE'), action])
-    if action == 'bind' and device.get('DEVTYPE') == 'usb_device': #device.attributes.get('driver'):
-      pprint([action, device.get('DEVTYPE'), [[x, device.attributes.get(x)] for x in device.attributes.available_attributes]])
-      keyboard_guard()
-
 def disk_monitor(): 
   import pyudev
   import shutil
@@ -702,6 +677,10 @@ def disk_monitor():
   monitor = pyudev.Monitor.from_netlink(context)
 
   for action, device in monitor:
+    if action == 'bind' and device.get('DEVTYPE') == 'usb_device': 
+      state = "enabled" if db.sess_get('keyboard_allowed') else "disabled"
+      dcall("_info", "Keyboard is {}".format(state))
+
     if action == 'add' and device.get('DEVTYPE') == 'partition':
       path = device.get('DEVNAME')
       print(path)
