@@ -2,6 +2,8 @@
 
 . lib.sh
 
+sudo rmmod usbhid
+
 export DISPLAY=$1
 
 # Force a UUID update if needed
