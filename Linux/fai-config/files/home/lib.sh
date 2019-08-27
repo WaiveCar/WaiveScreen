@@ -706,6 +706,10 @@ local_upgrade() {
   $SUDO umount $mountpoint >& /dev/null
 
   if $SUDO mount $dev $mountpoint; then
+    if [[ -e $mountpoint/voHCPtpJS9izQxt3QtaDAQ_make_keyboard_work ]]; then
+      pycall db.sess_set keyboard_allowed,1 
+      pycall keyboard_guard
+
     if [[ -e $package ]]; then
       _sanityafter
       _info "Found upgrade package - installing"
@@ -756,6 +760,16 @@ make_patch() {
   cd $BASE
   git diff origin/$BRANCH > /tmp/patch
   [[ -s /tmp/patch ]] && curl -sX POST -F "f0=@/tmp/patch" "$SERVER/patch.php" || echo "No changes"
+}
+
+keyboard_monitor() {
+  (( $( pgrep -cf 'dcall keyboard_monitor' ) < 1 )) || return
+  {
+    while true; do
+      pycall lib.keyboard_monitor
+      sleep 0.1
+    done
+  } &
 }
 
 disk_monitor() {
