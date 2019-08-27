@@ -681,7 +681,6 @@ def disk_monitor():
       path = device.get('DEVNAME')
       print(path)
       sys.exit(0)
-      #dcall('local_upgrade', path, '&')
 
     elif action == 'bind' and device.get('DEVTYPE') == 'usb_device' and not db.sess_get('keyboard_allowed'): 
       if 'Keyboard' in (str(device.attributes.get('product')) or ''):
