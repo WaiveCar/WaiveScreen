@@ -24,8 +24,7 @@ list() {
   curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq "$qstr"
 }
 
-connect() {
-  local key
+resolve() {
   local keypath=$DIR/../../Linux/keys/ScreenAccess 
 
   if [[ ! -e $keypath ]]; then
@@ -40,10 +39,20 @@ connect() {
     checkfor jq
     port=$(curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'${1,,}'") | .port')
   fi
+}
 
-  # ssh-keygen -f "/home/chris/.ssh/known_hosts" -R "[reflect.waivescreen.com]:$port"
+connect() {
+  resolve $1
   set -x
-  ssh -C -oStrictHostKeyChecking=no $key adorno@reflect.waivescreen.com -p $port
+  ssh -C -oStrictHostKeyChecking=no $key -p $port adorno@reflect.waivescreen.com
+
+  exit
+}
+
+copy() {
+  resolve $1
+  set -x
+  scp -C -oStrictHostKeyChecking=no $key -P $port $2 adorno@reflect.waivescreen.com:$3
 
   exit
 }
@@ -95,6 +104,7 @@ for i in $*; do
       ;;
     state) state $2; exit 0;;
     connect) connect $2 ;;
+    copy) copy $2 "$3" $4 ;;
     sync|reload) reload ;;
     on) on.js ;;
     off) off.js ;;
