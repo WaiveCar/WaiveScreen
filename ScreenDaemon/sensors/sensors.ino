@@ -431,13 +431,33 @@ void loop() {
   }
   if(ide_debug) Serial.print("two");
   // check if there has been serial signal received (min 2 bytes)
+  //
+  // **********
+  // INPUT LOOP
+  // **********
+  //
   if(Serial.available() > 1) {
+
     delay(10);
+
     // selector is first byte, options: 0x01 for fanSpeed, 0x10 for display brightness (generic)
     int selector = Serial.read();
+
     // setting is second byte, max 255
     int setting = Serial.read();
     delay(10);
+
+    //
+    // 01 01  Autofan
+    // 01 xx  Fan to xx
+    //
+    // 02 NA  Get version
+    //
+    // 10 xx  Backlight to xx
+    // 11 ff  Cpu on
+    // 11 00  Cpu off
+    //
+
     if (selector == 0x01){
       // set fan speed, min viable setting for 8x fans is 102/255 (40% duty cycle)
       if (setting == 0x01){
@@ -457,13 +477,13 @@ void loop() {
         digitalWrite(resetPin, HIGH);
         delay (100);
         digitalWrite(resetPin, LOW);
-        cpu_on == true;
+        cpu_on = true;
         
       } else if (setting == 0x00 & cpu_on == true) {
         digitalWrite(resetPin, HIGH);
         delay (100);
         digitalWrite(resetPin, LOW);
-        cpu_on == false;
+        cpu_on = false;
       }
       
     }
