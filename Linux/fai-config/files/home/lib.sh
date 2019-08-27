@@ -700,7 +700,6 @@ local_upgrade() {
   local mountpoint='/tmp/upgrade'
   local package=$mountpoint/upgrade.package
 
-  _log "[upgrade] usb"
   _mkdir $mountpoint
 
   $SUDO umount $mountpoint >& /dev/null
@@ -711,7 +710,7 @@ local_upgrade() {
       pycall db.sess_set keyboard_allowed,1 
       _info "Keyboards are now enabled"
 
-    elif [[ -e $package ]]; then
+    elif [[ -e $package -a -z "$2" ]]; then
       _sanityafter
       _info "Found upgrade package - installing"
       tar xf $package -C $BASE
