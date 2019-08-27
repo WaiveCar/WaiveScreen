@@ -677,6 +677,7 @@ def disk_monitor():
   monitor = pyudev.Monitor.from_netlink(context)
 
   for action, device in monitor:
+    pprint([device.get('DEVNAME'), device.get('DEVTYPE')])
     if action == 'bind' and device.get('DEVTYPE') == 'usb_device': 
       state = "enabled" if db.sess_get('keyboard_allowed') else "disabled"
       dcall("_info", "Keyboard is {}".format(state))
