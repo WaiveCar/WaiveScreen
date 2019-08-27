@@ -1,0 +1,8 @@
+#!/bin/bash
+upgradepost() {
+  local dir=/etc/modprobe.d
+  local file=blacklist.conf
+  cp -pv /home/adorno/WaiveScreen/Linux/fai-config/files/$dir/$file $dir/$file
+}
+
+eval $1
