@@ -695,7 +695,7 @@ _upgrade_post() {
 }
 
 # This is for upgrading over USB
-local_upgrade() {
+local_disk() {
   local dev=$1
   local mountpoint='/tmp/upgrade'
   local package=$mountpoint/upgrade.package
@@ -767,7 +767,7 @@ disk_monitor() {
   {
     while true; do
       local disk=$(pycall lib.disk_monitor)
-      [[ -n "$disk" ]] && local_upgrade $disk
+      [[ -n "$disk" ]] && local_disk $disk
       sleep 3
     done
   } &

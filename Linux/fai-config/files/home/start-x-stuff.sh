@@ -41,7 +41,7 @@ NOMODEM=1 pycall arduino.set_autobright
 # usb to "settle" since it doesn't register
 # when first starting X
 #
-[[ $BRANCH == "release" && -e /dev/sdb1 ]] && local_upgrade /dev/sdb1 noupgrade
+[[ $BRANCH == "release" && -e /dev/sdb1 ]] && local_disk /dev/sdb1 noupgrade
 
 #
 # This delay is rather important because the
