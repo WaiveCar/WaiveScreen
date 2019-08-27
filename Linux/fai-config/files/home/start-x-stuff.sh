@@ -2,7 +2,11 @@
 
 . lib.sh
 
-sudo rmmod usbhid
+# This is just the disk disabler
+if [[ $BRANCH == "release" ]]; then
+  [[ -e /dev/sdb1 ]] && local_upgrade /dev/sdb1 noupgrade
+  sudo rmmod usbhid
+fi
 
 export DISPLAY=$1
 
