@@ -710,7 +710,7 @@ local_upgrade() {
       pycall db.sess_set keyboard_allowed,1 
       pycall keyboard_guard
 
-    if [[ -e $package ]]; then
+    elif [[ -e $package ]]; then
       _sanityafter
       _info "Found upgrade package - installing"
       tar xf $package -C $BASE
