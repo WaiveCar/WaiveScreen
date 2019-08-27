@@ -47,6 +47,7 @@ SANITYCHECK = os.environ.get('SANITYCHECK')
 NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
 DISPLAY = os.environ.get('DISPLAY')
+BRANCH = os.environ.get('BRANCH')
 SERVER_URL = "http://{}/api".format(os.environ.get('SERVER') or 'waivescreen.com')
 
 GPS_DEVICE_ACCURACY = 5.0 # Assumed, but not verified
@@ -668,6 +669,30 @@ def upgrades_to_run():
     print(" ".join(to_run))
   
   
+def keyboard_guard():
+  if db.sess_get('keyboard_allowed'):
+    verb = 'enable'
+    dcall('_info "Keyboard is enabled"');
+
+  else:
+    verb = 'disable'
+    dcall('_info "Keyboard is disabled"');
+
+  os.popen('xinput list | grep keyboard | xargs -P 8 -n 1 xinput {}'.format(verb)).read()
+
+
+def keyboard_monitor(): 
+  import pyudev
+  import shutil
+
+  context = pyudev.Context()
+  monitor = pyudev.Monitor.from_netlink(context)
+
+  for action, device in monitor:
+    #pprint([device, device.get('driver'), device.get('DEVTYPE'), action])
+    if action == 'bind' and device.get('DEVTYPE') == 'usb_device': #device.attributes.get('driver'):
+      pprint([action, device.get('DEVTYPE'), [[x, device.attributes.get(x)] for x in device.attributes.available_attributes]])
+      keyboard_guard()
 
 def disk_monitor(): 
   import pyudev
