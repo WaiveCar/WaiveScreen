@@ -684,7 +684,8 @@ def disk_monitor():
       #dcall('local_upgrade', path, '&')
 
     elif action == 'bind' and device.get('DEVTYPE') == 'usb_device' and not db.sess_get('keyboard_allowed'): 
-      dcall("_info", "Keyboard is disabled")
+      if 'Keyboard' in (str(device.attributes.get('product')) or ''):
+        dcall("_info", "Keyboard is disabled")
 
 def get_location():
   try:
