@@ -2,7 +2,6 @@ import logging
 import os
 import time
 import cv2
-from matplotlib import pyplot as plt
 import numpy as np
 
 OUT_DIR='/tmp/camera_recordings'
@@ -35,14 +34,15 @@ class Camera():
     self.saturation = self.DEFAULT_SATURATION
     self.auto_exposure = True
     self.brightness = self.DEFAULT_BRIGHTNESS
-    self.frame = None
-    self.cframe = None
+    self._gframe = None
+    self._cframe = None
     self.hist = None
-    self.last_frame = None
     self.last_hist = None
     self.calibrating_brightness = False
     self.ae_req_count = 0
-    self.frame_num = 1
+    self.frame_num = 0
+    self.cframe_current = False
+    self.gframe_current = False
     self.disabled = False
 
   def calibrate(self):
@@ -69,19 +69,18 @@ class Camera():
     t = time.strftime('%Y%m%d-%H%M%S')
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     self.out = cv2.VideoWriter('{}/video{}-{}.mp4'.format(OUT_DIR, self.cam_num, t), fourcc, 30.0, (640,480))
-    self.frame_num = 1
+    self.frame_num = 0
     if for_secs:
-      last_frame = for_secs * 30
+      end_frame_num = for_secs * 30
     try:
-      while self.cap.isOpened() and self.frame_num <= last_frame:
-        ret, self.cframe = self.cap.read()
+      while self.cap.isOpened() and self.frame_num <= end_frame_num:
+        ret = self.grab()
         if ret:
           self.out.write(self.cframe)
         if self.calibrating_brightness:
           self.calibrate_brightness()
         elif self.frame_num % self.CALIBRATION_INTERVAL == 0:
           self.check_calibration()
-        self.frame_num += 1
     except Exception as ex:
       logging.error('Stopped with: {}'.format(ex))
     except:  # Keyboard
@@ -90,14 +89,13 @@ class Camera():
   
   def check_calibration(self):
     switching = False
-    self.frame = cv2.cvtColor(self.cframe, cv2.COLOR_BGR2GRAY)
     self.calc_hist()
-    if self.hist.max() / self.frame.size > self.MAX_VALUE_PERCENTAGE:  # Over Exposed
+    if self.hist.max() / self.gframe.size > self.MAX_VALUE_PERCENTAGE:  # Over Exposed
       if self.hist.argmax() < self.hist.size / 2:
-        logging.debug('Frame hist.max() too low: {} @ {}'.format(self.hist.max() / self.frame.size, self.hist.argmax()))
+        logging.debug('Frame hist.max() too low: {} @ {}'.format(self.hist.max() / self.gframe.size, self.hist.argmax()))
         switching = self.request_exposure('auto')
       else:
-        logging.debug('Frame hist.max() too high: {} @ {}'.format(self.hist.max() / self.frame.size, self.hist.argmax()))
+        logging.debug('Frame hist.max() too high: {} @ {}'.format(self.hist.max() / self.gframe.size, self.hist.argmax()))
         switching = self.request_exposure('manual')
       if switching:
         logging.debug('Changing Exposure')
@@ -112,7 +110,6 @@ class Camera():
 
   def calibrate_brightness(self, force_run=False):
     if self.next_cal_frame_num == self.frame_num or force_run:
-      self.frame = cv2.cvtColor(self.cframe, cv2.COLOR_BGR2GRAY)
       self.calc_hist()
       logging.debug('Hist Offset: {}'.format(self.hist_offset))
       if self.hist_offset < -1:
@@ -154,43 +151,66 @@ class Camera():
 
   def sample_frame(self, pre_roll_override=None):
     pre_roll = pre_roll_override  if pre_roll_override is not None else self.pre_roll
-    for i in range(pre_roll):
-      self.cap.grab()
-    ret, self.cframe = self.cap.read()
-    if ret != True:
-      return False
-    self.frame = cv2.cvtColor(self.cframe, cv2.COLOR_BGR2GRAY)
+    for i in range(pre_roll + 1):
+      self.grab()
     self.calc_hist()
-    return self.frame
 
   def calc_hist(self):
     self.last_hist = self.hist
-    self.hist = cv2.calcHist([self.frame], [0], None, [self.HIST_BINS], [0,256])
+    self.hist = cv2.calcHist([self.gframe], [0], None, [self.HIST_BINS], [0,256])
     self.hist_nz = self.hist.nonzero()[0]
 
   def save_frame(self, tag):
     t = time.strftime('%Y%m%d-%H%M%S')
     cv2.imwrite('{}/t_{}-cam_{}-ea_{}-ex_{}-bri_{}-{}.jpg'.format(OUT_DIR, t, self.cam_num, self.auto_exposure, self.exposure, self.brightness, tag), self.cframe)
-    logging.debug('Frame ({})- sum:{} hist_nz.size:{}/{} hist_nz:{}'.format(tag, self.frame.sum(), self.hist_nz.size, self.hist.size, self.hist_nz))
+    logging.debug('Frame ({})- sum:{} hist_nz.size:{}/{} hist_nz:{}'.format(tag, self.gframe.sum(), self.hist_nz.size, self.hist.size, self.hist_nz))
 
   def load_frame(self, fname):
-    self.frame = cv2.imread(fname, 0)
+    self.cframe = cv2.imread(fname, 0)
     self.calc_hist()
 
-  def read_to_self(self, grab_only=False):
+  def disable(self):
+    logging.info('Camera {} is not working.  Disabling'.format(self.cam_num))
+    self.disabled = True
+
+  def grab(self):
     if self.disabled:
       return False
-    elif grab_only:
-      res = self.cap.grab()
-    else:
-      res, self.cframe = self.cap.read()
-    if not res:
-      logging.info('Camera {} is not working.  Disableing'.format(self.cam_num))
-      self.disabled = True
-      self.cframe = self.BLANK_FRAME
+    self.cframe_current = False
+    self.gframe_current = False
+    ret = self.cap.grab()
+    if not ret:
+      self.disable()
       return False
     else:
+      self.frame_num += 1
       return True
+
+  @property
+  def cframe(self):
+    if self.disabled:
+      return self.BLANK_FRAME
+    elif self.cframe_current:
+      return self._cframe
+    else:
+      ret, self._cframe = self.cap.retrieve()
+      if not ret:
+        self.disable()
+        return self.BLANK_FRAME
+      else:
+        self.cframe_current = True
+        return self._cframe
+
+  @property
+  def gframe(self):
+    if self.disabled:
+      raise Exception('Camera {} is disabled'.format(self.cam_num))
+    elif self.gframe_current:
+      return self._gframe
+    else:
+      self._gframe = cv2.cvtColor(self.cframe, cv2.COLOR_BGR2GRAY)
+      self.gframe_current = True
+      return self._gframe
 
   @property
   def pre_roll(self):
@@ -256,19 +276,17 @@ def record_all():
   cams = {}
   for cam_num in [0, 2, 4, 6]:
     cams[cam_num] = Camera(cam_num)
-    cams[cam_num].frame_num = 1
   try:
     while True:
       for cam in cams.values():
-        cam.read_to_self(grab_only=True)
+        cam.grab()
       for cam in cams.values():
-        if not cam.read_to_self():
+        if not cam.grab():
           continue
         elif cam.calibrating_brightness:
           cam.calibrate_brightness()
         elif cam.frame_num % cam.CALIBRATION_INTERVAL == 0:
           cam.check_calibration()
-        cam.frame_num += 1
       grid[0:H, 0:W] = cams[0].cframe
       grid[0:H, W:W*2] = cams[2].cframe
       grid[H:H*2, 0:W] = cams[4].cframe
