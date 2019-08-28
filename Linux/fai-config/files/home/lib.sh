@@ -776,9 +776,9 @@ disk_monitor() {
 update_arduino() {
   down sensor_daemon
 
-  $BASE/client/avrdude -C$BASE/tools/client/avrdude.conf \
-    -v -patmega328p -carduino -P/dev/ttyUSB0 -b57600 -D \
-    -Uflash:w:/$BASE/tools/client/sensors.ino.hex:i
+  $BASE/tools/client/avrdude -C$BASE/tools/client/avrdude.conf \
+    -v -patmega328p -carduino -P/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0 -b57600 -D \
+    -Uflash:w:$BASE/tools/client/sensors.ino.hex:i
 
   _info "Updating arduino"
 
