@@ -235,7 +235,7 @@ function upsert_screen($screen_uid, $payload) {
 // After a screen runs a task it's able to respond... kind of 
 // have a dialog if you will.
 function response($payload) {
-  error_log(json_encode($payload));
+  //error_log(json_encode($payload));
   $missing = find_missing($payload, ['task_id', 'uid', 'response']);
   if($missing) {
     return doError("Missing fields: " . implode(', ', $missing));
@@ -316,7 +316,7 @@ function default_campaign($screen) {
 
 function ping($payload) {
   global $VERSION, $LASTCOMMIT;
-  error_log(json_encode($payload));
+  //error_log(json_encode($payload));
 
   // features/modem/gps
   foreach([
@@ -496,14 +496,14 @@ function inject_priority($job, $screen, $campaign) {
 
 function sow($payload) {
   global $SCHEMA;
-  error_log(json_encode($payload));
+  //error_log(json_encode($payload));
   if(isset($payload['uid'])) {
     $screen = upsert_screen($payload['uid'], $payload);
   } else {
     return doError("UID needs to be set before continuing");
   }
 
-  error_log($payload['uid']);
+  //error_log($payload['uid']);
   $jobList = aget($payload, 'jobs', []);
   $campaignsToUpdateList = [];
 
@@ -556,7 +556,7 @@ function sow($payload) {
   // error_log(json_encode($uniqueCampaignList));
   
   $active = active_campaigns($screen);
-  error_log(json_encode($active));
+  //error_log(json_encode($active));
   // If we didn't get lat/lng from the sensor then we just any ad
   if(!$payload['lat']) {
     $nearby_campaigns = $active;
@@ -601,7 +601,7 @@ function sow($payload) {
   $server_response = task_inject($screen, ['res' => true]);
   $server_response['data'] = array_map(function($campaign) use ($screen) {
     $jobList = find_unfinished_job($campaign['id'], $screen['id']);
-    error_log(json_encode($jobList));
+    //error_log(json_encode($jobList));
     if(!$jobList) {
       $jobList = [ create_job($campaign['id'], $screen['id']) ];
     }
@@ -616,7 +616,7 @@ function sow($payload) {
       }
     }
   }, $nearby_campaigns);
-  error_log(json_encode($server_response));
+  //error_log(json_encode($server_response));
   
   return $server_response; 
 }
