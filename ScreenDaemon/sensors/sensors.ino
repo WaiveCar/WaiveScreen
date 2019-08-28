@@ -6,7 +6,7 @@
 // version 1.1 (12.5.18) updated to account for current sense board options.
 
 
-#include<Wire.h>
+#include <Wire.h>
 #include <math.h>
 int fanPin = 9;    // fans connected to digital pin 5
 int backlightPin = 6; // screen adj connected to digital pin 6 through amp
