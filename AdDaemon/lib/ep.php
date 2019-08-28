@@ -64,4 +64,5 @@ try {
   ]);
 }
 
+error_log("$func called, does not exist");
 jemit(doError("$func not found"));
