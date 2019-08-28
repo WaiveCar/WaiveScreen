@@ -45,6 +45,7 @@ class Camera():
     self.cframe_current = False
     self.gframe_current = False
     self.disabled = False
+    self.camera_info_overlay = True
 
   def calibrate(self):
     self.ae_req_count = 0
@@ -174,6 +175,11 @@ class Camera():
     logging.info('Camera {} is not working.  Disabling'.format(self.cam_num))
     self.disabled = True
 
+  def add_overlay(self):
+    exposure_string = 'Auto' if self.auto_exposure else self.exposure
+    info_string = 'Exposure: {}  Brightness: {}'.format(exposure_string, self.brightness)
+    cv2.putText(self._cframe, info_string, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), lineType=cv2.LINE_AA)
+
   def grab(self):
     if self.disabled:
       return False
@@ -200,6 +206,8 @@ class Camera():
         return self.BLANK_FRAME
       else:
         self.cframe_current = True
+        if self.camera_info_overlay:
+          self.add_overlay()
         return self._cframe
 
   @property
