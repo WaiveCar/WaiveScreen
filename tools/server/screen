@@ -38,6 +38,7 @@ resolve() {
   else
     checkfor jq
     port=$(curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'${1,,}'") | .port')
+    [[ -z "$port" ]] && die "Woops, $1 wasn't found."
   fi
 }
 
