@@ -22,6 +22,8 @@ bool ide_debug = false;
 int j=0; // used to make sure the fan comes back on.
 int backlight_adjust = 1; // used to lower current draw at low voltage to save the battery
 
+const char VERSION[]="$VERSION$";
+
 // Sensor name is MPU-6050
 // Declaring Relevant Register names 
 #define MPU6050_ACCEL_XOUT_H       0x3B   // R  
@@ -88,6 +90,17 @@ typedef union accel_t_gyro_union
     int16_t z_gyro;
   } value;
 };
+
+typedef struct packet_ {
+  const uint16_t header = 0xffff;
+  uint8_t   type;
+  uint16_t  len;
+} packet;
+
+typedef struct packet_response_ {
+  packet header;
+  uint8_t payload[128] = {0};
+} packet_response;
 
 // Use the following global variables and access functions to help store the overall
 // rotation angle of the sensor
@@ -345,6 +358,18 @@ void loop() {
     }
   }   
 
+  // Response:
+  //
+  //  | HH HH | TT | LL LL | [ data ] |
+  //
+  //  HH is the header, currently 0xFFFF
+  //  TT is the type of response
+  //  LLLL is an LSB length in bytes after the LLLL
+  //  
+  //  This allows for us to "future proof" the
+  //  system up to 256 types of packets up to
+  //  64K long in data payloads (not that we'd need it)
+  //
   // set the fan and backlight each loop
   analogWrite(backlightPin, backlightValue);
   analogWrite(fanPin, fanSpeed);
