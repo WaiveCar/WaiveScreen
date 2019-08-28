@@ -1,7 +1,10 @@
 #!/bin/bash
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BuildDir=$DIR/../../ScreenDaemon/build
+[[ -e $BuildDir ]] && sudo rm -fr $BuildDir
+mkdir -p $BuildDir
 
-mkdir -p $DIR/../../ScreenDaemon/build
-
-arduino --pref build.path=$DIR/../../ScreenDaemon/build --verify $DIR/../../ScreenDaemon/sensors/sensors.ino
+arduino --pref build.path=$BuildDir --verify $DIR/../../ScreenDaemon/sensors/sensors.ino
+cp -puv $BuildDir/sensors.ino.hex $DIR/../client
 
