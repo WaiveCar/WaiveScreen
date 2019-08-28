@@ -773,6 +773,18 @@ disk_monitor() {
   } &
 }
 
+update_arduino() {
+  down sensor_daemon
+
+  $BASE/client/avrdude -C$BASE/tools/client/avrdude.conf \
+    -v -patmega328p -carduino -P/dev/ttyUSB0 -b57600 -D \
+    -Uflash:w:/$BASE/tools/client/sensors.ino.hex:i
+
+  _info "Updating arduino"
+
+  sensor_daemon
+}
+
 stack_down() {
   for i in screen_daemon screen_display sensor_daemon; do
     $DEST/dcall down $i
