@@ -49,6 +49,14 @@ connect() {
   exit
 }
 
+pull() {
+  resolve $1
+  local=${3:-.}
+  set -x
+  scp -C -oStrictHostKeyChecking=no $key -P $port adorno@reflect.waivescreen.com:$2 $local
+
+  exit
+}
 copy() {
   resolve $1
   set -x
@@ -105,6 +113,7 @@ for i in $*; do
     state) state $2; exit 0;;
     connect) connect $2 ;;
     copy) copy $2 "$3" $4 ;;
+    pull) pull $2 "$3" $4 ;;
     sync|reload) reload ;;
     on) on.js ;;
     off) off.js ;;
