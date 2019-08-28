@@ -511,7 +511,7 @@ function db_insert_many($table, $kvList) {
   $fields = implode(',', $fields);
   $values = implode(',', $valueList);
   $qstr = "insert into $table($fields) values $values";
-  error_log($qstr);
+  //error_log($qstr);
 
   if(_query($qstr)) {
     return $db->lastInsertRowID();
