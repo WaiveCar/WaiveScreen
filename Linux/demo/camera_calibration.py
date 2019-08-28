@@ -4,7 +4,7 @@ import time
 import cv2
 import numpy as np
 
-OUT_DIR='/tmp/camera_recordings'
+OUT_DIR='/home/adorno/camera_recordings'
 try:
   os.mkdir(OUT_DIR)
 except:
@@ -16,12 +16,13 @@ logging.basicConfig(filename='{}/camera.log'.format(OUT_DIR), format=log_format,
 
 W = 640
 H = 480
+RECORDING_SECONDS = 60 * 15
 
 class Camera():
   MAX_VALUE_PERCENTAGE = 0.15
   HIST_BINS = 32
-  AE_PREROLL = 25
-  ME_PREROLL = 5
+  AE_PREROLL = 24
+  ME_PREROLL = 6
   DEFAULT_SATURATION = 0.6
   DEFAULT_BRIGHTNESS = 0.4
   CALIBRATION_INTERVAL = 120  # Frames
@@ -92,13 +93,13 @@ class Camera():
     self.calc_hist()
     if self.hist.max() / self.gframe.size > self.MAX_VALUE_PERCENTAGE:  # Over Exposed
       if self.hist.argmax() < self.hist.size / 2:
-        logging.debug('Frame hist.max() too low: {} @ {}'.format(self.hist.max() / self.gframe.size, self.hist.argmax()))
+        logging.debug('CAM{}-Frame hist.max() too low: {} @ {}'.format(self.cam_num, self.hist.max() / self.gframe.size, self.hist.argmax()))
         switching = self.request_exposure('auto')
       else:
-        logging.debug('Frame hist.max() too high: {} @ {}'.format(self.hist.max() / self.gframe.size, self.hist.argmax()))
+        logging.debug('CAM{}-Frame hist.max() too high: {} @ {}'.format(self.cam_num, self.hist.max() / self.gframe.size, self.hist.argmax()))
         switching = self.request_exposure('manual')
       if switching:
-        logging.debug('Changing Exposure')
+        logging.debug('CAM{}-Changing Exposure'.format(self.cam_num))
         self.brightness = 0.4
       self.cal_int = 0.1
     else:
@@ -111,7 +112,7 @@ class Camera():
   def calibrate_brightness(self, force_run=False):
     if self.next_cal_frame_num == self.frame_num or force_run:
       self.calc_hist()
-      logging.debug('Hist Offset: {}'.format(self.hist_offset))
+      logging.debug('CAM{}-Hist Offset: {}'.format(self.cam_num, self.hist_offset))
       if self.hist_offset < -1:
         if self.bdiff < 0:
           self.cal_int = self.cal_int / 2
@@ -215,7 +216,7 @@ class Camera():
   @property
   def pre_roll(self):
     preroll = self.AE_PREROLL if self.auto_exposure else self.ME_PREROLL
-    logging.debug('Using Preroll: {}'.format(preroll))
+    logging.debug('CAM{}-Using Preroll: {}'.format(self.cam_num, preroll))
     return preroll
 
   @property
@@ -239,7 +240,7 @@ class Camera():
     else:
       self.bdiff = v - self.brightness
       self.cap.set(cv2.CAP_PROP_BRIGHTNESS, v)
-      logging.debug('Setting Brightness: {}'.format(v))
+      logging.debug('CAM{}-Setting Brightness: {}'.format(self.cam_num, v))
       if v <= 0 or v >= 1:
         self.calibrating_brightness = False
 
@@ -249,7 +250,7 @@ class Camera():
     elif self.auto_exposure:
       self.auto_exposure = False
     self.cap.set(cv2.CAP_PROP_EXPOSURE, v)
-    logging.debug('Setting Exposure: {}'.format(v))
+    logging.debug('CAM{}-Setting Exposure: {}'.format(self.cam_num, v))
 
   def auto_exposure(self, v=None):
     if v is None:
@@ -258,7 +259,7 @@ class Camera():
     else:
       ae = 0.75 if v else 0.25
       self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, ae)
-      logging.debug('Setting Auto Exposure: {}'.format(v))
+      logging.debug('CAM{}-Setting Auto Exposure: {}'.format(self.cam_num, v))
       return True
 
   saturation = property(saturation, saturation)
@@ -266,16 +267,19 @@ class Camera():
   exposure = property(exposure, exposure)
   auto_exposure = property(auto_exposure, auto_exposure)
 
+def video_out_writer():
+  t = time.strftime('%Y%m%d-%H%M%S')
+  fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+  return cv2.VideoWriter('{}/video{}-{}.mkv'.format(OUT_DIR, 'all', t), fourcc, 15.0, (W*2,H*2))
 
 def record_all():
   """ Record all cameras to a 2x2 grid while continually calibrating the camera settings """
-  t = time.strftime('%Y%m%d-%H%M%S')
-  fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-  out = cv2.VideoWriter('{}/video{}-{}.mkv'.format(OUT_DIR, 'all', t), fourcc, 15.0, (W*2,H*2))
   grid = np.zeros([H*2, W*2, 3], np.uint8)
   cams = {}
   for cam_num in [0, 2, 4, 6]:
     cams[cam_num] = Camera(cam_num)
+  out = video_out_writer()
+  out_start_time = time.time()
   try:
     while True:
       for cam in cams.values():
@@ -292,6 +296,10 @@ def record_all():
       grid[H:H*2, 0:W] = cams[4].cframe
       grid[H:H*2, W:W*2] = cams[6].cframe
       out.write(grid)
+      if time.time() >= out_start_time + RECORDING_SECONDS:
+        out.release()
+        out = video_out_writer()
+        out_start_time = time.time()
   except Exception as ex:
     logging.error('Stopped with: {}'.format(ex))
   except:  # Keyboard
