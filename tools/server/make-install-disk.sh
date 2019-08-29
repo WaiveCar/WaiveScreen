@@ -12,7 +12,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 dir=$HOME/usb
 branch=$(git rev-parse --abbrev-ref HEAD)
 version=$(git describe)-$branch
-file=$HOME/installs/WaiveScreen-$(date +%Y%m%d%H%M)-$(version).iso
+file=$HOME/installs/WaiveScreen-$(date +%Y%m%d%H%M)-$version.iso
 backup=/home/chris/backup-test
 
 die() {
@@ -39,7 +39,9 @@ if [[ -z "$NODISK" ]]; then
   fi
 fi
 
-preexist=$(ls $HOME/WaiveScreen-*$(version).iso 2> /dev/null)
+[[ -z "$JUSTDOIT" && $branch != "release" ]] && die "Nope, not doing it. You need to switch to the release branch or pass JUSTDOIT."
+
+preexist=$(ls $HOME/WaiveScreen-*$version.iso 2> /dev/null)
 [[ -n "$preexist" ]] && die "$preexist already exists. Either run with ONLYDISK or remove the iso(s)."
 if [[ -z "$NOPIP" ]]; then
   NONET=1 $DIR/syncer.sh pip || die "Can't install the pip requirements, check requirements.txt" 
@@ -50,8 +52,6 @@ if [ "$MIRROR" -o ! -e $dir ]; then
   mkdir -p $dir
   fai-mirror -v -cDEBIAN $dir
 fi
-
-[[ -z "$JUSTDOIT" && $branch != "release" ]] && die "Nope, not doing it. You need to switch to the release branch or pass JUSTDOIT."
 
 echo "Creating a bootable iso named $file"
 sudo fai-cd -m $dir $file
