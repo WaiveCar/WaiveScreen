@@ -557,9 +557,10 @@ function sow($payload) {
   
   $active = active_campaigns($screen);
   //error_log(json_encode($active));
-  // If we didn't get lat/lng from the sensor then we just any ad
+  // If we didn't get lat/lng from the sensor then we just 
+  // fallback to the default
   if(!$payload['lat']) {
-    $nearby_campaigns = $active;
+    $nearby_campaigns = [];//$active;
   } else {
     // right now we are being realllly stupid.
     $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
