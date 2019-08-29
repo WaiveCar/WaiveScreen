@@ -177,8 +177,8 @@ class Camera():
 
   def add_overlay(self):
     exposure_string = 'Auto' if self.auto_exposure else self.exposure
-    info_string = 'Exposure: {}  Brightness: {}'.format(exposure_string, self.brightness)
-    cv2.putText(self._cframe, info_string, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), lineType=cv2.LINE_AA)
+    info_string = 'Cam{} - Exposure: {}  Brightness: {}'.format(self.cam_num, exposure_string, self.brightness)
+    cv2.putText(self.cframe, info_string, (10, 20), cv2.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), lineType=cv2.LINE_AA)
 
   def grab(self):
     if self.disabled:
@@ -193,22 +193,31 @@ class Camera():
       self.frame_num += 1
       return True
 
+  def cframe(self, v=None):
+    if v is None:
+      if self.disabled:
+        return self.BLANK_FRAME
+      elif self.cframe_current:
+        return self._cframe
+      else:
+        ret, self._cframe = self.cap.retrieve()
+        if not ret:
+          self.disable()
+          return self.BLANK_FRAME
+        else:
+          self.cframe_current = True
+          return self._cframe
+    else:
+      self.cframe_current = True
+      self._cframe = v
+
   @property
-  def cframe(self):
+  def frame(self):
     if self.disabled:
       return self.BLANK_FRAME
-    elif self.cframe_current:
-      return self._cframe
-    else:
-      ret, self._cframe = self.cap.retrieve()
-      if not ret:
-        self.disable()
-        return self.BLANK_FRAME
-      else:
-        self.cframe_current = True
-        if self.camera_info_overlay:
-          self.add_overlay()
-        return self._cframe
+    if self.camera_info_overlay:
+      self.add_overlay()
+    return self.cframe
 
   @property
   def gframe(self):
@@ -249,7 +258,7 @@ class Camera():
       self.bdiff = v - self.brightness
       self.cap.set(cv2.CAP_PROP_BRIGHTNESS, v)
       logging.debug('CAM{}-Setting Brightness: {}'.format(self.cam_num, v))
-      if v <= 0 or v >= 1:
+      if v <= 0 or v >= 0.6:
         self.calibrating_brightness = False
 
   def exposure(self, v=None):
@@ -270,6 +279,7 @@ class Camera():
       logging.debug('CAM{}-Setting Auto Exposure: {}'.format(self.cam_num, v))
       return True
 
+  cframe = property(cframe, cframe)
   saturation = property(saturation, saturation)
   brightness = property(brightness, brightness)
   exposure = property(exposure, exposure)
@@ -299,10 +309,10 @@ def record_all():
           cam.calibrate_brightness()
         elif cam.frame_num % cam.CALIBRATION_INTERVAL == 0:
           cam.check_calibration()
-      grid[0:H, 0:W] = cams[0].cframe
-      grid[0:H, W:W*2] = cams[2].cframe
-      grid[H:H*2, 0:W] = cams[4].cframe
-      grid[H:H*2, W:W*2] = cams[6].cframe
+      grid[0:H, 0:W] = cams[0].frame
+      grid[0:H, W:W*2] = cams[2].frame
+      grid[H:H*2, 0:W] = cams[4].frame
+      grid[H:H*2, W:W*2] = cams[6].frame
       out.write(grid)
       if time.time() >= out_start_time + RECORDING_SECONDS:
         out.release()
