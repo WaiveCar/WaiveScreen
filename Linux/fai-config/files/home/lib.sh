@@ -68,6 +68,7 @@ _bigtext() {
     middle="cat"
   fi
   echo "$*" | $middle | aosd_cat -p 4 -n "DejaVu Sans 72" -R white -f 1500 -u 1200 -o 1500 -d 30 -b 216 -B black &
+  echo "$*" | $middle
 }
 
 selfie() {
@@ -156,7 +157,8 @@ text_loop() {
           sms_cleanup $dbuspath
           selfie $sender &
           sleep 2
-          B64=1 _bigtext $message
+          local as_text=$(B64=1 _bigtext $message)
+          ws_browser "$as_text"
         else
           # Wait a while for the image to come in
           sleep 1.5
@@ -692,6 +694,10 @@ _upgrade_post() {
   upgrade_scripts
   stack_restart 
   _info "Now on $version"
+}
+
+ws_browser() {
+  curl -sX POST --data "$*" localhost:4096
 }
 
 # This is for upgrading over USB
