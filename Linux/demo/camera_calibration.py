@@ -95,10 +95,10 @@ class Camera():
     switching = False
     self.calc_hist()
     if self.hist.max() / self.gframe.size > self.MAX_VALUE_PERCENTAGE:  # Over Exposed
-      if self.hist.argmax() < self.hist.size / 2:
+      if self.hist.argmax() < self.hist.size / 3:
         logging.debug('CAM{}-Frame hist.max() too low: {} @ {}'.format(self.cam_num, self.hist.max() / self.gframe.size, self.hist.argmax()))
         switching = self.request_exposure('auto')
-      else:
+      elif self.hist.argmax() > (self.hist.size / 3) * 2:
         logging.debug('CAM{}-Frame hist.max() too high: {} @ {}'.format(self.cam_num, self.hist.max() / self.gframe.size, self.hist.argmax()))
         switching = self.request_exposure('manual')
       if switching:
@@ -179,21 +179,22 @@ class Camera():
 
   def add_overlay(self):
     exposure_string = 'Auto' if self.auto_exposure else self.exposure
-    info_string = 'Cam{} - Exposure: {}  Brightness: {}'.format(self.cam_num, exposure_string, self.brightness)
+    info_string = 'Cam{} - Exposure: {}  Brightness: {}  Frame: {}'.format(self.cam_num, exposure_string, self.brightness, self.frame_num)
     cv2.putText(self.cframe, info_string, (10, 20), cv2.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), lineType=cv2.LINE_AA)
 
-  def grab(self):
-    if self.disabled:
-      return False
-    self.cframe_current = False
-    self.gframe_current = False
-    ret = self.cap.grab()
-    if not ret:
-      self.disable()
-      return False
-    else:
-      self.frame_num += 1
-      return True
+  def grab(self, count=1):
+    for i in range(count):
+      if self.disabled:
+        return False
+      self.cframe_current = False
+      self.gframe_current = False
+      ret = self.cap.grab()
+      if not ret:
+        self.disable()
+        return False
+      else:
+        self.frame_num += 1
+    return True
 
   def cframe(self, v=None):
     if v is None:
@@ -299,6 +300,7 @@ def record_all():
   cams = {}
   for cam_num in [0, 2, 4, 6]:
     cams[cam_num] = Camera(cam_num)
+    cams[cam_num].grab(count=cam_num*2)
   out = video_out_writer()
   out_start_time = time.time()
   try:
