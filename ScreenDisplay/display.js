@@ -12,5 +12,5 @@ window.onload = function init() {
   var ws = new WebSocket("ws://127.0.0.1:4096/ws");
   ws.onmessage = function(event) {
     console.log(event.data);
-  });
+  };
 }
