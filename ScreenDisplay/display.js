@@ -41,4 +41,5 @@ window.onload = function init() {
       console.log(event.data);
     };
   }
+  doWs();
 }
