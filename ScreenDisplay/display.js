@@ -13,6 +13,9 @@ window.onload = function init() {
     var ws = new WebSocket("ws://127.0.0.1:4096/ws");
 
     ws.onerror = ws.onclose = function(){ 
+      try {
+        ws.close();
+      } catch(ex) {}
       setTimeout(doWs, 1000);
     }
 
