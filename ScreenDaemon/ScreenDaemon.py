@@ -184,8 +184,9 @@ async def sow(request):
     return failure('Error: {}'.format(err))
 
 async def browser(request):
+  gloal _conn
   text = await request.text()
-  if _conn:
+  if _conn is not None:
     await _conn.send_str(text)
 
 async def ws(request):
