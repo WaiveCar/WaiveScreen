@@ -76,9 +76,11 @@ var Engine = function(opts){
     _isNetUp = true,
     _start = new Date(),
     _stHandleMap = {},
-    _consider_new_job = false,
     _key = '-xA8tAY4YSBmn2RTQqnnXXw',
     _last_sow = [+_start, +_start],
+    _ = {
+      maxPriority: 0,
+    },
     _fallback;
 
   _res.target.ratio = _res.target.width / _res.target.height;
@@ -485,7 +487,6 @@ var Engine = function(opts){
         res.data.forEach(function(row) {
           addJob(row);
         })
-        //_consider_new_job = true;
       }
       if(cb) {
         cb();
@@ -562,8 +563,7 @@ var Engine = function(opts){
 
     // If we are at the end then our next function should be to
     // choose the next job.
-    if(_consider_new_job || _current.position === _current.assetList.length) {
-      _consider_new_job = false;
+    if(_current.position === _current.assetList.length) {
       return nextJob();
     } 
 
