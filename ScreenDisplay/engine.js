@@ -643,8 +643,9 @@ var Engine = function(opts){
     //
     // In this model, a fair dice would show ad 2 80% of the time.
     //
+
+    _.maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0)),
     var 
-      maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0)),
       activeList = Object.values(_res.db).filter(row => row.active && row.duration),// && row.filter === maxPriority),
 
       // Here's the range of numbers, calculated by looking at all the remaining things we have to satisfy
@@ -655,7 +656,7 @@ var Engine = function(opts){
       breakpoint = Math.random() * range;
 
     if(_res._debug) {
-      console.log({active: activeList, db:_res.db, range: range, priority: maxPriority});
+      console.log({active: activeList, db:_res.db, range: range, priority: _.maxPriority});
     }
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
@@ -730,6 +731,9 @@ var Engine = function(opts){
   // variables start with lower case letters,
   // function start with upper case.
   return merge(_res, {
+    Get: function(what) {
+      return _[what[;
+    },
     Play: function() {
       _res.pause = false;
       _current.shown.dom.play();
