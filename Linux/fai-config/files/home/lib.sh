@@ -397,6 +397,7 @@ ssh_hole() {
   # I think this is causing problems. Either the event pattern works or it doesn't.
   # (( $(pgrep -cf dcall\ ssh_hole ) > 1 )) && die "ssh_hole already running" info
 
+  ssh-keygen -f "$DEST/.ssh/known_hosts" -R "reflect.waivescreen.com"
   {
     while true; do
       local port=$(kv_get port)
