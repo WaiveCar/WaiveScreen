@@ -50,6 +50,13 @@ kv_incr() {
   fi
 }
 
+add_history() {
+  local kind=$1
+  local value=$2
+  local extra=$3
+  sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
+}
+
 list() {
   # just show the local fuctions
   if [[ $# -gt 0 ]]; then
@@ -243,13 +250,6 @@ enable_gps() {
     --location-enable-gps-raw \
     --location-enable-3gpp \
     --location-disable-agps
-}
-
-add_history() {
-  local kind=$1
-  local value=$2
-  local extra=$3
-  sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
 }
 
 get_number() {
@@ -491,21 +491,6 @@ get_uuid() {
   cat $UUIDfile
 }
 
-wait_for() {
-  path=${2:-$EV}/$1
-
-  if [[ ! -e "$path" ]]; then
-    echo `date +%R:%S` WAIT $1
-    until [[ -e "$path" ]]; do
-      sleep 0.5
-    done
-
-    # Give it a little bit after the file exists to
-    # avoid unforseen race conditions
-    sleep 0.05
-  fi
-}
-
 _screen_display_single() {
   export DISPLAY=${DISPLAY:-:0}
   local app=$BASE/ScreenDisplay/display.html 
@@ -538,6 +523,21 @@ screen_display() {
   local pid=$!
 
   set_wrap screen_display $pid
+}
+
+wait_for() {
+  path=${2:-$EV}/$1
+
+  if [[ ! -e "$path" ]]; then
+    echo `date +%R:%S` WAIT $1
+    until [[ -e "$path" ]]; do
+      sleep 0.5
+    done
+
+    # Give it a little bit after the file exists to
+    # avoid unforseen race conditions
+    sleep 0.05
+  fi
 }
 
 running() {
