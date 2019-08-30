@@ -82,7 +82,9 @@ check_online() {
   return 1
 }
 
-if [[ $(pycall sess_get modem) == 1 ]]; then
+if dcall sess_get nosanity; then
+  echo $(date) nosanity >> /tmp/sanity-check
+elif dcall sess_get modem; then
   date >> /tmp/sanity-check
   check_online && check_ssh_hole
   pycall lib.ping
