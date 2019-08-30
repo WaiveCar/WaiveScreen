@@ -20,9 +20,10 @@ from pdb import set_trace as bp
 
 
 _reading = False
+_conn = None
+_app = web.Application()
+_cors = aiohttp_cors.setup(_app)
 DTFORMAT = '%Y-%m-%d %H:%M:%S.%f'
-app = web.Application()
-cors = aiohttp_cors.setup(app)
 
 def res(what):
   return web.json_response(what)
@@ -182,6 +183,28 @@ async def sow(request):
   else:
     return failure('Error: {}'.format(err))
 
+async def sms(request):
+  text = await request.text()
+  if _conn:
+    await _conn.send_str(sms)
+
+async def ws(request):
+  global _conn
+  ws = web.WebSocketResponse()
+  await ws.prepare(request)
+
+  _conn = ws
+  async for msg in ws:
+    if msg.type == aiohttp.WSMsgType.TEXT:
+      if msg.data == 'close':
+        await ws.close()
+
+    elif msg.type == aiohttp.WSMsgType.ERROR:
+      print('ws connection closed with exception %s' %
+        ws.exception())
+
+  return ws
+
 if __name__ == '__main__':
 
   db.kv_set('version', lib.VERSION)
@@ -196,11 +219,13 @@ if __name__ == '__main__':
   # this is the simplest code I could write. 
   for method, route, handler in [
       ['GET', '/default', default], 
+      ['GET', '/sms', sms], 
+      ['GET', '/ws', ws],
       ['POST', '/sow', sow]]:
 
     # Apparently you need to define a "resource"
-    resource = cors.add(app.router.add_resource(route))
-    route = cors.add(
+    resource = _cors.add(_app.router.add_resource(route))
+    route = _cors.add(
       # Then add a route here, as opposed to the regular way
       # as documented in aiohttp
       resource.add_route(method, handler), {
@@ -210,4 +235,4 @@ if __name__ == '__main__':
       }
     )
 
-  web.run_app(app,port=4096)
+  web.run_app(_app, port=4096)
