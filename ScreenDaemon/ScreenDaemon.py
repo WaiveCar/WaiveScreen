@@ -183,7 +183,7 @@ async def sow(request):
   else:
     return failure('Error: {}'.format(err))
 
-async def sms(request):
+async def browser(request):
   text = await request.text()
   if _conn:
     await _conn.send_str(sms)
@@ -219,7 +219,7 @@ if __name__ == '__main__':
   # this is the simplest code I could write. 
   for method, route, handler in [
       ['GET', '/default', default], 
-      ['GET', '/sms', sms], 
+      ['POST', '/browser', browser], 
       ['GET', '/ws', ws],
       ['POST', '/sow', sow]]:
 
