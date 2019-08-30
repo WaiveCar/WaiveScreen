@@ -193,7 +193,7 @@ async def browser(request):
 
   if _conn is not None:
     if args[0] == '@':
-      args = 'http://www.waivescreen.com/insta.php?user={}'.format(args[1:])
+      args = 'http://www.waivescreen.com/insta.php?loop=1&user={}'.format(args[1:])
     
     if "http" in args:
       payload = json.dumps({'action': 'playnow', 'args': args})
