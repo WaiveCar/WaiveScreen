@@ -155,8 +155,7 @@ class Camera():
 
   def sample_frame(self, pre_roll_override=None):
     pre_roll = pre_roll_override  if pre_roll_override is not None else self.pre_roll
-    for i in range(pre_roll + 1):
-      self.grab()
+    self.grab(count=pre_roll + 1)
     self.calc_hist()
 
   def calc_hist(self):
