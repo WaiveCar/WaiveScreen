@@ -168,7 +168,7 @@ text_loop() {
           selfie $sender &
           sleep 2
           local as_text=$(B64=1 _bigtext $message)
-          ws_browser "$as_text"
+          ws_browser "sms,$as_text"
         else
           # Wait a while for the image to come in
           sleep 1.5
