@@ -9,26 +9,33 @@ window.onload = function init() {
 
   ads.Start();
 
-  var ws = new WebSocket("ws://127.0.0.1:4096/ws");
-  ws.onmessage = function(event) {
-    //
-    // id: unique id
-    // action: verb
-    // args: noun
-    //
-    let payload = JSON.parse(event.data);
+  function doWs() { 
+    var ws = new WebSocket("ws://127.0.0.1:4096/ws");
 
-    if(payload.action === 'engine') {
-      ads[payload.args.func](payload.args.params);
-    }
-    if(payload.action === 'eval') {
-      eval(payload.args);
-    }
-    if(payload.action === 'playnow') {
-      let job = ads.AddJob(payload.args);//, {priority: ads.Get('maxPriority') + 1});
-      ads.PlayNow(job);
+    ws.onerror = ws.onclose = function(){ 
+      setTimeout(doWs, 1000);
     }
 
-    console.log(event.data);
-  };
+    ws.onmessage = function(event) {
+      //
+      // id: unique id
+      // action: verb
+      // args: noun
+      //
+      let payload = JSON.parse(event.data);
+
+      if(payload.action === 'engine') {
+        ads[payload.args.func](payload.args.params);
+      }
+      if(payload.action === 'eval') {
+        eval(payload.args);
+      }
+      if(payload.action === 'playnow') {
+        let job = ads.AddJob(payload.args);//, {priority: ads.Get('maxPriority') + 1});
+        ads.PlayNow(job);
+      }
+
+      console.log(event.data);
+    };
+  }
 }
