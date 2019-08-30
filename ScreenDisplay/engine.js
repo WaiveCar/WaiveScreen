@@ -779,7 +779,7 @@ var Engine = function(opts){
       }
     },
     SetFallback: setFallback,
-    AddJob: function(obj) {
+    AddJob: function(obj, params) {
       var res = {};
 
       if(isString(obj)) {
@@ -787,7 +787,9 @@ var Engine = function(opts){
       }
 
       obj = makeJob(obj);
-      _res.db[obj.id] = obj;
+      // this allows someone to set say,
+      // the priority to a high number
+      _res.db[obj.id] = merge(obj, params);
       res[obj.id] = obj;
       return res;
     }
