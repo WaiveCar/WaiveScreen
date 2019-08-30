@@ -184,10 +184,12 @@ async def sow(request):
     return failure('Error: {}'.format(err))
 
 async def browser(request):
-  gloal _conn
+  global _conn
   text = await request.text()
   if _conn is not None:
     await _conn.send_str(text)
+    return success("Sent")
+  return failure("No connection")
 
 async def ws(request):
   global _conn
