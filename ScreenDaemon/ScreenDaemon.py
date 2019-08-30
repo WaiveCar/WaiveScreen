@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from aiohttp import web
+import aiohttp_cors
 import aiohttp
 import json
 import urllib
@@ -21,10 +22,10 @@ from pdb import set_trace as bp
 _reading = False
 DTFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 app = web.Application()
-routes = web.RouteTableDef()
+cors = aiohttp_cors.setup(app)
 
 def res(what):
-  return jsonify(what)
+  return web.json_response(what)
 
 def success(what):
   return res({ 'res': True, 'data': what })
@@ -35,7 +36,6 @@ def failure(what):
 def get_location():
   return lib.sensor_last()
 
-@routes.get('/default')
 async def default(request):
   attempted_ping = False
   campaign = False
@@ -67,8 +67,7 @@ async def default(request):
     'system': db.kv_get()
   })
 
-@routes.post('/sow')
-async def next_ad(request):
+async def sow(request):
   """
   For now we are going to do a stupid pass-through to the remote server
   and then just kinda return stuff. Keeping track of our own things 
@@ -97,7 +96,7 @@ async def next_ad(request):
     power = 'awake' if dpms == 'On' else 'sleep'
 
     if power != 'sleep':
-      jobList = request.get_json()
+      jobList = json.loads(await request.text())
 
       if type(jobList) is not list:
         jobList = [ jobList ]
@@ -192,5 +191,23 @@ if __name__ == '__main__':
     sys.exit(0)
 
   db.incr('runcount')
-  app.router.add_routes(routes)
-  web.run_app(app)
+
+  # There may be a more reasonable way to do this but as of now
+  # this is the simplest code I could write. 
+  for method, route, handler in [
+      ['GET', '/default', default], 
+      ['POST', '/sow', sow]]:
+
+    # Apparently you need to define a "resource"
+    resource = cors.add(app.router.add_resource(route))
+    route = cors.add(
+      # Then add a route here, as opposed to the regular way
+      # as documented in aiohttp
+      resource.add_route(method, handler), {
+        # localhost sends over its origin as the string "null". This
+        # was determined through tcpdump
+        'null': aiohttp_cors.ResourceOptions(expose_headers="*", allow_headers="*")
+      }
+    )
+
+  web.run_app(app,port=4096)
