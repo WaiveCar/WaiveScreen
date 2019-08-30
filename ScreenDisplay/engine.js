@@ -83,6 +83,56 @@ var Engine = function(opts){
 
   _res.target.ratio = _res.target.width / _res.target.height;
 
+  var Timeline = {
+    _data: [], 
+    // This goes forward and loops around ... *almost*
+    // it depends on what happens, see below for more
+    // excitement.
+    position: 0,
+
+    // This returns if thre is a next slot without looping.
+    hasNext: function() {
+      return Timeline._data.length > Timeline.position;
+    },
+
+    // This is different, this will loop.
+    move: function(amount) {
+      // the classic trick for negatives
+      Timeline.position = (Timeline._data.length + Timeline.position + amount) % Timeline._data.length
+      return Timeline._data[Timeline.position];
+    },
+
+    bath: function() {
+      // scrub scrub, clean up time.
+      // This is actually only 3 hours of 7 second ads
+      // which we cut back to 2. This should be fine 
+      if(Timeline._data.length > 1500 && Timeline.position > 500) {
+        // this moves our pointer
+        Timeline._data = Timeline._data.slice(500);
+        // so we move our pointer.
+        Timeline.position -= 500;
+      }
+    },
+
+    add: function(job) {
+      // Just adds it to the current place.
+      Timeline._data.splice(Timeline.position, 0, job);
+      Timeline.bath();
+    },
+
+    mostRecent: function() {
+      if(Timeline._data.length > 1) {
+        var last = (Timeline.position + Timeline._data.length - 1) % Timeline._data.length;
+        return Timeline._data[last];
+      }
+    },
+
+    addAtEnd: function(job) {
+      Timeline._data.push(job);
+      Timeline.bath();
+    },
+  };
+
   function cleanTimeout(what, dur) {
     return setTimeout(function() { 
       what();
@@ -443,55 +493,6 @@ var Engine = function(opts){
     });
   }
 
-  var Timeline = {
-    _data: [], 
-    // This goes forward and loops around ... *almost*
-    // it depends on what happens, see below for more
-    // excitement.
-    position: 0,
-
-    // This returns if thre is a next slot without looping.
-    hasNext: function() {
-      return Timeline._data.length > Timeline.position;
-    },
-
-    // This is different, this will loop.
-    move: function(amount) {
-      // the classic trick for negatives
-      Timeline.position = (Timeline._data.length + Timeline.position + amount) % Timeline._data.length
-      return Timeline._data[Timeline.position];
-    },
-
-    bath: function() {
-      // scrub scrub, clean up time.
-      // This is actually only 3 hours of 7 second ads
-      // which we cut back to 2. This should be fine 
-      if(Timeline._data.length > 1500 && Timeline.position > 500) {
-        // this moves our pointer
-        Timeline._data = Timeline._data.slice(500);
-        // so we move our pointer.
-        Timeline.position -= 500;
-      }
-    },
-
-    add: function(job) {
-      // Just adds it to the current place.
-      Timeline._data.splice(Timeline.position, 0, job);
-      Timeline.bath();
-    },
-
-    mostRecent: function() {
-      if(Timeline._data.length > 1) {
-        var last = (Timeline.position + Timeline._data.length - 1) % Timeline._data.length;
-        return Timeline._data[last];
-      }
-    },
-
-    addAtEnd: function(job) {
-      Timeline._data.push(job);
-      Timeline.bath();
-    },
-  }
 
   function _timeout(fn, timeout, name, override) {
     var handle = override ? fn : setTimeout(fn, timeout);
@@ -500,7 +501,14 @@ var Engine = function(opts){
       handle: handle,
       timeout: timeout
     };
-    return handle
+    return handle;
+  }
+
+  function clearAllTimeouts() {
+    for(var name in _stHandleMap) {
+      clearTimeout(_stHandleMap[name].handle);
+      delete _stHandleMap[name];
+    }
   }
 
 
@@ -594,6 +602,21 @@ var Engine = function(opts){
     _timeout(nextAsset, Math.max(_current.shown.duration * 1000 - _res.fadeMs / 2, 1000), 'nextAsset');
   }
 
+  function setNextJob(job) {
+    _current = job;
+    _current.downweight *= _downweight;
+    _current.position = 0;
+    //console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration);
+    //
+    // We set the start time of the showing of this ad
+    // so we can cross-correlate the gps from the ScreenDaemon
+    // when we send it off upstream.  We use the system time
+    // which is consistent between the two time stores.
+    _last_sow[0] = _last_sow[1];
+    _last_sow[1] = +new Date();
+    return job;
+  }
+
   function nextJob() {
     // We note something we call "breaks" which designate which asset to show.
     // This is a composite of what remains - this is two pass, eh, kill me.
@@ -646,7 +669,7 @@ var Engine = function(opts){
         return _timeout(nextJob, 1500, 'nextJob');
       }
 
-      _current = _fallback;
+      setNextJob(_fallback);
 
       if(!_firstRun && activeList.length == 0 && Object.values(_res.db) > 1) {
         // If we just haven't loaded the assets then
@@ -667,28 +690,14 @@ var Engine = function(opts){
 
         accum += row.downweight * (row.goal - row.completed_seconds);
         if(accum > breakpoint) {
-          _current = row;
+          setNextJob(row);
           break;
         }
       }
       if(!_current) {
-        _current = row;
+        setNextJob(row);
       }
     }
-
-    // 
-    // By this time we know what we plan on showing.
-    //
-    _current.downweight *= _downweight;
-    _current.position = 0;
-    //console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration);
-    //
-    // We set the start time of the showing of this ad
-    // so we can cross-correlate the gps from the ScreenDaemon
-    // when we send it off upstream.  We use the system time
-    // which is consistent between the two time stores.
-    _last_sow[0] = _last_sow[1];
-    _last_sow[1] = +new Date();
 
     nextAsset();
   }
@@ -733,6 +742,12 @@ var Engine = function(opts){
       _current.shown.dom.pause();
     },
 
+    ForceJob: function(job) {
+      clearAllTimeouts();
+      setNextJob(job);
+      nextAsset();
+    },
+
     Debug: function() {
       _res._debug = true;
       return {
@@ -764,10 +779,17 @@ var Engine = function(opts){
       }
     },
     SetFallback: setFallback,
-    AddJob: function(obj) {
+    AddJob: function(obj, params) {
       var res = {};
+
+      if(isString(obj)) {
+        obj = {url: obj};
+      }
+
       obj = makeJob(obj);
-      _res.db[obj.id] = obj;
+      // this allows someone to set say,
+      // the priority to a high number
+      _res.db[obj.id] = merge(obj, params);
       res[obj.id] = obj;
       return res;
     }
