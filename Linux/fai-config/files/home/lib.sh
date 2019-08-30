@@ -25,7 +25,9 @@ kv_get() {
 }
 
 sess_get() {
-  sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )"
+  local val=$(sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )")
+  echo $val
+  [[ -n "$val" ]] && return 0 || return 1
 }
 
 kv_unset() {
