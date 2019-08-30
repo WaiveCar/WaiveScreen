@@ -697,7 +697,7 @@ _upgrade_post() {
 }
 
 ws_browser() {
-  curl -sX POST --data "$*" localhost:4096
+  curl -sX POST --data "$*" localhost:4096/browser
 }
 
 # This is for upgrading over USB
