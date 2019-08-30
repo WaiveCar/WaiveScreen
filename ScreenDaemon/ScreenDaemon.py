@@ -186,7 +186,7 @@ async def sow(request):
 async def browser(request):
   text = await request.text()
   if _conn:
-    await _conn.send_str(sms)
+    await _conn.send_str(text)
 
 async def ws(request):
   global _conn
