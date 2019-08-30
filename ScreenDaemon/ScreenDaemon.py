@@ -192,8 +192,10 @@ async def browser(request):
   args = ','.join(parts[1:])
 
   if _conn is not None:
-    await _conn.send_str(text)
-    return success("Sent")
+    payload = json.dumps({'action': 'playnow', 'args': args})
+    await _conn.send_str(payload)
+
+    return success(payload)
   return failure("No connection")
 
 async def ws(request):
