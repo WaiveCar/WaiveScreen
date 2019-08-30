@@ -671,6 +671,10 @@ _sanityafter() {
   ( sleep $delay; $SUDO $BASE/tools/client/sanity-check.sh ) &
 }
 
+nosanity() {
+  pycall sess_set nosanity
+}
+
 upgrade_scripts() {
   for script in $(pycall upgrades_to_run); do
     cd $BASE
