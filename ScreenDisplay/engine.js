@@ -746,9 +746,21 @@ var Engine = function(opts){
       _current.shown.dom.pause();
     },
 
-    ForceJob: function(job) {
+    PlayNow: function(job) {
+      // clear any pending timers
       clearAllTimeouts();
+
+      // we set all the assets to active in the job regardless
+      // of whether they've loaded or not.
+      job.assetList.forEach(function(asset) {
+        asset.active = true;
+      });
+      job.active = true;
+
+      // set it as the next thing to do
       setNextJob(job);
+
+      // and display it.
       nextAsset();
     },
 
