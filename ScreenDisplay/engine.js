@@ -807,7 +807,7 @@ var Engine = function(opts){
       // the priority to a high number
       _res.db[obj.id] = merge(obj, params);
       res[obj.id] = obj;
-      return res;
+      return obj;
     }
   });
 };
