@@ -733,7 +733,7 @@ var Engine = function(opts){
   // function start with upper case.
   return merge(_res, {
     Get: function(what) {
-      return _[what[;
+      return _[what];
     },
     Play: function() {
       _res.pause = false;
