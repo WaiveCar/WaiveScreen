@@ -165,11 +165,11 @@ text_loop() {
       if [[ "$type" == "recv" ]]; then
         if [[ -n "$message" ]]; then
           sms_cleanup $dbuspath
-          local text=$(echo "$*" | base64 -d)
+          local text=$(echo "$message" | base64 -d)
           ws_browser "sms,$text"
           selfie $sender &
           sleep 2
-          local as_text=$(B64=1 _bigtext $message)
+          #local as_text=$(B64=1 _bigtext $message)
         else
           # Wait a while for the image to come in
           sleep 1.5
