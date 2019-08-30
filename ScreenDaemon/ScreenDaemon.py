@@ -9,7 +9,7 @@ import lib.lib as lib
 import lib.db as db
 import lib.arduino as arduino
 import logging
-import pprint
+from pprint import pprint
 import traceback
 import os
 import datetime
@@ -186,6 +186,11 @@ async def sow(request):
 async def browser(request):
   global _conn
   text = await request.text()
+
+  parts = text.split(',')
+  func = parts[0]
+  args = ','.join(parts[1:])
+
   if _conn is not None:
     await _conn.send_str(text)
     return success("Sent")
