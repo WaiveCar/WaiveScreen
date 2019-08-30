@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-from flask import Flask, request, Response, jsonify
-from flask_cors import CORS
+from aiohttp import web
+import aiohttp
 import json
 import urllib
 import lib.lib as lib
@@ -19,9 +19,9 @@ from pdb import set_trace as bp
 
 
 _reading = False
-app = Flask(__name__)
 DTFORMAT = '%Y-%m-%d %H:%M:%S.%f'
-CORS(app)
+app = web.Application()
+routes = web.RouteTableDef()
 
 def res(what):
   return jsonify(what)
@@ -35,8 +35,8 @@ def failure(what):
 def get_location():
   return lib.sensor_last()
 
-@app.route('/default')
-def default():
+@routes.get('/default')
+async def default(request):
   attempted_ping = False
   campaign = False
   campaign_id = db.kv_get('default')
@@ -67,8 +67,8 @@ def default():
     'system': db.kv_get()
   })
 
-@app.route('/sow', methods=['GET', 'POST'])
-def next_ad(work = False):
+@routes.post('/sow')
+async def next_ad(request):
   """
   For now we are going to do a stupid pass-through to the remote server
   and then just kinda return stuff. Keeping track of our own things 
@@ -192,4 +192,5 @@ if __name__ == '__main__':
     sys.exit(0)
 
   db.incr('runcount')
-  app.run(port=4096)
+  app.router.add_routes(routes)
+  web.run_app(app)
