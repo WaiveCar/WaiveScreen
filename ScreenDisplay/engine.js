@@ -755,10 +755,10 @@ var Engine = function(opts){
       // of whether they've loaded or not.
       job.assetList.forEach(function(asset) {
         asset.active = true;
-        asset.duration = 15;
+        asset.duration = 17;
       });
       job.active = true;
-      job.duration = 15;
+      job.duration = 17;
 
       // set it as the next thing to do
       setNextJob(job);
