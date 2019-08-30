@@ -1,0 +1,8 @@
+From the docs:
+  In all the examples shown until this point the server responds to an event sent by the client. But for some applications, the server needs to be the originator of a message. This can be useful to send notifications to clients of events that originated in the server, for example in a background thread. The socketio.send() and socketio.emit() methods can be used to broadcast to all connected clients:
+
+  def some_function():
+      socketio.emit('some event', {'data': 42})
+  Note that socketio.send() and socketio.emit() are not the same functions as the context-aware send() and emit(). Also note that in the above usage there is no client context, so broadcast=True is assumed and does not need to be specified.
+
+

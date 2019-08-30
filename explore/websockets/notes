@@ -1,0 +1,3 @@
+So long as connections on the await are kept open in a loop, we can send arbitrary information from the server to the client. 
+
+There probably needs to be two threads, one for listening and one for sending.
