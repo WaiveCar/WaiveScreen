@@ -644,7 +644,8 @@ var Engine = function(opts){
     // In this model, a fair dice would show ad 2 80% of the time.
     //
 
-    _.maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0)),
+    _.maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0));
+
     var 
       activeList = Object.values(_res.db).filter(row => row.active && row.duration),// && row.filter === maxPriority),
 
