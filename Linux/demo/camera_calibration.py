@@ -15,22 +15,24 @@ logging.basicConfig(filename='{}/camera.log'.format(OUT_DIR), format=log_format,
 #logging.basicConfig(format=log_format, level=logging.DEBUG)
 
 W = 640
-H = 480
+H = 360
 RECORDING_SECONDS = 60 * 15
 
 class Camera():
   MAX_VALUE_PERCENTAGE = 0.15
   HIST_BINS = 32
-  AE_PREROLL = 24
-  ME_PREROLL = 6
-  DEFAULT_SATURATION = 0.6
-  DEFAULT_BRIGHTNESS = 0.4
-  CALIBRATION_INTERVAL = 120  # Frames
+  AE_PREROLL = 8
+  ME_PREROLL = 2
+  DEFAULT_SATURATION = 60
+  DEFAULT_BRIGHTNESS = -12
+  CALIBRATION_INTERVAL = 40  # Frames
   BLANK_FRAME = np.zeros([H, W, 3], np.uint8)
 
   def __init__(self, cam_num):
     device = '/dev/video{}'.format(cam_num)
     self.cap = cv2.VideoCapture(device, apiPreference=cv2.CAP_V4L2)
+    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, W*2)
+    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, H*2)
     self.cam_num = cam_num
     self.saturation = self.DEFAULT_SATURATION
     self.auto_exposure = True
@@ -70,7 +72,7 @@ class Camera():
   def record(self, for_secs=None):
     t = time.strftime('%Y%m%d-%H%M%S')
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    self.out = cv2.VideoWriter('{}/video{}-{}.mp4'.format(OUT_DIR, self.cam_num, t), fourcc, 30.0, (640,480))
+    self.out = cv2.VideoWriter('{}/video{}-{}.mp4'.format(OUT_DIR, self.cam_num, t), fourcc, 10.0, (1280,720))
     self.frame_num = 0
     if for_secs:
       end_frame_num = for_secs * 30
@@ -101,10 +103,10 @@ class Camera():
         switching = self.request_exposure('manual')
       if switching:
         logging.debug('CAM{}-Changing Exposure'.format(self.cam_num))
-        self.brightness = 0.4
-      self.cal_int = 0.1
+        self.brightness = self.DEFAULT_BRIGHTNESS
+      self.cal_int = 10
     else:
-      self.cal_int = 0.05
+      self.cal_int = 5
     self.bdiff = 0
     self.calibrating_brightness = True
     self.next_cal_frame_num = self.pre_roll + self.frame_num
@@ -206,6 +208,7 @@ class Camera():
           return self.BLANK_FRAME
         else:
           self.cframe_current = True
+          self._cframe = cv2.resize(self._cframe, (W, H))
           return self._cframe
     else:
       self.cframe_current = True
@@ -258,7 +261,7 @@ class Camera():
       self.bdiff = v - self.brightness
       self.cap.set(cv2.CAP_PROP_BRIGHTNESS, v)
       logging.debug('CAM{}-Setting Brightness: {}'.format(self.cam_num, v))
-      if v <= 0 or v >= 0.6:
+      if v <= -64 or v >= 11:
         self.calibrating_brightness = False
 
   def exposure(self, v=None):
@@ -272,9 +275,9 @@ class Camera():
   def auto_exposure(self, v=None):
     if v is None:
       ae = self.cap.get(cv2.CAP_PROP_AUTO_EXPOSURE)
-      return True if ae == 0.75 else False
+      return True if ae == 3 else False
     else:
-      ae = 0.75 if v else 0.25
+      ae = 3 if v else 1
       self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, ae)
       logging.debug('CAM{}-Setting Auto Exposure: {}'.format(self.cam_num, v))
       return True
@@ -288,7 +291,7 @@ class Camera():
 def video_out_writer():
   t = time.strftime('%Y%m%d-%H%M%S')
   fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-  return cv2.VideoWriter('{}/video{}-{}.mkv'.format(OUT_DIR, 'all', t), fourcc, 15.0, (W*2,H*2))
+  return cv2.VideoWriter('{}/video{}-{}.mkv'.format(OUT_DIR, 'all', t), fourcc, 10.0, (W*2,H*2))
 
 def record_all():
   """ Record all cameras to a 2x2 grid while continually calibrating the camera settings """
@@ -300,8 +303,6 @@ def record_all():
   out_start_time = time.time()
   try:
     while True:
-      for cam in cams.values():
-        cam.grab()
       for cam in cams.values():
         if not cam.grab():
           continue
