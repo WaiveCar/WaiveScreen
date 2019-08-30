@@ -24,9 +24,10 @@ kv_get() {
   sqlite3 $DB "select value from kv where key='$1'"
 }
 
+# This _does not_ echo, it only returns whether the flag is set or not
 sess_get() {
   local val=$(sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )")
-  echo $val
+  # echo $val
   [[ -n "$val" ]] && return 0 || return 1
 }
 
@@ -149,7 +150,7 @@ text_loop() {
 
   while true; do
     if [[ -z "$foundModem" ]]; then
-      if [[ -z "$(sess_get modem)" ]]; then
+      if ! sess_get modem; then
         sleep 10
         continue
       fi
