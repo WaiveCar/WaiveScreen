@@ -14,8 +14,9 @@ log_format = '%(asctime)s %(levelname)s:%(message)s'
 logging.basicConfig(filename='{}/camera.log'.format(OUT_DIR), format=log_format, level=logging.DEBUG)
 #logging.basicConfig(format=log_format, level=logging.DEBUG)
 
-W = 640
-H = 360
+# Capture Resolution
+W = 1280
+H = 720
 RECORDING_SECONDS = 60 * 15
 
 class Camera():
@@ -26,14 +27,15 @@ class Camera():
   DEFAULT_SATURATION = 60
   DEFAULT_BRIGHTNESS = -12
   CALIBRATION_INTERVAL = 40  # Frames
-  BLANK_FRAME = np.zeros([H, W, 3], np.uint8)
 
-  def __init__(self, cam_num):
+  def __init__(self, cam_num, scaling=1):
     device = '/dev/video{}'.format(cam_num)
     self.cap = cv2.VideoCapture(device, apiPreference=cv2.CAP_V4L2)
-    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, W*2)
-    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, H*2)
+    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, W)
+    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, H)
     self.cam_num = cam_num
+    self.scaling = scaling
+    self.blank_frame = np.zeros([int(H*scaling), int(W*scaling), 3], np.uint8)
     self.saturation = self.DEFAULT_SATURATION
     self.auto_exposure = True
     self.brightness = self.DEFAULT_BRIGHTNESS
@@ -47,7 +49,7 @@ class Camera():
     self.cframe_current = False
     self.gframe_current = False
     self.disabled = False
-    self.camera_info_overlay = True
+    self.camera_info_overlay = False
 
   def calibrate(self):
     self.ae_req_count = 0
@@ -70,9 +72,10 @@ class Camera():
     self.save_frame('end')
 
   def record(self, for_secs=None):
-    t = time.strftime('%Y%m%d-%H%M%S')
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    self.out = cv2.VideoWriter('{}/video{}-{}.mp4'.format(OUT_DIR, self.cam_num, t), fourcc, 10.0, (1280,720))
+    #t = time.strftime('%Y%m%d-%H%M%S')
+    #fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    #self.out = cv2.VideoWriter('{}/video{}-{}.mkv'.format(OUT_DIR, self.cam_num, t), fourcc, 10.0, (W*self.scaling,H*self.scaling))
+    self.out = video_out_writer(W*self.scaling, H*self.scaling)
     self.frame_num = 0
     if for_secs:
       end_frame_num = for_secs * 30
@@ -198,17 +201,18 @@ class Camera():
   def cframe(self, v=None):
     if v is None:
       if self.disabled:
-        return self.BLANK_FRAME
+        return self.blank_frame
       elif self.cframe_current:
         return self._cframe
       else:
         ret, self._cframe = self.cap.retrieve()
         if not ret:
           self.disable()
-          return self.BLANK_FRAME
+          return self.blank_frame
         else:
           self.cframe_current = True
-          self._cframe = cv2.resize(self._cframe, (W, H))
+          if self.scaling != 1:
+            self._cframe = cv2.resize(self._cframe, (int(W*self.scaling), int(H*self.scaling)))
           return self._cframe
     else:
       self.cframe_current = True
@@ -217,7 +221,7 @@ class Camera():
   @property
   def frame(self):
     if self.disabled:
-      return self.BLANK_FRAME
+      return self.blank_frame
     if self.camera_info_overlay:
       self.add_overlay()
     return self.cframe
@@ -288,19 +292,21 @@ class Camera():
   exposure = property(exposure, exposure)
   auto_exposure = property(auto_exposure, auto_exposure)
 
-def video_out_writer():
+def video_out_writer(w=W, h=H):
   t = time.strftime('%Y%m%d-%H%M%S')
-  fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-  return cv2.VideoWriter('{}/video{}-{}.mkv'.format(OUT_DIR, 'all', t), fourcc, 10.0, (W*2,H*2))
+  fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+  return cv2.VideoWriter('{}/cam_{}-{}.mkv'.format(OUT_DIR, 'all', t), fourcc, 10.0, (int(w),int(h)))
 
-def record_all():
+def record_all(scaling=0.5):
   """ Record all cameras to a 2x2 grid while continually calibrating the camera settings """
-  grid = np.zeros([H*2, W*2, 3], np.uint8)
+  h = int(H * scaling)
+  w = int(W * scaling)
+  grid = np.zeros([h*2, w*2, 3], np.uint8)
   cams = {}
   for cam_num in [0, 2, 4, 6]:
-    cams[cam_num] = Camera(cam_num)
+    cams[cam_num] = Camera(cam_num, scaling=scaling)
     cams[cam_num].grab(count=cam_num*2)
-  out = video_out_writer()
+  out = video_out_writer(w*2, h*2)
   out_start_time = time.time()
   try:
     while True:
@@ -311,14 +317,14 @@ def record_all():
           cam.calibrate_brightness()
         elif cam.frame_num % cam.CALIBRATION_INTERVAL == 0:
           cam.check_calibration()
-      grid[0:H, 0:W] = cams[0].frame
-      grid[0:H, W:W*2] = cams[2].frame
-      grid[H:H*2, 0:W] = cams[4].frame
-      grid[H:H*2, W:W*2] = cams[6].frame
+      grid[0:h, 0:w] = cams[0].frame
+      grid[0:h, w:w*2] = cams[2].frame
+      grid[h:h*2, 0:w] = cams[4].frame
+      grid[h:h*2, w:w*2] = cams[6].frame
       out.write(grid)
       if time.time() >= out_start_time + RECORDING_SECONDS:
         out.release()
-        out = video_out_writer()
+        out = video_out_writer(w*2, h*2)
         out_start_time = time.time()
   except Exception as ex:
     logging.error('Stopped with: {}'.format(ex))
