@@ -76,9 +76,11 @@ var Engine = function(opts){
     _isNetUp = true,
     _start = new Date(),
     _stHandleMap = {},
-    _consider_new_job = false,
     _key = '-xA8tAY4YSBmn2RTQqnnXXw',
     _last_sow = [+_start, +_start],
+    _ = {
+      maxPriority: 0,
+    },
     _fallback;
 
   _res.target.ratio = _res.target.width / _res.target.height;
@@ -485,7 +487,6 @@ var Engine = function(opts){
         res.data.forEach(function(row) {
           addJob(row);
         })
-        //_consider_new_job = true;
       }
       if(cb) {
         cb();
@@ -562,8 +563,7 @@ var Engine = function(opts){
 
     // If we are at the end then our next function should be to
     // choose the next job.
-    if(_consider_new_job || _current.position === _current.assetList.length) {
-      _consider_new_job = false;
+    if(_current.position === _current.assetList.length) {
       return nextJob();
     } 
 
@@ -643,8 +643,10 @@ var Engine = function(opts){
     //
     // In this model, a fair dice would show ad 2 80% of the time.
     //
+
+    _.maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0));
+
     var 
-      maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0)),
       activeList = Object.values(_res.db).filter(row => row.active && row.duration),// && row.filter === maxPriority),
 
       // Here's the range of numbers, calculated by looking at all the remaining things we have to satisfy
@@ -655,7 +657,7 @@ var Engine = function(opts){
       breakpoint = Math.random() * range;
 
     if(_res._debug) {
-      console.log({active: activeList, db:_res.db, range: range, priority: maxPriority});
+      console.log({active: activeList, db:_res.db, range: range, priority: _.maxPriority});
     }
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
@@ -730,6 +732,9 @@ var Engine = function(opts){
   // variables start with lower case letters,
   // function start with upper case.
   return merge(_res, {
+    Get: function(what) {
+      return _[what];
+    },
     Play: function() {
       _res.pause = false;
       _current.shown.dom.play();
@@ -742,9 +747,23 @@ var Engine = function(opts){
       _current.shown.dom.pause();
     },
 
-    ForceJob: function(job) {
+    PlayNow: function(job) {
+      // clear any pending timers
       clearAllTimeouts();
+
+      // we set all the assets to active in the job regardless
+      // of whether they've loaded or not.
+      job.assetList.forEach(function(asset) {
+        asset.active = true;
+        asset.duration = 17;
+      });
+      job.active = true;
+      job.duration = 17;
+
+      // set it as the next thing to do
       setNextJob(job);
+
+      // and display it.
       nextAsset();
     },
 
@@ -791,7 +810,7 @@ var Engine = function(opts){
       // the priority to a high number
       _res.db[obj.id] = merge(obj, params);
       res[obj.id] = obj;
-      return res;
+      return obj;
     }
   });
 };
