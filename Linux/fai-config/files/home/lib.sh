@@ -24,8 +24,11 @@ kv_get() {
   sqlite3 $DB "select value from kv where key='$1'"
 }
 
+# This _does not_ echo, it only returns whether the flag is set or not
 sess_get() {
-  sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )"
+  local val=$(sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )")
+  # echo $val
+  [[ -n "$val" ]] && return 0 || return 1
 }
 
 kv_unset() {
@@ -46,6 +49,13 @@ kv_incr() {
     sqlite3 $DB "update kv set value=$curval where key='$1'";
     echo $curval
   fi
+}
+
+add_history() {
+  local kind=$1
+  local value=$2
+  local extra=$3
+  sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
 }
 
 list() {
@@ -141,7 +151,7 @@ text_loop() {
 
   while true; do
     if [[ -z "$foundModem" ]]; then
-      if [[ -z "$(sess_get modem)" ]]; then
+      if ! sess_get modem; then
         sleep 10
         continue
       fi
@@ -156,10 +166,11 @@ text_loop() {
       if [[ "$type" == "recv" ]]; then
         if [[ -n "$message" ]]; then
           sms_cleanup $dbuspath
+          local text=$(echo "$message" | base64 -d)
+          ws_browser "sms,$text"
           selfie $sender &
           sleep 2
-          local as_text=$(B64=1 _bigtext $message)
-          ws_browser "$as_text"
+          #local as_text=$(B64=1 _bigtext $message)
         else
           # Wait a while for the image to come in
           sleep 1.5
@@ -242,13 +253,6 @@ enable_gps() {
     --location-enable-gps-raw \
     --location-enable-3gpp \
     --location-disable-agps
-}
-
-add_history() {
-  local kind=$1
-  local value=$2
-  local extra=$3
-  sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
 }
 
 get_number() {
@@ -395,6 +399,7 @@ ssh_hole() {
   # I think this is causing problems. Either the event pattern works or it doesn't.
   # (( $(pgrep -cf dcall\ ssh_hole ) > 1 )) && die "ssh_hole already running" info
 
+  ssh-keygen -f "$DEST/.ssh/known_hosts" -R "reflect.waivescreen.com"
   {
     while true; do
       local port=$(kv_get port)
@@ -490,21 +495,6 @@ get_uuid() {
   cat $UUIDfile
 }
 
-wait_for() {
-  path=${2:-$EV}/$1
-
-  if [[ ! -e "$path" ]]; then
-    echo `date +%R:%S` WAIT $1
-    until [[ -e "$path" ]]; do
-      sleep 0.5
-    done
-
-    # Give it a little bit after the file exists to
-    # avoid unforseen race conditions
-    sleep 0.05
-  fi
-}
-
 _screen_display_single() {
   export DISPLAY=${DISPLAY:-:0}
   local app=$BASE/ScreenDisplay/display.html 
@@ -537,6 +527,21 @@ screen_display() {
   local pid=$!
 
   set_wrap screen_display $pid
+}
+
+wait_for() {
+  path=${2:-$EV}/$1
+
+  if [[ ! -e "$path" ]]; then
+    echo `date +%R:%S` WAIT $1
+    until [[ -e "$path" ]]; do
+      sleep 0.5
+    done
+
+    # Give it a little bit after the file exists to
+    # avoid unforseen race conditions
+    sleep 0.05
+  fi
 }
 
 running() {
@@ -668,6 +673,10 @@ endl
 _sanityafter() {
   delay=${1:-30}
   ( sleep $delay; $SUDO $BASE/tools/client/sanity-check.sh ) &
+}
+
+nosanity() {
+  pycall sess_set nosanity
 }
 
 upgrade_scripts() {
