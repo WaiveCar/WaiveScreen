@@ -153,7 +153,7 @@ def get_message(dbus_path):
 
   else:
     if ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
-      klass="cmd"
+      klass = "cmd"
       res = dcall(fn['Text'][2:])
       modem = get_modem()
       if modem:
@@ -161,7 +161,7 @@ def get_message(dbus_path):
 
     # Makes sure that we are not reporting our own text
     else:
-      klass='recv'
+      klass = 'recv'
       if fn['Number'] == '+18559248355':
         message = fn['Text'].split(' ')[1]
         db.kv_set('number', message)
