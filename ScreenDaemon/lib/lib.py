@@ -153,11 +153,14 @@ def get_message(dbus_path):
 
   else:
     if ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
-      klass = "cmd"
-      res = dcall(fn['Text'][2:])
-      modem = get_modem()
-      if modem:
-        modem['sms'].Create({'number': fn['Number'], 'text': res})
+      # There's a possible boot-loop bug so we use the cleanup
+      # trigger to avoid it
+      if db.sess_get('cleanup'):
+        klass = "cmd"
+        res = dcall(fn['Text'][2:])
+        modem = get_modem()
+        if modem:
+          modem['sms'].Create({'number': fn['Number'], 'text': res})
 
     # Makes sure that we are not reporting our own text
     else:

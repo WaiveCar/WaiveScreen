@@ -132,6 +132,7 @@ sms_cleanup() {
     grep -i "class: 1" $SMSDIR/$num > /dev/null && $MM -s $i --create-file-with-data=$SMSDIR/${num}.raw 
     $SUDO $MM --messaging-delete-sms=$i
   done
+  sess_set cleanup
 }
 
 text_loop() {
