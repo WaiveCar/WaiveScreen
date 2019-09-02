@@ -1,17 +1,18 @@
 #!/usr/bin/python3
 from . import db
-import configparser
-import os
-import requests
-import re
-import json
-import dbus
-import time
-import logging
-import sys
-import glob
 import base64
+import configparser
+import dbus
+import glob
+import hashlib
+import json
+import logging
+import os
+import re
+import requests
 import subprocess
+import sys
+import time
 from urllib.parse import quote
 from threading import Lock
 from pprint import pprint
@@ -489,22 +490,29 @@ def asset_cache(check):
 
   res = []
   for asset in check['asset']:
-    name = "{}/{}".format(path, quote(asset.split('/')[-1]))
-    if (not os.path.exists(name)) or os.path.getsize(name) == 0:
+    # checksum name (#188)
+    checksum_name = "{}/{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest())
+    legacy_name = "{}/{}".format(path, quote(asset.split('/')[-1]))
+
+    # Added Sept 2019. Remove probably somewhere around Dec 2019
+    if os.path.exists(legacy_name):
+      os.rename(legacy_name, checksum_name)
+
+    if (not os.path.exists(checksum_name)) or os.path.getsize(checksum_name) == 0:
       r = requests.get(asset, allow_redirects=True)
       # 
       # Since we are serving a file:/// then we don't have to worry
       # about putting shit in an accessible path ... we have the
       # whole file system to access.
       #
-      open(name, 'wb').write(r.content)
+      open(checksum_name, 'wb').write(r.content)
 
     else:
       # This is equivalent to a "touch" - used for a cache cleaning 
       # system
       try:
-        with open(name, 'a'):
-          os.utime(name, None)
+        with open(checksum_name, 'a'):
+          os.utime(checksum_name, None)
       except:
         pass
 
@@ -523,16 +531,16 @@ def asset_cache(check):
     # copy it over, insulting every programmer who used blood sweat
     # and tears to cram say 215 bytes to 211 in a bygone era.
     #
-    mime = magic.from_file(name, mime=True)
+    mime = magic.from_file(checksum_name, mime=True)
 
     duration = 7.5
-    if 'html' in mime and 'html' not in name:
+    if 'html' in mime and 'html' not in checksum_name:
       import shutil
-      happybrowser = "{}.html".format(name)
+      happybrowser = "{}.html".format(checksum_name)
       if not os.path.exists(happybrowser):
-        shutil.copyfile(name, happybrowser)
+        shutil.copyfile(checksum_name, happybrowser)
 
-      name = happybrowser
+      checksum_name = happybrowser
       duration = 150
 
     # see #154 - we're restructuring this away from a string and
@@ -542,7 +550,7 @@ def asset_cache(check):
     res.append({
       'duration': duration,
       'mime': mime,
-      'url': name
+      'url': checksum_name
     })
 
   check['asset'] = res
