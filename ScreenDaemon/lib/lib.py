@@ -479,7 +479,12 @@ def get_port():
 def get_number():
   return re.sub('[^\d]', '', db.kv_get('number') or '')
 
-def asset_cache(check):
+def image_swapper(match):
+  url = match.group(2)
+  checksum_name = asset_cache(url, only_filename=True)
+  return "{}{}".format(match.group(1), checksum_name)
+
+def asset_cache(check, only_filename=False):
   import magic
   # Now we have the campaign in the database, yay us I guess
   path = "/var/cache/assets"
@@ -500,12 +505,20 @@ def asset_cache(check):
 
     if (not os.path.exists(checksum_name)) or os.path.getsize(checksum_name) == 0:
       r = requests.get(asset, allow_redirects=True)
+
+      # If we are dealing with html we should also cache the assets
+      # inside the html file.
+      buf = r.content
+      mime = magic.from_buffer(buf, mime=True)
+      if 'html' in mime:
+        buf = re.sub(r'(src\s*=["\']?)([^"\'>]*)', image_swapper, buf)
+
       # 
       # Since we are serving a file:/// then we don't have to worry
       # about putting shit in an accessible path ... we have the
       # whole file system to access.
       #
-      open(checksum_name, 'wb').write(r.content)
+      open(checksum_name, 'wb').write(buf)
 
     else:
       # This is equivalent to a "touch" - used for a cache cleaning 
@@ -542,6 +555,9 @@ def asset_cache(check):
 
       checksum_name = happybrowser
       duration = 150
+
+    if only_filename:
+      return checksum_name
 
     # see #154 - we're restructuring this away from a string and
     # into an object - eventually we have to assume that
