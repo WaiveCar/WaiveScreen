@@ -24,8 +24,11 @@ kv_get() {
   sqlite3 $DB "select value from kv where key='$1'"
 }
 
+# This _does not_ echo, it only returns whether the flag is set or not
 sess_get() {
-  sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )"
+  local val=$(sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )")
+  # echo $val
+  [[ -n "$val" ]] && return 0 || return 1
 }
 
 kv_unset() {
@@ -48,6 +51,13 @@ kv_incr() {
   fi
 }
 
+add_history() {
+  local kind=$1
+  local value=$2
+  local extra=$3
+  sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
+}
+
 list() {
   # just show the local fuctions
   if [[ $# -gt 0 ]]; then
@@ -68,6 +78,7 @@ _bigtext() {
     middle="cat"
   fi
   echo "$*" | $middle | aosd_cat -p 4 -n "DejaVu Sans 72" -R white -f 1500 -u 1200 -o 1500 -d 30 -b 216 -B black &
+  echo "$*" | $middle
 }
 
 selfie() {
@@ -131,6 +142,7 @@ sms_cleanup() {
     grep -i "class: 1" $SMSDIR/$num > /dev/null && $MM -s $i --create-file-with-data=$SMSDIR/${num}.raw 
     $SUDO $MM --messaging-delete-sms=$i
   done
+  pycall sess_set cleanup,1
 }
 
 text_loop() {
@@ -139,7 +151,7 @@ text_loop() {
 
   while true; do
     if [[ -z "$foundModem" ]]; then
-      if [[ -z "$(sess_get modem)" ]]; then
+      if ! sess_get modem; then
         sleep 10
         continue
       fi
@@ -154,9 +166,11 @@ text_loop() {
       if [[ "$type" == "recv" ]]; then
         if [[ -n "$message" ]]; then
           sms_cleanup $dbuspath
+          local text=$(echo "$message" | base64 -d)
+          ws_browser "sms,$text"
           selfie $sender &
           sleep 2
-          B64=1 _bigtext $message
+          #local as_text=$(B64=1 _bigtext $message)
         else
           # Wait a while for the image to come in
           sleep 1.5
@@ -214,7 +228,7 @@ set_wrap() {
 
 set_event() {
   pid=${2:-$!}
-  [[ -e $EV/$1 ]] || _info Event:$1
+  [[ -e $EV/$1 ]] || _info $1
   echo -n $pid | $SUDO tee $EV/$1
 }
 
@@ -236,17 +250,9 @@ enable_gps() {
   $SUDO $MM \
     --location-set-enable-signal \
     --location-enable-gps-nmea \
-    --location-disable-agps \
-    --location-enable-gps-raw 
-
-    # --location-enable-agps \
-}
-
-add_history() {
-  local kind=$1
-  local value=$2
-  local extra=$3
-  sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
+    --location-enable-gps-raw \
+    --location-enable-3gpp \
+    --location-disable-agps
 }
 
 get_number() {
@@ -341,23 +347,43 @@ EPERL
   else
     _warn "$SERVER unresolvable!"
 
-    local ix=0
-    while ! $MM; do
-      (( ++ix < 4 )) && _info "Waiting for modem"
-      sleep 9
-    done
+    # Well let's see if that small stanford project is still resolvable
+    if ping -c 1 -i 0.3 yahoo.com; then
+      _warn "Server likely down."
+    else
+      local ix=0
+      while ! $MM; do
+        (( ++ix < 4 )) && _info "Waiting for modem"
+        sleep 9
+      done
 
-    hasip=$( ip addr show $wwan | grep inet | wc -l )
+      hasip=$( ip addr show $wwan | grep inet | wc -l )
 
-    (( hasip > 0 )) && _warn "Data plan/SIM issues." || _warn "No IP assigned."
+      (( hasip > 0 )) && _warn "Data plan/SIM issues." || _warn "No IP assigned."
+    fi
   fi
   pycall db.sess_set modem,1 
+}
+
+## test this later.
+network_check() {
+  PING="ping -c 1 -i 0.3"
+  if $PING $SERVER; then
+    echo UP
+  elif $PING yahoo.com; then
+    echo SERVER_DOWN
+  elif $PING 8.8.8.8; then
+    echo DNS
+  else
+    echo DOWN
+  fi
 }
 
 first_run() {
   if [[ -z $(kv_get first_run) ]]; then
     set -x
     $SUDO systemctl disable hostapd
+    $SUDO systemctl enable location-daemon
     $SUDO apt -y update || die "Can't find network" info
     kv_set first_run,1
   fi
@@ -373,6 +399,7 @@ ssh_hole() {
   # I think this is causing problems. Either the event pattern works or it doesn't.
   # (( $(pgrep -cf dcall\ ssh_hole ) > 1 )) && die "ssh_hole already running" info
 
+  ssh-keygen -f "$DEST/.ssh/known_hosts" -R "reflect.waivescreen.com"
   {
     while true; do
       local port=$(kv_get port)
@@ -468,21 +495,6 @@ get_uuid() {
   cat $UUIDfile
 }
 
-wait_for() {
-  path=${2:-$EV}/$1
-
-  if [[ ! -e "$path" ]]; then
-    echo `date +%R:%S` WAIT $1
-    until [[ -e "$path" ]]; do
-      sleep 0.5
-    done
-
-    # Give it a little bit after the file exists to
-    # avoid unforseen race conditions
-    sleep 0.05
-  fi
-}
-
 _screen_display_single() {
   export DISPLAY=${DISPLAY:-:0}
   local app=$BASE/ScreenDisplay/display.html 
@@ -515,6 +527,21 @@ screen_display() {
   local pid=$!
 
   set_wrap screen_display $pid
+}
+
+wait_for() {
+  path=${2:-$EV}/$1
+
+  if [[ ! -e "$path" ]]; then
+    echo `date +%R:%S` WAIT $1
+    until [[ -e "$path" ]]; do
+      sleep 0.5
+    done
+
+    # Give it a little bit after the file exists to
+    # avoid unforseen race conditions
+    sleep 0.05
+  fi
 }
 
 running() {
@@ -617,8 +644,8 @@ endl
 
   $SUDO pkill -f hostapd
   sleep 1
-  #$SUDO service hostapd restart #/etc/hostapd/hostapd.conf&
-  $SUDO hostapd /etc/hostapd/hostapd.conf&
+  $SUDO service hostapd restart #/etc/hostapd/hostapd.conf&
+  #$SUDO hostapd /etc/hostapd/hostapd.conf&
 
   $SUDO sysctl net.ipv4.conf.all.forwarding=1
 
@@ -648,6 +675,10 @@ _sanityafter() {
   ( sleep $delay; $SUDO $BASE/tools/client/sanity-check.sh ) &
 }
 
+nosanity() {
+  pycall sess_set nosanity
+}
+
 upgrade_scripts() {
   for script in $(pycall upgrades_to_run); do
     cd $BASE
@@ -661,7 +692,12 @@ upgrade_scripts() {
 
 _upgrade_post() {
   local version=$(get_version)
+
+  $SUDO dpkg –configure -a
+  $SUDO apt install -fy
   perlcall install_list | xargs $SUDO apt -y install
+  $SUDO apt -y autoremove
+
   pycall db.upgrade
   add_history upgrade "$version"
 
@@ -670,19 +706,27 @@ _upgrade_post() {
   _info "Now on $version"
 }
 
+ws_browser() {
+  curl -sX POST --data "$*" localhost:4096/browser
+}
+
 # This is for upgrading over USB
-local_upgrade() {
+local_disk() {
   local dev=$1
   local mountpoint='/tmp/upgrade'
   local package=$mountpoint/upgrade.package
 
-  _log "[upgrade] usb"
   _mkdir $mountpoint
 
   $SUDO umount $mountpoint >& /dev/null
 
   if $SUDO mount $dev $mountpoint; then
-    if [[ -e $package ]]; then
+    if [[ -e $mountpoint/voHCPtpJS9izQxt3QtaDAQ_make_keyboard_work ]]; then
+      $SUDO modprobe usbhid
+      pycall db.sess_set keyboard_allowed,1 
+      _info "Keyboards are now enabled"
+
+    elif [[ -e $package && -z "$2" ]]; then
       _sanityafter
       _info "Found upgrade package - installing"
       tar xf $package -C $BASE
@@ -690,6 +734,9 @@ local_upgrade() {
 
       _info "Disk can be removed"
       pip_install
+
+      # cleanup the old files
+      cd $BASE && git clean -fxd
 
       _info "Reinstalling base"
       sync_scripts $BASE/Linux/fai-config/files/home/
@@ -736,10 +783,22 @@ disk_monitor() {
   {
     while true; do
       local disk=$(pycall lib.disk_monitor)
-      [[ -n "$disk" ]] && local_upgrade $disk
+      [[ -n "$disk" ]] && local_disk $disk
       sleep 3
     done
   } &
+}
+
+update_arduino() {
+  down sensor_daemon
+
+  $BASE/tools/client/avrdude -C$BASE/tools/client/avrdude.conf \
+    -v -patmega328p -carduino -P/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0 -b57600 -D \
+    -Uflash:w:$BASE/tools/client/sensors.ino.hex:i
+
+  _info "Updating arduino"
+
+  sensor_daemon
 }
 
 stack_down() {
@@ -771,9 +830,12 @@ _raw() {
 
 acceptance_test() {
   _bigtext 'Loading...⌛'
-  perlcall acceptance_screen
   set_brightness 1
-  _as_user chromium --app=file:///tmp/acceptance.html
+  if perlcall acceptance_screen; then
+    _as_user chromium --app=file:///tmp/acceptance.html
+  else
+    _warn "Acceptance test failed!"
+  fi
 }
 
 get_location() {

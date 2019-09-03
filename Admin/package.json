@@ -1,0 +1,14 @@
+{
+  "name": "screenadmin",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "parcel map.html",
+    "build": "parcel build map.js"
+  },
+  "dependencies": {
+    "ol": "^5.3.3"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.3"
+  }
+}

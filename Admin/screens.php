@@ -1,7 +1,7 @@
 <?
 include('lib.php');
 
-$screenList = get('screens', ['active' => 1]);
+$screenList = get('screens', ['removed' => 0, 'active' => 1]);
 $addrList = get_addressList(array_map(function($row) { 
   if($row['lat'] && $row['lng']) {
     return [$row['lat'],$row['lng']]; 
@@ -213,7 +213,7 @@ function split($str) {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="ModalLabel">screen naem</h5>
+            <h5 class="modal-title" id="ModalLabel">screen</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -223,8 +223,8 @@ function split($str) {
           </div>
 
           <div class="modal-footer">
+            <button type="button" class="btn btn-danger btn-sm mr-auto" onclick=remove()>Remove Screen</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <!--<button type="button" class="btn btn-primary">Update</button>-->
           </div>
         </div>
       </div>

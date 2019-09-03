@@ -1,18 +1,18 @@
 #!/usr/bin/python3
 from . import db
-import configparser
-import os
-import requests
-import re
-import json
-import dbus
-import time
-import logging
-import sys
-import glob
 import base64
+import configparser
+import dbus
+import glob
+import hashlib
+import json
+import logging
+import os
+import re
+import requests
 import subprocess
-import magic
+import sys
+import time
 from urllib.parse import quote
 from threading import Lock
 from pprint import pprint
@@ -36,7 +36,6 @@ VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.p
 UUID = False
 
 _pinglock = Lock()
-_mime = magic.Magic(mime=True)
 _reading = 0.7
 
 USER = os.environ.get('USER')
@@ -49,7 +48,16 @@ SANITYCHECK = os.environ.get('SANITYCHECK')
 NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
 DISPLAY = os.environ.get('DISPLAY')
+BRANCH = os.environ.get('BRANCH')
+CACHE = os.environ.get('CACHE') or '/var/cache/assets'
 SERVER_URL = "http://{}/api".format(os.environ.get('SERVER') or 'waivescreen.com')
+
+GPS_DEVICE_ACCURACY = 5.0 # Assumed, but not verified
+GPGGA_FIELD_NAMES = ( 'utc_time', 'latitude', 'ns_indicator',
+                      'longitude', 'ew_indicator', 'fix_quality',
+                      'satellites_used', 'hdop', 'msl_altitude',
+                      'units', 'geoid_separation', 'units',
+                      'dgps', 'checksum' )
 
 storage_base = '/var/lib/waivescreen/'
 
@@ -147,15 +155,18 @@ def get_message(dbus_path):
 
   else:
     if ';;' in fn['Text'] and fn['Text'].index(';;') == 0:
-      klass="cmd"
-      res = dcall(fn['Text'][2:])
-      modem = get_modem()
-      if modem:
-        modem['sms'].Create({'number': fn['Number'], 'text': res})
+      # There's a possible boot-loop bug so we use the cleanup
+      # trigger to avoid it
+      if db.sess_get('cleanup'):
+        klass = "cmd"
+        res = dcall(fn['Text'][2:])
+        modem = get_modem()
+        if modem:
+          modem['sms'].Create({'number': fn['Number'], 'text': res})
 
     # Makes sure that we are not reporting our own text
     else:
-      klass='recv'
+      klass = 'recv'
       if fn['Number'] == '+18559248355':
         message = fn['Text'].split(' ')[1]
         db.kv_set('number', message)
@@ -225,9 +236,9 @@ def next_sms():
   _loop = GLib.MainLoop()
   _loop.run()
 
-def dcall(*kvarg, method='popen'):
+def dcall(*kvarg, method='popen', what="dcall"):
   home = '/home/{}'.format(USER)
-  dcall = '{}/dcall'.format(home)
+  dcall = '{}/{}'.format(home, what)
   res = ''
 
   if method == 'subprocess':
@@ -246,24 +257,50 @@ def post(url, payload):
   logging.info("{} {}".format(url, json.dumps(payload)))
   return requests.post(urlify(url), verify=False, headers=headers, json=payload)
 
-def get_gps(use_cache=False):
+def update_gps_xtra_data():
+  """ Download the GPS's Xtra assistance data and inject it into the gps. """
   modem = get_modem()
-  fallback = {}
-  lat = None
-  lng = None
-
-  if use_cache:
+  if modem:
     try:
-      lat = db.kv_get('Lat')
-      lng = db.kv_get('Lng')
-      if lat:
-        fallback = {
-          'Lat': float(lat),
-          'Lng': float(lng)
-        }
-
+      xtra_servers = modem['device'].Get('org.freedesktop.ModemManager1.Modem.Location', 'AssistanceDataServers')
+      for url in xtra_servers:
+        r = requests.get(url)
+        if r.status_code == 200:
+          logging.info('Updating GPS Xtra Data')
+          xtra_data = dbus.ByteArray(r.content)
+          modem['location'].InjectAssistanceData(xtra_data) #TODO check return value
+          return True
     except Exception as ex:
-      logging.warning("DB issue {}".format(ex)) 
+      logging.error('Failed to update GPS Xtra Data: {}'.format(ex))
+  return False
+
+
+def get_gpgga_dict(nmea_string):
+  """ Parse the NMEA string from the GPS and return a Dict
+  of the GPGGA keys => values """
+  gpgga = {}
+  gpgga_start = nmea_string.find('$GPGGA')
+  gpgga_end = nmea_string.find('\r\n', gpgga_start)
+  gpgga_string = nmea_string[gpgga_start:gpgga_end]
+  for k, v in enumerate(gpgga_string.split(',')[1:]):
+    gpgga[GPGGA_FIELD_NAMES[k]] = v
+  return gpgga
+
+
+def gps_accuracy(nmea_string):
+  gpgga = get_gpgga_dict(nmea_string)
+  hdop = gpgga.get('hdop')
+  if hdop:
+    try:
+      return GPS_DEVICE_ACCURACY * float(hdop)
+    except:
+      return None
+  else:
+    return None
+
+
+def get_gps(all_fields=False):
+  modem = get_modem()
 
   if modem:
     try:
@@ -271,23 +308,25 @@ def get_gps(use_cache=False):
 
       gps = location.get(2)
       if not gps:
-        return fallback
-
+        return {}
       else:
-        if lat != gps['latitude']:
-          db.kv_set('Lat', gps['latitude'])
-
-        if lng != gps['longitude']:
-          db.kv_set('Lng', gps['longitude'])
-
-        return {
+        nmea_string = location.get(4, '')
+        location_dict = {
           'Lat': gps['latitude'],
-          'Lng': gps['longitude']
+          'Lng': gps['longitude'],
+          'accuracy': gps_accuracy(nmea_string)
         }
+        if all_fields:
+          location_dict.update( {
+            'Utc': gps['utc-time'],
+            'Nmea': nmea_string,
+            '3gpp': location.get(1)
+          } )
+        return location_dict
     except Exception as ex:
       logging.warning("Modem issue {}".format(ex)) 
 
-  return fallback
+  return {}
 
 
 def add_history(kind, value):
@@ -441,9 +480,19 @@ def get_port():
 def get_number():
   return re.sub('[^\d]', '', db.kv_get('number') or '')
 
-def asset_cache(check):
+def image_swapper(match):
+  url = match.group(2)
+  logging.warning("Found image: {}".format(url))
+  checksum_name = asset_cache(url, only_filename=True)
+  return "{}{}".format(match.group(1), checksum_name)
+
+def asset_cache(check, only_filename=False):
+  import magic
   # Now we have the campaign in the database, yay us I guess
-  path = "/var/cache/assets"
+  if type(check) is str:
+    check = { 'asset': [check] }
+
+  path = CACHE
   if not os.path.exists(path):
     os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(path))
     os.system('/usr/bin/sudo /bin/chmod 0777 {}'.format(path))
@@ -451,22 +500,45 @@ def asset_cache(check):
 
   res = []
   for asset in check['asset']:
-    name = "{}/{}".format(path, quote(asset.split('/')[-1]))
-    if (not os.path.exists(name)) or os.path.getsize(name) == 0:
+    # checksum name (#188)
+    # This will also truncate things after a ?, such as
+    # image.jpg?uniqid=123...
+    ext = ''
+    parts = re.search('(\.\w+)', asset.split('/')[-1])
+    if parts:
+      ext = parts.group(1)
+
+    else:
+      logging.warning("No extension found for {}".format(asset))
+
+    checksum_name = "{}/{}{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest(), ext)
+
+    if (not os.path.exists(checksum_name)) or os.path.getsize(checksum_name) == 0:
       r = requests.get(asset, allow_redirects=True)
+
+      # If we are dealing with html we should also cache the assets
+      # inside the html file.
+      mime = magic.from_buffer(r.content, mime=True)
+      if 'html' in mime:
+        logging.info("parsing html")
+        buf = str.encode(re.sub(r'(src\s*=["\']?)([^"\'>]*)', image_swapper, r.content.decode('utf-8')))
+
+      else:
+        buf = r.content
+
       # 
       # Since we are serving a file:/// then we don't have to worry
       # about putting shit in an accessible path ... we have the
       # whole file system to access.
       #
-      open(name, 'wb').write(r.content)
+      open(checksum_name, 'wb').write(bytes(buf))
 
     else:
       # This is equivalent to a "touch" - used for a cache cleaning 
       # system
       try:
-        with open(name, 'a'):
-          os.utime(name, None)
+        with open(checksum_name, 'a'):
+          os.utime(checksum_name, None)
       except:
         pass
 
@@ -485,17 +557,20 @@ def asset_cache(check):
     # copy it over, insulting every programmer who used blood sweat
     # and tears to cram say 215 bytes to 211 in a bygone era.
     #
-    mime = _mime.from_file(name)
+    mime = magic.from_file(checksum_name, mime=True)
 
     duration = 7.5
-    if 'html' in mime and 'html' not in name:
+    if 'html' in mime and 'html' not in checksum_name:
       import shutil
-      happybrowser = "{}.html".format(name)
+      happybrowser = "{}.html".format(checksum_name)
       if not os.path.exists(happybrowser):
-        shutil.copyfile(name, happybrowser)
+        os.symlink(checksum_name, happybrowser)
 
-      name = happybrowser
+      checksum_name = happybrowser
       duration = 150
+
+    if only_filename:
+      return checksum_name
 
     # see #154 - we're restructuring this away from a string and
     # into an object - eventually we have to assume that
@@ -504,7 +579,7 @@ def asset_cache(check):
     res.append({
       'duration': duration,
       'mime': mime,
-      'url': name
+      'url': checksum_name
     })
 
   check['asset'] = res
@@ -543,7 +618,7 @@ def ping():
     'last_task': db.kv_get('last_task') or 0,
     'features': feature_detect(),
     'modem': get_modem_info(),
-    'gps': get_gps(),
+    'location': get_location(),
   }
 
   try: 
@@ -581,19 +656,21 @@ def ping():
 
   except Exception as ex:
     _pinglock.release()
-    logging.warning("ping issue {}".format(ex)) 
+    logging.exception("ping issue: {}".format(ex)) 
 
     return False
 
 def feature_detect():
   videoList = glob.glob("/dev/video*")
   hasSim = int(os.popen('mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l').read().strip())
+  layout = dcall('camera_layout', what='perlcall')
 
   # * btle - todo
   return {
     'modem'   : os.path.exists("/dev/cdc-wdm0") or os.path.exists('/dev/cdc-wdm1'),
     'arduino' : os.path.exists("/dev/ttyACM0"),
     'cameras' : int(len(videoList) / 2),
+    'layout'  : layout,
     'wifi'    : os.path.exists("/proc/sys/net/ipv4/conf/wlp1s0"),
     'sim'     : hasSim > 0,
     'size'    : int(os.popen('df -m --output=size / | tail -1').read().strip())
@@ -632,7 +709,6 @@ def upgrades_to_run():
     print(" ".join(to_run))
   
   
-
 def disk_monitor(): 
   import pyudev
   import shutil
@@ -645,14 +721,34 @@ def disk_monitor():
       path = device.get('DEVNAME')
       print(path)
       sys.exit(0)
-      #dcall('local_upgrade', path, '&')
+
+    elif action == 'bind' and device.get('DEVTYPE') == 'usb_device' and not db.sess_get('keyboard_allowed'): 
+      if 'Keyboard' in (str(device.attributes.get('product')) or ''):
+        dcall("_info", "Keyboard is disabled")
+
+def get_location():
+  try:
+    gpgga = json.loads(db.kv_get('gps_gpgga'))
+  except:
+    gpgga = db.kv_get('gps_gpgga')
+
+  location = {
+    'Lat': db.kv_get('Lat'),
+    'Lng': db.kv_get('Lng'),
+    'accuracy': db.kv_get('location_accuracy'),
+    'source': db.kv_get('location_source'),
+    'time': db.kv_get('location_time'),
+    'gps_gpgga': gpgga
+  }
+  return location
 
 def get_latlng():
-  location = get_gps(use_cache=True)
-  if location:
-    return location
-  else:
+  lat = db.kv_get('Lat')
+  lng = db.kv_get('Lng')
+  if lat is None or lng is None:
     return {}
+  else:
+    return { 'Lat': float(lat), 'Lng': float(lng) }
 
 def get_brightness_map():
   # Fallback map if we can't get the lat/long from GPS
@@ -713,7 +809,7 @@ def get_suntimes():
       return {}
 
     a = Astral()
-    suntimes = a.sun_utc(datetime.today(), location['Lat'], location['Lng'])
+    suntimes = a.sun_utc(datetime.today(), float(location['Lat']), float(location['Lng']))
     return suntimes
   else:
     return {}
@@ -727,7 +823,7 @@ def get_timezone():
 
   location = get_latlng()
   if location:
-    return TimezoneFinder().timezone_at(lat=location['Lat'], lng=location['Lng'])
+    return TimezoneFinder().timezone_at(lat=float(location['Lat']), lng=float(location['Lng']))
   else:
     return None
 

@@ -15,6 +15,7 @@ from datetime import datetime
 
 FREQUENCY = 0.1 if 'FREQUENCY' not in os.environ else os.environ['FREQUENCY']
 WINDOW_SIZE = int(12.0 / FREQUENCY)
+DEVELOP = os.environ.get('DEVELOP')
 
 # If all the sensor deltas reach this percentage
 # (multiplied by 100) from the baseline, then we
@@ -112,6 +113,7 @@ while True:
 
     if not sensor:
       raise Exception('arduino_read() returned no data')
+
     elif _arduinoConnectionDown:
       _arduinoConnectionDown = False
       # We could wake the screen up here, but I'm assuming the pm_if_needed call below will do the right thing
@@ -123,44 +125,43 @@ while True:
 
     if first:
       logging.info("Got first arduino read")
-
-    # Put data in if we have it
-    location = lib.get_gps()
-
-    try:
-      if location and not _autobright_set:
-        _autobright_set = True
-        arduino.set_autobright()
-
-    except:
-      pass
-
-    all = {**location, **sensor, 'run': run}
-
-    if first:
-      logging.debug("Success, Main Loop")
       first = False
+      db.kv_set('arduino_seen', 1)
 
-    window.append(all.get('Voltage'))
-    if len(window) > WINDOW_SIZE * 1.2:
-      window = window[-WINDOW_SIZE:]
+    if not DEVELOP:
+      # Put data in if we have it
+      location = lib.get_latlng()
 
-    try:
-      avg = float(sum(window)) / len(window)
+      try:
+        if location and not _autobright_set:
+          _autobright_set = True
+          arduino.set_autobright()
 
-    except:
-      avg = 0
+      except:
+        pass
+
+      all = {**location, **sensor, 'run': run}
 
 
-    if is_significant(all):
-      lib.sensor_store(all)
+      window.append(all.get('Voltage'))
+      if len(window) > WINDOW_SIZE * 1.2:
+        window = window[-WINDOW_SIZE:]
 
-    # If we need to go into/get out of a low power mode
-    # We also need to make sure that we are looking at a nice
-    # window of time. Let's not make it the window_size just
-    # in case our tidiness algorithm breaks.
-    if sensor and len(window) > WINDOW_SIZE * 0.8:
-      arduino.pm_if_needed(avg, all.get('Voltage'))
+      try:
+        avg = float(sum(window)) / len(window)
+
+      except:
+        avg = 0
+
+      if is_significant(all):
+        lib.sensor_store(all)
+
+      # If we need to go into/get out of a low power mode
+      # We also need to make sure that we are looking at a nice
+      # window of time. Let's not make it the window_size just
+      # in case our tidiness algorithm breaks.
+      if sensor and len(window) > WINDOW_SIZE * 0.8:
+        arduino.pm_if_needed(avg, all.get('Voltage'))
 
     # Now you'd think that we just sleep on the frequency, that'd be wrong.
     # Thanks, try again. Instead we need to use the baseline time from start
@@ -180,11 +181,16 @@ while True:
       logging.error('Arduino communication down: {}'.format(ex))
       _arduinoConnectionDown = True
       # TODO Add more logic to guess the state of the car before we lost contact.
-      try:
-        arduino.do_sleep()
-      except:
-        # The call should turn off the display but fail trying to turn off the backlight.  That's okay.
-        pass
+      arduino_seen = db.kv_get('arduino_seen')
+      if arduino_seen is not None:
+        logging.info('Arduino disconnected: Putting the screen to sleep')
+        try:
+          arduino.do_sleep()
+        except:
+          # The call should turn off the display but fail trying to turn off the backlight.  That's okay.
+          pass
+      else:
+        logging.info('Arduino has never been detected: Leaving the screen on')
       # if _arduino isn't set to false, we won't reconnect
       arduino.arduino_disconnect()
     time.sleep(1)

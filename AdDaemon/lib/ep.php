@@ -38,7 +38,18 @@ try {
   else if(array_search($func, ['jobs', 'sensor_history', 'campaigns', 'screens', 'tasks']) !== false) {
     jemit(show(rtrim($func, 's'), $all));
   }
-  else if(array_search($func, ['active_campaigns', 'campaign_history', 'sow', 'task_dump', 'screen_tag', 'tag', 'ping', 'command', 'response']) !== false) { 
+  else if(array_search($func, [
+    'active_campaigns', 
+    'campaign_history', 
+    'car_history', 
+    'command', 
+    'ping', 
+    'response',
+    'screen_tag', 
+    'sow', 
+    'tag', 
+    'task_dump' 
+  ]) !== false) { 
     jemit($func($all, $verb));
   } else {
     jemit([
@@ -53,4 +64,5 @@ try {
   ]);
 }
 
+error_log("$func called, does not exist");
 jemit(doError("$func not found"));

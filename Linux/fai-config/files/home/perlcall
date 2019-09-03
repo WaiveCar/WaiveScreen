@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use Scalar::Util qw/reftype/;
+use Scalar::Util qw(looks_like_number);
 
 my $home = '/home/adorno/';
 my $modem = 0;
@@ -52,14 +53,18 @@ sub capture_all_cameras {
 }
 
 sub acceptance_screen {
-  my $out= qx($home/WaiveScreen/ScreenDaemon/dcall kv_get | sed -E s"/[\'=;]/ /"g);
+  my $out = qx($home/WaiveScreen/ScreenDaemon/dcall kv_get | sed -E s"/[\'=;]/ /"g);
   my %values;
   my $uptime = qx(awk ' { print \$1 } ' /proc/uptime);
-  my $version = qx(cd $home/WaiveScreen && git describe);
+  my $version = qx(cd $home/WaiveScreen && git describe) . "-" . qx(cd $home/WaiveScreen && git rev-parse --abbrev-ref HEAD);
+  $version =~ s/\s//g;
   my @all = eval "qw($out)";
   for(my $ix = 0; $ix < $#all; $ix += 2) {
     $values{$all[$ix]} = $all[$ix + 1];
   }
+
+  $values{'uuid'} = qx(cat /etc/UUID);
+  $values{'runcount'} = qx(cat /etc/bootcount);
 
   open(my $html, '>', '/tmp/acceptance.html');
   print $html qq(<style>
@@ -72,12 +77,21 @@ body {
   padding:.5rem;
   background:url('file://$home/WaiveScreen/tools/client/test-bg.gif') repeat;
 }
+#chart {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  border: 2px solid #000;
+  padding: 1px;
+  background: #fff;
+}
 .bad,.good,.value {
   width:45%;
   font-size:1.1rem;
   color:rgb(170,64,64);
   display:inline-block;
   font-weight: bold;
+  vertical-align: top;
 }
 .mark {
   font-size: 1.5rem;
@@ -116,8 +130,14 @@ body {
   background: #eee;
   margin-top: 0.4rem;
 }
+small {
+  display: block;
+  font-size:0.75rem;
+  text-indent: 1.5rem;
+}
 </style>
 <body>
+<img id=chart src=file://$home/WaiveScreen/tools/client/usb-chart.jpg>
 <span id='box'>
 <div id='header'>
   <div >$values{'uuid'}</div>
@@ -130,13 +150,20 @@ body {
   for (my $ix = 0; $ix < scalar @features; $ix += 2) {
     my $key = $features[$ix];
     my $value = $features[$ix + 1];
-    if (!$value || $value <= 1) {
+    if (!$value || (looks_like_number($value) && $value <= 1)) {
       my $class = $value ? 'good' : 'bad';
       my $character = ($class eq 'bad') ? '&#x2717;' : '&#x2714;';
-      print $html "<div class=$class><span class=mark>$character</span> $key</div>";
+      print $html "<div class=$class><span class=mark>$character</span><span class=term>$key</span>";
     } else {
-      print $html "<div class=value><span class='mark mini'>$value</span> $key</div>";
+      print $html "<div class=value><span class='mark mini'>$value</span><span class=term>$key</span>";
     }
+    if($key =~ 'camera') {
+      $ix += 2;
+      my $key = $features[$ix];
+      my $value = $features[$ix + 1];
+      print $html "<small>$value</small>";
+    }
+    print $html "</div>";
   }
 
   print $html qq(
@@ -151,12 +178,20 @@ body {
   close $html;
 }
 
+sub camera_layout {
+  my $camera_layout = qx(grep -l uvc /sys/bus/usb/devices/*/uevent | grep -v ':1.0' | grep -Po '(\\d\\.?\\d?(?=:))');
+  my $bus_type = qx(cut -d ' ' -f 1 /sys/bus/usb/devices/usb1/product);
+  $camera_layout =~ s/\./:/g;
+  return join '| ', split(/\s+/, "$bus_type $camera_layout");
+}
+
 # see #73
 sub detect_features {
   my @videoList = glob("/dev/video*");
   my $hasSim = qx(mmcli -m $modem --output-keyvalue | grep sim | grep org | wc -l);
   my $signal = qx(mmcli -m $modem --output-keyvalue | grep signal-quality.value | awk -F : ' { print \$2 } ');
 
+  my $camera_layout = camera_layout();
   # * btle - todo
   my @features = (
     "arduino", -e "/dev/ttyACM0" ? 1 : 0,
@@ -166,6 +201,7 @@ sub detect_features {
     "sim", $hasSim,
     "ip", qx(mmcli -b 0| grep address | wc -l) > 0,
     "cameras", ($#videoList + 1) / 2,
+    "layout", $camera_layout,
     'gps', qx(mmcli -m $modem --location-get --output-keyvalue | grep longitude | grep -v -- -- | wc -l)
   );
   for (my $ix = 1; $ix < scalar @features; $ix += 2) {

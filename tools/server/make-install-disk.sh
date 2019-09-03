@@ -5,10 +5,14 @@
 # MIRROR    - Will (re)do the mirroring
 # ONLYDISK  - Only creates a disk
 # NOPIP     - Skip over pip download
+# JUSTDOIT  - Overrides the blocking of only creating release disks
+#
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 dir=$HOME/usb
-file=$HOME/WaiveScreen-$(date +%Y%m%d%H%M)-$(git describe)-$(git rev-parse --abbrev-ref HEAD).iso
+branch=$(git rev-parse --abbrev-ref HEAD)
+version=$(git describe)-$branch
+file=$HOME/installs/WaiveScreen-$(date +%Y%m%d%H%M)-$version.iso
 backup=/home/chris/backup-test
 
 die() {
@@ -30,14 +34,18 @@ if [[ -z "$NODISK" ]]; then
   sudo fdisk -l $disk
 
   if [[ -n "$ONLYDISK" ]]; then
-    eval $(ddcmd $(ls -tr1 $HOME/Wai*| tail -1) $disk) 
+    eval $(ddcmd $(ls -tr1 $HOME/installs/Wai*| tail -1) $disk) 
     exit
   fi
 fi
 
-preexist=$(ls $HOME/WaiveScreen-*$(git describe)-$(git rev-parse --abbrev-ref HEAD).iso 2> /dev/null)
+[[ -z "$JUSTDOIT" && $branch != "release" ]] && die "Nope, not doing it. You need to switch to the release branch or pass JUSTDOIT."
+
+preexist=$(ls $HOME/WaiveScreen-*$version.iso 2> /dev/null)
 [[ -n "$preexist" ]] && die "$preexist already exists. Either run with ONLYDISK or remove the iso(s)."
-[[ -z "$NOPIP" ]] && ( NONET=1 $DIR/syncer.sh pip || die "Can't sync" )
+if [[ -z "$NOPIP" ]]; then
+  NONET=1 $DIR/syncer.sh pip || die "Can't install the pip requirements, check requirements.txt" 
+fi
 
 if [ "$MIRROR" -o ! -e $dir ]; then
   [ -d $usb ] && rm -fr $usb

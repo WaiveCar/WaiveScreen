@@ -90,16 +90,43 @@ function missing($what, $list) {
   }
 }
 
-function distance($lat1, $lon1, $lat2 = false, $lon2 = false) {
-  if(!$lat2) {
-    if(empty($lon1['lng']) && empty($lat1['lng'])) {
-      return false;
+function inside_polygon($test_point, $points) {
+  $p0 = end($points);
+  $ctr = 0;
+  foreach ( $points as $p1 ) {
+    // there is a bug with this algorithm, when a point in "on" a vertex
+    // in that case just add an epsilon
+    if ($test_point[1] == $p0[1]) {
+      $test_point[1] += 0.0000000001; #epsilon
     }
-    $lon2 = $lon1['lng'];
-    $lat2 = $lon1['lat'];
-    $lon1 = $lat1['lng'];
-    $lat1 = $lat1['lat'];
+
+    // ignore edges of constant latitude (yes, this is correct!)
+    if ( $p0[1] != $p1[1] ) {
+      // scale latitude of $test_point so that $p0 maps to 0 and $p1 to 1:
+      $interp = ($test_point[1] - $p0[1]) / ($p1[1] - $p0[1]);
+
+      // does the edge intersect the latitude of $test_point?
+      // (note: use >= and < to avoid double-counting exact endpoint hits)
+      if ( $interp >= 0 && $interp < 1 ) {
+        // longitude of the edge at the latitude of the test point:
+        // (could use fancy spherical interpolation here, but for small
+        // regions linear interpolation should be fine)
+        $long = $interp * $p1[0] + (1 - $interp) * $p0[0];
+        // is the intersection east of the test point?
+        if ( $long > $test_point[0] ) {
+          // if so, count it:
+          $ctr++;
+        }
+      }
+    }
+    $p0 = $p1;
   }
+  return ($ctr & 1);
+}
+
+function distance($pos1, $pos2) {
+  list($lon1, $lat1) = $pos1;
+  list($lon2, $lat2) = $pos2;
 
   $theta = $lon1 - $lon2;
   $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
@@ -146,7 +173,7 @@ function find_missing($obj, $fieldList) {
 function log_screen_changes($old, $new) {
   // When certain values change we should log that
   // they change.
-  $deltaList = ['phone', 'car', 'project', 'model', 'version', 'active', 'features'];
+  $deltaList = ['phone', 'removed', 'car', 'project', 'model', 'version', 'active', 'features'];
   foreach($deltaList as $delta) {
     if(!isset($new[$delta])) {
       continue;
@@ -188,7 +215,12 @@ function upsert_screen($screen_uid, $payload) {
     $screen = create_screen($screen_uid);
   }
 
-  $data = ['last_seen' => 'current_timestamp'];
+  $data = [
+    // I don't care if it was manually removed, if we see it again
+    // we are activating it again. That's how it works.
+    'removed' => 0,
+    'last_seen' => 'current_timestamp'
+  ];
   if(!empty($payload['lat']) && floatval($payload['lat'])) {
     $data['lat'] = floatval($payload['lat']);
     $data['lng'] = floatval($payload['lng']);
@@ -203,6 +235,7 @@ function upsert_screen($screen_uid, $payload) {
 // After a screen runs a task it's able to respond... kind of 
 // have a dialog if you will.
 function response($payload) {
+  //error_log(json_encode($payload));
   $missing = find_missing($payload, ['task_id', 'uid', 'response']);
   if($missing) {
     return doError("Missing fields: " . implode(', ', $missing));
@@ -224,7 +257,7 @@ function response($payload) {
 
 // This is called from the admin UX
 function command($payload) {
-  $scope_whitelist = ['id', 'project', 'model', 'version'];
+  $scope_whitelist = ['id', 'removed', 'project', 'model', 'version'];
   $idList = [];
   
   $field_raw = aget($payload, 'field');
@@ -283,6 +316,7 @@ function default_campaign($screen) {
 
 function ping($payload) {
   global $VERSION, $LASTCOMMIT;
+  //error_log(json_encode($payload));
 
   // features/modem/gps
   foreach([
@@ -291,7 +325,8 @@ function ping($payload) {
     'modem.imei', 'modem.phone', 'gps.lat', 'gps.lng', // >v0.2-Bakeneko-347-g277611a
     'version_time',                                    // >v0.2-Bakeneko-378-gf6697e1
     'uptime', 'features',                              // >v0.2-Bakeneko-384-g4e32e37
-    'last_task'                                        // >v0.2-Bakeneko-623-g8989622
+    'last_task',                                       // >v0.2-Bakeneko-623-g8989622
+    'location', 'location.Lat', 'location.Lng',        // >v0.3-Chukwa-473-g725fa2c
   ] as $key) {
     $val = aget($payload, $key);
 
@@ -404,7 +439,7 @@ function task_dump() {
 }
 
 function screen_edit($data) {
-  $whitelist = ['car', 'phone', 'serial', 'project', 'model'];
+  $whitelist = ['car', 'removed', 'phone', 'serial', 'project', 'model'];
   $update = [];
   foreach(array_intersect($whitelist, array_keys($data)) as $key) {
     $update[$key] = db_string($data[$key]);
@@ -414,6 +449,7 @@ function screen_edit($data) {
   db_update('screen', $data['id'], $update);
   return Get::screen($data['id']);
 }
+
 
 // we need to find out if the screen has tasks we need
 // to inject and then do so
@@ -442,7 +478,6 @@ function task_inject($screen, $res) {
   return $res;
 }
 
-
 function update_campaign_completed($id) {
   if($id) {
     // only update campaign totals that aren't our defaults
@@ -461,13 +496,14 @@ function inject_priority($job, $screen, $campaign) {
 
 function sow($payload) {
   global $SCHEMA;
-  error_log(json_encode($payload));
+  //error_log(json_encode($payload));
   if(isset($payload['uid'])) {
     $screen = upsert_screen($payload['uid'], $payload);
   } else {
     return doError("UID needs to be set before continuing");
   }
 
+  //error_log($payload['uid']);
   $jobList = aget($payload, 'jobs', []);
   $campaignsToUpdateList = [];
 
@@ -520,12 +556,35 @@ function sow($payload) {
   // error_log(json_encode($uniqueCampaignList));
   
   $active = active_campaigns($screen);
-  // If we didn't get lat/lng from the sensor then we just any ad
-  if(empty($payload['lat'])) {
-    $nearby_campaigns = $active;
+  //error_log(json_encode($active));
+  // If we didn't get lat/lng from the sensor then we just 
+  // fallback to the default
+  if(!$payload['lat']) {
+    $nearby_campaigns = [];//$active;
   } else {
     // right now we are being realllly stupid.
     $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
+      if(!empty($campaign['shape_list'])) {
+        $test = [floatval($payload['lng']), floatval($payload['lat'])];
+        $isMatch = false;
+        foreach($campaign['shape_list'] as $polygon) {
+          if($polygon[0] === 'Polygon') {
+            $isMatch |= inside_polygon($test, $polygon[1]); 
+          } else if ($polygon[0] === 'Circle') {
+            $isMatch |= distance($test, $polygon[1]) < $polygon[2];
+          }
+          if($isMatch) {
+            break;
+          }
+        }
+        if($isMatch) {
+          return true;
+        }
+        // This is important because if we have a polygon definition
+        // then we actually don't want to show the ad outside that 
+        // polygon.
+        return false;
+      }
       /*
       if(isset($payload['lat'])) {
         // under 1.5km
@@ -533,8 +592,9 @@ function sow($payload) {
       } 
        */
       // essentially this is for debugging
-      return true;
+      return false;//true;
     });
+    // error_log(json_encode($nearby_campaigns));
   }
 
   // so if we have existing outstanding jobs with the
@@ -542,6 +602,7 @@ function sow($payload) {
   $server_response = task_inject($screen, ['res' => true]);
   $server_response['data'] = array_map(function($campaign) use ($screen) {
     $jobList = find_unfinished_job($campaign['id'], $screen['id']);
+    //error_log(json_encode($jobList));
     if(!$jobList) {
       $jobList = [ create_job($campaign['id'], $screen['id']) ];
     }
@@ -556,29 +617,10 @@ function sow($payload) {
       }
     }
   }, $nearby_campaigns);
+  //error_log(json_encode($server_response));
   
   return $server_response; 
 }
-
-function get_available_slots($start_query, $duration) {
-  if(!$start_query) {
-    $start_query = date();
-  }
-  if($duration) {
-    $duration = 7 * $DAY;
-  }
-  $end_query = $start_query + $duration;
-  //
-  // This is more or less a functional ceiling on our commitment for a time period if we are to assume that we can get everything
-  // done by the end of the duration, not the end of the campaign.
-  //
-  $committed_seconds = run("select sum(completed_seconds - duration_seconds) from campaigns where $start_time > $start_query or $end_time < $end_query");
-  $available_seconds = $duration - $committed_seconds;
-
-  // This is really rudimentary
-  return $committed_seconds;
-}
-
 
 function upload_s3($file) {
   // lol we deploy this line of code with every screen. what awesome.
@@ -620,7 +662,15 @@ function show($what, $clause = '') {
       $clause = '';
     }
   }
+  //error_log(preg_replace('/\s+/', ' ', "select * from $what $clause"));
   return db_all("select * from $what $clause", $what);
+}
+
+function make_infinite($campaign_id) {
+  db_update('campaign', $campaign_id, [
+    'duration_seconds' => pow(2,31),
+    'end_time' => '2100-01-01 00:00:00'
+  ]);
 }
 
 function active_campaigns($screen) {
@@ -628,8 +678,6 @@ function active_campaigns($screen) {
   return show('campaign', "where 
     active = 1                       and 
     is_default = 0                   and
-    project = '{$screen["project"]}' and
-    start_time < current_timestamp   and 
     completed_seconds < duration_seconds 
     order by start_time desc");
 }
@@ -657,49 +705,6 @@ function campaigns_list($opts = []) {
 
   return show('campaign', $append);
 }
-
-function campaign_new($opts) {
-  //
-  // Currently we don't care about radius ... eventually we'll be using
-  // spatial systems anyway so let's be simple.
-  //
-  // Also we eventually need a user system here.
-  //
-  $missing = missing($opts, ['duration', 'asset', 'lat', 'lng', 'start_time', 'end_time']);
-  if($missing) {
-    return doError('Missing parameters: ' . implode(', ', $missing));
-  }
-  if(is_array($opts['asset'])) {
-    $opts['asset'] = json_encode($opts['asset']);
-  }
-  // make sure things aren't arrays when they are passed in here.
-  $opts = db_clean($opts);
-
-  // by default active gets set to false
-  // which means that we don't consider this 
-  foreach(["start_time", "end_time"] as $key) {
-    if(is_numeric($opts[$key])) {
-      $opts[$key] = db_date($opts[$key]);
-    }
-  }
-  //error_log(json_encode($opts));
-  $campaign_id = db_insert(
-    'campaign', [
-      'active' => 1,//false,
-      'asset' => db_string($opts['asset']),
-      'duration_seconds' => $opts['duration'],
-      'project' => 'LA',
-      'lat' => $opts['lat'],
-      'lng' => $opts['lng'],
-      'radius' => $opts['radius'],
-      'start_time' => $opts['start_time'],
-      'end_time' => $opts['end_time']
-    ]
-  );
-
-  return $campaign_id;
-}
-
 
 function campaign_history($data) {
   $campaign = Get::campaign($data);
@@ -729,6 +734,13 @@ function campaign_history($data) {
   return $campaign;
 }
 
+function circle($lng = -118.390412, $lat = 33.999819, $radius = 3500) {
+  return [
+    'lat' => $lat, 'lng' => $lng, 'radius' => $radius,
+    'shape_list' => [[ 'Circle', [$lng, $lat], $radius ]]
+  ];
+}
+
 // This is the first entry point ... I know naming and caching
 // are the hardest things.
 //
@@ -737,62 +749,41 @@ function campaign_history($data) {
 function campaign_create($data, $fileList, $user = false) {
   global $DAY, $PLAYTIME;
 
-  error_log("campaign new: " . json_encode($data));
+  $props = array_merge(circle(),
+    [
+      'project' => db_string('LA'),
+      'start_time' => db_date(time()),
+      'duration_seconds' => 240,
+      'end_time' => db_date(time() + $DAY * 7),
+      'asset' => [],
+    ],
+  );
+
   # This means we do #141
-  if(aget($data,'secret') === 'b3nYlMMWTJGNz40K7jR5Hw') {
-    $ref_id = db_string(aget($data,'ref_id'));
-    $campaign = Get::campaign(['ref_id' => $ref_id]);
-    $asset = db_string(json_encode([aget($data, 'asset')]));
+  if(aget($data, 'secret') === 'b3nYlMMWTJGNz40K7jR5Hw') {
+    $ref_id = db_string(aget($data, 'ref_id'));
+
+    if($ref_id) {
+      $campaign = Get::campaign(['ref_id' => $ref_id]);
+      $props['ref_id'] = $ref_id;
+      $props['asset'] = [aget($data, 'asset')];
+    }
+
     if(!$campaign) {
-      $campaign_id = db_insert(
-        'campaign', [
-          'active' => 1,
-          'ref_id' => $ref_id,
-          'asset' => $asset,
-          'duration_seconds' => 240,
-          'lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000,
-          'start_time' => time(),
-          'end_time' => time() + $DAY * 7
-        ]
-      );
+      $campaign_id = db_insert( 'campaign', $props );
     } else {
-      db_update('campaign', ['asset' => $asset]);
+      error_log("Don't know how to proceed");
+      //$campaign_id = $campaign['id'];
+      //db_update('campaign', $campaign_id, ['asset' => $asset]);
     }
     return doSuccess(Get::campaign($campaign_id));
   }
 
-  // get the lat/lng radius of the location into the data.
-  $data = array_merge(
-    ['lat' => 33.999819, 'lng' => -118.390412, 'radius' => 35000],
-    ['total' => 999, 'duration' => $PLAYTIME * 300 ],
-    ['start_time' => time(), 'end_time' => time() + $DAY * 7, 'asset' => []],
-    $data
-  );
-
   foreach($fileList as $file) {
-    $data['asset'][] = upload_s3($file);
+    $props['asset'][] = upload_s3($file);
   }
 
-  $campaign_id = campaign_new($data);
-  if($campaign_id) {
-    $order = [
-      'campaign_id' => $campaign_id,
-      'amount' => $data['total'], 
-      'status' => db_string('open')
-    ];
-
-    if(!empty($data['charge_id'])) {
-      $order['charge_id'] = $data['charge_id'];
-    }
-
-    if($user) {
-      $row['user_id'] = $user['id'];
-    }
-    $order_id = db_insert('orders', $order);
-
-    db_update('campaign', $campaign_id, ['order_id' => $order_id]);
-  }
-  return $campaign_id;
+  return db_insert('campaign', $props);
 }
 
 function campaign_update($data, $fileList, $user = false) {
@@ -805,9 +796,22 @@ function campaign_update($data, $fileList, $user = false) {
   if(!$fileList) {
     $obj = [];
     foreach($data as $k => $v) {
-      if (in_array($k, ['active','lat','lng','radius'])) {
+      if (in_array($k, ['duration_seconds','active','lat','lng','radius'])) {
         $obj[$k] = db_string($v);
       }
+    }
+    if(!empty($data['geofence'])) {
+      // first we filter for circles to do lat/lng/radius
+      foreach($data['geofence'] as $geo) {
+        if($geo[0] === 'Circle') {
+          // the overlay system is lng/lat
+          list($obj['lng'], $obj['lat']) = $geo[1];
+          $obj['radius'] = $geo[2];
+          break;
+        }
+      }
+      // then we assign everything to the list.
+      $obj['shape_list'] = $data['geofence'];
     }
     db_update('campaign', $campaign_id, $obj);
   } else {

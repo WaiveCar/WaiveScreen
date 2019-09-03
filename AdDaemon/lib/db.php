@@ -1,9 +1,23 @@
 <?php
 date_default_timezone_set('UTC');
 
+$JSON = [
+  'pre' => function($v) { 
+    if ($v === null) { return $v; } 
+    if (!is_string($v)) { $v = json_encode($v); }
+    return db_string($v); 
+  },
+  'post' => function($v) { 
+    if (!$v) { return $v; } 
+    return json_decode($v, true); 
+  }
+];
+
 $RULES = [
   'campaign' => [ 
+    'shape_list' => $JSON,
     'asset' => [
+      'pre' => $JSON['pre'],
       'post' => function($v) {
          $v = json_decode($v, true);
          if(!is_array($v)) {
@@ -20,10 +34,8 @@ $RULES = [
     ]
   ],
   'screen' => [
-    'features' => [
-      'pre' => function($v) { return db_string(json_encode($v)); },
-      'post' => function($v) { return json_decode($v, true); }
-    ]
+    'features' => $JSON,
+    'location' => $JSON
   ],
   'sensor_history' => [
     'created_at' => [
@@ -52,6 +64,7 @@ $SCHEMA = [
     'model'       => 'text',
     'lat'         => 'float default null',
     'lng'         => 'float default null',
+    'location'    => 'text',
     'version'     => 'text',
     'version_time'=> 'integer',
     'uptime'      => 'integer',
@@ -87,7 +100,7 @@ $SCHEMA = [
   // these and can bleed over in either direction if it 
   // gets to that.
   // 
-  // If they are empty', then it means that it's 24 hours a day
+  // If they are empty, then it means that it's 24 hours a day
   //
   'campaign' => [
     'id'          => 'integer primary key autoincrement',
@@ -96,16 +109,33 @@ $SCHEMA = [
     'asset'       => 'text not null',
     'duration_seconds' => 'integer',
     'completed_seconds' => 'integer default 0',
-    'place_id'    => 'integer default null',
     'project'     => 'text default "dev"',
+
+    //
+    // For now, until we get a geo db system
+    // this makes things easily queriable
+    //
+    // Stuff will be duplicated into shapelists
+    //
     'lat'         => 'float default null',
     'lng'         => 'float default null',
     'radius'      => 'float default null',
+
+    //
+    // shape_list := [ polygon | circle ]* 
+    //  polygon   := [ "Polygon", [ coord, ... ] ]
+    //  circle    := [ "Circle", coord, radius ]
+    //  coord     := [ lon, lat ]
+    //  radius    := integer (meters)
+    //
+    'shape_list'  => 'text',
+
     'start_minute'=> 'integer default null',
     'end_minute'  => 'integer default null',
     'active'      => 'boolean default false',
     'is_default'  => 'boolean default false',
     'priority'    => 'integer default 0',
+
     'start_time'  => 'datetime default current_timestamp',
     'end_time'    => 'datetime'
   ],
@@ -276,13 +306,14 @@ function db_string($what) {
   if ($where === false) {
     return "'$what'";
   } else if ($where != 0) {
-    return '"' . SQLite3::escapeString($what) . '"';
+    return "'" . SQLite3::escapeString($what) . "'";
   }
   return $what;
 }
 function db_date($what) {
  return "datetime($what,'unixepoch')";
 }
+
 function _query($qstr, $func='exec') {
   $db = db_connect();
   try {
@@ -480,7 +511,7 @@ function db_insert_many($table, $kvList) {
   $fields = implode(',', $fields);
   $values = implode(',', $valueList);
   $qstr = "insert into $table($fields) values $values";
-  error_log($qstr);
+  //error_log($qstr);
 
   if(_query($qstr)) {
     return $db->lastInsertRowID();

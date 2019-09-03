@@ -1,10 +1,11 @@
 resize() {
+  eval $(xrandr -q | grep \ connected | tail -2 | awk ' { print "SC"NR"="$1 } ')
   xrandr --newmode "1920x675_60.00"  104.25  1920 2008 2200 2480  675 678 688 702 -hsync +vsync
-  xrandr --addmode HDMI-1 "1920x675_60.00"
-  xrandr --addmode HDMI-2 "1920x675_60.00"
-  xrandr --output HDMI-1 --mode "1920x675_60.00"
-  xrandr --output HDMI-2 --mode "1920x675_60.00"
-  xrandr --output HDMI-1 --same-as HDMI-2
+  xrandr --addmode $SC1 "1920x675_60.00"
+  xrandr --addmode $SC2 "1920x675_60.00"
+  xrandr --output $SC1 --mode "1920x675_60.00"
+  xrandr --output $SC2 --mode "1920x675_60.00"
+  xrandr --output $SC1 --same-as $SC2
 }
 
 onebigscreen() {
