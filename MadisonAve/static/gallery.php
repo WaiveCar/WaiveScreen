@@ -15,7 +15,7 @@ foreach(glob("snap/$id-*jpg") as $path) {
 }
 ?>
 </body>
-<?  if ($_GET['type'] == 'live') { ?>
+<?  if (isset($_GET['type']) && $_GET['type'] == 'live') { ?>
 <script>
 setInterval(function() {
   var imgList = document.getElementsByTagName('img');
