@@ -499,7 +499,13 @@ def asset_cache(check, only_filename=False):
   res = []
   for asset in check['asset']:
     # checksum name (#188)
-    ext = asset[asset.rfind('.'):]
+    # This will also truncate things after a ?, such as
+    # image.jpg?uniqid=123...
+    ext = ''
+    parts = re.search('(\.\w+)', asset)
+    if parts:
+      ext = parts.group(1)
+
     checksum_name = "{}/{}{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest(), ext)
 
     logging.info("Checking {}".format(checksum_name))
