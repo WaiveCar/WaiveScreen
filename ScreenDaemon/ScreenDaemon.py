@@ -193,8 +193,7 @@ async def browser(request):
 
   if _conn is not None:
     if args[0] == '@':
-      args = 'http://www.waivescreen.com/insta.php?loop=1&user={}'.format(args[1:])
-      logging.warning(lib.asset_cache(args, only_filename=True))
+      args = lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(args[1:]), only_filename=True)
     
     if "http" in args:
       payload = json.dumps({'action': 'playnow', 'args': args})
