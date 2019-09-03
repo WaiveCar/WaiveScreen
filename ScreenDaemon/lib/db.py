@@ -423,26 +423,27 @@ def kv_set(key, value = None, bootcount = None):
   global _params
 
   try:
-    if value is None:
-      res = run('delete from kv where key = ?', (key, ))
-      
+    # Let's just do two calls. Nobody else is accessing it right here I think
+    # this is atomic enough.
+    if key in _params:
+      res = [_params[key]]
     else:
-      # Let's just do two calls. Nobody else is accessing it right here I think
-      # this is atomic enough.
-      if key in _params:
-        res = [_params[key]]
-      else:
-        res = run('select value from kv where key = ?', (key, )).fetchone()
+      res = run('select value from kv where key = ?', (key, )).fetchone()
 
-      if not res:
-        run('insert into kv (key, value) values(?, ?)', (key, value))
+    # We only run the delete sql if the value exists. Otherwise
+    # it throws a cryptic exception.
+    if value is None:
+      if res:
+        res = run('delete from kv where key = ?', (key, ))
 
-      elif res[0] != str(value):
-        logging.warning(json.dumps([key, value]))
-        run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
+    elif not res:
+      run('insert into kv (key, value) values(?, ?)', (key, value))
 
-      if bootcount:
-        run('update kv set bootcount = ? where key = ?', (bootcount, key))
+    elif res[0] != str(value):
+      run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
+
+    if bootcount:
+      run('update kv set bootcount = ? where key = ?', (bootcount, key))
 
   except Exception as ex:
     logging.warning("Couldn't set {} to {}: {}".format(key, value, ex))
