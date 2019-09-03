@@ -506,6 +506,9 @@ def asset_cache(check, only_filename=False):
     if parts:
       ext = parts.group(1)
 
+    else:
+      logging.warning("No extension found for {}".format(asset))
+
     checksum_name = "{}/{}{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest(), ext)
 
     logging.info("Checking {}".format(checksum_name))
