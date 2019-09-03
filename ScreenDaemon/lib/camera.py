@@ -58,6 +58,9 @@ class Camera():
     self.calibrated_capture_thread = threading.Thread(target=self.calibrated_capture)
     self.calibrate_and_exit_thread = threading.Thread(target=self.calibrate_and_exit)
 
+  def debug(self, msg):
+    logging.debug('CAM_{}: {}'.format(self.cam_num, msg))
+
   def capture_loop(self):
     self.capturing = True
     self.capture_start_time = time.time()
@@ -67,7 +70,7 @@ class Camera():
         self.disabled = True
         self.capturing = False
       self.frame_num += 1
-      logging.debug('CAM_{} Frame: {} @ +{:.4f}'.format(self.cam_num, self.frame_num, time.time() - self.capture_start_time))
+      self.debug('Frame: {} @ +{:.4f}'.format(self.frame_num, time.time() - self.capture_start_time))
 
   def calibrated_capture(self):
     self.e_val = 0
@@ -85,9 +88,11 @@ class Camera():
   def calibrate_and_exit(self):
     self.capture_thread.start()
     time.sleep(self.settle_secs)
+    #self.save_frame('start')
     r = 0
     for i in range(3):
       self.evaluate_exposure()
+      #self.save_frame('eval')
       time.sleep(0.1)
     if self.e_val > 0:
       self.exposure = 0
@@ -96,6 +101,7 @@ class Camera():
       if self.hist.max() > self.last_hist.max():
         self.auto_exposure = True
     self.brightness_balance()
+    #self.save_frame('final')
     self.capturing = False
 
   def evaluate_exposure(self):
@@ -114,6 +120,8 @@ class Camera():
     change_val = 4
     while self.balancing_brightness:
       self.calc_hist()
+      #self.save_frame('bri')
+      self.debug('hist_offset: {}'.format(self.hist_offset))
       if self.hist_offset < -1:
         if self.b_diff < 0:
           change_val = change_val / 2
@@ -132,6 +140,21 @@ class Camera():
     self.last_hist = self.hist
     self.hist = cv2.calcHist([self.gframe], [0], None, [self.HIST_BINS], [0, 256])
     self.hist_nz = self.hist.nonzero()[0]
+
+  def add_overlay(self, frame):
+    exposure_string = 'Auto' if self.auto_exposure else self.exposure
+    cam_settings_string = 'Cam{} - Exposure: {}  Brightness: {}  Frame: {}'.format(self.cam_num, exposure_string, self.brightness, self.frame_num)
+    cv2.putText(frame, cam_settings_string, (10, 20), cv2.FONT_HERSHEY_PLAIN, 1.0, (100, 225, 40), lineType=cv2.LINE_AA)
+    if self.hist is not None:
+      hist_string = 'Hist Offset: {}  Hist Borders: {}  Hist Max: {} @ {}  E-val: {}'.format(self.hist_offset, self.hist_borders, self.hist.max(), self.hist.argmax(), self.e_val)
+      cv2.putText(frame, hist_string, (10, 40), cv2.FONT_HERSHEY_PLAIN, 1.0, (100, 225, 40), lineType=cv2.LINE_AA)
+    return frame
+
+  def save_frame(self, tag):
+    t = time.strftime('%Y%m%d-%H%M%S')
+    frame = self.frame
+    frame = self.add_overlay(frame)
+    cv2.imwrite('{}/t_{}-cam_{}-{}-ea_{}-ex_{}-bri_{}.jpg'.format(OUT_DIR, t, self.cam_num, tag, self.auto_exposure, self.exposure, self.brightness), frame)
 
   @property
   def hist_borders(self):
@@ -154,6 +177,10 @@ class Camera():
   def gframe(self):
     return cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
   
+  @property
+  def oframe(self):
+    return self.add_overlay(self.frame)
+
   @property
   def frame(self):
     if self.output_scaling == 1:
@@ -186,7 +213,7 @@ class Camera():
       return self.cap.get(cv2.CAP_PROP_BRIGHTNESS)
     else:
       self.b_diff = v - self.brightness
-      logging.debug('CAM{}-Setting Brightness: {}'.format(self.cam_num, v))
+      self.debug('Setting Brightness: {}'.format(v))
       self.cap.set(cv2.CAP_PROP_BRIGHTNESS, v)
       if v <= -64 or v >= 20:
         self.balancing_brightness = False
@@ -196,7 +223,7 @@ class Camera():
       return self.cap.get(cv2.CAP_PROP_EXPOSURE)
     elif self.auto_exposure:
       self.auto_exposure = False
-    logging.debug('CAM{}-Setting Exposure: {}'.format(self.cam_num, v))
+    self.debug('Setting Exposure: {}'.format(v))
     self.cap.set(cv2.CAP_PROP_EXPOSURE, v)
 
   def auto_exposure(self, v=None):
@@ -205,7 +232,7 @@ class Camera():
       return True if ae == 3 else False
     else:
       ae = 3 if v else 1
-      logging.debug('CAM{}-Setting Auto Exposure: {}'.format(self.cam_num, v))
+      self.debug('Setting Auto Exposure: {}'.format(v))
       self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, ae)
 
   cframe = property(cframe, cframe)
@@ -242,7 +269,7 @@ def record_all(capture_res=720, scaling=0.5):
   out = video_out_writer(out_w*2, out_h*2, fps)
   try:
     for cam in cams:
-      cam.capture_thread.start()
+      cam.calibrated_capture_thread.start()
     out_start_time = last_frame_time = time.time()
     frame_time = 1.0 / fps
     while True:
