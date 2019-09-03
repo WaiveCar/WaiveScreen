@@ -195,7 +195,15 @@ async def browser(request):
     if args[0] == '@':
       playlist = []
       for user in args.split(','):
-        playlist.append(lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(user[1:]), only_filename=True))
+
+        user = user.strip()
+
+        if user[0] == '@':
+          insta = user[1:]
+        else:
+          insta = user
+
+        playlist.append(lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(insta), only_filename=True, announce=insta))
 
       payload = json.dumps({'action': 'playnow', 'args': playlist})
     
