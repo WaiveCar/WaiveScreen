@@ -499,14 +499,10 @@ def asset_cache(check, only_filename=False):
   res = []
   for asset in check['asset']:
     # checksum name (#188)
-    checksum_name = "{}/{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest())
-    legacy_name = "{}/{}".format(path, quote(asset.split('/')[-1]))
+    ext = asset[asset.rfind('.'):]
+    checksum_name = "{}/{}{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest(), ext)
 
     logging.info("Checking {}".format(checksum_name))
-    # Added Sept 2019. Remove probably somewhere around Dec 2019
-    if os.path.exists(legacy_name):
-      os.rename(legacy_name, checksum_name)
-
     if (not os.path.exists(checksum_name)) or os.path.getsize(checksum_name) == 0:
       r = requests.get(asset, allow_redirects=True)
       logging.info("caching resource")
