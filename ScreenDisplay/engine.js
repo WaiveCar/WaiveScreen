@@ -145,7 +145,7 @@ var Engine = function(opts){
     return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
   }
 
-  function trigger(what, data) {
+  function event(what, data) {
     //console.log('>> trigger ' + what);
     _res.data[what] = data;
     if(_res.listeners[what]) {
@@ -564,6 +564,7 @@ var Engine = function(opts){
     // If we are at the end then our next function should be to
     // choose the next job.
     if(_current.position === _current.assetList.length) {
+      event('jobEnded', _current);
       return nextJob();
     } 
 
@@ -711,7 +712,7 @@ var Engine = function(opts){
       get('/default', function(res) {
         _fallback = makeJob(res.data.campaign);
         _res.system = res.data.system;
-        trigger('system', _res.system);
+        event('system', _res.system);
         _timeout(function() {
           setFallback(false, true);
         }, 3 * 60 * 1000, 'setFallback');
@@ -758,7 +759,7 @@ var Engine = function(opts){
         asset.duration = 17;
       });
       job.active = true;
-      job.duration = 17;
+      job.duration = 17 * job.assetList.length;
 
       // set it as the next thing to do
       setNextJob(job);

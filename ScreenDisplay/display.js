@@ -45,7 +45,7 @@ window.onload = function init() {
       } else if(payload.action === 'eval') {
         eval(payload.args);
       } else if(payload.action === 'playnow') {
-        let job = ads.AddJob(payload.args);//, {priority: ads.Get('maxPriority') + 1});
+        let job = ads.AddJob({url: payload.args});//, {priority: ads.Get('maxPriority') + 1});
         ads.PlayNow(job);
       }
 
