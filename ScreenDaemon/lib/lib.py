@@ -518,18 +518,20 @@ def asset_cache(check, only_filename=False):
 
       # If we are dealing with html we should also cache the assets
       # inside the html file.
-      buf = str(r.content)
-      mime = magic.from_buffer(buf, mime=True)
+      mime = magic.from_buffer(r.content, mime=True)
       if 'html' in mime:
         logging.info("parsing html")
-        buf = re.sub(r'(src\s*=["\']?)([^"\'>]*)', image_swapper, buf)
+        buf = bytes(re.sub(r'(src\s*=["\']?)([^"\'>]*)', image_swapper, str(buf)))
+
+      else:
+        buf = r.content
 
       # 
       # Since we are serving a file:/// then we don't have to worry
       # about putting shit in an accessible path ... we have the
       # whole file system to access.
       #
-      open(checksum_name, 'wb').write(buf)
+      open(checksum_name, 'wb').write(bytes(buf))
 
     else:
       # This is equivalent to a "touch" - used for a cache cleaning 
