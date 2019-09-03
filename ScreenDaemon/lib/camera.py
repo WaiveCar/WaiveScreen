@@ -31,6 +31,7 @@ class Camera():
   AE_SETTLE_SECS = 1.5
   ME_SETTLE_SECS = 0.2
   BRIGHTNESS_SECS = 0.1
+  CALIBRATION_SECS = 3.0
 
   def __init__(self, cam_num, capture_res=720, output_scaling=1.0):
     device = '/dev/video{}'.format(cam_num)
@@ -47,13 +48,15 @@ class Camera():
     self.saturation = self.DEFAULT_SATURATION
     self.frame_num = 0
     self.disabled = False
-    self.capture_thread = threading.Thread(target=self.capture_loop)
-    self.calibration_thread = threading.Thread(target=self.calibrate_and_exit)
-    self.cframe_lock = threading.Lock()
+    self.capturing = False
+    self.hist = None
+    self.e_val = 0
     self.blank_frame = np.zeros([int(self.out_h), int(self.out_w), 3], np.uint8)
     self._cframe = self.blank_frame
-    self.e_val = 0
-    self.hist = None
+    self.cframe_lock = threading.Lock()
+    self.capture_thread = threading.Thread(target=self.capture_loop)
+    self.calibrated_capture_thread = threading.Thread(target=self.calibrated_capture)
+    self.calibrate_and_exit_thread = threading.Thread(target=self.calibrate_and_exit)
 
   def capture_loop(self):
     self.capturing = True
@@ -65,6 +68,19 @@ class Camera():
         self.capturing = False
       self.frame_num += 1
       logging.debug('CAM_{} Frame: {} @ +{:.4f}'.format(self.cam_num, self.frame_num, time.time() - self.capture_start_time))
+
+  def calibrated_capture(self):
+    self.e_val = 0
+    if not self.capturing:
+      self.capture_thread.start()
+    while self.capturing:
+      time.sleep(self.CALIBRATION_SECS)
+      self.brightness_balance()
+      self.evaluate_exposure()
+      if self.e_val < -10:
+        self.auto_exposure = True
+      elif self.e_val > 10:
+        self.exposure = 0
 
   def calibrate_and_exit(self):
     self.capture_thread.start()
@@ -169,6 +185,7 @@ class Camera():
     if v is None:
       return self.cap.get(cv2.CAP_PROP_BRIGHTNESS)
     else:
+      self.b_diff = v - self.brightness
       logging.debug('CAM{}-Setting Brightness: {}'.format(self.cam_num, v))
       self.cap.set(cv2.CAP_PROP_BRIGHTNESS, v)
       if v <= -64 or v >= 20:
@@ -203,9 +220,9 @@ def calibrate_cameras():
   for cam_num in CAM_NUMS:
     cams.append(Camera(cam_num))
   for cam in cams:
-    cam.calibration_thread.start()
+    cam.calibrate_and_exit_thread.start()
   for cam in cams:
-    cam.calibration_thread.join()
+    cam.calibrate_and_exit_thread.join()
 
 def video_out_writer(w, h, fps, codec='mp4v', cam_num='all'):
   t = time.strftime('%Y%m%d-%H%M%S')

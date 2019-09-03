@@ -733,4 +733,11 @@ def get_timezone():
 
 def get_wifi_location():
   return wifi_location()
-  
+
+def calibrate_cameras():
+  try:
+    from . import camera
+    camera.calibrate_cameras()
+  except Exception as ex:
+    logging.error('Failed to calibrate cameras with error: {}'.format(ex))
+
