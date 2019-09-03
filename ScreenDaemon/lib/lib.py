@@ -519,7 +519,7 @@ def asset_cache(check, only_filename=False):
       mime = magic.from_buffer(r.content, mime=True)
       if 'html' in mime:
         logging.info("parsing html")
-        buf = bytes(re.sub(r'(src\s*=["\']?)([^"\'>]*)', image_swapper, str(buf)))
+        buf = bytes(re.sub(r'(src\s*=["\']?)([^"\'>]*)', image_swapper, str(r.content)))
 
       else:
         buf = r.content
