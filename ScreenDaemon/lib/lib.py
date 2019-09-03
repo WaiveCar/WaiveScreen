@@ -49,6 +49,7 @@ NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
 DISPLAY = os.environ.get('DISPLAY')
 BRANCH = os.environ.get('BRANCH')
+CACHE = os.environ.get('CACHE') or '/var/cache/assets'
 SERVER_URL = "http://{}/api".format(os.environ.get('SERVER') or 'waivescreen.com')
 
 GPS_DEVICE_ACCURACY = 5.0 # Assumed, but not verified
@@ -491,7 +492,7 @@ def asset_cache(check, only_filename=False):
   if type(check) is str:
     check = { 'asset': [check] }
 
-  path = "/var/cache/assets"
+  path = CACHE
   if not os.path.exists(path):
     os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(path))
     os.system('/usr/bin/sudo /bin/chmod 0777 {}'.format(path))
