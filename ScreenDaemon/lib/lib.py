@@ -487,6 +487,9 @@ def image_swapper(match):
 def asset_cache(check, only_filename=False):
   import magic
   # Now we have the campaign in the database, yay us I guess
+  if type(check) is str:
+    check = { 'asset': [check] }
+
   path = "/var/cache/assets"
   if not os.path.exists(path):
     os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(path))
@@ -499,18 +502,21 @@ def asset_cache(check, only_filename=False):
     checksum_name = "{}/{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest())
     legacy_name = "{}/{}".format(path, quote(asset.split('/')[-1]))
 
+    logging.info("Checking {}".format(checksum_name))
     # Added Sept 2019. Remove probably somewhere around Dec 2019
     if os.path.exists(legacy_name):
       os.rename(legacy_name, checksum_name)
 
     if (not os.path.exists(checksum_name)) or os.path.getsize(checksum_name) == 0:
       r = requests.get(asset, allow_redirects=True)
+      logging.info("caching resource")
 
       # If we are dealing with html we should also cache the assets
       # inside the html file.
-      buf = r.content
+      buf = str(r.content)
       mime = magic.from_buffer(buf, mime=True)
       if 'html' in mime:
+        logging.info("parsing html")
         buf = re.sub(r'(src\s*=["\']?)([^"\'>]*)', image_swapper, buf)
 
       # 
