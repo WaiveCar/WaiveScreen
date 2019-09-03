@@ -1,6 +1,4 @@
 dopath("cfg_debian")
---META="Mod1+"
---ALTMETA=""
 
 ioncore.set{
     -- Maximum delay between clicks in milliseconds to be considered a
@@ -37,10 +35,4 @@ dopath("cfg_defaults")
 
 -- Load configuration of the Notion 'core'. Most bindings are here.
 dopath("cfg_notioncore")
-
--- Load some kludges to make apps behave better.
---dopath("cfg_kludges")
-
--- Define some layouts. 
---dopath("cfg_layouts")
-
+dopath("bookmarks")
