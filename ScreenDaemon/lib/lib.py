@@ -502,9 +502,10 @@ def asset_cache(check, only_filename=False):
     # This will also truncate things after a ?, such as
     # image.jpg?uniqid=123...
     ext = ''
-    parts = re.search('(\.\w+)', asset)
+    parts = re.search('(\.\w+)', asset.split('/')[-1])
     if parts:
       ext = parts.group(1)
+      logging.warning("extension: {}, file: {}, part: {}".format(ext, asset, asset.split('/')[-1]))
 
     else:
       logging.warning("No extension found for {}".format(asset))
