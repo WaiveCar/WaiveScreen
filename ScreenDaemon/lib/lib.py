@@ -481,6 +481,7 @@ def get_number():
 
 def image_swapper(match):
   url = match.group(2)
+  logging.warning("Found image: {}".format(url))
   checksum_name = asset_cache(url, only_filename=True)
   return "{}{}".format(match.group(1), checksum_name)
 
@@ -562,7 +563,7 @@ def asset_cache(check, only_filename=False):
       import shutil
       happybrowser = "{}.html".format(checksum_name)
       if not os.path.exists(happybrowser):
-        shutil.copyfile(checksum_name, happybrowser)
+        os.symlink(checksum_name, happybrowser)
 
       checksum_name = happybrowser
       duration = 150
