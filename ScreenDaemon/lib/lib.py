@@ -651,7 +651,7 @@ def ping():
 
   except Exception as ex:
     _pinglock.release()
-    logging.warning("ping issue {}".format(ex)) 
+    logging.exception("ping issue: {}".format(ex)) 
 
     return False
 
