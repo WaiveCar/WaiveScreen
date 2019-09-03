@@ -482,9 +482,12 @@ def get_number():
 
 def image_swapper(match):
   url = match.group(2)
-  logging.warning("Found image: {}".format(url))
-  checksum_name = asset_cache(url, only_filename=True)
-  return "{}{}".format(match.group(1), checksum_name)
+  if url:
+    logging.warning("Found image: {}".format(url))
+    checksum_name = asset_cache(url, only_filename=True)
+    return "{}{}".format(match.group(1), checksum_name)
+
+  return ""
 
 def asset_cache(check, only_filename=False, announce=False):
   import magic
