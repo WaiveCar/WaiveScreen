@@ -82,10 +82,6 @@ libqmi-utils
 # needed for modem stuff
 policykit-1
 
-# camera calibration
-python3-opencv
-python3-matplotlib
-
 xosd-bin
 unattended-upgrades
 
