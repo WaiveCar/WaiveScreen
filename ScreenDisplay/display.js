@@ -1,4 +1,4 @@
-function showSms(what) {
+function showText(what) {
   sms.innerHTML = what;
   sms.style.animationName = 'smsslide';
 
@@ -40,11 +40,11 @@ window.onload = function init() {
 
       if(payload.action === 'engine') {
         ads[payload.args.func](payload.args.params);
-      }
-      if(payload.action === 'eval') {
+      } else if(payload.action === 'text') {
+        showText(payload.args);
+      } else if(payload.action === 'eval') {
         eval(payload.args);
-      }
-      if(payload.action === 'playnow') {
+      } else if(payload.action === 'playnow') {
         let job = ads.AddJob(payload.args);//, {priority: ads.Get('maxPriority') + 1});
         ads.PlayNow(job);
       }
