@@ -86,6 +86,7 @@ selfie() {
   local opts=''
   local num=0
 
+  pycall calibrate_cameras
   for i in $( seq 0 2 6 ); do
     $SUDO $FFMPEG -f v4l2 -video_size 1280x720 -i /dev/video$i -vframes 1 $CACHE/$now-$i.jpg 
   done
