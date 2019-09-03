@@ -195,7 +195,7 @@ async def browser(request):
     if args[0] == '@':
       args = lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(args[1:]), only_filename=True)
     
-    if "http" in args or lib.CACHE in args::
+    if "http" in args or lib.CACHE in args:
       payload = json.dumps({'action': 'playnow', 'args': args})
 
     else:
