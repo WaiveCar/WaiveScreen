@@ -505,17 +505,14 @@ def asset_cache(check, only_filename=False):
     parts = re.search('(\.\w+)', asset.split('/')[-1])
     if parts:
       ext = parts.group(1)
-      logging.warning("extension: {}, file: {}, part: {}".format(ext, asset, asset.split('/')[-1]))
 
     else:
       logging.warning("No extension found for {}".format(asset))
 
     checksum_name = "{}/{}{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest(), ext)
 
-    logging.info("Checking {}".format(checksum_name))
     if (not os.path.exists(checksum_name)) or os.path.getsize(checksum_name) == 0:
       r = requests.get(asset, allow_redirects=True)
-      logging.info("caching resource")
 
       # If we are dealing with html we should also cache the assets
       # inside the html file.
