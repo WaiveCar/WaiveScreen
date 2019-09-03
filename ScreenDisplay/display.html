@@ -25,12 +25,14 @@
       padding: 1vw;
       max-width: 90vw;
       border-radius: 2vw;
+      transform: translateY(-36vw);
       animation: 5s 1;
       animation-fill-mode: forwards;
     }
     @keyframes smsslide {
       0% { transform: translateY(-36vw); opacity: 0 }
-      10%, 90%{ transform: translateY(0); opacity: 1 }
+      15%, 85% { transform: translateY(0); opacity: 0 }
+      20%, 80% { opacity: 1 }
       100% { transform: translateY(36vw); opacity: 0 }
     }
     </style>

@@ -1,7 +1,18 @@
+function showSms(what) {
+  sms.innerHTML = what;
+  sms.style.animationName = 'smsslide';
+
+  setTimeout(function() {
+    sms.style.animationName = 'none';
+  }, 5100);
+}
+
 window.onload = function init() {
   self.ads = Engine({
     server: 'http://localhost:4096/'
   });
+
+  self.sms = document.getElementById('sms');
 
   ads.on('system', function(data) {
     document.getElementsByClassName('info')[0].innerHTML = [data.number.slice(-7), data.uuid.slice(0,5)].join(' ');
