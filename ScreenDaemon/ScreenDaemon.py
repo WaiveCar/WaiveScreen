@@ -203,7 +203,7 @@ async def browser(request):
         else:
           insta = user
 
-        playlist.append(lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(insta), only_filename=True, announce=insta))
+        playlist.append(lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(insta), only_filename=True, announce="@{}".format(insta)))
 
       payload = json.dumps({'action': 'playnow', 'args': playlist})
     
