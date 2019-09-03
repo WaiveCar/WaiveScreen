@@ -438,6 +438,7 @@ def kv_set(key, value = None, bootcount = None):
         run('insert into kv (key, value) values(?, ?)', (key, value))
 
       elif res[0] != str(value):
+        logging.warning(json.dumps([key, value]))
         run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
 
       if bootcount:
