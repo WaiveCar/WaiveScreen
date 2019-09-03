@@ -37,6 +37,7 @@ class Camera():
     device = '/dev/video{}'.format(cam_num)
     self.cap = cv2.VideoCapture(device, apiPreference=cv2.CAP_V4L2)
     self.cam_num = cam_num
+    self.disabled = False
     self.output_scaling = output_scaling
     self.cap_w, self.cap_h = CAPTURE_RESOLUTIONS[capture_res]
     self.out_w = int(self.cap_w * output_scaling)
@@ -47,7 +48,6 @@ class Camera():
     self.brightness = self.DEFAULT_BRIGHTNESS
     self.saturation = self.DEFAULT_SATURATION
     self.frame_num = 0
-    self.disabled = False
     self.capturing = False
     self.hist = None
     self.e_val = 0
@@ -215,7 +215,7 @@ class Camera():
       self.b_diff = v - self.brightness
       self.debug('Setting Brightness: {}'.format(v))
       self.cap.set(cv2.CAP_PROP_BRIGHTNESS, v)
-      if v <= -64 or v >= 20:
+      if v <= -64 or v >= 20 or self.disabled:
         self.balancing_brightness = False
 
   def exposure(self, v=None):
