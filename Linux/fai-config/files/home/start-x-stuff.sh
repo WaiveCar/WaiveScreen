@@ -2,6 +2,9 @@
 
 . lib.sh
 
+# The keyboard disabler
+[[ $BRANCH == "release" ]] && sudo rmmod usbhid
+
 export DISPLAY=$1
 
 # Force a UUID update if needed
@@ -32,6 +35,13 @@ disk_monitor
 # cause any problems
 #
 NOMODEM=1 pycall arduino.set_autobright
+
+#
+# We need to wait a bit (see above) for the 
+# usb to "settle" since it doesn't register
+# when first starting X
+#
+[[ $BRANCH == "release" && -e /dev/sdb1 ]] && local_disk /dev/sdb1 noupgrade
 
 #
 # This delay is rather important because the

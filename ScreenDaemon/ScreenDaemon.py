@@ -1,14 +1,15 @@
 #!/usr/bin/python3
 
-from flask import Flask, request, Response, jsonify
-from flask_cors import CORS
+from aiohttp import web
+import aiohttp_cors
+import aiohttp
 import json
 import urllib
 import lib.lib as lib
 import lib.db as db
 import lib.arduino as arduino
 import logging
-import pprint
+from pprint import pprint
 import traceback
 import os
 import datetime
@@ -19,12 +20,13 @@ from pdb import set_trace as bp
 
 
 _reading = False
-app = Flask(__name__)
+_conn = None
+_app = web.Application()
+_cors = aiohttp_cors.setup(_app)
 DTFORMAT = '%Y-%m-%d %H:%M:%S.%f'
-CORS(app)
 
 def res(what):
-  return jsonify(what)
+  return web.json_response(what)
 
 def success(what):
   return res({ 'res': True, 'data': what })
@@ -35,8 +37,7 @@ def failure(what):
 def get_location():
   return lib.sensor_last()
 
-@app.route('/default')
-def default():
+async def default(request):
   attempted_ping = False
   campaign = False
   campaign_id = db.kv_get('default')
@@ -67,8 +68,7 @@ def default():
     'system': db.kv_get()
   })
 
-@app.route('/sow', methods=['GET', 'POST'])
-def next_ad(work = False):
+async def sow(request):
   """
   For now we are going to do a stupid pass-through to the remote server
   and then just kinda return stuff. Keeping track of our own things 
@@ -97,7 +97,7 @@ def next_ad(work = False):
     power = 'awake' if dpms == 'On' else 'sleep'
 
     if power != 'sleep':
-      jobList = request.get_json()
+      jobList = json.loads(await request.text())
 
       if type(jobList) is not list:
         jobList = [ jobList ]
@@ -183,6 +183,46 @@ def next_ad(work = False):
   else:
     return failure('Error: {}'.format(err))
 
+async def browser(request):
+  global _conn
+  text = await request.text()
+
+  parts = text.split(',')
+  func = parts[0]
+  args = ','.join(parts[1:])
+
+  if _conn is not None:
+    if args[0] == '@':
+      args = lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(args[1:]), only_filename=True)
+    
+    if "http" in args or lib.CACHE in args:
+      payload = json.dumps({'action': 'playnow', 'args': args})
+
+    else:
+      payload = json.dumps({'action': 'text', 'args': args})
+
+    await _conn.send_str(payload)
+
+    return success(payload)
+  return failure("No connection")
+
+async def ws(request):
+  global _conn
+  ws = web.WebSocketResponse()
+  await ws.prepare(request)
+
+  _conn = ws
+  async for msg in ws:
+    if msg.type == aiohttp.WSMsgType.TEXT:
+      if msg.data == 'close':
+        await ws.close()
+
+    elif msg.type == aiohttp.WSMsgType.ERROR:
+      print('ws connection closed with exception %s' %
+        ws.exception())
+
+  return ws
+
 if __name__ == '__main__':
 
   db.kv_set('version', lib.VERSION)
@@ -192,4 +232,25 @@ if __name__ == '__main__':
     sys.exit(0)
 
   db.incr('runcount')
-  app.run(port=4096)
+
+  # There may be a more reasonable way to do this but as of now
+  # this is the simplest code I could write. 
+  for method, route, handler in [
+      ['GET', '/default', default], 
+      ['POST', '/browser', browser], 
+      ['GET', '/ws', ws],
+      ['POST', '/sow', sow]]:
+
+    # Apparently you need to define a "resource"
+    resource = _cors.add(_app.router.add_resource(route))
+    route = _cors.add(
+      # Then add a route here, as opposed to the regular way
+      # as documented in aiohttp
+      resource.add_route(method, handler), {
+        # localhost sends over its origin as the string "null". This
+        # was determined through tcpdump
+        'null': aiohttp_cors.ResourceOptions(expose_headers="*", allow_headers="*")
+      }
+    )
+
+  web.run_app(_app, port=4096)

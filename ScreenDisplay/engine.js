@@ -61,22 +61,79 @@ var Engine = function(opts){
       data: {},
 
       _debug: false,
-      _current: false
 
     }, opts || {}),
     _last = false,
+    _uniq = 0,
+    _last_uniq = false,
+    _last_container = false,
+    _current = false,
     _playCount = 0,
-    _id = 0,
+    _job_id = 0,
     _downweight = 0.7,
     _firstRun = false,
     _nop = function(){},
     _isNetUp = true,
     _start = new Date(),
     _stHandleMap = {},
+    _key = '-xA8tAY4YSBmn2RTQqnnXXw',
     _last_sow = [+_start, +_start],
+    _ = {
+      maxPriority: 0,
+    },
     _fallback;
 
   _res.target.ratio = _res.target.width / _res.target.height;
+
+  var Timeline = {
+    _data: [], 
+    // This goes forward and loops around ... *almost*
+    // it depends on what happens, see below for more
+    // excitement.
+    position: 0,
+
+    // This returns if thre is a next slot without looping.
+    hasNext: function() {
+      return Timeline._data.length > Timeline.position;
+    },
+
+    // This is different, this will loop.
+    move: function(amount) {
+      // the classic trick for negatives
+      Timeline.position = (Timeline._data.length + Timeline.position + amount) % Timeline._data.length
+      return Timeline._data[Timeline.position];
+    },
+
+    bath: function() {
+      // scrub scrub, clean up time.
+      // This is actually only 3 hours of 7 second ads
+      // which we cut back to 2. This should be fine 
+      if(Timeline._data.length > 1500 && Timeline.position > 500) {
+        // this moves our pointer
+        Timeline._data = Timeline._data.slice(500);
+        // so we move our pointer.
+        Timeline.position -= 500;
+      }
+    },
+
+    add: function(job) {
+      // Just adds it to the current place.
+      Timeline._data.splice(Timeline.position, 0, job);
+      Timeline.bath();
+    },
+
+    mostRecent: function() {
+      if(Timeline._data.length > 1) {
+        var last = (Timeline.position + Timeline._data.length - 1) % Timeline._data.length;
+        return Timeline._data[last];
+      }
+    },
+
+    addAtEnd: function(job) {
+      Timeline._data.push(job);
+      Timeline.bath();
+    },
+  };
 
   function cleanTimeout(what, dur) {
     return setTimeout(function() { 
@@ -89,7 +146,7 @@ var Engine = function(opts){
   }
 
   function trigger(what, data) {
-    console.log('>> trigger ' + what);
+    //console.log('>> trigger ' + what);
     _res.data[what] = data;
     if(_res.listeners[what]) {
       _res.listeners[what].forEach(function(cb) {
@@ -165,11 +222,6 @@ var Engine = function(opts){
     src.src = asset.url;
     asset.dom = vid;
 
-    // This was to avoid some weird flashing bug
-    // before the videos loaded. However, there
-    // should be a way to do overrides. So this
-    // solution is insufficient
-    asset.duration = asset.duration || 100;
     asset.cycles = 1;
     asset.run = function(noreset) {
       if(!noreset) {
@@ -210,7 +262,11 @@ var Engine = function(opts){
       // of a threshold which means that it requires a numerical value
       // whose existence is clearly mysteriously absent. Ah, we'll
       // figure it out later, like most things in life.
-      asset.duration = Math.min(vid.duration, asset.duration);
+      if(!asset.duration) {
+        asset.duration = vid.duration;
+      } else {
+        asset.duration = Math.min(vid.duration, asset.duration);
+      }
       asset.active = true;
       // if a video is really short then we force loop it.
       if(asset.duration < 0.8) {
@@ -271,7 +327,7 @@ var Engine = function(opts){
     // assets included in this job.
     obj.duration = 0;
 
-    obj.id = obj.id || (_id ++);
+    obj.id = obj.id || (_job_id ++);
     //
     // We don't want to manually set this.
     // obj.goal
@@ -289,7 +345,7 @@ var Engine = function(opts){
       if(isString(asset)) {
         asset = {url: asset};
       }
-      container.classList.add('container');
+      container.classList.add('container' + _key);
 
       if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
         asset = image(asset, obj);
@@ -298,6 +354,7 @@ var Engine = function(opts){
       } else {
         asset = iframe(asset, obj);
       }
+      asset.uniq = _uniq++;
       asset.container = container;
       asset.container.appendChild(asset.dom);
       return asset;
@@ -426,6 +483,7 @@ var Engine = function(opts){
 
     post('sow', payload, function(res) {
       if(res.res) {
+        _res.db = {};
         res.data.forEach(function(row) {
           addJob(row);
         })
@@ -435,6 +493,25 @@ var Engine = function(opts){
       }
     });
   }
+
+
+  function _timeout(fn, timeout, name, override) {
+    var handle = override ? fn : setTimeout(fn, timeout);
+    _stHandleMap[name] = {
+      ts: new Date(), 
+      handle: handle,
+      timeout: timeout
+    };
+    return handle;
+  }
+
+  function clearAllTimeouts() {
+    for(var name in _stHandleMap) {
+      clearTimeout(_stHandleMap[name].handle);
+      delete _stHandleMap[name];
+    }
+  }
+
 
   function setAssetDuration(what, index, amount) {
     // Update the total aggregate to reflect the new amount
@@ -448,20 +525,18 @@ var Engine = function(opts){
   // to do that work ... when nextAsset has no more assets for a particular job
   // it calls nextJob again.
   function nextAsset() {
+    var prev;
+    var doFade = false;
+
     if(_res.pause) {
       return;
     }
-    var prev;
-    var doFade = false;
     // If we are at the start of our job
     // then this is the only valid time we'd
     // be transitioning away from a previous job
     //
-    // so this is is when we do the reporting.
-    if(_res.debug) {
-      console.log(_res._current);
-    }
-    if(_res._current.position === 0) {
+    // so this is when we do the reporting.
+    if(_current.position === 0) {
 
       // If this exists then it'd be set at the last asset
       // previous job.
@@ -479,7 +554,7 @@ var Engine = function(opts){
           completed_seconds: _last.completed_seconds
         });
 
-        if(_last.job_id !== _res._current.job_id) {
+        if(_last.job_id !== _current.job_id) {
           // we reset the downweight -- it can come back
           _last.downweight = 1;
         }
@@ -488,116 +563,58 @@ var Engine = function(opts){
 
     // If we are at the end then our next function should be to
     // choose the next job.
-    if(_res._current.position === _res._current.assetList.length) {
-      if(!_res.pause) {
-        nextJob();
-      }
-    } else { 
-      // ****
-      // This ordering is important! 
-      // ****
-      //
-      // We may (quite likely) will
-      // have (_last === _res._current) most of the time. This means
-      // that we are "passing the torch" of the .shown pointer,
-      // being more than likely just one.
-      if(_last && (_res._current.position > 0 || _last.id !== _res._current.id)) {
-        //console.log(_res._current.position, _last.id, _res._current.id);
-        _last.shown.container.classList.add('fadeOut');
+    if(_current.position === _current.assetList.length) {
+      return nextJob();
+    } 
 
-        // This is NEEDED because by the time 
-        // we come back around, _last.shown will be 
-        // redefined.
-        prev = _last.shown;
+    _current.shown = _current.assetList[_current.position];
+    _current.shown.run();
+    _res.container.appendChild(_current.shown.container);
+
+    if(_current.shown.uniq != _last_uniq) {
+      // This is NEEDED because by the time 
+      // we come back around, _last.shown will be 
+      // redefined.
+      prev = _last_container;
+      if(prev) {
+        prev.classList.add('fadeOut' + _key);
         _timeout(function() {
-          prev.container.classList.remove('fadeOut');
-          if(prev.container.parentNode) {
-            prev.container.parentNode.removeChild(prev.container);
-          } else {
-            console.log("Not able to remove container");
-          }
+          prev.classList.remove('fadeOut' + _key);
+          _res.container.removeChild(prev);
         }, _res.fadeMs, 'assetFade');
         doFade = true;
       }
-
-
-      // Now we're ready to show the asset. This is done through
-      // a pointer as follows:
-      _res._current.shown = _res._current.assetList[_res._current.position];
-      //console.log(new Date() - _start, _playCount, "Job #" + _res._current.id, "Asset #" + _res._current.position, "Duration " + _res._current.shown.duration, _res._current.shown.url, _res._current.shown.cycles);
-      
-      if(doFade) {
-        _res._current.shown.container.classList.add('fadeIn');
-      } else {
-        _res._current.shown.container.classList.remove('fadeIn');
-      }
-      _res._current.shown.run();
-      _res.container.appendChild(_res._current.shown.container);
-
-      // And we increment the position to show the next asset
-      // when we come back around
-      _res._current.position ++;
-
-      // These will EQUAL each other EXCEPT when the position is 0.
-      _last = _res._current;
-
-      if(!_res.pause) {
-        _timeout(nextAsset, _res._current.shown.duration * 1000 - _res.fadeMs / 2, 'nextAsset');
-      }
     }
+    _last_uniq = _current.shown.uniq;
+    _last_container = _current.shown.container;
+
+    _current.shown.container.classList[doFade ? 'add' : 'remove' ]('fadeIn' + _key );
+
+    //console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
+
+    // These will EQUAL each other EXCEPT when the position is 0.
+    _last = _current;
+
+    // And we increment the position to show the next asset
+    // when we come back around
+    _current.position ++;
+
+    _timeout(nextAsset, Math.max(_current.shown.duration * 1000 - _res.fadeMs / 2, 1000), 'nextAsset');
   }
 
-  var Timeline = {
-    _data: [], 
-    // This goes forward and loops around ... *almost*
-    // it depends on what happens, see below for more
-    // excitement.
-    position: 0,
-
-    // This returns if thre is a next slot without looping.
-    hasNext: function() {
-     return Timeline._data.length > Timeline.position;
-    },
-
-    // This is different, this will loop.
-    move: function(amount) {
-      // the classic trick for negatives
-      Timeline.position = (Timeline._data.length + Timeline.position + amount) % Timeline._data.length
-      return Timeline._data[Timeline.position];
-    },
-
-    bath: function() {
-      // scrub scrub, clean up time.
-      // This is actually only 3 hours of 7 second ads
-      // which we cut back to 2. This should be fine 
-      if(Timeline._data.length > 1500 && Timeline.position > 500) {
-        // this moves our pointer
-        Timeline._data = Timeline._data.slice(500);
-        // so we move our pointer.
-        Timeline.position -= 500;
-      }
-    },
-
-    add: function(job) {
-      // Just adds it to the current place.
-      Timeline._data.splice(Timeline.position, 0, job);
-      Timeline.bath();
-    },
-
-    addAtEnd: function(job) {
-      Timeline._data.push(job);
-      Timeline.bath();
-    },
-  }
-
-  function _timeout(fn, timeout,  name, override) {
-    var handle = override ? fn : setTimeout(fn, timeout);
-    _stHandleMap[name] = {
-      ts: new Date(), 
-      handle: handle,
-      timeout: timeout
-    };
-    return handle
+  function setNextJob(job) {
+    _current = job;
+    _current.downweight *= _downweight;
+    _current.position = 0;
+    //console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration);
+    //
+    // We set the start time of the showing of this ad
+    // so we can cross-correlate the gps from the ScreenDaemon
+    // when we send it off upstream.  We use the system time
+    // which is consistent between the two time stores.
+    _last_sow[0] = _last_sow[1];
+    _last_sow[1] = +new Date();
+    return job;
   }
 
   function nextJob() {
@@ -626,9 +643,11 @@ var Engine = function(opts){
     //
     // In this model, a fair dice would show ad 2 80% of the time.
     //
+
+    _.maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0));
+
     var 
-      maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0)),
-      activeList = Object.values(_res.db).filter(row => row.active),// && row.filter === maxPriority),
+      activeList = Object.values(_res.db).filter(row => row.active && row.duration),// && row.filter === maxPriority),
 
       // Here's the range of numbers, calculated by looking at all the remaining things we have to satisfy
       range = activeList.reduce( (a,b) => a + b.downweight * (b.goal - b.completed_seconds), 0),
@@ -638,11 +657,11 @@ var Engine = function(opts){
       breakpoint = Math.random() * range;
 
     if(_res._debug) {
-      console.log({active: activeList, range: range, priority: maxPriority});
+      console.log({active: activeList, db:_res.db, range: range, priority: _.maxPriority});
     }
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
-      if(_res.server) {
+      if(_res.server &&_res._debug) {
         console.log("Range < 0, using fallback");
       }
 
@@ -652,51 +671,37 @@ var Engine = function(opts){
         return _timeout(nextJob, 1500, 'nextJob');
       }
 
-      _res._current = _fallback;
+      setNextJob(_fallback);
 
       if(!_firstRun && activeList.length == 0 && Object.values(_res.db) > 1) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
-        setAssetDuration(_res._current, 0, 0.2);
+        setAssetDuration(_current, 0, 0.2);
       } else {
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
         // this out to some significant number
-        setAssetDuration(_res._current, 0, _res.duration);
+        setAssetDuration(_current, 0, _res.duration);
       }
 
     } else {
       // This is needed for the end case.
       _firstRun = true;
-      _res._current = false;
+      _current = false;
       for(row of activeList) {
 
         accum += row.downweight * (row.goal - row.completed_seconds);
         if(accum > breakpoint) {
-          _res._current = row;
+          setNextJob(row);
           break;
         }
       }
-      if(!_res._current) {
-        _res._current = row;
+      if(!_current) {
+        setNextJob(row);
       }
     }
 
-    // 
-    // By this time we know what we plan on showing.
-    //
-    _res._current.downweight *= _downweight;
-    _res._current.position = 0;
-    //console.log(new Date() - _start, "Showing " + _res._current.id + " duration " + _res._current.duration);
-    //
-    // We set the start time of the showing of this ad
-    // so we can cross-correlate the gps from the ScreenDaemon
-    // when we send it off upstream.  We use the system time
-    // which is consistent between the two time stores.
-    _last_sow[0] = _last_sow[1];
-    _last_sow[1] = +new Date();
-
-    _timeout(nextAsset, 2000, 'nextAsset');
+    nextAsset();
   }
 
   function setFallback (url, force) {
@@ -727,21 +732,45 @@ var Engine = function(opts){
   // variables start with lower case letters,
   // function start with upper case.
   return merge(_res, {
+    Get: function(what) {
+      return _[what];
+    },
     Play: function() {
       _res.pause = false;
-      _res._current.shown.dom.play();
+      _current.shown.dom.play();
       nextAsset();
     },
     Pause: function() {
       _res.pause = !_res.pause;
       console.log("Clearing setTimeout for the next asset");
       clearTimeout(_stHandleMap.nextAsset.handle);
-      _res._current.shown.dom.pause();
+      _current.shown.dom.pause();
+    },
+
+    PlayNow: function(job) {
+      // clear any pending timers
+      clearAllTimeouts();
+
+      // we set all the assets to active in the job regardless
+      // of whether they've loaded or not.
+      job.assetList.forEach(function(asset) {
+        asset.active = true;
+        asset.duration = 17;
+      });
+      job.active = true;
+      job.duration = 17;
+
+      // set it as the next thing to do
+      setNextJob(job);
+
+      // and display it.
+      nextAsset();
     },
 
     Debug: function() {
+      _res._debug = true;
       return {
-        current: _res._current,
+        current: _current,
         last: _last,
         isNetUp: _isNetUp 
       };
@@ -751,7 +780,7 @@ var Engine = function(opts){
       }
     },
     Start: function(){
-      _res.container.classList.add('engine');
+      _res.container.classList.add('engine' + _key);
       // Try to initially contact the server
       sow();
       _res.SetFallback();
@@ -769,12 +798,19 @@ var Engine = function(opts){
       }
     },
     SetFallback: setFallback,
-    AddJob: function(obj) {
+    AddJob: function(obj, params) {
       var res = {};
+
+      if(isString(obj)) {
+        obj = {url: obj};
+      }
+
       obj = makeJob(obj);
-      _res.db[obj.id] = obj;
+      // this allows someone to set say,
+      // the priority to a high number
+      _res.db[obj.id] = merge(obj, params);
       res[obj.id] = obj;
-      return res;
+      return obj;
     }
   });
 };

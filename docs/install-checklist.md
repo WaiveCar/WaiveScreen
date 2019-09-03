@@ -8,4 +8,5 @@ When doing physical installs this is my checklist:
 * 1 Phillips screw driver (J0/J1 is fine). My fave is the [ORIA Precision Screwdriver Kit](https://www.amazon.com/ORIA-Screwdriver-Professional-Precision-Smartphone/dp/B01E16J6RQ)
 * 1 Key to unlock the screens (Any small pokey tool or narrow flat thing will work, but the proper key is always best)
 * Extra SIM cards
+* Extra antennae
 * Extra SATA DOMs 

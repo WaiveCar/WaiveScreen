@@ -6,7 +6,7 @@
 // version 1.1 (12.5.18) updated to account for current sense board options.
 
 
-#include<Wire.h>
+#include <Wire.h>
 #include <math.h>
 int fanPin = 9;    // fans connected to digital pin 5
 int backlightPin = 6; // screen adj connected to digital pin 6 through amp
@@ -21,6 +21,8 @@ bool cpu_on = true;
 bool ide_debug = false;
 int j=0; // used to make sure the fan comes back on.
 int backlight_adjust = 1; // used to lower current draw at low voltage to save the battery
+
+const char VERSION[]="$VERSION$";
 
 // Sensor name is MPU-6050
 // Declaring Relevant Register names 
@@ -88,6 +90,17 @@ typedef union accel_t_gyro_union
     int16_t z_gyro;
   } value;
 };
+
+typedef struct packet_ {
+  const uint16_t header = 0xffff;
+  uint8_t   type;
+  uint16_t  len;
+} packet;
+
+typedef struct packet_response_ {
+  packet header;
+  uint8_t payload[128] = {0};
+} packet_response;
 
 // Use the following global variables and access functions to help store the overall
 // rotation angle of the sensor
@@ -345,6 +358,18 @@ void loop() {
     }
   }   
 
+  // Response:
+  //
+  //  | HH HH | TT | LL LL | [ data ] |
+  //
+  //  HH is the header, currently 0xFFFF
+  //  TT is the type of response
+  //  LLLL is an LSB length in bytes after the LLLL
+  //  
+  //  This allows for us to "future proof" the
+  //  system up to 256 types of packets up to
+  //  64K long in data payloads (not that we'd need it)
+  //
   // set the fan and backlight each loop
   analogWrite(backlightPin, backlightValue);
   analogWrite(fanPin, fanSpeed);
@@ -431,13 +456,33 @@ void loop() {
   }
   if(ide_debug) Serial.print("two");
   // check if there has been serial signal received (min 2 bytes)
+  //
+  // **********
+  // INPUT LOOP
+  // **********
+  //
   if(Serial.available() > 1) {
+
     delay(10);
+
     // selector is first byte, options: 0x01 for fanSpeed, 0x10 for display brightness (generic)
     int selector = Serial.read();
+
     // setting is second byte, max 255
     int setting = Serial.read();
     delay(10);
+
+    //
+    // 01 01  Autofan
+    // 01 xx  Fan to xx
+    //
+    // 02 NA  Get version
+    //
+    // 10 xx  Backlight to xx
+    // 11 ff  Cpu on
+    // 11 00  Cpu off
+    //
+
     if (selector == 0x01){
       // set fan speed, min viable setting for 8x fans is 102/255 (40% duty cycle)
       if (setting == 0x01){
@@ -457,13 +502,13 @@ void loop() {
         digitalWrite(resetPin, HIGH);
         delay (100);
         digitalWrite(resetPin, LOW);
-        cpu_on == true;
+        cpu_on = true;
         
       } else if (setting == 0x00 & cpu_on == true) {
         digitalWrite(resetPin, HIGH);
         delay (100);
         digitalWrite(resetPin, LOW);
-        cpu_on == false;
+        cpu_on = false;
       }
       
     }
