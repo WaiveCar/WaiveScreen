@@ -486,7 +486,7 @@ def image_swapper(match):
   checksum_name = asset_cache(url, only_filename=True)
   return "{}{}".format(match.group(1), checksum_name)
 
-def asset_cache(check, only_filename=False):
+def asset_cache(check, only_filename=False, announce=False):
   import magic
   # Now we have the campaign in the database, yay us I guess
   if type(check) is str:
@@ -514,6 +514,9 @@ def asset_cache(check, only_filename=False):
     checksum_name = "{}/{}{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest(), ext)
 
     if (not os.path.exists(checksum_name)) or os.path.getsize(checksum_name) == 0:
+      if announce:
+        dcall("_bigtext", "Getting {}".format(announce))
+
       r = requests.get(asset, allow_redirects=True)
 
       # If we are dealing with html we should also cache the assets
