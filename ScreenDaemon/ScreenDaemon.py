@@ -238,7 +238,7 @@ async def ws(request):
 if __name__ == '__main__':
 
   db.kv_set('version', lib.VERSION)
-  lib.set_logger('/var/log/screen/screendaemon.log')
+  lib.set_logger('{}/screendaemon.log'.format(lib.LOG))
 
   if lib.SANITYCHECK:
     sys.exit(0)
