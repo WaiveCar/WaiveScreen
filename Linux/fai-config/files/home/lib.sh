@@ -686,8 +686,16 @@ upgrade_scripts() {
     # we do this every time because some upgrades
     # may call for a reboot
     _log "[upgrade-script] $script"
+
+    # #153, well the start of it at least.
+    add_history upgrade,$script
     kv_set last_upgrade,$script
-    $SUDO $script upgradepost
+
+    local res=$($SUDO $script upgradepost)
+    # If we survived the script and it didn't reboot
+    # then we have the pleasure of storing the output
+    # of the script, hopefully without issue.
+    sqlite $DB "update history set extra='$res' where value='$script' and key='$upgrade'"
   done
 }
 
