@@ -5,6 +5,7 @@ import threading
 import traceback
 import cv2
 import numpy as np
+from . import lib
 
 OUT_DIR='/home/adorno/camera_recordings'
 try:
@@ -13,7 +14,8 @@ except:
   pass
 
 log_format = '%(asctime)s %(levelname)s:%(message)s'
-logging.basicConfig(filename='{}/camera.log'.format(OUT_DIR), format=log_format, level=logging.DEBUG)
+level = logging.DEBUG if lib.DEBUG else logging.INFO
+logging.basicConfig(filename='{}/camera.log'.format(lib.LOG), format=log_format, level=level)
 #logging.basicConfig(format=log_format, level=logging.DEBUG)
 
 CAM_NUMS = ( 0, 2, 4, 6 )

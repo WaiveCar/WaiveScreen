@@ -49,6 +49,7 @@ NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
 DISPLAY = os.environ.get('DISPLAY')
 BRANCH = os.environ.get('BRANCH')
+LOG = os.environ.get('LOG')
 CACHE = os.environ.get('CACHE') or '/var/cache/assets'
 SERVER_URL = "http://{}/api".format(os.environ.get('SERVER') or 'waivescreen.com')
 
