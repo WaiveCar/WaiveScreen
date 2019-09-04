@@ -8,3 +8,5 @@ pyudev==0.21.0
 astral==1.10.1
 timezonefinder==4.1.0
 python-magic==0.4.15
+opencv-python-headless==4.1.0.25
+numpy
