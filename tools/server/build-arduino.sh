@@ -1,10 +1,20 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-BuildDir=$DIR/../../ScreenDaemon/build
-[[ -e $BuildDir ]] && sudo rm -fr $BuildDir
-mkdir -p $BuildDir
+BASE=$DIR/../../ScreenDaemon/
+SRC=$BASE/sensors
+MIDDLE=$BASE/middle
+BUILD=$BASE/build
 
-arduino --pref build.path=$BuildDir --verify $DIR/../../ScreenDaemon/sensors/sensors.ino
-cp -puv $BuildDir/sensors.ino.hex $DIR/../client
+for i in $MIDDLE $BUILD; do
+  [[ -e $i ]] && sudo rm -fr $i
+  mkdir -p $i
+done
+
+# This is a pre-processor step where we inject things into the code base ... in this case
+# our version
+version=$(git describe)-$(git rev-parse --abbrev-ref HEAD)
+sed "s/__VERSION__/$version/g" $SRC/sensors.ino > $MIDDLE/sensors.ino
+arduino --pref build.path=$BUILD --verify $MIDDLE/sensors.ino
+cp -puv $BUILD/sensors.ino.hex $DIR/../client
 
