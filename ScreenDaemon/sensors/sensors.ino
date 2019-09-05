@@ -22,7 +22,7 @@ bool ide_debug = false;
 int j=0; // used to make sure the fan comes back on.
 int backlight_adjust = 1; // used to lower current draw at low voltage to save the battery
 
-const char VERSION[]="$VERSION$";
+const char VERSION[]="__VERSION__";
 
 // Sensor name is MPU-6050
 // Declaring Relevant Register names 
@@ -91,6 +91,11 @@ typedef union accel_t_gyro_union
   } value;
 };
 
+//
+// Doing this as a "correct and proper" packet
+// system is more work then I want to do right 
+// now
+/*
 typedef struct packet_ {
   const uint16_t header = 0xffff;
   uint8_t   type;
@@ -101,6 +106,7 @@ typedef struct packet_response_ {
   packet header;
   uint8_t payload[128] = {0};
 } packet_response;
+*/
 
 // Use the following global variables and access functions to help store the overall
 // rotation angle of the sensor
@@ -266,6 +272,12 @@ void setup() {
 
 }
 
+void header(uint8_t type, uint16_t length) {
+  Serial.write(0xFF);
+  Serial.write(type);
+  Serial.write(length);
+}
+
 void loop() {
   if(ide_debug) Serial.print("four");
   int error;
@@ -377,6 +389,7 @@ void loop() {
   if(!ide_debug) {
     // Send the data over the serial bus
     // write header (1B), generic 0xFF 
+    // header(0x01);
     Serial.write(0xFF);
     // write time
     Serial.write(timeBuf, 4);
