@@ -42,7 +42,7 @@ if lib.DEBUG:
   lib.set_logger(sys.stderr)
 else:
   #lib.set_logger(sys.stderr)
-  lib.set_logger('/var/log/screen/sensordaemon.log')
+  lib.set_logger('{}/sensordaemon.log'.format(lib.LOG))
 
 def is_significant(totest):
   global last_reading, ix, ix_hb
