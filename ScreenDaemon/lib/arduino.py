@@ -277,6 +277,52 @@ def test(parts='fbs'):
     _log.debug('do_awake()')
     do_awake()
 
+_parserMap = {}
+def get_packet(arduino):
+  global _parserMap
+  kindMap = [
+    'sensor', # 00
+    'version' # 01
+  ]
+
+  kindNum, length = struct.unpack('<BH', arduino.read(3))
+  kind = kindMap[kindNum]
+
+  if kind == 'version':
+    return (kind, struct.unpack("<{}s".format(length), arduion.read(length)))
+
+  if kind == 'sensor':
+    if 'sensor' not in _parserMap:
+      # refer to https://docs.python.org/2/library/struct.html
+      FORMAT = (
+        ( 'time_ms', 'I' ),
+        ( 'current_read', 'H'),
+        ( 'voltage', 'H' ),
+        ( 'therm_read', 'H'),
+        ( 'accel_x', 'H' ),
+        ( 'accel_y', 'H' ),
+        ( 'accel_z', 'H' ),
+        ( 'gyro_x', 'H' ), 
+        ( 'gyro_y', 'H' ),
+        ( 'gyro_z', 'H' ),
+        ( 'fan_speed', 'B' ),
+        ( 'backlight_value', 'B' )
+      )
+
+      names = ' '.join([x[0] for x in FORMAT])
+      format = ">{}".format(''.join([x[1] for x in FORMAT])
+      from collections import namedtuple
+      size = struct.calcsize(format)
+      _parserMap['sensor'] = (
+        'struct': struct.Struct(format),
+        'packet': namedtuple('sensor', names), 
+        'size': size
+      }
+
+  p = _parserMap[what]
+
+  return (kind, p['packet']._make(p['struct'].unpack(arduino.read(p['size'])))
+
 def arduino_read():
   _arduino = get_arduino(False)
 
