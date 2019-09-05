@@ -10,9 +10,11 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 dir=$HOME/usb
+now=$(date +%Y%m%d%H%M)
 branch=$(git rev-parse --abbrev-ref HEAD)
 version=$(git describe)-$branch
-file=$HOME/installs/WaiveScreen-$(date +%Y%m%d%H%M)-$version.iso
+repo=$HOME/installs/
+file=$repo/WaiveScreen-$now-$version.iso
 backup=/home/chris/backup-test
 
 die() {
@@ -23,6 +25,8 @@ die() {
 ddcmd() {
   local size=$(stat -c %s $1)
   echo "sudo dd if=$1 of=$2 bs=1M"
+  [[ -z "$NODISK" ]] && echo $now $(udevadm info --name=$disk | grep SERIAL=) $1 >> $repo/log.txt
+  exit
 }
 
 if [[ -z "$NODISK" ]]; then
@@ -30,6 +34,11 @@ if [[ -z "$NODISK" ]]; then
   disk=$1
   [[ -b $disk ]] || die "Woops, $disk isn't a disk"
   [[ $(stat -c %T $disk) -eq 11 ]] && die "Woah, $disk is a PARTITION. I need the whole disk."
+  if [[ $# -gt 1 ]]; then
+    query=$(udevadm info --name=$disk | grep SERIAL=)
+    grep "$query" $repo/log.txt
+    exit
+  fi
 
   sudo fdisk -l $disk
 
