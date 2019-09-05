@@ -49,6 +49,7 @@ NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
 DISPLAY = os.environ.get('DISPLAY')
 BRANCH = os.environ.get('BRANCH')
+LOG = os.environ.get('LOG') or '/var/log/screen'
 CACHE = os.environ.get('CACHE') or '/var/cache/assets'
 SERVER_URL = "http://{}/api".format(os.environ.get('SERVER') or 'waivescreen.com')
 
@@ -835,4 +836,11 @@ def get_timezone():
 
 def get_wifi_location():
   return wifi_location()
-  
+
+def calibrate_cameras():
+  try:
+    from . import camera
+    camera.calibrate_cameras()
+  except Exception as ex:
+    logging.error('Failed to calibrate cameras with error: {}'.format(ex))
+
