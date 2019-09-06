@@ -8,14 +8,25 @@
 
 #include <Wire.h>
 #include <math.h>
-int fanPin = 9;    // fans connected to digital pin 5
-int backlightPin = 6; // screen adj connected to digital pin 6 through amp
-int resetPin = 4;
-int fanSpeed = 150, backlightValue = 220;
+
+int 
+  // fans connected to digital pin 5
+  fanPin = 9,
+
+  // screen adj connected to digital pin 6 through amp
+  backlightPin = 6,
+
+  resetPin = 4,
+
+  fanSpeed = 150, 
+
+  backlightValue = 0.35 * 255;
+
 #define THERMISTORPIN A0
 #define VOLTAGEPIN A1
 #define CURRENTPIN A2
 #define NUMSAMPLES 100
+
 bool autofan = true;
 bool cpu_on = true;
 bool ide_debug = false;
@@ -381,7 +392,8 @@ void loop() {
   //  This allows for us to "future proof" the
   //  system up to 256 types of packets up to
   //  64K long in data payloads (not that we'd need it)
-  //
+  
+
   // set the fan and backlight each loop
   analogWrite(backlightPin, backlightValue);
   analogWrite(fanPin, fanSpeed);
