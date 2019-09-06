@@ -30,6 +30,8 @@ int
 bool autofan = true;
 bool cpu_on = true;
 bool ide_debug = false;
+bool seenCpu = false;
+
 int j=0; // used to make sure the fan comes back on.
 int backlight_adjust = 1; // used to lower current draw at low voltage to save the battery
 
@@ -497,18 +499,24 @@ void loop() {
     int setting = Serial.read();
     delay(10);
 
+    // Packets coming from the CPU are 2 bytes. 
+    // Here's the format:
     //
     // 01 01  Autofan
     // 01 xx  Fan to xx
     //
-    // 02 NA  Get version
+    // 02 NA  Get version (#187)
+    // 03 NA  Boot ping (#192)
     //
     // 10 xx  Backlight to xx
     // 11 ff  Cpu on
     // 11 00  Cpu off
     //
 
-    if (selector == 0x01){
+    if (selector == 0x03) {
+      cpu_on = true;
+    } 
+    else if (selector == 0x01) {
       // set fan speed, min viable setting for 8x fans is 102/255 (40% duty cycle)
       if (setting == 0x01){
         autofan = true;
@@ -517,11 +525,11 @@ void loop() {
         autofan = false;
       }
     }
-    else if (selector == 0x10){
+    else if (selector == 0x10) {
       // set display brightness
       backlightValue = setting;
     }
-    else if (selector == 0x11){
+    else if (selector == 0x11) {
       // turn cpu on or off
       if (setting == 0xff & cpu_on == false) {
         digitalWrite(resetPin, HIGH);
