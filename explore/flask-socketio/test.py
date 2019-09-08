@@ -11,12 +11,12 @@ qData = Queue()
 
 @app.route('/hi')
 def index():
-  #qData.put([1,2,3], block=False)
+  socketio.emit('ab', [1,23])
   return ""
 
 @socketio.on('connect')
 def connect():
-  emit("connected", [1,2,3])
+  emit("ab", [1,2,3])
 
 @socketio.on('disconnect')
 def test_disconnect():
