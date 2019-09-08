@@ -279,6 +279,7 @@ def test(parts='fbs'):
 
 _parserMap = {}
 def get_packet(arduino):
+  from collections import namedtuple
   global _parserMap
   kindMap = [
     'sensor', # 00
@@ -310,10 +311,9 @@ def get_packet(arduino):
       )
 
       names = ' '.join([x[0] for x in FORMAT])
-      format = ">{}".format(''.join([x[1] for x in FORMAT])
-      from collections import namedtuple
+      format = ">{}".format(''.join([x[1] for x in FORMAT]))
       size = struct.calcsize(format)
-      _parserMap['sensor'] = (
+      _parserMap['sensor'] = {
         'struct': struct.Struct(format),
         'packet': namedtuple('sensor', names), 
         'size': size
@@ -321,7 +321,7 @@ def get_packet(arduino):
 
   p = _parserMap[what]
 
-  return (kind, p['packet']._make(p['struct'].unpack(arduino.read(p['size'])))
+  return (kind, p['packet']._make(p['struct'].unpack(arduino.read(p['size']))))
 
 def arduino_read():
   _arduino = get_arduino(False)
