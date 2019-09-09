@@ -2,6 +2,10 @@
 
 from aiohttp import web
 import aiohttp_cors
+
+from flask_socketio import SocketIO, emit
+from flask import Flask
+
 import aiohttp
 import json
 import urllib
@@ -37,7 +41,8 @@ def failure(what):
 def get_location():
   return lib.sensor_last()
 
-async def default(request):
+@app.route('/default'):)
+def default():
   attempted_ping = False
   campaign = False
   campaign_id = db.kv_get('default')
@@ -68,7 +73,8 @@ async def default(request):
     'system': db.kv_get()
   })
 
-async def sow(request):
+@app.route('/sow')
+def sow(request):
   """
   For now we are going to do a stupid pass-through to the remote server
   and then just kinda return stuff. Keeping track of our own things 
@@ -183,7 +189,8 @@ async def sow(request):
   else:
     return failure('Error: {}'.format(err))
 
-async def browser(request):
+@app.route('/browser')
+def browser(request):
   global _conn
   text = await request.text()
 
@@ -217,23 +224,6 @@ async def browser(request):
 
     return success(payload)
   return failure("No connection")
-
-async def ws(request):
-  global _conn
-  ws = web.WebSocketResponse()
-  await ws.prepare(request)
-
-  _conn = ws
-  async for msg in ws:
-    if msg.type == aiohttp.WSMsgType.TEXT:
-      if msg.data == 'close':
-        await ws.close()
-
-    elif msg.type == aiohttp.WSMsgType.ERROR:
-      print('ws connection closed with exception %s' %
-        ws.exception())
-
-  return ws
 
 if __name__ == '__main__':
 
