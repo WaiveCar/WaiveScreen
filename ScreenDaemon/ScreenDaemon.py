@@ -196,39 +196,39 @@ def sow(work = False):
 
 @_app.route('/browser')
 def browser(request):
-  global _conn
   text = request.get_text()
 
   parts = text.split(',')
   func = parts[0]
   args = ','.join(parts[1:])
 
-  if _conn is not None:
-    if args[0] == '@':
-      playlist = []
-      for user in args.split(','):
+  # todo: connection detection
+  #if _conn is not None:
+  if args[0] == '@':
+    playlist = []
+    for user in args.split(','):
 
-        user = user.strip()
+      user = user.strip()
 
-        if user[0] == '@':
-          insta = user[1:]
-        else:
-          insta = user
+      if user[0] == '@':
+        insta = user[1:]
+      else:
+        insta = user
 
-        playlist.append(lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(insta), only_filename=True, announce="@{}".format(insta)))
+      playlist.append(lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(insta), only_filename=True, announce="@{}".format(insta)))
 
-      payload = json.dumps({'action': 'playnow', 'args': playlist})
-    
-    elif "http" in args:
-      payload = json.dumps({'action': 'playnow', 'args': args})
+    payload = {'action': 'playnow', 'args': playlist}
+  
+  elif "http" in args:
+    payload = {'action': 'playnow', 'args': args}
 
-    else:
-      payload = json.dumps({'action': 'text', 'args': args})
+  else:
+    payload = {'action': 'text', 'args': args}
 
-    await _conn.send_str(payload)
+  socketio.emit(payload['action'], payload['args'])
+  #await _conn.send_str(json.dumps(payload))
 
-    return success(payload)
-  return failure("No connection")
+  return success(payload)
 
 if __name__ == '__main__':
 
