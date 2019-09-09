@@ -20,6 +20,24 @@ window.onload = function init() {
 
   ads.Start();
 
+  function doIO() {
+    var socket = io('http://localhost:5000');
+
+    socket.on('engine', function(data) {
+      ads[data.func](data.params);
+    });
+    socket.on('text', function(data) {
+      showText(data.args);
+    });
+    socket.on('eval', function(data) {
+      eval(data.args);
+    });
+    socket.on('playnow', function(data) {
+      let job = ads.AddJob({url: data.args});
+      ads.PlayNow(job);
+    });
+  }
+
   function doWs() { 
     var ws = new WebSocket("ws://127.0.0.1:4096/ws");
 
@@ -52,5 +70,5 @@ window.onload = function init() {
       console.log(event.data);
     };
   }
-  doWs();
+  doIO();
 }
