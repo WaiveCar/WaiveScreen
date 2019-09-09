@@ -1,19 +1,20 @@
 #!/usr/bin/python3
 
-from aiohttp import web
-import aiohttp_cors
+#from aiohttp import web
+#import aiohttp_cors
+#import aiohttp
 
 from flask_socketio import SocketIO, emit
-from flask import Flask
+from flask import Flask, request, Response, jsonify
+from flask_cors import CORS
 
-import aiohttp
 import json
 import urllib
 import lib.lib as lib
 import lib.db as db
 import lib.arduino as arduino
 import logging
-from pprint import pprint
+import pprint
 import traceback
 import os
 import datetime
@@ -24,13 +25,16 @@ from pdb import set_trace as bp
 
 
 _reading = False
-_conn = None
-_app = web.Application()
-_cors = aiohttp_cors.setup(_app)
+_app = Flask(__name__)
+#_conn = None
+#_app = web.Application()
+#_cors = aiohttp_cors.setup(_app)
+CORS(_app)
 DTFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 def res(what):
-  return web.json_response(what)
+  return jsonify(what)
+  #return web.json_response(what)
 
 def success(what):
   return res({ 'res': True, 'data': what })
@@ -41,7 +45,7 @@ def failure(what):
 def get_location():
   return lib.sensor_last()
 
-@app.route('/default'):)
+@_app.route('/default')
 def default():
   attempted_ping = False
   campaign = False
@@ -73,8 +77,8 @@ def default():
     'system': db.kv_get()
   })
 
-@app.route('/sow')
-def sow(request):
+@_app.route('/sow', methods=['GET', 'POST'])
+def sow(work = False):
   """
   For now we are going to do a stupid pass-through to the remote server
   and then just kinda return stuff. Keeping track of our own things 
@@ -103,7 +107,8 @@ def sow(request):
     power = 'awake' if dpms == 'On' else 'sleep'
 
     if power != 'sleep':
-      jobList = json.loads(await request.text())
+      jobList = request.get_json()
+      # jobList = json.loads(await request.text())
 
       if type(jobList) is not list:
         jobList = [ jobList ]
@@ -189,10 +194,10 @@ def sow(request):
   else:
     return failure('Error: {}'.format(err))
 
-@app.route('/browser')
+@_app.route('/browser')
 def browser(request):
   global _conn
-  text = await request.text()
+  text = request.get_text()
 
   parts = text.split(',')
   func = parts[0]
@@ -234,7 +239,9 @@ if __name__ == '__main__':
     sys.exit(0)
 
   db.incr('runcount')
+  _app.run(port=4096)
 
+  """
   # There may be a more reasonable way to do this but as of now
   # this is the simplest code I could write. 
   for method, route, handler in [
@@ -256,3 +263,4 @@ if __name__ == '__main__':
     )
 
   web.run_app(_app, port=4096)
+  """
