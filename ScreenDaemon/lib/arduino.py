@@ -233,6 +233,9 @@ def set_fanauto():
   _arduino.write(b'\x01\x01')
 
 
+def ping():
+  get_arduino().write(b'\x03\x00')
+
 def set_backlight(value):
   _arduino = get_arduino()
   if value <= 1: 

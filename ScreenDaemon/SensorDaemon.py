@@ -124,6 +124,9 @@ while True:
       logging.info("voltage {:.3f} current {:.3f} avg: {:.3f}".format(sensor['Voltage'], sensor['Current'], avg))
 
     if first:
+      # Tell the arduino that we are live.
+      arduino.ping()
+
       logging.info("Got first arduino read")
       first = False
       db.kv_set('arduino_seen', 1)
