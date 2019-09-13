@@ -7,7 +7,9 @@ PHP=7.3
 OWNER=www-data
 
 deps() {
-  sudo apt install -y apache2 curl zip unzip sqlite3 php$PHP php$PHP-xml php$PHP-sqlite3 php$PHP-mbstring php-curl php-intl
+  sudo apt install -y apache2 curl zip unzip sqlite3\
+    php$PHP php$PHP-xml php$PHP-sqlite3 php$PHP-mbstring php-curl php-intl\
+    mariadb-server mariadb-client
 }
 dirs() {
   sudo mkdir -p /var/db/waivescreen /var/states $DEST
