@@ -3,7 +3,7 @@
 . lib.sh
 
 # The keyboard disabler
-[[ $BRANCH == "release" ]] && sudo rmmod usbhid
+[[ $BRANCH == "release" ]] && sudo rmmod usbhid || sudo modprobe usbhid
 
 export DISPLAY=$1
 
