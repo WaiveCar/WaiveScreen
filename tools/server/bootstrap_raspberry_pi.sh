@@ -22,14 +22,16 @@ then
   echo "Unable to install the temp ssh key for access to the Raspberry Pi" && exit 1
 fi
 
-${SSH} "useradd -m -s /bin/bash -G sudo adorno && cp -a /root/.ssh /home/adorno/"
-${SSH} "apt install -y git sudo rsync && echo \"adorno ALL=NOPASSWD: ALL\" >> /etc/sudoers"
-${SCP} ${DIR}/../../Linux/fai-config/files/home/.ssh/{config,github} ${RPI}:/home/adorno/.ssh/
-${SSH} "chown -R adorno:adorno /home/adorno/.ssh && chmod 600 /home/adorno/.ssh/{config,github}"
+${SCP} ${DIR}/../../Linux/fai-config/files/home/.ssh/{config,github} ${RPI}:.ssh/
+${SSH} << EOF
+chmod 0600 .ssh/github
+dd if=/dev/zero of=/swapfile bs=1024 count=1048576
+chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+echo "/swapfile       none    swap sw 0 0" >> /etc/fstab
+apt update && apt dist-upgrade -y && apt install -y rsync fai-client git gpg sudo python3-pip
+git clone git@github.com:WaiveCar/WaiveScreen.git
+mkdir -p /srv/fai/config
+NONET=1 WaiveScreen/tools/server/syncer.sh pip
+fai -v -N -c DEBIAN -s file:///srv/fai/config softupdate
+EOF
 
-${SCP} ${DIR}/setup_raspberry_pi.sh ${RPI}:/tmp/
-${SSH} "chmod +x /tmp/setup_raspberry_pi.sh"
-ssh -i ${T_KEY} adorno@${1} "/tmp/setup_raspberry_pi.sh"
-
-
-#${SSH} "rm .ssh/authorized_keys && passwd -d root"
