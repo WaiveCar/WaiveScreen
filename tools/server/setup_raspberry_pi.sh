@@ -1,37 +1,37 @@
 #!/bin/bash
 
-function deb_fix {
-  if [[ -z "${1}" ]]
-  then
-    return 1
-  fi
-  SOURCE="${1}"
-  DIR="$(dirname ${SOURCE})"
-  sudo mv ${DIR} ${DIR}.tmp
-  sudo mv ${DIR}.tmp/DEBIAN ${DIR}
-  sudo rm -rf ${DIR}.tmp
-}
+if [[ -z "$1" ]]
+then
+  echo "You must provide an IP address or hostname of the Raspberry Pi" && exit 2
+fi
 
-cd /home/adorno
-git clone git@github.com:WaiveCar/WaiveScreen.git
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+T_DIR="$(mktemp -d)"
+T_KEY="${T_DIR}/temp"
+RPI="root@${1}"
+SSH="ssh -i ${T_KEY} ${RPI} "
+SCP="scp -i ${T_KEY} "
 
-sudo rsync -avP --chown root:root WaiveScreen/Linux/fai-config/files/etc/ /etc/
-for i in $(sudo find /etc/ -type f -name DEBIAN)
-do
-  deb_fix ${i}
-done
+ssh-keygen -q -N '' -f ${T_KEY}
 
-cp -vuTr --preserve=mode,timestamps WaiveScreen/Linux/fai-config/files/home /home/adorno
-chmod 0600 .ssh/KeyBounce .ssh/github .ssh/dev
-chown -R adorno:adorno .
-sudo mv .xinitrc /root/
+read -p "Please enter password 'raspberry' when prompted. [Press Enter to continue]"
+ssh-copy-id -f -i ${T_KEY}.pub ${RPI} 
 
-sudo dd if=/dev/zero of=/swapfile bs=1024 count=1048576
-sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+if ! ${SSH} echo "We\'re in"
+then
+  echo "Unable to install the temp ssh key for access to the Raspberry Pi" && exit 1
+fi
+
+${SCP} ${DIR}/../../Linux/fai-config/files/home/.ssh/{config,github} ${RPI}:.ssh/
+${SSH} << EOF
+chmod 0600 .ssh/github
+dd if=/dev/zero of=/swapfile bs=1024 count=1048576
+chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
 echo "/swapfile       none    swap sw 0 0" >> /etc/fstab
-
-sudo apt install -y $(sed 's/\(#.*$\)//g' WaiveScreen/Linux/fai-config/package_config/DEBIAN | egrep -v '^(P|$|grub-pc|grub-efi|linux-image-|memtest)' | tr '\n' ' ')
-sudo pip3 install -r WaiveScreen/ScreenDaemon/requirements.txt
-
-
+apt update && apt dist-upgrade -y && apt install -y rsync fai-client git gpg sudo python3-pip
+git clone git@github.com:WaiveCar/WaiveScreen.git
+mkdir -p /srv/fai/config
+NONET=1 WaiveScreen/tools/server/syncer.sh pip
+fai -v -N -c DEBIAN -s file:///srv/fai/config softupdate
+EOF
 
