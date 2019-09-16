@@ -100,6 +100,15 @@ $SCHEMA = [
     'source' => 'text'  // The url where to get things
   ],
 
+  'attribution' = [
+    'id'         => 'integer primary key autoincrement',
+    'screen_id'  => 'integer',
+    'type'       => 'text',    // such as wifi/plate, etc
+    'signal'     => 'integer', // optional, could be distance, RSSI
+    'mark'       => 'text',    // such as the 48-bit MAC address
+    'created_at' => 'datetime default current_timestamp',
+  ],
+
   //
   // consider: potentially create a second table for "staging" campaigns
   // that aren't active as opposed to relying on a boolean
