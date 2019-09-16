@@ -91,6 +91,15 @@ $SCHEMA = [
     'radius' => 'float default null'
   ],
 
+  'widget' => [
+    'id'     => 'integer primary key autoincrement',
+    'image'  => 'text', // url of logo or screenshot
+    'name'   => 'text', // what to call it
+    'type'   => 'text', // ticker or app
+    'topic'  => 'text', // optional, such as "weather"
+    'source' => 'text'  // The url where to get things
+  ],
+
   //
   // consider: potentially create a second table for "staging" campaigns
   // that aren't active as opposed to relying on a boolean
