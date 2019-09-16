@@ -687,7 +687,7 @@ def feature_detect():
     'modem'   : os.path.exists("/dev/cdc-wdm0") or os.path.exists('/dev/cdc-wdm1'),
     'arduino' : os.path.exists("/dev/ttyACM0"),
     'cameras' : int(len(videoList) / 2),
-    'screens' : {
+    'panels' : {
       'count': int(len(parts) / 4),
       'resolutions': resolution_list,
       'size': size_list 
