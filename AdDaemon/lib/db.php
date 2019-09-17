@@ -78,6 +78,7 @@ $SCHEMA = [
     'port'        => 'integer', 
     'active'      => 'boolean default true',
     'removed'     => 'boolean default false',
+    'is_fake'     => 'boolean default false',
     'features'    => 'text',
     'first_seen'  => 'datetime', 
     'last_task'   => 'integer default 0',
@@ -199,8 +200,10 @@ $SCHEMA = [
   //
   'campaign' => [
     'id'          => 'integer primary key autoincrement',
+    'name'        => 'text',
     'ref_id'      => 'text',
-    'client_id'     => 'integer',
+    'client_id'   => 'integer',
+    'user_id'     => 'integer', // The contact point in the client organization
     'order_id'    => 'integer',
     'asset'       => 'text not null',
     'duration_seconds' => 'integer',
@@ -231,6 +234,7 @@ $SCHEMA = [
     'active'      => 'boolean default false',
     'is_default'  => 'boolean default false',
     'priority'    => 'integer default 0',
+    'impression_count' => 'integer',
 
     'start_time'  => 'datetime default current_timestamp',
     'end_time'    => 'datetime'
