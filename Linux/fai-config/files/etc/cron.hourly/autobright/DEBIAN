@@ -7,6 +7,6 @@ $base/tools/client/sanity-check.sh
 $base/ScreenDaemon/dcall ping
 
 # Essentially any asset that hasn't shown in 3 days is purged.
-find -mtime +3 -type f /var/cache/assets -exec rm {} \;
+find /var/cache/assets -mtime +3 -type f -exec rm {} \;
 
 touch /tmp/last_cron
