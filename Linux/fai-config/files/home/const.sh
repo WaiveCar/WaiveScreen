@@ -18,6 +18,7 @@ export PATH=/usr/bin:/usr/sbin:$PATH:$DEST
 export ROOTHOME=/root
 export VID=/var/capture
 export SMSDIR=/var/log/sms 
+export NOMODEM=1
 
 [[ $USER != 'root' ]] && SUDO=/usr/bin/sudo
 

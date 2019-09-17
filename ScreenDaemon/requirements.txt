@@ -11,4 +11,5 @@ python-magic==0.4.15
 #opencv-python-headless==4.1.0.25
 #numpy
 Flask
+Flask-Cors
 Flask-SocketIO

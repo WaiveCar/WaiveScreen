@@ -39,6 +39,8 @@ mkdir -p /srv/fai/config
 sed -i '/^\(pandas\|opencv\|numpy\)/d' WaiveScreen/ScreenDaemon/requirements.txt
 NONET=1 WaiveScreen/tools/server/syncer.sh pip
 fai -v -N -c DEBIAN -s file:///srv/fai/config softupdate
+systemctl disable location-daemon hostapd isc-dhcp-server
+sed -i 's/cma=[0-9]\+M/cma=512M/g' /boot/firmware/cmdline.txt
 EOF
 
 # Cleanup after we're done

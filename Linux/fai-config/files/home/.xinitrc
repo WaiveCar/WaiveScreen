@@ -13,7 +13,7 @@ onebigscreen() {
   xrandr --output HDMI-2 --reflect xy
 }
 
-resize
+#resize
 
 WHO=adorno
 
