@@ -121,7 +121,7 @@ $SCHEMA = [
     'radius' => 'float default null'
   ],
 
-  'attribution' = [
+  'attribution' => [
     'id'         => 'integer primary key autoincrement',
     'screen_id'  => 'integer',
     'type'       => 'text',    // such as wifi/plate, etc
