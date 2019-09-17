@@ -4,8 +4,8 @@ export WHO=adorno
 export DEST=/home/$WHO
 export BASE=$DEST/WaiveScreen
 
-export SERVER=waivescreen.com
-export BRANCH=release
+export SERVER=staging.waivescreen.com
+export BRANCH=202-raspbian-install
 export CACHE=/var/cache/assets
 export DB=/var/db/config.db
 export DEV=$BASE.sshfs

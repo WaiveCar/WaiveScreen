@@ -3,7 +3,7 @@
 . lib.sh
 
 # The keyboard disabler
-[[ $BRANCH == "release" ]] && sudo rmmod usbhid || sudo modprobe usbhid
+#[[ $BRANCH == "release" ]] && sudo rmmod usbhid || sudo modprobe usbhid
 
 export DISPLAY=$1
 
@@ -24,24 +24,24 @@ _warn $(get_uuid) $version
 # have this fail when I move the host around.
 ssh-keygen -f "$DEST/.ssh/known_hosts" -R "reflect.waivescreen.com"
 
-sensor_daemon
+#sensor_daemon
 screen_daemon
 screen_display 
-disk_monitor
+#disk_monitor
 
 # 
 # This nomodem shouldn't be necessary
 # but we are putting it in here to not
 # cause any problems
 #
-NOMODEM=1 pycall arduino.set_autobright
+#NOMODEM=1 pycall arduino.set_autobright
 
 #
 # We need to wait a bit (see above) for the 
 # usb to "settle" since it doesn't register
 # when first starting X
 #
-[[ $BRANCH == "release" && -e /dev/sdb1 ]] && local_disk /dev/sdb1 noupgrade
+#[[ $BRANCH == "release" && -e /dev/sdb1 ]] && local_disk /dev/sdb1 noupgrade
 
 #
 # This delay is rather important because the
@@ -50,24 +50,24 @@ NOMODEM=1 pycall arduino.set_autobright
 # and running then it will break it and we 
 # need to start over.
 #
-sudo service ModemManager start &
-sleep 17
+#sudo service ModemManager start &
+#sleep 17
 
 # Putting this higher than the modem connect
 # is important. Otherwise we won't receive
 # our number
-text_loop &
+#text_loop &
 
 #
 # Get online first before anything in the 
 # stack spoils our beautiful virgin modem
 # (it gets confused very easily apparently)
 #
-modem_connect
-hotspot
+#modem_connect
+#hotspot
 
 pycall lib.ping
 ssh_hole
-sms_cleanup
+#sms_cleanup
 first_run
 upgrade_scripts
