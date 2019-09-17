@@ -62,9 +62,13 @@ $RULES = [
 //  have 0 or 1 template
 //  have 0 or more widgets
 //
-// campaigns
-//  have 1 client
-//  have 0 or 1 users (working for client) as the contact point
+// organizations
+//  have 1 or more users
+//  have 0 or more brands
+//
+// brands
+//  have 0 or more campaigns
+//
 // clients
 //  have 1 or more users
  
@@ -169,9 +173,15 @@ $SCHEMA = [
     'created_at'    => 'datetime default current_timestamp',
   ],
 
-  // A client is a collection of users who buy campaigns
-  'client' => [
+  'org' => [
     'id'         => 'integer primary key autoincrement',
+    'name'       => 'text',
+    'image'      => 'text',
+  ],
+
+  'brand' => [
+    'id'         => 'integer primary key autoincrement',
+    'org_id'     => 'integer',
     'name'       => 'text',
     'image'      => 'text',
     'balance'    => 'integer',
@@ -180,11 +190,14 @@ $SCHEMA = [
 
   'user' => [
     'id'         => 'integer primary key autoincrement',
-    'client_id'  => 'integer',
     'name'       => 'text',
+    'password'   => 'text',
     'image'      => 'text',
     'email'      => 'text',
     'title'      => 'text',
+    'org_id'     => 'integer',
+    'brand_id'   => 'integer',
+    'role'       => 'text', // either admin/manager/viewer
     'phone'      => 'text',
     'created_at' => 'datetime default current_timestamp',
   ],
@@ -208,8 +221,7 @@ $SCHEMA = [
     'id'          => 'integer primary key autoincrement',
     'name'        => 'text',
     'ref_id'      => 'text',
-    'client_id'   => 'integer',
-    'user_id'     => 'integer', // The contact point in the client organization
+    'brand_id'    => 'integer',
     'order_id'    => 'integer',
     'asset'       => 'text not null',
     'duration_seconds' => 'integer',
