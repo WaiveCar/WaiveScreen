@@ -35,6 +35,7 @@ $RULES = [
   ],
   'screen' => [
     'features' => $JSON,
+    'panels' => $JSON,
     'location' => $JSON
   ],
   'sensor_history' => [
@@ -61,6 +62,7 @@ $SCHEMA = [
     'phone'       => 'text',
     'car'         => 'text',
     'project'     => 'text',
+    'layout_id'   => 'integer',
     'model'       => 'text',
     'panels'      => 'text',
     'photo'       => 'text',
@@ -91,21 +93,92 @@ $SCHEMA = [
     'radius' => 'float default null'
   ],
 
-  'widget' => [
-    'id'     => 'integer primary key autoincrement',
-    'image'  => 'text', // url of logo or screenshot
-    'name'   => 'text', // what to call it
-    'type'   => 'text', // ticker or app
-    'topic'  => 'text', // optional, such as "weather"
-    'source' => 'text'  // The url where to get things
-  ],
-
   'attribution' = [
     'id'         => 'integer primary key autoincrement',
     'screen_id'  => 'integer',
     'type'       => 'text',    // such as wifi/plate, etc
     'signal'     => 'integer', // optional, could be distance, RSSI
     'mark'       => 'text',    // such as the 48-bit MAC address
+    'created_at' => 'datetime default current_timestamp',
+  ],
+
+  // 
+  // Screens 
+  //  have 0 or 1 preset
+  //
+  // presets 
+  //  have 0 or 1 layout
+  //  have 0 or 1 exclusive sets 
+  //  belong to many screens
+  //
+  // exclusive sets
+  //  have 0 or more campaigns to include
+  //  have 0 or more campaigns to exclude
+  //
+  // layouts
+  //  have 0 or 1 template
+  //  have 0 or more widgets
+  //
+  'preset' => [
+    'id'            => 'integer primary key autoincrement',
+    'name'          => 'text',
+    'exclusive_set' => 'integer',
+    'use_exchange'  => 'boolean', // for now whether that little check mark
+    'layout_id'     => 'integer', // is on or not.
+    'created_at'    => 'datetime default current_timestamp',
+  ],
+
+  'widget' => [
+    'id'     => 'integer primary key autoincrement',
+    'name'   => 'text', // what to call it
+    'image'  => 'text', // url of logo or screenshot
+    'type'   => 'text', // ticker or app
+    'topic'  => 'text', // optional, such as "weather"
+    'source' => 'text', // The url where to get things
+    'created_at' => 'datetime default current_timestamp',
+  ],
+
+  'layout' => [
+    'id'         => 'integer primary key autoincrement',
+    'name'       => 'text',
+    'image'      => 'text', // url of logo or screenshot
+    'template'   => 'text', // html file to use
+    'widgetmap'  => 'text', // json list of ids to map to the template
+    'created_at' => 'datetime default current_timestamp',
+  ],
+
+  'exclusive' => [
+    'id'          => 'integer primary key autoincrement',
+    'set'         => 'integer',
+    'whitelist'   => 'boolean', // if true then this is inclusive, if false 
+    'campaign_id' => 'integer'  // then we should leave it out.
+  ],
+    
+  // revenue historicals
+  'revenue_history' => [
+    'id'            => 'integer primary key autoincrement',
+    'screen_id'     => 'integer',
+    'revenue_total' => 'integer', // deltas can be manually computed for now
+    'created_at'    => 'datetime default current_timestamp',
+  ],
+
+  // A client is a collection of users who buy campaigns
+  'client' => [
+    'id'         => 'integer primary key autoincrement',
+    'name'       => 'text',
+    'image'      => 'text',
+    'balance'    => 'integer',
+    'created_at' => 'datetime default current_timestamp',
+  ],
+
+  'user' => [
+    'id'         => 'integer primary key autoincrement',
+    'client_id'  => 'integer',
+    'name'       => 'text',
+    'image'      => 'text',
+    'email'      => 'text',
+    'title'      => 'text',
+    'phone'      => 'text',
     'created_at' => 'datetime default current_timestamp',
   ],
 
@@ -127,6 +200,7 @@ $SCHEMA = [
   'campaign' => [
     'id'          => 'integer primary key autoincrement',
     'ref_id'      => 'text',
+    'client_id'     => 'integer',
     'order_id'    => 'integer',
     'asset'       => 'text not null',
     'duration_seconds' => 'integer',
