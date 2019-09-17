@@ -34,6 +34,7 @@ chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
 echo "/swapfile       none    swap sw 0 0" >> /etc/fstab
 apt update && apt dist-upgrade -y && apt install -y rsync fai-client git gpg sudo python3-pip
 git clone git@github.com:WaiveCar/WaiveScreen.git
+cd WaiveScreen && git checkout 202-raspbian-install && cd ..
 mkdir -p /srv/fai/config
 sed -i '/^\(pandas\|opencv\|numpy\)/d' WaiveScreen/ScreenDaemon/requirements.txt
 NONET=1 WaiveScreen/tools/server/syncer.sh pip
