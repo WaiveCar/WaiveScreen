@@ -45,6 +45,29 @@ $RULES = [
    ]
 ];
 
+// 
+// Screens 
+//  have 0 or 1 preset
+//
+// presets 
+//  have 0 or 1 layout
+//  have 0 or 1 exclusive sets 
+//  belong to many screens
+//
+// exclusive sets
+//  have 0 or more campaigns to include
+//  have 0 or more campaigns to exclude
+//
+// layouts
+//  have 0 or 1 template
+//  have 0 or more widgets
+//
+// campaigns
+//  have 1 client
+//  have 0 or 1 users (working for client) as the contact point
+// clients
+//  have 1 or more users
+ 
 $SCHEMA = [
   'screen' => [
     'id'          => 'integer primary key autoincrement', 
@@ -103,23 +126,6 @@ $SCHEMA = [
     'created_at' => 'datetime default current_timestamp',
   ],
 
-  // 
-  // Screens 
-  //  have 0 or 1 preset
-  //
-  // presets 
-  //  have 0 or 1 layout
-  //  have 0 or 1 exclusive sets 
-  //  belong to many screens
-  //
-  // exclusive sets
-  //  have 0 or more campaigns to include
-  //  have 0 or more campaigns to exclude
-  //
-  // layouts
-  //  have 0 or 1 template
-  //  have 0 or more widgets
-  //
   'preset' => [
     'id'            => 'integer primary key autoincrement',
     'name'          => 'text',
