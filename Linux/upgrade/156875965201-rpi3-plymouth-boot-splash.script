@@ -5,7 +5,7 @@ upgradepost() {
   pkill xinit
   apt install -y plymouth
   cd /home/adorno/WaiveScreen/Linux/fai-config/files
-  for i in etc/default/raspi3-firmware etc/kernel/postinst.d/z50-raspi3-firmware usr/share/plymouth/themes/adcast
+  for i in etc/default/raspi3-firmware etc/kernel/postinst.d/z50-raspi3-firmware usr/share/plymouth/themes/adcast/
   do
     rsync -avP ./${i} /${i}
   done
