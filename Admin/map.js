@@ -1,13 +1,15 @@
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
+import {GeoJSON} from 'ol/format';
 import {Draw, Modify, Snap} from 'ol/interaction.js';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
 import {OSM, Vector as VectorSource} from 'ol/source.js';
-import {Circle as CircleStyle, Fill, Stroke, Style} from 'ol/style.js';
+import {Circle as CircleStyle, Icon, Fill, Stroke, Style} from 'ol/style.js';
 import {fromLonLat, toLonLat} from 'ol/proj';
 import Feature from 'ol/Feature';
 import Polygon from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
+import {bbox} from 'ol/loadingstrategy';
 
 window.map = function(opts) {
   //
@@ -55,9 +57,51 @@ window.map = function(opts) {
     })
   });
 
+  var _layers = [raster, vector];
+
+  if(opts.points) {
+    var featureMap = opts.points.filter(row => row.lng).map(row => {
+      return {
+        "type": "Feature",
+        properties: {},
+        "geometry": {
+          "type": "Point",
+          "coordinates": fromLonLat([row.lng, row.lat])
+        }
+      };
+    });
+    featureMap = {type: "FeatureCollection", features: featureMap};
+    console.log(featureMap);
+
+    function styleFunction() {
+      return new Style({
+        image: new Icon({
+          src: '/car.png'
+        })
+      })
+    }
+
+    var source = new VectorSource({
+      format: new GeoJSON(),
+      strategy: bbox,
+      loader: function() {
+        self.p = source;
+        source.addFeatures(
+          source.getFormat().readFeatures(JSON.stringify(featureMap))
+        );
+      }
+    });
+
+    var points = new VectorLayer({
+      source: source,
+      style: styleFunction
+    });
+    _layers.push(points);
+  }
+
   // eventually use geoip
   var _map = new Map({
-    layers: [raster, vector],
+    layers: _layers,
     target: opts.target,
     view: new View({
       center: fromLonLat(opts.center),

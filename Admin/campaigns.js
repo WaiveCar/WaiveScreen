@@ -2,7 +2,7 @@ var _id, _campaign;
 $(function() {
   $("#editModal").on('shown.bs.modal', function() {
     if(!self._map){ 
-      self._map = map();
+      self._map = map({points:Screens});
     }
     let success = false;
     _campaign = get(_id);
