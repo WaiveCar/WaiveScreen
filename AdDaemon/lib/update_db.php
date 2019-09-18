@@ -20,7 +20,9 @@ foreach($SCHEMA as $table_name => $table_schema) {
   // This means we need to create the table
   if (count($existing_column_name_list) == 0) {
     echo "Creating the $table_name table.\n";
-    $db->exec("create table $table_name ( $new_schema )");
+    $sql = "create table $table_name ( $new_schema )";
+    echo $sql;
+    $db->exec($sql);
 
   } else {
 

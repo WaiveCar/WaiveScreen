@@ -160,7 +160,7 @@ $SCHEMA = [
 
   'exclusive' => [
     'id'          => 'integer primary key autoincrement',
-    'set'         => 'integer',
+    'set_id'      => 'integer',
     'whitelist'   => 'boolean', // if true then this is inclusive, if false 
     'campaign_id' => 'integer'  // then we should leave it out.
   ],
