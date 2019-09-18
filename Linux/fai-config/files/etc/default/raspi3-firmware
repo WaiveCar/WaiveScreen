@@ -10,7 +10,7 @@
 #
 # https://people.freedesktop.org/~narmstrong/meson_drm_doc/gpu/vc4.html
 #
-CMA=256M
+CMA=512M
 
 # Filesystem to mount on root. Defaults to the Raspberry's most usual
 # /dev/mmcblk0p2, but you can specify otherwise, including booting by
