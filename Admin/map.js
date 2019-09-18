@@ -3,8 +3,8 @@ import View from 'ol/View.js';
 import {GeoJSON} from 'ol/format';
 import {Draw, Modify, Snap} from 'ol/interaction.js';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
-import {OSM, Vector as VectorSource} from 'ol/source.js';
-import {Circle as CircleStyle, Icon, Fill, Stroke, Style} from 'ol/style.js';
+import {OSM, Cluster, Vector as VectorSource} from 'ol/source.js';
+import {Circle as CircleStyle, Icon, Fill, Stroke, Style, Text} from 'ol/style.js';
 import {fromLonLat, toLonLat} from 'ol/proj';
 import Feature from 'ol/Feature';
 import Polygon from 'ol/geom/Polygon';
@@ -33,13 +33,27 @@ window.map = function(opts) {
   });
 
   var _draw, _snap;
+  var source = {};
   var dom = document.getElementById(opts.target);
   var typeSelect = document.getElementById(opts.typeSelect);
+	var styleCache = {
+    car: new Style({
+      image: new Icon({
+        src: '/Admin/car.png'
+      })
+    }),
+    screen: new Style({
+      image: new Icon({
+        src: '/Admin/screen.png'
+      })
+    })
+  };
 
-  var source = new VectorSource();
-  var modify = new Modify({source: source});
-  var vector = new VectorLayer({
-    source: source,
+  // drawlayer {
+  source.draw = new VectorSource();
+  var modify = new Modify({source: source.draw});
+  var draw = new VectorLayer({
+    source: source.draw,
     style: new Style({
       fill: new Fill({
         color: 'rgba(255, 255, 255, 0.4)'
@@ -56,48 +70,83 @@ window.map = function(opts) {
       })
     })
   });
+  // } drawlayer
 
-  var _layers = [raster, vector];
+  var _layers = [raster];
 
+  // points {
   if(opts.points) {
     var featureMap = opts.points.filter(row => row.lng).map(row => {
       return {
-        "type": "Feature",
-        properties: {},
-        "geometry": {
-          "type": "Point",
-          "coordinates": fromLonLat([row.lng, row.lat])
+        type: "Feature",
+        properties: {
+          icon: row.is_fake ? 'screen' : 'car'
+        },
+        geometry: {
+          type: "Point",
+          coordinates: fromLonLat([row.lng, row.lat])
         }
       };
     });
     featureMap = {type: "FeatureCollection", features: featureMap};
-    console.log(featureMap);
 
-    function styleFunction() {
-      return new Style({
-        image: new Icon({
-          src: '/car.png'
-        })
-      })
-    }
-
-    var source = new VectorSource({
+    source.screen = new VectorSource({
       format: new GeoJSON(),
-      strategy: bbox,
       loader: function() {
-        self.p = source;
-        source.addFeatures(
-          source.getFormat().readFeatures(JSON.stringify(featureMap))
+        source.screen.addFeatures(
+          source.screen.getFormat().readFeatures(JSON.stringify(featureMap))
         );
       }
     });
 
-    var points = new VectorLayer({
-      source: source,
-      style: styleFunction
+    // clustering {
+    var clusterSource = new Cluster({
+      distance: 40,
+      source: source.screen
     });
-    _layers.push(points);
+
+    var clusters = new VectorLayer({
+      source: clusterSource,
+      style: function(obj) {
+        var features = obj.get('features');
+   			var size = features.length;
+        if(size > 1) {
+          var style = styleCache[size];
+          if (!style) {
+            style = new Style({
+              image: new CircleStyle({
+                radius: 10,
+                stroke: new Stroke({
+                  color: '#fff'
+                }),
+                fill: new Fill({
+                  color: '#3399CC'
+                })
+              }),
+              text: new Text({
+                text: size.toString(),
+                fill: new Fill({
+                  color: '#fff'
+                })
+              })
+            });
+            styleCache[size] = style;
+          }
+          return style;
+        } else {
+          return styleCache[features[0].getProperties().icon];
+        }
+      }
+		});
+	
+    _layers.push(clusters);
+    // } clustering
+
+    //_layers.push(points);
   }
+  // } points
+
+  _layers.push(draw);
 
   // eventually use geoip
   var _map = new Map({
@@ -113,15 +162,15 @@ window.map = function(opts) {
 
   function addInteractions() {
     _draw = new Draw({
-      source: source,
+      source: source.draw,
       type: typeSelect.value
     });
     _map.addInteraction(_draw);
-    _snap = new Snap({source: source});
+    _snap = new Snap({source: source.draw});
     _map.addInteraction(_snap);
   }
   function getShapes() {
-    let shapes = vector.getSource().getFeatures().map(row => {
+    let shapes = draw.getSource().getFeatures().map(row => {
       var kind = row.getGeometry();
       if (kind instanceof Polygon) {
         return ['Polygon', kind.getCoordinates()[0].map(coor => toLonLat(coor))];
@@ -147,19 +196,19 @@ window.map = function(opts) {
           geometry: new Polygon([shape[1].map(coor => fromLonLat(coor))])
         });
       }
-      vector.getSource().addFeature(feature);
+      draw.getSource().addFeature(feature);
     });
   }
 
   function clear() {
-    for(var feature of vector.getSource().getFeatures()) {
-      vector.getSource().removeFeature(feature);
+    for(var feature of draw.getSource().getFeatures()) {
+      draw.getSource().removeFeature(feature);
     }
   }
   function removeShape() {
-    let shapeList = vector.getSource().getFeatures();
+    let shapeList = draw.getSource().getFeatures();
     if(shapeList) {
-      vector.getSource().removeFeature(shapeList.slice(-1)[0]);
+      draw.getSource().removeFeature(shapeList.slice(-1)[0]);
     }
   }
   function removePoint() {

@@ -144,7 +144,7 @@ $height = $width * 675 / 1920;
               <option value="Circle">Circle</option>
               <option value="Polygon">Geofence</option>
             </select>
-            <div style='width:100%;height:20vw' id='map'></div>
+            <div style='width:100%;height:40vw' id='map'></div>
           </div>
 
           <div class="modal-footer">
