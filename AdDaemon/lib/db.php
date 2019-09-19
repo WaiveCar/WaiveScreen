@@ -69,8 +69,6 @@ $RULES = [
 // brands
 //  have 0 or more campaigns
 //
-// clients
-//  have 1 or more users
  
 $SCHEMA = [
   'screen' => [
