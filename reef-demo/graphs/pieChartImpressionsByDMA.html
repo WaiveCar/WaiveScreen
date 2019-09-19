@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+
+<head>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+	<script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
+	<script src="https://www.chartjs.org/samples/latest/utils.js"></script>
+
+	<title>Pie Chart</title>
+
+</head>
+
+<body>
+	<div id="canvas-holder" style="width:40%">
+		<canvas id="chart-area"></canvas>
+	</div>
+
+	<script>
+		var randomScalingFactor = function() {
+			return Math.round(Math.random() * 100);
+		};
+
+		var config = {
+			type: 'pie',
+			data: {
+				datasets: [{
+					data: [
+						42.80,
+						27.10,
+						11.97,
+						10.31,
+						6.69
+					],
+					backgroundColor: [
+						window.chartColors.yellow,
+						window.chartColors.green,
+						window.chartColors.purple,
+						window.chartColors.red,
+						window.chartColors.blue,
+					],
+					label: 'Dataset 1'
+				}],
+				labels: [
+					'New York City DMA',
+					'Chicago DMA',
+					'SF Bay Area DMA',
+					'Los Angeles DMA',
+					'Austin DMA'
+				]
+			},
+			options: {
+				title: {
+            display: true,
+            text: 'Campaign Impressions By DMA'
+        },
+        legend: {
+        	display: false
+        },
+				responsive: true
+			}
+		};
+
+		window.onload = function() {
+			var ctx = document.getElementById('chart-area').getContext('2d');
+			window.myPie = new Chart(ctx, config);
+		};
+
+	</script>
+</body>
+
+</html>
