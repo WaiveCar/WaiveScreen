@@ -45,3 +45,12 @@
   color: black;
   vertical-align: middle;
 }
+
+.top-bar-left {
+  width: 10rem;
+}
+
+.top-bar-left img {
+  width: 100%;
+}
+
