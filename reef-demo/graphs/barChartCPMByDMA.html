@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>Bar Chart</title>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+	<script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
+	<script src="https://www.chartjs.org/samples/latest/utils.js"></script>
+
+	<style>
+	canvas {
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+	</style>
+</head>
+
+<body>
+	<div id="container" style="width: 75%;">
+		<canvas id="canvas"></canvas>
+	</div>
+	<script>
+
+		var color = Chart.helpers.color;
+		var barChartData = {
+			labels: ['New York City DMA', 'Chicago DMA', 'SF Bay Area DMA', 'Los Angeles DMA', 'Austin DMA'],
+			datasets: [{
+				label: 'Cost per 1000 impressions (CPM)',
+				backgroundColor: color(window.chartColors.yellow).alpha(0.5).rgbString(),
+				borderColor: window.chartColors.yellow,
+				borderWidth: 1,
+				data: [
+					5.92,
+					5.74,
+					6.78,
+					6.13,
+					5.76
+				]
+			}, {
+				label: 'Cost per conversion (CPC)',
+				backgroundColor: color(window.chartColors.gray).alpha(0.5).rgbString(),
+				borderColor: window.chartColors.gray,
+				borderWidth: 1,
+				data: [
+					10.32,
+					9.93,
+					8.23,
+					9.41,
+					8.77
+				]
+			}]
+
+		};
+
+		window.onload = function() {
+			var ctx = document.getElementById('canvas').getContext('2d');
+			window.myBar = new Chart(ctx, {
+				type: 'bar',
+				data: barChartData,
+				options: {
+					responsive: true,
+					legend: {
+						position: 'top',
+					},
+					scales: {
+						yAxes: [{
+							ticks: {
+                beginAtZero:true
+            	},
+							scaleLabel: {
+								display: true,
+								labelString: 'Cost: $'
+							}
+						}]
+					},
+					title: {
+						display: false,
+						text: 'Costs by DMA'
+					}
+				}
+			});
+
+		};
+
+	</script>
+</body>
+
+</html>
