@@ -1,4 +1,9 @@
 .nav-item span {
   text-align: left;
+  text-transform: capitalize;
+}
+
+.current-link {
+  color: red!important;
 }
 
