@@ -1,6 +1,5 @@
 
 function renderCampaign(campaign) {
-  console.log(campaign);
   document.getElementById('campaign-title').textContent = campaign.project;
   document.querySelector('#start-date').value = campaign.start_time.split(' ')[0];
   document.querySelector('#end-date').value = campaign.end_time.split(' ')[0];
@@ -11,7 +10,7 @@ function toggleEditor() {
 }
 
 function calcItems() {
-  setTimeout(() => {
+  requestAnimationFrame(() => {
     let schedule = JSON.parse($('#schedule').jqs('export'));
     let minutesPerWeek = schedule.reduce((acc, item) => {
       return (

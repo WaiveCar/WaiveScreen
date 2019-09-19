@@ -1,5 +1,5 @@
 function calcItems() {
-  setTimeout(() => {
+  requestAnimationFrame(() => {
     let schedule = JSON.parse($('#schedule').jqs('export'));
     let minutesPerWeek = schedule.reduce((acc, item) => {
       return (
@@ -38,3 +38,4 @@ function calcItems() {
     .querySelector('.jqs-table tbody')
     .addEventListener('mouseup', calcItems);
 })();
+
