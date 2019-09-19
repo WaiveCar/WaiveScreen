@@ -1,9 +1,19 @@
 .nav-item span {
-  text-align: left;
   text-transform: capitalize;
+  text-align: left;
 }
 
 .current-link {
-  color: red!important;
+  padding: 0;
+  border-radius: 25px;
+  background-color: #FEDC47;
+  color: white;
 }
 
+.sidebar .nav-item .nav-link {
+  padding: 0.2rem 0 0.2rem 0.5rem;
+}
+
+.current-link-text {
+  color: white;
+}

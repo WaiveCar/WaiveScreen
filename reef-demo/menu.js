@@ -21,7 +21,8 @@
   let items = document.querySelectorAll('.navbar-nav li');
   items.forEach(one => {
     if (window.location.href.includes(one.dataset.item)) {
-      one.querySelector('span').classList.add('current-link');
+      one.classList.add('current-link');
+      one.querySelector('span').classList.add('current-link-text');
     }
   });
 })();
