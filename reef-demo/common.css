@@ -40,3 +40,8 @@
     width: auto;
   }
 }
+
+.top-bar {
+  color: black;
+  vertical-align: middle;
+}

@@ -4,13 +4,7 @@ function toggleMenu() {
 
 (() => {
   document.getElementById('menu').innerHTML = `
-      <div class="menu-btn ml-3 mt-1">
-        <i class="fas fa-bars" onclick="toggleMenu()"></i>
-      </div>
       <ul class="navbar-nav bg-gradient-white sidebar sidebar-light">
-        <a class="d-flex align-items-center justify-content-center">
-          <div class="sidebar-brand-text mx-3" style=color:black>adcast</div>
-        </a>
         ${['screens', 'campaigns', 'organizations', 'brands', 'users']
           .map(
             item => `
