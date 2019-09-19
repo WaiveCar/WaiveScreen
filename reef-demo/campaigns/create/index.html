@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="../../css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link href="../../css/sb-admin-2.min.css" rel="stylesheet">
+    <link rel=stylesheet href=https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css>
+    <link href="../../css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link rel=stylesheet href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <link href="../../css/jquery.schedule.min.css" rel="stylesheet">
+    <title>Screen Admin</title>
+  </head>
+  <style>
+    #content-wrapper span { color: #000 }
+    .id,.version { font-family: monospace }
+    .edit { color: #999; cursor: pointer }
+    .last { text-align: right }
+    em { color: #555 }
+    .table td {padding: .75rem .2rem; }
+    td.edit { white-space: nowrap; }
+    .modal-body span {
+      min-width: 5rem; 
+      display: inline-block;
+      vertical-align: top;
+    }
+    .edit:hover { color: #000 }
+    #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
+    .editor {
+      display: none;
+    }
+    .show {
+      display: block;
+    }
+    #schedule {
+      height: 340px;
+    }
+  </style>
+  <body id="page-top">
+    <div id="wrapper">
+      <div id="menu">
+        <script src="../../menu.js"></script>
+      </div>
+      <div class="container">
+
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">New Campaign</h2>
+                client selection
+
+                <!--
+                <p class="card-text">If you have the creatives, upload them here.<br/> Otherwise we can automatically create a campaign for you based on your social media accounts.</p>
+                <button type="button" class="btn btn-primary btn-lg">I have creatives</button>
+                <button type="button" class="btn btn-secondary btn-lg">Automatically create my ad</button>
+                -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Add Creatives</h2>
+                <div class="card-body">
+                  <div class="row no-gutters">
+                    <div class="col-lg-12" style=height:20vw;background:yellow>
+                    </div>
+                    Pause/Play
+                    <span class="oi oi-play-circle" aria-hidden="true"></span>
+                  </div>
+                  <div class="row no-gutters">
+                    <div class="col-8 offset-2" style=height:15vw;background:blue></div>
+                  </div>
+                  <div class="row no-gutters">
+                    <div class="col-8 offset-2" style=height:15vw;background:blue></div>
+                  </div>
+
+                  Add Image
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!--
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Automatic creation</h2>
+                <div class="card-body">
+                  <div class="row no-gutters">
+                    <div class="col-lg-12" style=height:20vw;background:yellow>
+                    </div>
+                    Pause/Play
+                  </div>
+
+                  Log in with instagram
+
+                  Show images
+
+                  Select images
+
+                  Confirm
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        -->
+
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Location</h2>
+                Filter:
+                  [] Moving   [] Stationary
+                  [] Full Screen [] Widget
+
+                Advanced:
+                  [] Single-user [] Multi-user
+                  [] Captive  [] Non-captive
+
+                <select id="type" class="custom-select custom-select-lg">
+                  <option value="Circle">Circle</option>
+                  <option value="Polygon">Geofence</option>
+                </select>
+                <div style='width:100%;height:20vw' id='map'></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="card" id="campaign-budget">
+              <div class="card-body">
+                <h2 class="card-title">Duration/Budget</h2>
+                <div id="schedule"></div>
+                <div class="card-text">
+                  <div class="form-group row" id="budget-nums">
+                    <label for="start-date" class="col-2 col-form-label">Start Date:</label>
+                    <input type="date" class="col-2 form-control" placeholder="Start Date" id="start-date">
+                    <label for="end-date" class="col-2 col-form-label">End Date:</label>
+                    <input type="date" class="col-2 form-control" placeholder="End Date" id="end-date">
+                    <label for="end-date" class="col-2 col-form-label">Budget:</label>
+                    <input type="number" class="col-2 form-control" placeholder="$ / Month" id="budget">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Summary</h2>
+                <div class="card-text">
+                  Budget:
+                  <div class="row no-gutters mb-2" id="budget">
+                  
+                  </div>
+                  CPM:
+                  <div class="row no-gutters mb-2" id="cpm">
+                  </div>
+                  Estimated Impressions:
+                  <div class="row no-gutters mb-2" id="impressions">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-4">
+          <button type="button" class="btn btn-primary btn-lg">Launch Campaign</button>
+        </div>
+      </div>
+    </div>  
+    <script
+    src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="../../js/jquery.easing.min.js"></script>
+    <script src="../../js/sb-admin-2.min.js"></script>
+    <script src="../../js/jquery.dataTables.min.js"></script>
+    <script src="../../js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+    <script src="./../../js/jquery.schedule.min.js"></script>
+    <script src="./index.js"></script>
+    </body>
+</html>
+
