@@ -25,14 +25,17 @@ if (!file_exists("/tmp/$handle")) {
   $str = shell_exec("curl 'https://www.instagram.com/$handle/' -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.5' --compressed -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' -H 'TE: Trailers'");
   file_put_contents("/tmp/$handle", $str);
 }
+
 $contents = file_get_contents("/tmp/$handle");
 $smalltext = $_GET['smalltext'] ?: json_decode('"' . get('full_name') . '"');
 $bigtext = $_GET['bigtext'] ?: $handle;
-$logo = get('profile_pic_url_hd');
+$logo = $_GET['logo'] ?: get('profile_pic_url_hd');
+$images = $_GET['images'] ?: [];
+$sizes = $_GET['sizes'] ?: [];
 
 preg_match_all('/.height.:(\d*),.width.:1080},.display_url...([^"]*)/', $contents, $matchList);
-$sizes = $matchList[1];
-$images = $matchList[2];
+$sizes = array_merge($sizes, $matchList[1]);
+$images = array_merge($images, $matchList[2]);
 $iy = 0;
 for($ix = count($images); $ix < 6; $ix ++) {
   $images[] = $images[$iy];
