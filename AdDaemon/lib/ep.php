@@ -35,8 +35,16 @@ try {
   else if($func == 'screens' && ($verb == 'POST' || $verb == 'PUT')) {
     jemit(screen_edit($all));
   } 
-  else if(array_search($func, ['jobs', 'sensor_history', 'campaigns', 'screens', 'tasks']) !== false) {
-    jemit(show(rtrim($func, 's'), $all));
+  else if(array_search($func, [
+    'brands', 'orgs', 'widgets', 'layouts', 'attributions', 'users',
+    'jobs', 'sensor_history', 'campaigns', 'screens', 'tasks']) !== false) {
+    $table = rtrim($func, 's');
+    $action = 'show';
+
+    if($verb == 'POST' || $verb == 'PUT') {
+      $action = 'create';
+    }
+    jemit($action($table, $all));
   }
   else if(array_search($func, [
     'active_campaigns', 

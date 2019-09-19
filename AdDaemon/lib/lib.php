@@ -429,6 +429,23 @@ function tasks() {
   return show('task');
 }
 
+function brands() {
+  return show('brand');
+}
+
+function orgs() {
+  return show('org');
+}
+function widgets() {
+  return show('widget');
+}
+function layouts() {
+  return show('layout');
+}
+function attributions() {
+  return show('attribution');
+}
+
 function task_dump() {
   return [
     'task' => show('task', 'order by id desc'),
@@ -492,6 +509,11 @@ function update_campaign_completed($id) {
 function inject_priority($job, $screen, $campaign) {
   $job['priority'] = aget($campaign, 'priority');
   return $job;
+}
+
+function create($table, $payload) {
+  // TODO: whitelist the tables
+  return db_insert($table, $payload);
 }
 
 function sow($payload) {
