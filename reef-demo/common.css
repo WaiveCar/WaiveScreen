@@ -17,3 +17,26 @@
 .current-link-text {
   color: white;
 }
+
+.menu-btn {
+  font-size: 1.8rem;
+}
+
+.navbar-nav {
+  display: none;
+  width: 130px!important;
+}
+
+.menu-shown {
+  display: block;
+}
+
+.nav-item {
+  width: 120px;
+}
+
+@media (max-width: 768px) {
+  .nav-item, .navbar-nav {
+    width: auto;
+  }
+}

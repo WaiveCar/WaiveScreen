@@ -1,10 +1,16 @@
+function toggleMenu() {
+  document.querySelector('.navbar-nav').classList.toggle('menu-shown');
+}
+
 (() => {
   document.getElementById('menu').innerHTML = `
-      <ul class="navbar-nav bg-gradient-white sidebar sidebar-light accordion" id="accordionSidebar">
+      <div class="menu-btn ml-3 mt-1">
+        <i class="fas fa-bars" onclick="toggleMenu()"></i>
+      </div>
+      <ul class="navbar-nav bg-gradient-white sidebar sidebar-light">
         <a class="d-flex align-items-center justify-content-center">
           <div class="sidebar-brand-text mx-3" style=color:black>adcast</div>
         </a>
-        <hr class="sidebar-divider d-none d-md-block">
         ${['screens', 'campaigns', 'organizations', 'brands', 'users']
           .map(
             item => `
@@ -15,7 +21,6 @@
         `,
           )
           .join('')}
-        <hr class="sidebar-divider d-none d-md-block">
       </ul>
     `;
   let items = document.querySelectorAll('.navbar-nav li');
