@@ -16,7 +16,6 @@ function calcItems() {
       return (
         acc +
         item.periods.reduce((acc, period) => {
-          console.log('period', period);
           return (
             acc +
             moment(period.end, 'hh:mm').diff(
