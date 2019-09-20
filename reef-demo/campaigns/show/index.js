@@ -43,6 +43,25 @@ function calcItems() {
 let campaign = null;
 
 (() => {
+  let topBar = (document.querySelector('.top-bar-right').innerHTML = [
+    'Overview',
+    'Budget',
+    'Performance',
+    'Controls',
+    'Creatives',
+    'Billing',
+    'Summary',
+    'Location',
+  ]
+    .map(
+      item => `
+    <div class="top-bar-link">
+      ${item}
+    </div>
+  `,
+    )
+    .concat(['<div class="top-bar-link">Update</div>'])
+    .join(''));
   $('#schedule').jqs();
   const id = new URL(location.href).searchParams.get('id');
   fetch(`http://waivescreen.com/api/campaigns?id=${id}`)
