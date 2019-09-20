@@ -1,6 +1,11 @@
 function renderCampaign(campaign) {
   document.querySelector('.campaign-show-title').textContent =
     campaign.project[0].toUpperCase() + campaign.project.slice(1);
+  document.querySelector('.campaign-dates').innerHTML = `${`${moment(
+    campaign.start_time,
+  ).format('MMM D')}   `}<i class="fas fa-play arrow"></i> ${`   ${moment(
+    campaign.end_time,
+  ).format('MMM D')}`}`;
   document.querySelector('#start-date').value = campaign.start_time.split(
     ' ',
   )[0];

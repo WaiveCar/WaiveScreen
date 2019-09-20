@@ -273,3 +273,14 @@ body {
   flex-direction: column;
   justify-content: center;
 }
+
+.sub-users img {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.performance-title {
+  font-size: 1.2rem;
+  margin-top: 2.8rem;
+  color: black;
+}
