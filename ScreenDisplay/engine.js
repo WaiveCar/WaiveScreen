@@ -308,6 +308,24 @@ var Engine = function(opts){
     return asset.url.match('(' + ext.join('|') + ')');
   }
 
+  function urlToAsset(url) {
+    var container = document.createElement('div');
+    var asset = isString(url) ? {url: url} : url;
+    container.classList.add('container' + _key);
+
+    if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
+      asset = image(asset, obj);
+    } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
+      asset = video(asset, obj);
+    } else {
+      asset = iframe(asset, obj);
+    }
+    asset.uniq = _uniq++;
+    asset.container = container;
+    asset.container.appendChild(asset.dom);
+    return asset;
+  }
+
   // All the things returned from this have 2 properties
   // 
   //  run() - for videos it resets the time and starts the video
@@ -340,25 +358,16 @@ var Engine = function(opts){
       obj.url = [ obj.url ];
     }
 
-    obj.assetList = obj.url.map(function(asset) {
-      var container = document.createElement('div');
-      if(isString(asset)) {
-        asset = {url: asset};
-      }
-      container.classList.add('container' + _key);
+    obj.assetList = obj.url.map(urlToAsset);
 
-      if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
-        asset = image(asset, obj);
-      } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
-        asset = video(asset, obj);
-      } else {
-        asset = iframe(asset, obj);
-      }
-      asset.uniq = _uniq++;
-      asset.container = container;
-      asset.container.appendChild(asset.dom);
-      return asset;
-    });
+    obj.remove = function(what) {
+      obj.assetList.filter(row => row.url != what);
+      obj.duration = obj.assetList.reduce(function(a,b) { return a + b.duration }, 0);
+    }
+
+    obj.append = function(what) {
+      obj.assetList.push(urlToAsset(what));
+    }
         
     return obj;
   }
