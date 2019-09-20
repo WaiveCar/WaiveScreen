@@ -104,9 +104,10 @@ body {
 @media (max-width: 768px) {
   .company-name,
   .new-campaign-btn,
+  .brand-name,
   .campaign-title {
-    font-size: 12px;
-    padding: 0.2rem 0.8rem;
+    font-size: 14px;
+    padding: 0.3rem 1rem;
   }
 }
 
@@ -200,8 +201,22 @@ body {
 }
 
 .navbar-nav {
-  position: sticky;
-  position: -webkit-sticky;
-  top: 0px;
-  padding-top: 70px;
+  position: fixed;
+  top: 60px;
+  z-index: 1100;
+  background-color: white;
+}
+
+.offset-top {
+  margin-top: 100px;
+}
+
+.campaign-show {
+  margin-top: 120px;
+}
+
+@media(max-width: 768px) {
+  .hidable-top-bar {
+    display: none;
+  }
 }

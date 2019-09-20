@@ -1,5 +1,5 @@
 function renderCampaign(campaign) {
-  document.getElementById('campaign-title').textContent = campaign.project;
+  document.querySelector('.campaign-title').textContent = campaign.project;
   document.querySelector('#start-date').value = campaign.start_time.split(
     ' ',
   )[0];
