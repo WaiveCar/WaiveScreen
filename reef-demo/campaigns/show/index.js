@@ -42,8 +42,17 @@ function calcItems() {
 
 let campaign = null;
 
+let selectedLinkIdx = 0;
+let topBarRight = document.querySelector('.top-bar-right');
+
+function changeSelected(newIdx) {
+  topBarRight.children[selectedLinkIdx].classList.remove('top-bar-selected');
+  selectedLinkIdx = newIdx;
+  topBarRight.children[selectedLinkIdx].classList.add('top-bar-selected');
+}
+
 (() => {
-  let topBar = (document.querySelector('.top-bar-right').innerHTML = [
+  topBarRight.innerHTML = [
     'Overview',
     'Budget',
     'Performance',
@@ -54,14 +63,16 @@ let campaign = null;
     'Location',
   ]
     .map(
-      item => `
-    <div class="top-bar-link">
+      (item, i) => `
+    <div class="top-bar-link" onclick="changeSelected(${i})">
       ${item}
     </div>
   `,
     )
     .concat(['<div class="top-bar-link">Update</div>'])
-    .join(''));
+    .join('');
+  topBarRight.children[selectedLinkIdx].classList.add('top-bar-selected');
+
   $('#schedule').jqs();
   const id = new URL(location.href).searchParams.get('id');
   fetch(`http://waivescreen.com/api/campaigns?id=${id}`)

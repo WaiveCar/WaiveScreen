@@ -165,10 +165,16 @@ body {
 @media (min-width: 768px) {
   .with-links {
     padding: 0.6rem 1rem;
-    margin: 0 2rem;
+    margin: 0 3rem;
   }
+}
+
+.top-bar-selected {
+  background-color: #CFCDCE;
+  border-radius: 40px;
 }
 
 .top-bar-link {
   font-size: 16px;
+  padding: 0.3rem 1rem;
 }
