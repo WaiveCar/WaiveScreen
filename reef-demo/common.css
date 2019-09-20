@@ -199,15 +199,9 @@ body {
   padding: 0.3rem 1rem;
 }
 
-.anchor {
-  display: block;
-  position: relative;
-  top: -250px;
-  visibility: hidden;
-}
-
 .navbar-nav {
   position: sticky;
   position: -webkit-sticky;
-  top: 70px;
+  top: 0px;
+  padding-top: 70px;
 }
