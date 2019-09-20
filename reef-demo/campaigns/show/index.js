@@ -1,7 +1,8 @@
-
 function renderCampaign(campaign) {
   document.getElementById('campaign-title').textContent = campaign.project;
-  document.querySelector('#start-date').value = campaign.start_time.split(' ')[0];
+  document.querySelector('#start-date').value = campaign.start_time.split(
+    ' ',
+  )[0];
   document.querySelector('#end-date').value = campaign.end_time.split(' ')[0];
 }
 
@@ -29,11 +30,13 @@ function calcItems() {
     let budget = document.querySelector('#budget').value;
     let fakeNumImpressionsPerWeek = budget * 14.32;
     let fakeCPM = (fakeNumImpressionsPerWeek / budget / 100).toFixed(2);
-    document.querySelector('#budget').textContent = `$${budget}`;
-    document.querySelector('#cpm').textContent = `$${fakeCPM}`;
-    document.querySelector(
-      '#impressions',
-    ).textContent = `${fakeNumImpressionsPerWeek}`;
+    if (budget) {
+      document.querySelector('#budget').textContent = `$${budget}`;
+      document.querySelector('#cpm').textContent = `$${fakeCPM}`;
+      document.querySelector(
+        '#impressions',
+      ).textContent = `${fakeNumImpressionsPerWeek}`;
+    }
   });
 }
 

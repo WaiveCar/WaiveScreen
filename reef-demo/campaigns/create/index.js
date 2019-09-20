@@ -18,11 +18,13 @@ function calcItems() {
     let budget = document.querySelector('#budget').value;
     let fakeNumImpressionsPerWeek = budget * 14.32;
     let fakeCPM = (fakeNumImpressionsPerWeek / budget / 100).toFixed(2);
-    document.querySelector('#budget').textContent = `$${budget}`;
-    document.querySelector('#cpm').textContent = `$${fakeCPM}`;
-    document.querySelector(
-      '#impressions',
-    ).textContent = `${fakeNumImpressionsPerWeek}`;
+    if (budget) {
+      document.querySelector('#budget').textContent = `$${budget}`;
+      document.querySelector('#cpm').textContent = `$${fakeCPM}`;
+      document.querySelector(
+        '#impressions',
+      ).textContent = `${fakeNumImpressionsPerWeek}`;
+    }
   });
 }
 
