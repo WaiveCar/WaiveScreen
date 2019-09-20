@@ -71,6 +71,10 @@ function changeSelected(newIdx) {
     .join('');
   topBarRight.children[selectedLinkIdx].classList.add('top-bar-selected');
 
+  window.addEventListener('hashchange', function() {
+    window.scrollTo(window.scrollX, window.scrollY - 50);
+  });
+
   $('#schedule').jqs();
   const id = new URL(location.href).searchParams.get('id');
   fetch(`http://waivescreen.com/api/campaigns?id=${id}`)
