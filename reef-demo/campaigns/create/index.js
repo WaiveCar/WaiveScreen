@@ -26,6 +26,7 @@ function calcItems() {
   });
 }
 
+/*
 (() => {
   $('#schedule').jqs();
   document
@@ -39,6 +40,7 @@ function calcItems() {
     .addEventListener('mouseup', calcItems);
 })();
 
+*/
 function create_campaign(obj) {
   // Before the payment is processed by paypal, a user's purchase is sent to the server with 
   // the information that has so far been obtained including the picture.
@@ -105,6 +107,7 @@ window.onload = function(){
   // The event handler below handles the user uploading new files
   uploadInput = document.getElementById('image-upload');
   uploadInput.addEventListener('change', function() {
+    console.log("HI");
     var container = $(".preview-holder");
     container.empty();
 
@@ -118,7 +121,7 @@ window.onload = function(){
 
         let row = $(
           ['<div class="screen">',
-             '<img src="assets/screen-black.png" class="bg">',
+             '<img src="/assets/screen-black.png" class="bg">',
              '<div class="asset-container"></div>',
           '</div>'].join(''));
 
