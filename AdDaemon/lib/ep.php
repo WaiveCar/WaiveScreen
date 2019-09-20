@@ -54,6 +54,7 @@ try {
     'ping', 
     'response',
     'screen_tag', 
+    'schema',
     'sow', 
     'tag', 
     'task_dump' 

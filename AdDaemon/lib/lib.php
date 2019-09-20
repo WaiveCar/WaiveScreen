@@ -446,6 +446,14 @@ function attributions() {
   return show('attribution');
 }
 
+function schema($what) {
+  global $SCHEMA;
+  $table = aget($what, 'table');
+  if($table) {
+    return aget($SCHEMA, $table);
+  }
+}
+
 function task_dump() {
   return [
     'task' => show('task', 'order by id desc'),
@@ -513,6 +521,19 @@ function inject_priority($job, $screen, $campaign) {
 
 function create($table, $payload) {
   // TODO: whitelist the tables
+  global $SCHEMA;
+  foreach($payload as $k => $v) {
+    $typeRaw = $SCHEMA[$table][$k];
+    $parts = explode(' ', $typeRaw);
+    $type = $parts[0];
+    if($type == 'text') {
+      $payload[$k] = db_string($v);
+    }
+    if(empty($payload[$k])) {
+      unset($payload[$k]);
+    }
+  }
+
   return db_insert($table, $payload);
 }
 

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <base href="../../">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+		<link rel=stylesheet href=https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css>
+    <link href="css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <title class='head'>New Type</title>
+  </head>
+  <style>
+    #content-wrapper span { color: #000 }
+    .id,.version { font-family: monospace }
+    .edit { color: #999; cursor: pointer }
+    .last { text-align: right }
+    em { color: #555 }
+    .table td {padding: .75rem .2rem; }
+    td.edit { white-space: nowrap; }
+    .modal-body span {
+      min-width: 5rem; 
+      display: inline-block;
+      vertical-align: top;
+    }
+    .edit:hover { color: #000 }
+    #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
+  </style>
+  <body id="page-top">
+    <div id="wrapper">
+      <div id="menu">
+        <script src="menu.js"></script>
+      </div>
+      <div class="container-fluid">
+        <div class="alert alert-primary" id="notice" role="alert"></div>
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+          <h1 class="h3 mb-0 text-gray-800 head">New Type</h1>
+        </div>
+        <div id="content-wrapper" class="d-flex flex-column">
+          <h3>
+            <div class="alert alert-primary" id="notice" role="alert"></div>
+          </h3>
+
+          <form id=createForm method=post>
+            Loading...
+          </div>
+        </div>
+      </div>
+    </div>
+    <script
+    src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="js/jquery.easing.min.js"></script>
+    <script src="js/sb-admin-2.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/dataTables.bootstrap4.min.js"></script>
+    <script src="/engine.js"></script>
+    <script src="/Admin/dist/map.js"></script>
+  <script>
+    function ucfirst(what) {
+      return what[0].toUpperCase() + what.slice(1);
+    }
+    function select(what, data) {
+      function gen(res) {
+        let options = res.map(row => `<option value=${row.id}>${row.name}</option>`);
+        if(!data) {
+          options.unshift("<option value=''>-- None --</option>");
+        }
+        document.getElementById(`${what}-wrap`).innerHTML = `
+          <select class="form-control" name="${what}_id">
+            ${options}
+          </select>
+        `;
+      }
+
+      if(data) {
+        // this needs to be done after it's in the dom so 
+        // we trick it.
+        setTimeout(function(){
+          gen(data.map(field => { return {id: field, name: field} }));
+        });
+      } else {
+        $.getJSON(`/api/${what}s`, gen);
+      }
+    }
+    function doit(table, opts) {
+      var typeMap = { password: "password" }, 
+        form = document.getElementById('createForm'),
+        obj = ucfirst(table);
+
+      opts = opts || {};
+      opts.fields = opts.fields || {};
+      opts.hide = ["id","image","created_at"].concat(opts.hide);
+
+      $(".head").each(function(k,j) {
+        j.innerHTML = 'New ' + obj;
+      });
+
+      form.setAttribute('action', `/api/${table}s`);
+
+      $.getJSON(`/api/schema?table=${table}`, function(res) {
+        var html = [], type, input, xref, name;
+
+        for(var k in res) {
+          if (opts.hide.includes(k)) {
+            continue;
+          }
+          
+          type = typeMap[k] || "text";
+          xref = k.match(/(\w*)_id/);
+
+          if(xref) {
+            let field = xref[1];
+            name = field;
+            input = `<div id=${field}-wrap></div>`;
+            select(field);
+          } else if (opts.fields[k]) {
+            name = k;
+            input = `<div id=${k}-wrap></div>`;
+            select(k, opts.fields[k]);
+          } else {
+            name = k;
+            input = `<input type="${type}" class="form-control" name="${k}">`;
+          }
+
+          name = ucfirst(name);
+
+          html.push(`
+            <div class="form-group">
+              <label for="${k}">${name}</label>
+              ${input}
+            </div>
+          `);
+        } 
+        html.push(`<button type="submit" class="btn btn-primary">Create ${obj}</button>`);
+        document.getElementById('createForm').innerHTML = html.join('');
+      });
+    }
+
+  window.onload = function(){
+    doit('brand', {hide: ['balance']});
+    /*
+    doit('user', {
+      fields: {'role' : ['viewer','admin']} ,
+      hide: ['balance']}
+    );
+    */
+  }
+  </script>
+  </body>
+</html>

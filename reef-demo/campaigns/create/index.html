@@ -16,6 +16,7 @@
   </head>
   <style>
     #content-wrapper span { color: #000 }
+    #image-upload { display: none }
     .id,.version { font-family: monospace }
     .edit { color: #999; cursor: pointer }
     .last { text-align: right }
@@ -38,6 +39,28 @@
     #schedule {
       height: 340px;
     }
+.screen {
+  background: black;
+  text-align: center;
+  position: relative;
+}
+.screen .bg {
+  width: 100%;
+}
+.preview-holder {
+  width: 100%;
+}
+ .asset-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
   </style>
   <body id="page-top">
     <div class="menu-btn ml-3 mt-1 top-bar">
@@ -77,17 +100,32 @@
                   <div class="row no-gutters">
                     <div class="col-lg-12" style=height:20vw;background:yellow>
                     </div>
-                    Pause/Play
-                    <span class="oi oi-play-circle" aria-hidden="true"></span>
                   </div>
                   <div class="row no-gutters">
-                    <div class="col-8 offset-2" style=height:15vw;background:blue></div>
+                    <div class="col-6">
+                      <div class="btn-group" role="group" aria-label="Basic example">
+                        <button type="button" class="btn btn-secondary">
+                          <i class="fas fa-backward"></i>
+                        </button>
+                        <button type="button" class="btn btn-secondary">
+                          <i class="fas fa-play"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="float-right">
+                        <label for="image-upload" class="btn btn-secondary">
+                          <i class="fas fa-plus-square"></i> Image/Video
+                        </label>
+                        <input id="image-upload" multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
+                      </div>
+                    </div>
                   </div>
-                  <div class="row no-gutters">
-                    <div class="col-8 offset-2" style=height:15vw;background:blue></div>
+                  <div class="row justify-content-md-center">
+                    <div class="preview-holder col-8">
+                    </div>
                   </div>
 
-                  Add Image
 
                 </div>
               </div>
@@ -128,13 +166,6 @@
             <div class="card">
               <div class="card-body">
                 <h2 class="card-title">Location</h2>
-                Filter:
-                  [] Moving   [] Stationary
-                  [] Full Screen [] Widget
-
-                Advanced:
-                  [] Single-user [] Multi-user
-                  [] Captive  [] Non-captive
 
                 <select id="type" class="custom-select custom-select-lg">
                   <option value="Circle">Circle</option>
