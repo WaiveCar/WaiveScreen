@@ -1,3 +1,7 @@
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
 .nav-item span {
   text-transform: capitalize;
   text-align: left;
@@ -6,7 +10,7 @@
 .current-link {
   padding: 0;
   border-radius: 25px;
-  background-color: #FEDC47;
+  background-color: #fedc47;
   color: white;
 }
 
@@ -24,7 +28,7 @@
 
 .navbar-nav {
   display: none;
-  width: 130px!important;
+  width: 160px !important;
 }
 
 .menu-shown {
@@ -36,21 +40,65 @@
 }
 
 @media (max-width: 768px) {
-  .nav-item, .navbar-nav {
+  .nav-item,
+  .navbar-nav {
     width: auto;
   }
 }
 
 .top-bar {
   color: black;
-  vertical-align: middle;
+  display: flex;
+  width: 100%;
 }
 
 .top-bar-left {
-  width: 10rem;
+  max-width: 10rem;
 }
 
 .top-bar-left img {
   width: 100%;
 }
 
+.top-bar-right {
+  flex-grow: 1;
+  display: flex;
+  justify-content: space-between;
+  vertical-align: middle;
+}
+
+.company-name {
+  background-color: black;
+  color: white;
+}
+
+.new-campaign-btn {
+  color: black;
+}
+
+.brand-name {
+  background-color: #B1B1B1;
+  color: white;
+}
+
+.company-name,
+.new-campaign-btn,
+.brand-name {
+  font-size: 16px;
+  padding: 0.6rem 3rem;
+}
+@media (max-width: 768px) {
+  .company-name,
+  .new-campaign-btn {
+    font-size: 12px;
+    padding: 0.2rem 0.8rem;
+  }
+}
+
+.new-campaign-btn:hover {
+  text-decoration: none;
+}
+
+.campaign-image-preview {
+  max-width: 100%;
+}

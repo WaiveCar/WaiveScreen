@@ -4,8 +4,8 @@ function renderCampaigns(campaigns) {
        <h4>${campaign.project}</h4>
        <div title=1 class='asset-container' id='asset-container-1'/> </div>
        <div title="1" class="asset-container engine-xA8tAY4YSBmn2RTQqnnXXw" id="asset-container-1"> 
-         <div class="container-xA8tAY4YSBmn2RTQqnnXXw fadeIn-xA8tAY4YSBmn2RTQqnnXXw">
-           <img src="http://waivecar-prod.s3.amazonaws.com/311a1ccb-c3d0-4c42-995d-5d3d38af0bf2.jpeg" style="width: 450px; height: 158.203px;">
+         <div>
+           <img src="http://waivecar-prod.s3.amazonaws.com/311a1ccb-c3d0-4c42-995d-5d3d38af0bf2.jpeg" class="campaign-image-preview">
          </div>
        </div>
        <div class="card-body">

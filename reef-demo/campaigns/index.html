@@ -9,6 +9,7 @@
 		<link rel=stylesheet href=https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css>
     <link href="../css/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link href="../common.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
     <title>Screen Admin</title>
   </head>
   <style>
@@ -25,18 +26,24 @@
       <div class="top-bar-left" onclick="toggleMenu()">
         <img src="../svg/adcast.svg">
       </div>
+      <span class="top-bar-right ml-2 mt-2">
+        <div class="vertical-flex">
+          <span class="company-name">Company</span>
+        </div>
+        <div class="vertical-flex">
+          <a href="/campaigns/create" class="new-campaign-btn mr-5">New Campaign</a>
+        </div>
+      </span>
     </div>
     <div id="wrapper">
       <div id="menu">
         <script src="../menu.js"></script>
       </div>
       <div class="container-fluid">
-        <div class="alert alert-primary" id="notice" role="alert"></div>
-          <div class="d-sm-flex align-items-center justify-content-between mb-4">
-          <h1 class="h3 mb-0 text-gray-800">Campaigns</h1>
-          <a class="btn btn-primary" href="/campaigns/create">Create Campaign</a>
+        <div class="mt-4 mb-4">
+          <span class="brand-name">Brand #1</span>
         </div>
-        <div class='row' id="campaign-list" />
+        <div class='row card-group' id="campaign-list" />
       </div>
     </div>
     <script
