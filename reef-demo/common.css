@@ -169,6 +169,14 @@ body {
   }
 }
 
+.top-bar-right a {
+  color: black;
+}
+
+.top-bar-right a:hover {
+  text-decoration: none!important;
+}
+
 .top-bar-selected {
   background-color: #CFCDCE;
   border-radius: 40px;
@@ -177,4 +185,8 @@ body {
 .top-bar-link {
   font-size: 16px;
   padding: 0.3rem 1rem;
+}
+
+.anchor {
+  line-height: 120px;
 }

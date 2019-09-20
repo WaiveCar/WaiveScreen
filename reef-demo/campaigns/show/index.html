@@ -65,211 +65,212 @@
       <div id="menu">
         <script src="../../menu.js"></script>
       </div>
-    <div class="container">
-      <div class="alert alert-primary" id="notice" role="alert"></div>
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800" id="campaign-title"></h1>
-      </div>
-      <div class="row mb-4">
-        <div class="col-12">
-          <a name="Performance"></a>
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title">Performance</h2>
-
-              <p class="card-text">Graphs and shit </p>
-              <p class="card-text">Attributions / impressions heat map<p>
-            </div>
-          </div>
+      <div class="container">
+        <div class="alert alert-primary" id="notice" role="alert"></div>
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+          <h1 class="h3 mb-0 text-gray-800" id="campaign-title"></h1>
         </div>
-      </div>
-
-      <div class="row mb-4">
-        <a name="Controls"></a>
-        <div class="col-12">
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title">Controls</h2>
-
-              <div class="button-group">
-                <button class="btn btn-primary">Pause</button>
-                <button class="btn btn-primary">Extend</button>
-              </div>
-              <input type="range" class="form-control-range mt-4" name="focus"><label for="focus">focus</label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row mb-4">
-        <a name="Creatives"></a>
-        <div class="col-lg-12">
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title">Edit Creatives</h2>
+        <div class="row mb-4">
+          <div class="col-12">
+            <a name="Performance"></a>
+            <div class="card">
               <div class="card-body">
-                <div class="row no-gutters">
-                  <div class="col-lg-12" style=height:20vw;background:yellow>
-                  </div>
-                  Pause/Play
-                  <span class="oi oi-play-circle" aria-hidden="true"></span>
-                </div>
-                <div class="row no-gutters">
-                  <div class="col-8 offset-2" style=height:15vw;background:blue></div>
-                </div>
-                <div class="row no-gutters">
-                  <div class="col-8 offset-2" style=height:15vw;background:blue></div>
-                </div>
+                <h2 class="card-title anchor">Performance</h2>
 
-                Add Image
-
+                <p class="card-text">Graphs and shit </p>
+                <p class="card-text">Attributions / impressions heat map<p>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!--
-      <div class="row mb-4">
-        <div class="col-lg-12">
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title">Automatic creation</h2>
+        <div class="row mb-4">
+          <a name="Controls"></a>
+          <div class="col-12">
+            <div class="card">
               <div class="card-body">
-                <div class="row no-gutters">
-                  <div class="col-lg-12" style=height:20vw;background:yellow>
+                <h2 class="card-title anchor">Controls</h2>
+
+                <div class="button-group">
+                  <button class="btn btn-primary">Pause</button>
+                  <button class="btn btn-primary">Extend</button>
+                </div>
+                <input type="range" class="form-control-range mt-4" name="focus"><label for="focus">focus</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <a name="Creatives"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title anchor">Edit Creatives</h2>
+                <div class="card-body">
+                  <div class="row no-gutters">
+                    <div class="col-lg-12" style=height:20vw;background:yellow>
+                    </div>
+                    Pause/Play
+                    <span class="oi oi-play-circle" aria-hidden="true"></span>
                   </div>
-                  Pause/Play
-                </div>
+                  <div class="row no-gutters">
+                    <div class="col-8 offset-2" style=height:15vw;background:blue></div>
+                  </div>
+                  <div class="row no-gutters">
+                    <div class="col-8 offset-2" style=height:15vw;background:blue></div>
+                  </div>
 
-                Log in with instagram
+                  Add Image
 
-                Show images
-
-                Select images
-
-                Confirm
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      -->
-
-      <div class="row mb-4">
-        <a name="Location"></a>
-        <div class="col-lg-12">
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title">Location</h2>
-              Filter:
-                [] Moving   [] Stationary
-                [] Full Screen [] Widget
-
-              Advanced:
-                [] Single-user [] Multi-user
-                [] Captive  [] Non-captive
-
-              <select id="type" class="custom-select custom-select-lg">
-                <option value="Circle">Circle</option>
-                <option value="Polygon">Geofence</option>
-              </select>
-              <div style='width:100%;height:20vw' id='map'></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row mb-4">
-        <a name="Budget"></a>
-        <div class="col-lg-12">
-          <div class="card" id="campaign-budget">
-            <div class="card-body">
-              <h2 class="card-title">Duration/Budget</h2>
-              <div id="schedule"></div>
-              <div class="card-text">
-                <div class="form-group row" id="budget-nums">
-                  <label for="start-date" class="col-2 col-form-label">Start Date:</label>
-                  <input type="date" class="col-2 form-control" placeholder="Start Date" id="start-date">
-                  <label for="end-date" class="col-2 col-form-label">End Date:</label>
-                  <input type="date" class="col-2 form-control" placeholder="End Date" id="end-date">
-                  <label for="end-date" class="col-2 col-form-label">Budget:</label>
-                  <input type="number" class="col-2 form-control" placeholder="$ / Month" id="budget">
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="row mb-4">
-        <a name="Summary"></a>
-        <div class="col-lg-12">
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title">Summary</h2>
+
+        <!--
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Automatic creation</h2>
+                <div class="card-body">
+                  <div class="row no-gutters">
+                    <div class="col-lg-12" style=height:20vw;background:yellow>
+                    </div>
+                    Pause/Play
+                  </div>
+
+                  Log in with instagram
+
+                  Show images
+
+                  Select images
+
+                  Confirm
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        -->
+
+        <div class="row mb-4">
+          <a name="Location"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title anchor">Location</h2>
+                Filter:
+                  [] Moving   [] Stationary
+                  [] Full Screen [] Widget
+
+                Advanced:
+                  [] Single-user [] Multi-user
+                  [] Captive  [] Non-captive
+
+                <select id="type" class="custom-select custom-select-lg">
+                  <option value="Circle">Circle</option>
+                  <option value="Polygon">Geofence</option>
+                </select>
+                <div style='width:100%;height:20vw' id='map'></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <a name="Budget"></a>
+          <div class="col-lg-12">
+            <div class="card" id="campaign-budget">
+              <div class="card-body">
+                <h2 class="card-title anchor">Duration/Budget</h2>
+                <div id="schedule"></div>
                 <div class="card-text">
-                  Budget:
-                  <div class="row no-gutters mb-2" id="budget">
-                  
-                  </div>
-                  CPM:
-                  <div class="row no-gutters mb-2" id="cpm">
-                  </div>
-                  Estimated Impressions:
-                  <div class="row no-gutters mb-2" id="impressions">
+                  <div class="form-group row" id="budget-nums">
+                    <label for="start-date" class="col-2 col-form-label">Start Date:</label>
+                    <input type="date" class="col-2 form-control" placeholder="Start Date" id="start-date">
+                    <label for="end-date" class="col-2 col-form-label">End Date:</label>
+                    <input type="date" class="col-2 form-control" placeholder="End Date" id="end-date">
+                    <label for="end-date" class="col-2 col-form-label">Budget:</label>
+                    <input type="number" class="col-2 form-control" placeholder="$ / Month" id="budget">
                   </div>
                 </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row mb-4">
-        <a name="Billing"></a>
-        <div class="col-lg-12">
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title">Billing</h2>
-              <b>Balance: $577.92</b>
-              <h4>Invoices:</h4>
-              <div class="table-responsive billing-table">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                  <thead>
-                    <tr>
-                      <th scope="col">id</th>
-                      <th scope="col">date</th>
-                      <th scope="col">cost</th>
-                      <th scope="col">paid</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody id="screen-table-body">
-                    <tr>
-                      <td>4</td>
-                      <td>9/22/2019</td>
-                      <td>$894.15</td>
-                      <td class="center"><input type="checkbox" checked></td>
-                      <td class="center"><button class="btn btn-primary">download</button></td>
-                    </tr>
-                    <tr>
-                      <td>15</td>
-                      <td>10/1/2019</td>
-                      <td>$577.92</td>
-                      <td class="center"><input type="checkbox"></td>
-                      <td class="center"><button class="btn btn-primary">download</button></td>
-                    </tr>
-                  </tbody>
-                </table>
               </div>
             </div>
           </div>
         </div>
-      </div>
+        <div class="row mb-4">
+          <a name="Summary"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title anchor">Summary</h2>
+                  <div class="card-text">
+                    Budget:
+                    <div class="row no-gutters mb-2" id="budget">
+                    
+                    </div>
+                    CPM:
+                    <div class="row no-gutters mb-2" id="cpm">
+                    </div>
+                    Estimated Impressions:
+                    <div class="row no-gutters mb-2" id="impressions">
+                    </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <a name="Billing"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title anchor">Billing</h2>
+                <b>Balance: $577.92</b>
+                <h4>Invoices:</h4>
+                <div class="table-responsive billing-table">
+                  <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                      <tr>
+                        <th scope="col">id</th>
+                        <th scope="col">date</th>
+                        <th scope="col">cost</th>
+                        <th scope="col">paid</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="screen-table-body">
+                      <tr>
+                        <td>4</td>
+                        <td>9/22/2019</td>
+                        <td>$894.15</td>
+                        <td class="center"><input type="checkbox" checked></td>
+                        <td class="center"><button class="btn btn-primary">download</button></td>
+                      </tr>
+                      <tr>
+                        <td>15</td>
+                        <td>10/1/2019</td>
+                        <td>$577.92</td>
+                        <td class="center"><input type="checkbox"></td>
+                        <td class="center"><button class="btn btn-primary">download</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
 
-      <div class="row mb-4">
-        <button type="button" class="btn btn-primary btn-lg">Update Campaign</button>
+        <div class="row mb-4">
+          <button type="button" class="btn btn-primary btn-lg">Update Campaign</button>
+        </div>
       </div>
     </div>
     <script
