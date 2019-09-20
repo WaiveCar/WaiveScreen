@@ -26,7 +26,7 @@ function calcItems() {
   });
 }
 
-/*
+
 (() => {
   $('#schedule').jqs();
   document
@@ -40,7 +40,6 @@ function calcItems() {
     .addEventListener('mouseup', calcItems);
 })();
 
-*/
 function create_campaign(obj) {
   // Before the payment is processed by paypal, a user's purchase is sent to the server with 
   // the information that has so far been obtained including the picture.
