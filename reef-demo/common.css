@@ -27,8 +27,13 @@ body {
 }
 
 .navbar-nav {
-  display: none;
   width: 160px !important;
+}
+
+@media (max-width: 768px) {
+  .navbar-nav {
+    display: none;
+  }
 }
 
 .menu-shown {
@@ -77,7 +82,7 @@ body {
 }
 
 .brand-name {
-  background-color: #B1B1B1;
+  background-color: #b1b1b1;
   color: white;
 }
 
