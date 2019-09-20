@@ -169,6 +169,10 @@ body {
   }
 }
 
+.with-links {
+  border-bottom: 2px solid #E6E6E6;
+}
+
 .top-bar-right a {
   color: black;
 }
@@ -179,7 +183,15 @@ body {
 
 .top-bar-selected {
   background-color: #CFCDCE;
+}
+
+.update-campaign-btn, .top-bar-selected {
   border-radius: 40px;
+}
+
+.update-campaign-btn {
+  color: white;
+  background-color: black;
 }
 
 .top-bar-link {
@@ -188,5 +200,5 @@ body {
 }
 
 .anchor {
-  line-height: 120px;
+  line-height: 9rem;
 }
