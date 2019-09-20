@@ -128,33 +128,6 @@ $SCHEMA = [
     'created_at' => 'datetime default current_timestamp',
   ],
 
-  'preset' => [
-    'id'            => 'integer primary key autoincrement',
-    'name'          => 'text',
-    'exclusive_set' => 'integer',
-    'use_exchange'  => 'boolean', // for now whether that little check mark
-    'layout_id'     => 'integer', // is on or not.
-    'created_at'    => 'datetime default current_timestamp',
-  ],
-
-  'widget' => [
-    'id'     => 'integer primary key autoincrement',
-    'name'   => 'text', // what to call it
-    'image'  => 'text', // url of logo or screenshot
-    'type'   => 'text', // ticker or app
-    'topic'  => 'text', // optional, such as "weather"
-    'source' => 'text', // The url where to get things
-    'created_at' => 'datetime default current_timestamp',
-  ],
-
-  'layout' => [
-    'id'         => 'integer primary key autoincrement',
-    'name'       => 'text',
-    'image'      => 'text', // url of logo or screenshot
-    'template'   => 'text', // html file to use
-    'widgetmap'  => 'text', // json list of ids to map to the template
-    'created_at' => 'datetime default current_timestamp',
-  ],
 
   'exclusive' => [
     'id'          => 'integer primary key autoincrement',
@@ -200,6 +173,33 @@ $SCHEMA = [
     'created_at' => 'datetime default current_timestamp',
   ],
 
+  'preset' => [
+    'id'            => 'integer primary key autoincrement',
+    'name'          => 'text',
+    'exclusive_set' => 'integer',
+    'use_exchange'  => 'boolean', // for now whether that little check mark
+    'layout_id'     => 'integer', // is on or not.
+    'created_at'    => 'datetime default current_timestamp',
+  ],
+
+  'widget' => [
+    'id'     => 'integer primary key autoincrement',
+    'name'   => 'text', // what to call it
+    'image'  => 'text', // url of logo or screenshot
+    'type'   => 'text', // ticker or app
+    'topic'  => 'text', // optional, such as "weather"
+    'source' => 'text', // The url where to get things
+    'created_at' => 'datetime default current_timestamp',
+  ],
+
+  'layout' => [
+    'id'         => 'integer primary key autoincrement',
+    'name'       => 'text',
+    'image'      => 'text', // url of logo or screenshot
+    'template'   => 'text', // html file to use
+    'widgetmap'  => 'text', // json list of ids to map to the template
+    'created_at' => 'datetime default current_timestamp',
+  ],
   //
   // consider: potentially create a second table for "staging" campaigns
   // that aren't active as opposed to relying on a boolean
