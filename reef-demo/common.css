@@ -47,9 +47,8 @@ body {
 .top-bar {
   background-color: white;
   z-index: 1000;
-  position: sticky;
-  position: -webkit-sticky;
-  top: 0px;
+  position: fixed;
+  top: -5px;
   color: black;
   display: flex;
   width: 100%;
@@ -170,7 +169,7 @@ body {
 }
 
 .with-links {
-  border-bottom: 2px solid #E6E6E6;
+  border-bottom: 2px solid #e6e6e6;
 }
 
 .top-bar-right a {
@@ -178,14 +177,15 @@ body {
 }
 
 .top-bar-right a:hover {
-  text-decoration: none!important;
+  text-decoration: none !important;
 }
 
 .top-bar-selected {
-  background-color: #CFCDCE;
+  background-color: #cfcdce;
 }
 
-.update-campaign-btn, .top-bar-selected {
+.update-campaign-btn,
+.top-bar-selected {
   border-radius: 40px;
 }
 
@@ -199,3 +199,15 @@ body {
   padding: 0.3rem 1rem;
 }
 
+.anchor {
+  display: block;
+  position: relative;
+  top: -250px;
+  visibility: hidden;
+}
+
+.navbar-nav {
+  position: sticky;
+  position: -webkit-sticky;
+  top: 70px;
+}
