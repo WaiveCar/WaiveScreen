@@ -6,10 +6,6 @@ function renderCampaign(campaign) {
   document.querySelector('#end-date').value = campaign.end_time.split(' ')[0];
 }
 
-function toggleEditor() {
-  document.getElementsByClassName('editor')[0].classList.toggle('show');
-}
-
 function calcItems() {
   requestAnimationFrame(() => {
     let schedule = JSON.parse($('#schedule').jqs('export'));
@@ -64,9 +60,11 @@ function changeSelected(newIdx) {
   ]
     .map(
       (item, i) => `
-    <div class="top-bar-link" onclick="changeSelected(${i})">
-      ${item}
-    </div>
+    <a href="#${item}">
+      <div class="top-bar-link" onclick="changeSelected(${i})">
+        ${item}
+      </div>
+    </a>
   `,
     )
     .concat(['<div class="top-bar-link">Update</div>'])
