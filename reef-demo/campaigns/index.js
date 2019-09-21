@@ -30,7 +30,9 @@ function renderCampaigns(campaigns) {
   fetch('http://waivescreen.com/api/campaigns')
     .then(response => response.json())
     .then(json => {
-      renderCampaigns(json);
+      ['brand-1', 'brand-2'].forEach(
+        brand => renderCampaigns(json, brand),
+      );
     })
     .catch(e => console.log('error fetching screens', e));
 })();
