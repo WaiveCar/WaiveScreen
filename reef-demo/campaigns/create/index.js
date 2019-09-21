@@ -1,4 +1,6 @@
-var _preview;
+var 
+  _preview,
+  _assetList = [];
 
 function calcItems() {
   requestAnimationFrame(() => {
@@ -53,8 +55,13 @@ function create_campaign(obj) {
   });
   state.total = dealMap[state.option].price;
 
+  /*
   for(var ix = 0; ix < uploadInput.files.length; ix++) {
     formData.append('file' + ix, uploadInput.files[ix]);
+  }
+  */
+  for(var ix = 0; ix < _job.assetList.length; ix++) {
+    formData.append('file' + ix, _job.assetList[ix]);
   }
 
   return axios({
@@ -113,6 +120,7 @@ function setRatio(container, what) {
 
 window.onload = function(){
   self._container =  document.getElementById('engine');
+  var isFirst = true;
   setRatio(_container, 'car'); 
 
   self._preview = Engine({ 
@@ -121,11 +129,16 @@ window.onload = function(){
     _debug: true });
   self._job = _preview.AddJob();
 
+  $(".controls .rewind").click(function() {
+    // this is a lovely trick to force the current job
+    // which effectively resets itself
+    _preview.PlayNow(_job, true);
+  });
+
   // The event handler below handles the user uploading new files
   uploadInput = document.getElementById('image-upload');
   uploadInput.addEventListener('change', function() {
     var container = $(".preview-holder");
-    container.empty();
 
     addtime(false);
     Array.prototype.slice.call(uploadInput.files).forEach(function(file) {
@@ -138,7 +151,7 @@ window.onload = function(){
         let row = $(
           ['<div class="screen">',
              '<img src="/assets/screen-black.png" class="bg">',
-             '<button type="button" class="remove-asset btn btn-dark">',
+             '<button type="button" class="remove-asset btn btn-sm btn-dark">',
              '<i class="fas fa-times"></i>',
              '</button>',
              '<div class="asset-container"></div>',
@@ -184,5 +197,10 @@ window.onload = function(){
       };
       reader.readAsDataURL(file);
     });
+
+    if(isFirst) {
+      _preview.Play();
+      isFirst = false;
+    }
   });
 }
