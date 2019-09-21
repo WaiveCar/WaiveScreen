@@ -1,6 +1,6 @@
-function renderCampaigns(campaigns, statusId) {
+function renderCampaigns(campaigns, status) {
   moment.locale('en');
-  document.querySelectorAll(`#${statusId}`).forEach(
+  document.querySelectorAll(`#${status}-campaigns`).forEach(
     node =>
       (node.innerHTML = campaigns
         .map(
@@ -23,10 +23,9 @@ function renderCampaigns(campaigns, statusId) {
             ).format('MMM D')}`}
              </div>
              <div class="user-icon-holder">
-               <img src="../svg/user-icon.svg" class="user-icon">
-               <img src="../svg/user-icon.svg" class="user-icon">
-               <img src="../svg/user-icon.svg" class="user-icon">
-               <img src="../svg/user-icon.svg" class="user-icon">
+                ${status === 'pending' ? `<div>approve</div>` : ''}
+                ${status === 'active' ? `<div>pause</div>` : ''}
+                ${status === 'paused' ? `<div>resume</div>` : ''}
              </div>
            </a>
          </div>`,
@@ -39,7 +38,7 @@ function renderCampaigns(campaigns, statusId) {
   fetch('http://waivescreen.com/api/campaigns')
     .then(response => response.json())
     .then(json => {
-      ['pending-campaigns', 'active-campaigns', 'paused-campaigns'].forEach(
+      ['pending', 'active', 'paused'].forEach(
         status => renderCampaigns(json, status),
       );
     })
