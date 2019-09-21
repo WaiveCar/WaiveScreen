@@ -5,7 +5,7 @@ function toggleMenu() {
 (() => {
   document.getElementById('menu').innerHTML = `
       <ul class="navbar-nav bg-gradient-white sidebar sidebar-light">
-        ${['screens', 'campaigns', 'organizations', 'brands', 'users']
+        ${['approval', 'screens', 'campaigns', 'organizations', 'brands', 'users']
           .map(
             item => `
           <li class="ml-2 nav-item menu-item sidebar-link active" data-item="${item}">
