@@ -1,6 +1,6 @@
 function renderCampaigns(campaigns) {
   moment.locale('en');
-  document.getElementById('campaign-list').innerHTML = campaigns
+  document.querySelectorAll('.campaign-list').forEach(node => node.innerHTML = campaigns
     .map(
       campaign =>
         `<div class="card mt-1 ml-2">
@@ -23,7 +23,7 @@ function renderCampaigns(campaigns) {
            </a>
          </div>`,
     )
-    .join('');
+    .join(''));
 }
 
 (() => {
