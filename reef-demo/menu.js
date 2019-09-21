@@ -9,7 +9,7 @@ function toggleMenu() {
           .map(
             item => `
           <li class="ml-2 nav-item menu-item sidebar-link active" data-item="${item}">
-            <a class="nav-link" href="/${item}/index.html">
+            <a class="nav-link" href="/${item}/">
             <span>${item}</span></a>
           </li>
         `,

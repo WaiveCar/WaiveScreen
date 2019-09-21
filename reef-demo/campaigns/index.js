@@ -4,7 +4,7 @@ function renderCampaigns(campaigns) {
     .map(
       campaign =>
         `<div class="card mt-1 ml-2">
-           <a class="prevent-underline" href="/campaigns/show/index.html?id=${campaign.id}">
+           <a class="prevent-underline" href="/campaigns/show?id=${campaign.id}">
              <div id="asset-container-1"> 
                <div>
                  <img src="http://waivecar-prod.s3.amazonaws.com/311a1ccb-c3d0-4c42-995d-5d3d38af0bf2.jpeg" class="campaign-image-preview">
