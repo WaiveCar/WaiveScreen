@@ -10,6 +10,7 @@
     <link href="../../css/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link rel=stylesheet href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
     <link href="../../css/jquery.schedule.min.css" rel="stylesheet">
+    <link rel='stylesheet' href='/engine.css'>
     <title>Screen Admin</title>
   </head>
   <style>
@@ -37,6 +38,13 @@
     #schedule {
       height: 340px;
     }
+    .remove-asset {
+      position:absolute;
+      right:0;
+      z-index:1
+    }
+    #engine { overflow: hidden; background: black }
+
 .screen {
   background: black;
   text-align: center;
@@ -48,6 +56,12 @@
 .preview-holder {
   width: 100%;
 }
+ .controls { 
+   padding: 10px;
+   background: #333;
+   padding-bottom: 3px;
+   border-radius: 0 0 10px 10px;
+ }
  .asset-container {
   position: absolute;
   top: 0;
@@ -91,23 +105,22 @@
                 <h2 class="card-title">Add Creatives</h2>
                 <div class="card-body">
                   <div class="row no-gutters">
-                    <div class="col-lg-12" style=height:20vw;background:yellow>
-                    </div>
+                    <div id="engine" class="col-lg-12"></div>
                   </div>
-                  <div class="row no-gutters">
+                  <div class="row no-gutters controls">
                     <div class="col-6">
                       <div class="btn-group" role="group" aria-label="Basic example">
-                        <button type="button" class="btn btn-secondary">
+                        <button type="button" class="btn btn-dark">
                           <i class="fas fa-backward"></i>
                         </button>
-                        <button type="button" class="btn btn-secondary">
+                        <button type="button" class="btn btn-dark">
                           <i class="fas fa-play"></i>
                         </button>
                       </div>
                     </div>
                     <div class="col-6">
                       <div class="float-right">
-                        <label for="image-upload" class="btn btn-secondary">
+                        <label for="image-upload" class="btn btn-dark">
                           <i class="fas fa-plus-square"></i> Image/Video
                         </label>
                         <input id="image-upload" multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
@@ -232,6 +245,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
     <script src="./../../js/jquery.schedule.min.js"></script>
     <script src="./index.js"></script>
+    <script src="/engine.js"></script>
     </body>
 </html>
 
