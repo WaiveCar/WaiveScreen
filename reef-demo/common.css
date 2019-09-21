@@ -248,6 +248,10 @@ body {
     width: 100%;
     font-weight: 800;
   }
+
+  .model-list {
+    margin-top: 60px;
+  }
 }
 
 .campaign-show-title {
@@ -285,11 +289,11 @@ body {
   color: black;
 }
 
-@media(max-width: 768px) {
+@media (max-width: 768px) {
   .chart-contain {
-    display: block!important;
+    display: block !important;
   }
   .mobile-chart {
-    width: 100%!important;
+    width: 100% !important;
   }
 }
