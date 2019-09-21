@@ -8,6 +8,8 @@
     <link href="../../css/sb-admin-2.min.css" rel="stylesheet">
 		<link rel=stylesheet href=https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css>
     <link href="../../css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link href="../../common.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
     <title>Screen Admin</title>
   </head>
   <style>
@@ -27,7 +29,14 @@
     #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
   </style>
   <body id="page-top">
-    <div id="wrapper">
+    <div class="menu-btn mt-1 top-bar">
+      <div class="top-bar-left" onclick="toggleMenu()">
+        <img src="../../svg/adcast.svg">
+      </div>
+      <span class="top-bar-right ml-4 mt-2">
+      </span>
+    </div>
+    <div id="wrapper" class="offest-top">
       <div id="menu">
         <script src="../../menu.js"></script>
       </div>

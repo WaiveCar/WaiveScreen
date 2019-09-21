@@ -1,33 +1,30 @@
 function renderCampaigns(campaigns) {
-  document.getElementById('campaign-list').innerHTML = campaigns.map(campaign => 
-    `<div class="card" style="width: 450px">
-       <h4>${campaign.project}</h4>
-       <div title=1 class='asset-container' id='asset-container-1'/> </div>
-       <div title="1" class="asset-container engine-xA8tAY4YSBmn2RTQqnnXXw" id="asset-container-1"> 
-         <div class="container-xA8tAY4YSBmn2RTQqnnXXw fadeIn-xA8tAY4YSBmn2RTQqnnXXw">
-           <img src="http://waivecar-prod.s3.amazonaws.com/311a1ccb-c3d0-4c42-995d-5d3d38af0bf2.jpeg" style="width: 450px; height: 158.203px;">
-         </div>
-       </div>
-       <div class="card-body">
-         <p class="card-text"></p>
-         <div class="btn-group" role="group" aria-label="Actions">
-           <h3>
-             <span class="badge badge-info" style=margin-left:1rem><a href="">Client Name</a></span>
-             <span class='badge badge-pill badge-dark'>Priority: ${campaign.priority}</span>                   
-           </h3>
-         </div>
-         <div class="btn-group" role="group" aria-label="Actions">
-           <h3>
-             <span class="badge badge-info" style=margin-left:1rem><a href="">Start: ${campaign.start_time}</a></span>
-             <span class='badge badge-pill badge-dark'>End: ${campaign.end_time}</span>                   
-           </h3>
-         </div>
-         <a class="btn btn-primary" href="/campaigns/show/index.html?id=${campaign.id}">Edit/Modify</a>
-       </div>
-    </div>
-  `
-  ).join('');
-};
+  moment.locale('en');
+  document.getElementById('campaign-list').innerHTML = campaigns
+    .map(
+      campaign =>
+        `<div class="card mt-1 ml-2">
+           <a class="prevent-underline" href="/campaigns/show?id=${campaign.id}">
+             <div id="asset-container-1"> 
+               <div>
+                 <img src="http://waivecar-prod.s3.amazonaws.com/311a1ccb-c3d0-4c42-995d-5d3d38af0bf2.jpeg" class="campaign-image-preview">
+               </div>
+             </div>
+             <div class="campaign-title mt-1">${campaign.project}</div>
+             <div class="campaign-dates">
+               ${`${moment(campaign.start_time).format('MMM D')}   `}<i class="fas fa-play arrow"></i> ${`   ${moment(campaign.end_time).format('MMM D')}`}
+             </div>
+             <div class="user-icon-holder">
+               <img src="../svg/user-icon.svg" class="user-icon">
+               <img src="../svg/user-icon.svg" class="user-icon">
+               <img src="../svg/user-icon.svg" class="user-icon">
+               <img src="../svg/user-icon.svg" class="user-icon">
+             </div>
+           </a>
+         </div>`,
+    )
+    .join('');
+}
 
 (() => {
   fetch('http://waivescreen.com/api/campaigns')

@@ -8,29 +8,41 @@
     <link href="../css/sb-admin-2.min.css" rel="stylesheet">
 		<link rel=stylesheet href=https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css>
     <link href="../css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link href="../common.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
     <title>Screen Admin</title>
   </head>
   <style>
     form { float: right }
     #content-wrapper h4 { color: #000 }
     .form-control-file { display: none }
-    .asset-container { width: <?= $width; ?>px; position: relative; height: <?= $height; ?>px; }
     .upload-button { margin-bottom: 0 }
     #notice { position: fixed; top:0; left:0; width: 100%; z-index: 100;display:none}
     .dropdown-menu > a.dark { color: #000;cursor: default }
   </style>
   <body id="page-top">
-    <div id="wrapper">
+    <div class="menu-btn mt-1 top-bar">
+      <div class="top-bar-left" onclick="toggleMenu()">
+        <img src="../svg/adcast.svg">
+      </div>
+      <span class="top-bar-right ml-4 mt-2">
+        <div class="vertical-flex">
+          <span class="company-name">Company</span>
+        </div>
+        <div class="vertical-flex">
+          <a href="/campaigns/create" class="new-campaign-btn">New Campaign</a>
+        </div>
+      </span>
+    </div>
+    <div id="wrapper" class="campaign-show">
       <div id="menu">
         <script src="../menu.js"></script>
       </div>
       <div class="container-fluid">
-        <div class="alert alert-primary" id="notice" role="alert"></div>
-          <div class="d-sm-flex align-items-center justify-content-between mb-4">
-          <h1 class="h3 mb-0 text-gray-800">Campaigns</h1>
-          <a class="btn btn-primary" href="/campaigns/create">Create Campaign</a>
+        <div class="mt-2 mb-3">
+          <span class="brand-name">Brand #1</span>
         </div>
-        <div class='row' id="campaign-list" />
+        <div class="row card-group ml-1" id="campaign-list" />
       </div>
     </div>
     <script
@@ -43,6 +55,7 @@
     <script src="../js/sb-admin-2.min.js"></script>
     <script src="../js/jquery.dataTables.min.js"></script>
     <script src="../js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
     <script src="./index.js"></script>
   </body>
 </html>

@@ -1,23 +1,24 @@
-
 function renderCampaign(campaign) {
-  console.log(campaign);
-  document.getElementById('campaign-title').textContent = campaign.project;
-  document.querySelector('#start-date').value = campaign.start_time.split(' ')[0];
+  document.querySelector('.campaign-show-title').textContent =
+    campaign.project[0].toUpperCase() + campaign.project.slice(1);
+  document.querySelector('.campaign-dates').innerHTML = `${`${moment(
+    campaign.start_time,
+  ).format('MMM D')}   `}<i class="fas fa-play arrow"></i> ${`   ${moment(
+    campaign.end_time,
+  ).format('MMM D')}`}`;
+  document.querySelector('#start-date').value = campaign.start_time.split(
+    ' ',
+  )[0];
   document.querySelector('#end-date').value = campaign.end_time.split(' ')[0];
 }
 
-function toggleEditor() {
-  document.getElementsByClassName('editor')[0].classList.toggle('show');
-}
-
 function calcItems() {
-  setTimeout(() => {
+  requestAnimationFrame(() => {
     let schedule = JSON.parse($('#schedule').jqs('export'));
     let minutesPerWeek = schedule.reduce((acc, item) => {
       return (
         acc +
         item.periods.reduce((acc, period) => {
-          console.log('period', period);
           return (
             acc +
             moment(period.end, 'hh:mm').diff(
@@ -31,17 +32,55 @@ function calcItems() {
     let budget = document.querySelector('#budget').value;
     let fakeNumImpressionsPerWeek = budget * 14.32;
     let fakeCPM = (fakeNumImpressionsPerWeek / budget / 100).toFixed(2);
-    document.querySelector('#budget').textContent = `$${budget}`;
-    document.querySelector('#cpm').textContent = `$${fakeCPM}`;
-    document.querySelector(
-      '#impressions',
-    ).textContent = `${fakeNumImpressionsPerWeek}`;
+    if (budget) {
+      document.querySelector('#budget').textContent = `$${budget}`;
+      document.querySelector('#cpm').textContent = `$${fakeCPM}`;
+      document.querySelector(
+        '#impressions',
+      ).textContent = `${fakeNumImpressionsPerWeek}`;
+    }
   });
 }
 
 let campaign = null;
 
+let selectedLinkIdx = 0;
+let topBarRight = document.querySelector('.top-bar-right');
+
+function changeSelected(newIdx) {
+  topBarRight.children[selectedLinkIdx].classList.remove('top-bar-selected');
+  selectedLinkIdx = newIdx;
+  topBarRight.children[selectedLinkIdx].classList.add('top-bar-selected');
+}
+
 (() => {
+  topBarRight.innerHTML = [
+    'Overview',
+    'Budget',
+    'Performance',
+    'Controls',
+    'Creatives',
+    'Billing',
+    'Summary',
+    'Location',
+  ]
+    .map(
+      (item, i) => `
+    <a href="#${item}">
+      <div class="top-bar-link" onclick="changeSelected(${i})">
+        ${item}
+      </div>
+    </a>
+  `,
+    )
+    .concat(['<div class="top-bar-link update-campaign-btn">Update</div>'])
+    .join('');
+  topBarRight.children[selectedLinkIdx].classList.add('top-bar-selected');
+
+  window.addEventListener('hashchange', function() {
+    window.scrollTo(window.scrollX, window.scrollY - 50);
+  });
+
   $('#schedule').jqs();
   const id = new URL(location.href).searchParams.get('id');
   fetch(`http://waivescreen.com/api/campaigns?id=${id}`)
@@ -60,4 +99,6 @@ let campaign = null;
   document
     .querySelector('.jqs-table tbody')
     .addEventListener('mouseup', calcItems);
+
 })();
+

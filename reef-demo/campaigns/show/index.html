@@ -10,6 +10,8 @@
     <link href="../../css/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link rel=stylesheet href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
     <link href="../../css/jquery.schedule.min.css" rel="stylesheet">
+    <link href="../../common.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
     <title>Screen Admin</title>
   </head>
   <style>
@@ -36,9 +38,6 @@
     .editor {
       display: none;
     }
-    .show {
-      display: block;
-    }
     #schedule {
       height: 340px;
     }
@@ -54,46 +53,108 @@
     }
   </style>
   <body id="page-top">
-    <div id="wrapper">
-      <div id="menu">
+    <a name="Overview"></a>
+    <div class="menu-btn mt-1 top-bar">
+      <div class="top-bar-left" onclick="toggleMenu()">
+        <img src="../../svg/adcast.svg">
+      </div>
+      <span class="top-bar-right mt-2 with-links hidable-top-bar">
+      </span>
+    </div>
+    <div id="wrapper" class="offset-top">
+      <div id="menu" class="sticky-menu">
         <script src="../../menu.js"></script>
       </div>
-    <div class="container">
-      <div class="alert alert-primary" id="notice" role="alert"></div>
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800" id="campaign-title"></h1>
-      </div>
-      <div class="row mb-4">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title">Performance</h2>
+      <div class="container-fluid">
+        <div class="campaign-preview">
 
-              <p class="card-text">Graphs and shit </p>
-              <p class="card-text">Attributions / impressions heat map<p>
+        </div>
+        <div class="alert alert-primary" id="notice" role="alert"></div>
+        <div class="d-flex justify-content-between">
+          <div class="d-flex justify-content-between campaign-show-sub mt-3">
+            <div class="advert-holder">
+              <div class="campaign-show-title"></div>
+            </div>
+            <div class="advert-holder">
+              <div class="advert-a">Advert-A</div>
+            </div>
+            <div class="advert-holder">
+              <div class="advert-b">Advert-B</div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div class="row mb-4">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title">Controls</h2>
-
-              <div class="button-group">
-                <button class="btn btn-primary">Pause</button>
-                <button class="btn btn-primary">Extend</button>
-                <button class="btn btn-primary" onclick="toggleEditor()">Show/Hide Editor</button>
-              </div>
-              <input type="range" class="form-control-range mt-4" name="focus"><label for="focus">focus</label>
-            </div>
+          <div class="sub-users mt-3">
+            <img src="../../svg/user-icon.svg" class="user-icon">
+            <img src="../../svg/user-icon.svg" class="user-icon">
+            <img src="../../svg/user-icon.svg" class="user-icon">
+            <img src="../../svg/user-icon.svg" class="user-icon">
+            <img src="../../svg/gear.svg" class="user-icon">
           </div>
         </div>
-      </div>
-      <div class="editor">
+
+        <div class="campaign-dates">
+        </div>
+
         <div class="row mb-4">
+          <a name="Performance"></a>
+          <div class="col-lg-12">
+            <div class="section-title">Performance</div>
+            <div class="d-flex justify-content-center chart-contain">
+	            <div style="width: 50%;" class="mobile-chart">
+	            	<canvas id="campaign-chart-1"></canvas>
+	            </div>
+	            <div style="width: 20%;" class="mobile-chart">
+	            	<canvas id="campaign-chart-2"></canvas>
+	            </div>
+	            <div style="width: 20%;" class="mobile-chart">
+	            	<canvas id="campaign-chart-3"></canvas>
+	            </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <a name="Location"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Location</h2>
+                Filter:
+                  [] Moving   [] Stationary
+                  [] Full Screen [] Widget
+
+                Advanced:
+                  [] Single-user [] Multi-user
+                  [] Captive  [] Non-captive
+
+                <select id="type" class="custom-select custom-select-lg">
+                  <option value="Circle">Circle</option>
+                  <option value="Polygon">Geofence</option>
+                </select>
+                <div style='width:100%;height:20vw' id='map'></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <a name="Controls"></a>
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Controls</h2>
+
+                <div class="button-group">
+                  <button class="btn btn-primary">Pause</button>
+                  <button class="btn btn-primary">Extend</button>
+                </div>
+                <input type="range" class="form-control-range mt-4" name="focus"><label for="focus">focus</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <a name="Creatives"></a>
           <div class="col-lg-12">
             <div class="card">
               <div class="card-body">
@@ -148,30 +209,9 @@
         </div>
         -->
 
-        <div class="row mb-4">
-          <div class="col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                <h2 class="card-title">Location</h2>
-                Filter:
-                  [] Moving   [] Stationary
-                  [] Full Screen [] Widget
-
-                Advanced:
-                  [] Single-user [] Multi-user
-                  [] Captive  [] Non-captive
-
-                <select id="type" class="custom-select custom-select-lg">
-                  <option value="Circle">Circle</option>
-                  <option value="Polygon">Geofence</option>
-                </select>
-                <div style='width:100%;height:20vw' id='map'></div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <div class="row mb-4">
+          <a name="Budget"></a>
           <div class="col-lg-12">
             <div class="card" id="campaign-budget">
               <div class="card-body">
@@ -192,6 +232,7 @@
           </div>
         </div>
         <div class="row mb-4">
+          <a name="Summary"></a>
           <div class="col-lg-12">
             <div class="card">
               <div class="card-body">
@@ -212,52 +253,48 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="row mb-4">
-        <div class="col-lg-12">
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title">Billing</h2>
-              <b>Balance: $577.92</b>
-              <h4>Invoices:</h4>
-              <div class="table-responsive billing-table">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                  <thead>
-                    <tr>
-                      <th scope="col">id</th>
-                      <th scope="col">date</th>
-                      <th scope="col">cost</th>
-                      <th scope="col">paid</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody id="screen-table-body">
-                    <tr>
-                      <td>4</td>
-                      <td>9/22/2019</td>
-                      <td>$894.15</td>
-                      <td class="center"><input type="checkbox" checked></td>
-                      <td class="center"><button class="btn btn-primary">download</button></td>
-                    </tr>
-                    <tr>
-                      <td>15</td>
-                      <td>10/1/2019</td>
-                      <td>$577.92</td>
-                      <td class="center"><input type="checkbox"></td>
-                      <td class="center"><button class="btn btn-primary">download</button></td>
-                    </tr>
-                  </tbody>
-                </table>
+        <div class="row mb-4">
+          <a name="Billing"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Billing</h2>
+                <b>Balance: $577.92</b>
+                <h4>Invoices:</h4>
+                <div class="table-responsive billing-table">
+                  <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                      <tr>
+                        <th scope="col">id</th>
+                        <th scope="col">date</th>
+                        <th scope="col">cost</th>
+                        <th scope="col">paid</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="screen-table-body">
+                      <tr>
+                        <td>4</td>
+                        <td>9/22/2019</td>
+                        <td>$894.15</td>
+                        <td class="center"><input type="checkbox" checked></td>
+                        <td class="center"><button class="btn btn-primary">download</button></td>
+                      </tr>
+                      <tr>
+                        <td>15</td>
+                        <td>10/1/2019</td>
+                        <td>$577.92</td>
+                        <td class="center"><input type="checkbox"></td>
+                        <td class="center"><button class="btn btn-primary">download</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-
-      <div class="row mb-4">
-        <button type="button" class="btn btn-primary btn-lg">Update Campaign</button>
       </div>
     </div>
     <script
@@ -273,7 +310,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
     <script src="./../../js/jquery.schedule.min.js"></script>
+	  <script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
     <script src="./index.js"></script>
+    <script src="./charts.js"></script>
     </body>
 </html>
 

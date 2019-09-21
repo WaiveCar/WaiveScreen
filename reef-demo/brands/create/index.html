@@ -1,16 +1,16 @@
-<!doctype html>
 <html lang="en">
   <head>
+    <base href="../../">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link href="../css/all.min.css" rel="stylesheet">
+    <link href="css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-    <link href="../css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
 		<link rel=stylesheet href=https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css>
-    <link href="../css/dataTables.bootstrap4.min.css" rel="stylesheet">
-    <link href="../common.css" rel="stylesheet">
+    <link href="css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link href="/common.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
-    <title>Screen Admin</title>
+    <title class='head'>New Type</title>
   </head>
   <style>
     #content-wrapper span { color: #000 }
@@ -31,44 +31,27 @@
   <body id="page-top">
     <div class="menu-btn mt-1 top-bar">
       <div class="top-bar-left" onclick="toggleMenu()">
-        <img src="../svg/adcast.svg">
+        <img src="/svg/adcast.svg">
       </div>
       <span class="top-bar-right ml-4 mt-2">
       </span>
     </div>
     <div id="wrapper" class="offset-top">
       <div id="menu">
-        <script src="../menu.js"></script>
+        <script src="menu.js"></script>
       </div>
       <div class="container-fluid">
         <div class="alert alert-primary" id="notice" role="alert"></div>
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
-          <h1 class="h3 mb-0 text-gray-800">Screens</h1>
-        </div>
-        <div class="jumbotron">
-          <h1 class="display-4">Map to go here</h1>
-        </div>
-        <div class="jumbotron">
-          <h1 class="display-4">Revenue info here</h1>
+          <h1 class="h3 mb-0 text-gray-800 head">New Type</h1>
         </div>
         <div id="content-wrapper" class="d-flex flex-column">
           <h3>
             <div class="alert alert-primary" id="notice" role="alert"></div>
           </h3>
 
-          <div class="table-responsive">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-              <thead>
-                <tr>
-                  <th scope="col">id</th>
-                  <th scope="col">city</th>
-                  <th scope="col">location</th>
-                  <th scope="col">phone</th>
-                </tr>
-              </thead>
-              <tbody id="screen-table-body">
-              </tbody>
-            </table>
+          <form id=createForm method=post>
+            Loading...
           </div>
         </div>
       </div>
@@ -79,10 +62,17 @@
     crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="../js/jquery.easing.min.js"></script>
-    <script src="../js/sb-admin-2.min.js"></script>
-    <script src="../js/jquery.dataTables.min.js"></script>
-    <script src="../js/dataTables.bootstrap4.min.js"></script>
-    <script src="./index.js"></script>
+    <script src="js/jquery.easing.min.js"></script>
+    <script src="js/sb-admin-2.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/dataTables.bootstrap4.min.js"></script>
+    <script src="/engine.js"></script>
+    <script src="/map.js"></script>
+    <script src="/formBuilder.js"></script>
+    <script>
+    window.onload = function(){
+      doit('brand', {hide: ['balance']});
+    }
+  </script>
   </body>
 </html>
