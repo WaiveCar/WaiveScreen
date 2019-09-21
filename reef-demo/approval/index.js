@@ -22,12 +22,12 @@ function renderCampaigns(campaigns, status) {
               campaign.end_time,
             ).format('MMM D')}`}
              </div>
-             <div class="user-icon-holder">
-                ${status === 'pending' ? `<div>approve</div>` : ''}
-                ${status === 'active' ? `<div>pause</div>` : ''}
-                ${status === 'paused' ? `<div>resume</div>` : ''}
-             </div>
            </a>
+           <div class="user-icon-holder">
+              ${status === 'pending' ? `<a href="" class="campaign-dates"><i class="fas fa-plus"></i> <span style="font-size: 14px"> approve</span></a>` : ''}
+              ${status === 'active' ? `<a href="" class="campaign-dates"><i class="fas fa-pause"></i> <span style="font-size: 14px"> pause</span></a>` : ''}
+              ${status === 'paused' ? `<a href="" class="campaign-dates"><i class="fas fa-play"></i> <span style="font-size: 14px"> resume</span></a>` : ''}
+           </div>
          </div>`,
         )
         .join('')),
