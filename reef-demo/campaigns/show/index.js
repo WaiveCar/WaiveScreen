@@ -99,4 +99,6 @@ function changeSelected(newIdx) {
   document
     .querySelector('.jqs-table tbody')
     .addEventListener('mouseup', calcItems);
+
 })();
+
