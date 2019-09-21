@@ -83,6 +83,7 @@ $SCHEMA = [
 
     # If the device goes offline this will tell us
     # what it is that dissappeared so we can check
+    'last_campaign_id' => 'integer',
     'imei'        => 'text',
     'phone'       => 'text',
     'car'         => 'text',
@@ -220,6 +221,7 @@ $SCHEMA = [
     'name'        => 'text',
     'ref_id'      => 'text',
     'brand_id'    => 'integer',
+    'org_id'    => 'integer',
     'order_id'    => 'integer',
     'asset'       => 'text not null',
     'duration_seconds' => 'integer',
@@ -247,6 +249,7 @@ $SCHEMA = [
 
     'start_minute'=> 'integer default null',
     'end_minute'  => 'integer default null',
+    'approved'    => 'boolean default false',
     'active'      => 'boolean default false',
     'is_default'  => 'boolean default false',
     'priority'    => 'integer default 0',

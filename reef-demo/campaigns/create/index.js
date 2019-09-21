@@ -1,3 +1,5 @@
+var _preview;
+
 function calcItems() {
   requestAnimationFrame(() => {
     let schedule = JSON.parse($('#schedule').jqs('export'));
@@ -103,11 +105,25 @@ function addtime(n) {
     }
   }
 }
+function setRatio(container, what) {
+  if(what == 'car') {
+    container.style.height = (.351 * container.clientWidth) + "px";
+  }
+}
+
 window.onload = function(){
+  self._container =  document.getElementById('engine');
+  setRatio(_container, 'car'); 
+
+  self._preview = Engine({ 
+    container: _container,
+    dynamicSize: true,
+    _debug: true });
+  self._job = _preview.AddJob();
+
   // The event handler below handles the user uploading new files
   uploadInput = document.getElementById('image-upload');
   uploadInput.addEventListener('change', function() {
-    console.log("HI");
     var container = $(".preview-holder");
     container.empty();
 
@@ -117,13 +133,18 @@ window.onload = function(){
       let reader = new FileReader();
 
       reader.onload = function(e) {
-        var asset;
+        var asset, reference;
 
         let row = $(
           ['<div class="screen">',
              '<img src="/assets/screen-black.png" class="bg">',
+             '<button type="button" class="remove-asset btn btn-dark">',
+             '<i class="fas fa-times"></i>',
+             '</button>',
              '<div class="asset-container"></div>',
           '</div>'].join(''));
+
+        reference = _job.append(e.target.result);
 
         if(file.type.split('/')[0] === 'image') {
           asset = document.createElement('img');
@@ -153,6 +174,11 @@ window.onload = function(){
             addtime( e.target.duration );
           }
         }
+
+        $(".remove-asset", row).click(function() {
+          _job.remove(reference);
+          row.remove();
+        });
 
         $(".asset-container", row).append(asset);
       };

@@ -1,5 +1,6 @@
 <?
 require $_SERVER['DOCUMENT_ROOT'] .  'AdDaemon/vendor/autoload.php';
+session_start();
 
 use Aws\S3\S3Client;
 use Ramsey\Uuid\Uuid;
@@ -582,6 +583,7 @@ function sow($payload) {
         $job = Get::job($job_id);
       }
       if(isset( $job['campaign_id'] )) {
+        db_update('screen', $screen['id'], ['last_campaign_id' => $job['campaign_id']]);
         $campaignsToUpdateList[] = $job['campaign_id'];
       }
     }
@@ -695,6 +697,19 @@ function upload_s3($file) {
   }
   // see https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-s3-2006-03-01.html#putobject
   return $name;
+}
+
+function guarded_show($what) {
+  global $SCHEMA;
+  $clause = [];
+  if($user = getUser()) {
+    foreach(['org_id','brand_id'] as $limit) {
+      if(isset($SCHEMA[$what][$limit]) && !empty($user[$limit])) {
+        $clause[$limit] = $user[$limit];
+      }
+    }
+  }
+  return show($what, $clause);
 }
 
 function show($what, $clause = '') {
@@ -870,5 +885,24 @@ function campaign_update($data, $fileList, $user = false) {
     db_update('campaign', $campaign_id, ['asset' => db_string(json_encode($assetList))]);
   }
   return $campaign_id;
+}
+
+function getUser() {
+  if(isset($_SESSION['user_id'])) {
+    return Get::user($_SESSION['user_id']);
+  }
+}
+
+function login($email) {
+  $user = Get::user(['email' => $email]);
+  if ($user) {
+    $_SESSION['user_id'] = $user['id'];
+    return doSuccess($user);
+  }
+  return doError("No user found");
+}
+
+function logout() {
+  session_destroy();
 }
 
