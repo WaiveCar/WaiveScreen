@@ -83,6 +83,11 @@ var Engine = function(opts){
     },
     _fallback;
 
+  if(_res.dynamicSize) {
+    _res.target.width = _res.container.clientWidth;
+    _res.target.height = _res.container.clientHeight;
+  }
+
   _res.target.ratio = _res.target.width / _res.target.height;
 
   var Timeline = {
@@ -305,7 +310,28 @@ var Engine = function(opts){
     if(asset.mime) { 
       return asset.mime.match(mime);
     }
+    if(asset.type) { 
+      return asset.type.match(mime);
+    }
     return asset.url.match('(' + ext.join('|') + ')');
+  }
+
+  function urlToAsset(url, obj) {
+    var container = document.createElement('div');
+    var asset = isString(url) ? {url: url} : url;
+    container.classList.add('container' + _key);
+
+    if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
+      asset = image(asset, obj);
+    } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
+      asset = video(asset, obj);
+    } else {
+      asset = iframe(asset, obj);
+    }
+    asset.uniq = _uniq++;
+    asset.container = container;
+    asset.container.appendChild(asset.dom);
+    return asset;
   }
 
   // All the things returned from this have 2 properties
@@ -314,25 +340,21 @@ var Engine = function(opts){
   //  duration - how long the asset should be displayed.
   //
   function makeJob(obj) {
-    obj.downweight = obj.downweight || 1;
-    obj.completed_seconds = obj.completed_seconds || 0;
-    // obj.what = obj.what || obj.url;
+    obj = merge({
+      downweight: 1,
+      completed_seconds: 0,
+      // We need multi-asset support on a per-job
+      // basis which means we need to be able
+      // to track
+      position: 0,
+      // This is the total duration of all the
+      // assets included in this job.
+      duration: 0,
+      assetList: [],
+      id: _job_id++,
+    }, obj);
     
-    // We need multi-asset support on a per-job
-    // basis which means we need to be able
-    // to track
-    obj.position = 0;
-
-    // This is the total duration of all the
-    // assets included in this job.
-    obj.duration = 0;
-
-    obj.id = obj.id || (_job_id ++);
-    //
-    // We don't want to manually set this.
-    // obj.goal
-    //
-    if( ! ('url' in obj) ) {
+    if( ! ('url' in obj) && ('asset' in obj) ) {
       obj.url = obj.asset;
     }
 
@@ -340,25 +362,20 @@ var Engine = function(opts){
       obj.url = [ obj.url ];
     }
 
-    obj.assetList = obj.url.map(function(asset) {
-      var container = document.createElement('div');
-      if(isString(asset)) {
-        asset = {url: asset};
-      }
-      container.classList.add('container' + _key);
+    if( obj.url ) {
+      obj.assetList = obj.url.map(function(row) { return urlToAsset(row, obj); });
+    }
 
-      if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
-        asset = image(asset, obj);
-      } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
-        asset = video(asset, obj);
-      } else {
-        asset = iframe(asset, obj);
-      }
-      asset.uniq = _uniq++;
-      asset.container = container;
-      asset.container.appendChild(asset.dom);
+    obj.remove = function(what) {
+      obj.assetList = obj.assetList.filter(function(row) { return row.uniq != what.uniq });
+      obj.duration = obj.assetList.reduce(function(a,b) { return a + b.duration }, 0);
+    }
+
+    obj.append = function(what) {
+      var asset = urlToAsset(what, obj);
+      obj.assetList.push(asset);
       return asset;
-    });
+    }
         
     return obj;
   }
@@ -662,7 +679,7 @@ var Engine = function(opts){
     }
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
-      if(_res.server &&_res._debug) {
+      if(_res.server && _res._debug) {
         console.log("Range < 0, using fallback");
       }
 
@@ -738,8 +755,12 @@ var Engine = function(opts){
     },
     Play: function() {
       _res.pause = false;
-      _current.shown.dom.play();
-      nextAsset();
+      if(_current) {
+        _current.shown.dom.play();
+        nextAsset();
+      } else {
+        nextJob();
+      }
     },
     Pause: function() {
       _res.pause = !_res.pause;
@@ -800,18 +821,17 @@ var Engine = function(opts){
     },
     SetFallback: setFallback,
     AddJob: function(obj, params) {
-      var res = {};
+      var job;
 
       if(isString(obj)) {
         obj = {url: obj};
       }
 
-      obj = makeJob(obj);
+      job = makeJob(obj || {});
       // this allows someone to set say,
       // the priority to a high number
-      _res.db[obj.id] = merge(obj, params);
-      res[obj.id] = obj;
-      return obj;
+      _res.db[job.id] = merge(job, params);
+      return _res.db[job.id];
     }
   });
 };
