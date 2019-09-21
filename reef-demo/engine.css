@@ -1,0 +1,53 @@
+.engine-xA8tAY4YSBmn2RTQqnnXXw {
+  text-align: center;
+}
+.engine-xA8tAY4YSBmn2RTQqnnXXw .container-xA8tAY4YSBmn2RTQqnnXXw {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 0;
+  padding: 0;
+  background: #000;
+  overflow: hidden;
+  left: 0;
+}
+.engine-xA8tAY4YSBmn2RTQqnnXXw video {
+  object-fit: fill;
+}
+.engine-xA8tAY4YSBmn2RTQqnnXXw iframe {
+  width: 100%;
+  overflow: hidden;
+  border: 0;
+  height: 100%;
+}
+.engine-xA8tAY4YSBmn2RTQqnnXXw iframe body { 
+  overflow:hidden; 
+}
+@keyframes enginefadeOut {
+  0% {opacity: 1;}
+  100% {opacity: 0;} 
+} 
+@keyframes enginefadeIn {
+  0% {opacity: 0;}
+  100% {opacity: 1;} 
+} 
+.engine-xA8tAY4YSBmn2RTQqnnXXw .fadeOut-xA8tAY4YSBmn2RTQqnnXXw {
+  animation-name: enginefadeOut;
+  animation-duration: 0.4s;
+}
+.engine-xA8tAY4YSBmn2RTQqnnXXw .fadeIn-xA8tAY4YSBmn2RTQqnnXXw {
+  animation-name: enginefadeIn;
+  animation-duration: 0.4s;
+}
+.engine-xA8tAY4YSBmn2RTQqnnXXw .info { 
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 9px;
+  color: rgba(100,240,100,0.3);
+  font-family: "Bitstream Charter";
+  z-index: 1000;
+}
