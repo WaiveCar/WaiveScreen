@@ -219,15 +219,17 @@
             <div class="card" id="campaign-budget">
               <div class="card-body">
                 <h2 class="card-title">Duration/Budget</h2>
+                  <div class="form-group row" id="budget-nums">
+                    <label for="budget" class="col-2 col-form-label">Budget:</label>
+                    <input type="number" class="col-2 form-control" placeholder="$ / Month" id="budget">
+                  </div>
                 <div id="schedule"></div>
                 <div class="card-text">
                   <div class="form-group row" id="budget-nums">
                     <label for="start-date" class="col-2 col-form-label">Start Date:</label>
-                    <input type="date" class="col-2 form-control" placeholder="Start Date" id="start-date">
+                    <input type="date" class="col-4 form-control" placeholder="Start Date" id="start-date">
                     <label for="end-date" class="col-2 col-form-label">End Date:</label>
-                    <input type="date" class="col-2 form-control" placeholder="End Date" id="end-date">
-                    <label for="end-date" class="col-2 col-form-label">Budget:</label>
-                    <input type="number" class="col-2 form-control" placeholder="$ / Month" id="budget">
+                    <input type="date" class="col-4 form-control" placeholder="End Date" id="end-date">
                   </div>
                 </div>
               </div>
@@ -241,23 +243,36 @@
               <div class="card-body">
                 <h2 class="card-title">Summary</h2>
                 <div class="card-text">
-                  Budget:
-                  <div class="row no-gutters mb-2" id="budget">
-                  
-                  </div>
+                  <div id='summary'>
                   CPM:
-                  <div class="row no-gutters mb-2" id="cpm">
-                  </div>
+                  <div class="row no-gutters mb-2" id="cpm"> </div>
                   Estimated Impressions:
-                  <div class="row no-gutters mb-2" id="impressions">
+                  <div class="row no-gutters mb-2" id="impressions"> </div>
+                  Guaranteed Hours
+                  <div class="row no-gutters mb-2" id="hours"> </div>
+                  Price
+                  <div class="row no-gutters mb-2" id="price"> </div>
                   </div>
+
                 </div>
               </div>
             </div>
           </div>
         </div>
+
         <div class="row mb-4">
-          <button type="button" class="btn btn-primary btn-lg">Launch Campaign</button>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Finalize</h2>
+                <div class="card-text">
+                  <p>Your ad will start immediately and run indefinitely until it is paused.
+You will never spend more than $10,000 per month. Lastly, your ad needs to be approved by our team before delivery begins.</p>
+                  <button type="button" class="btn btn-primary btn-lg">Launch Campaign</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>  

@@ -101,7 +101,7 @@ window.map = function(opts) {
 
     // clustering {
     var clusterSource = new Cluster({
-      distance: 40,
+      distance: 55,
       source: source.screen
     });
 
@@ -115,12 +115,9 @@ window.map = function(opts) {
           if (!style) {
             style = new Style({
               image: new CircleStyle({
-                radius: 10,
-                stroke: new Stroke({
-                  color: '#fff'
-                }),
+                radius: 14,
                 fill: new Fill({
-                  color: '#3399CC'
+                  color: '#000'
                 })
               }),
               text: new Text({
