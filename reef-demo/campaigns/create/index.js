@@ -118,8 +118,78 @@ function setRatio(container, what) {
   }
 }
 
+function post(ep, body, cb) {
+  fetch(new Request(`/api/${ep}`, {
+    method: 'POST', 
+    body: JSON.stringify(body)
+  })).then(res => {
+    if (res.status === 200) {
+      return res.json();
+    }
+  }).then(cb);
+}
+
+var _shown = false;
+function show(what) {
+  if(_shown && _shown != what) {
+    $(`.${_shown}-wrapper`).slideUp();
+  }
+  $(`.${what}-wrapper`).slideDown();
+  _shown = what;
+}
+
+function get(id) {
+  var res = Data.filter(row => row.id == id);
+  return res ? res[0] : null;
+}
+function doMap() {
+  $.getJSON("/api/screens?active=1&removed=0", function(Screens) {
+    console.log(Screens);
+    self._map = map({points:Screens});
+    let success = false;
+    /*
+    _campaign = get(_id);
+    if(_campaign.shape_list) {
+      let first = _campaign.shape_list[0];
+
+      if(first[0] === 'Circle') {
+        _map.center(first[1]);
+        success = true;
+      } else if(first[0] === 'Polygon') {
+        _map.center(first[1][0]);
+        success = true;
+      }
+    }
+    */
+
+    if(success) {
+      _map.load(_campaign.shape_list);
+    } else {
+      _map.center([-118.34,34.06], 11);
+    }
+  });
+}
+
+function clearmap() {
+  _map.clear();
+}
+
+function removeShape() {
+  _map.removeShape();
+}
+
+function geosave() {
+  var coords = _map.save();
+  // If we click on the map again we should show the updated coords
+  _campaign.shape_list = coords;
+  post('campaign_update', {id: _id, geofence: coords}, res => {
+    show({data: 'Updated Campaign'}, 1000);
+  });
+}
+
 window.onload = function(){
   self._container =  document.getElementById('engine');
+  doMap();
   var isFirst = true;
   setRatio(_container, 'car'); 
 
