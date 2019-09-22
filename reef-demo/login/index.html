@@ -33,33 +33,27 @@
     .btn:hover {
       background-color: black;
     }
+    .logo-holder {
+      margin-bottom: 5rem;
+    }
   </style>
   <body id="page-top">
-    <div class="menu-btn mt-1 top-bar">
-      <div class="top-bar-left" onclick="toggleMenu()">
-        <img src="../svg/adcast.svg">
-      </div>
-      <span class="top-bar-right ml-4 mt-2">
-        <div class="vertical-flex">
-          <span class="company-name">Login</span>
+    <div id="wrapper">
+      <div class="container-fluid d-flex flex-column justify-content-center" style="height: 90vh">
+        <div class="d-flex justify-content-center logo-holder">
+          <img src="../svg/adcast.svg" style="max-width: 10rem">
         </div>
-        <div class="vertical-flex">
-        </div>
-      </span>
-    </div>
-    <div id="wrapper" class="offset-top">
-      <div class="container-fluid d-flex flex-column justify-content-center" style="height: 60vh">
         <div class="row d-flex justify-content-center">
           <form onsubmit="login()">
             <div class="form-group">
-              <label for="email">Email address</label>
-              <input name="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email" autocomplete="off">
+              <input name="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Email" autocomplete="off">
             </div>
             <div class="form-group">
-              <label for="password">Password</label>
               <input name="password" type="password" class="form-control" id="password" placeholder="Password" autocomplete="off">
             </div>
-            <button type="submit" class="btn btn-outline-dark">Submit</button>
+            <div class="d-flex justify-content-center">
+              <button type="submit" class="btn btn-outline-dark">Login</button>
+            </div>
           </form>
         </div>
       </div>
