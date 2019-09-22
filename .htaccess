@@ -1,6 +1,7 @@
 RewriteEngine On
 RewriteBase /
 
+DirectoryIndex index.html index.php
 Header set Access-Control-Allow-Origin "*"
 
 RewriteRule ^$ MadisonAve/static/index.html
@@ -22,5 +23,10 @@ RewriteRule "^engine.css$" "ScreenDisplay/engine.css" [L]
 RewriteRule "install" "https://youtu.be/Yc7FoILU5vY" [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_URI} !Madison*
-RewriteRule ^(.*)$ MadisonAve/static/$1 [L]
+RewriteCond %{REQUEST_URI} !reef-demo*
+RewriteRule ^(.*)$ reef-demo/$1 [L]
+
+#RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteCond %{REQUEST_URI} !Madison*
+#RewriteRule ^(.*)$ MadisonAve/static/$1 [L]
+
