@@ -134,7 +134,11 @@ function show(what) {
   if(_shown && _shown != what) {
     $(`.${_shown}-wrapper`).slideUp();
   }
-  $(`.${what}-wrapper`).slideDown();
+  $(`.${what}-wrapper`).slideDown(function() {
+    if(what == 'creatives') {
+      setRatio(_container, 'car'); 
+    }
+  });
   _shown = what;
 }
 
@@ -144,23 +148,8 @@ function get(id) {
 }
 function doMap() {
   $.getJSON("/api/screens?active=1&removed=0", function(Screens) {
-    console.log(Screens);
     self._map = map({points:Screens});
     let success = false;
-    /*
-    _campaign = get(_id);
-    if(_campaign.shape_list) {
-      let first = _campaign.shape_list[0];
-
-      if(first[0] === 'Circle') {
-        _map.center(first[1]);
-        success = true;
-      } else if(first[0] === 'Polygon') {
-        _map.center(first[1][0]);
-        success = true;
-      }
-    }
-    */
 
     if(success) {
       _map.load(_campaign.shape_list);

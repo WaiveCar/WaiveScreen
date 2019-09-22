@@ -37,15 +37,16 @@ function doit(table, opts) {
 
   opts = opts || {};
   opts.fields = opts.fields || {};
+  opts.name = opts.name || table;
   opts.hide = ['id', 'image', 'created_at'].concat(opts.hide);
 
   $('.head').each(function(k, j) {
-    j.innerHTML = 'New ' + obj;
+    j.innerHTML = `New  ${opts.name}`;
   });
 
   form.setAttribute('action', `/api/${table}s`);
 
-  $.getJSON(`http://waivescreen.com/api/schema?table=${table}`, function(res) {
+  $.getJSON(`/api/schema?table=${table}`, function(res) {
     var html = [],
       type,
       input,
@@ -84,7 +85,7 @@ function doit(table, opts) {
           `);
     }
     html.push(
-      `<button type="submit" class="btn btn-primary">Create ${obj}</button>`,
+      `<button type="submit" class="btn btn-primary">Create ${opts.name}</button>`,
     );
     document.getElementById('createForm').innerHTML = html.join('');
   });

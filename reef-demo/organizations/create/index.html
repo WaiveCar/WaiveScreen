@@ -77,7 +77,9 @@
     <script src="/formBuilder.js"></script>
     <script>
     window.onload = function(){
-      doit('organization', {hide: ['balance']});
+      doit('org', {
+        name: 'Organization',
+        hide: ['balance']});
     }
   </script>
   </body>
