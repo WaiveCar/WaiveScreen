@@ -74,6 +74,7 @@
           <select class="form-control" name="${what}_id">
             ${options}
           </select>
+          <button>Manage ${what}s</button>
         `;
       }
 
@@ -142,13 +143,11 @@
     }
 
   window.onload = function(){
-    doit('brand', {hide: ['balance']});
-    /*
-    doit('user', {
+  //  doit('user', {hide: ['balance']});
+    doit('brand', {
       fields: {'role' : ['viewer','admin']} ,
       hide: ['balance']}
     );
-    */
   }
   </script>
   </body>
