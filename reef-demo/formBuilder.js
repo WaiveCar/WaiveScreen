@@ -27,9 +27,10 @@ function select(what, data) {
       );
     });
   } else {
-    $.getJSON(`http://waivescreen.com/api/${what}s`, gen);
+    $.getJSON(`/api/${what}s`, gen);
   }
 }
+
 function doit(table, opts) {
   var typeMap = {password: 'password'},
     form = document.getElementById('createForm'),
@@ -37,7 +38,7 @@ function doit(table, opts) {
 
   opts = opts || {};
   opts.fields = opts.fields || {};
-  opts.name = opts.name || table;
+  opts.name = opts.name || ucfirst(table);
   opts.hide = ['id', 'image', 'created_at'].concat(opts.hide);
 
   $('.head').each(function(k, j) {
