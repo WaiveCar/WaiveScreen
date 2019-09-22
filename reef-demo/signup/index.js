@@ -11,7 +11,15 @@ function signup() {
 }
 
 (() => {
-  document.querySelector('.form-fields').innerHTML = ['email', 'password'].map(field => `
+  document.querySelector('.form-fields').innerHTML = [
+    'name',
+    'email',
+    'password',
+    'confirm password',
+    'orgainzation',
+  ]
+    .map(
+      field => `
     <div class="form-group">
       <input 
         name="${field}" 
@@ -23,5 +31,7 @@ function signup() {
       >
     </div>
   
-  `).join('');
+  `,
+    )
+    .join('');
 })();
