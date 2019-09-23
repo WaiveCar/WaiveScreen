@@ -26,6 +26,8 @@ window.map = function(opts) {
     center: [-118.3, 34.02],
     zoom: 13,
     typeSelect: 'type',
+    draw: true,
+    select: false,
   }, opts || {});
 
   var raster = new TileLayer({
@@ -35,7 +37,6 @@ window.map = function(opts) {
   var _draw, _snap;
   var source = {};
   var dom = document.getElementById(opts.target);
-  var typeSelect = document.getElementById(opts.typeSelect);
 	var styleCache = {
     car: new Style({
       image: new Icon({
@@ -48,29 +49,6 @@ window.map = function(opts) {
       })
     })
   };
-
-  // drawlayer {
-  source.draw = new VectorSource();
-  var modify = new Modify({source: source.draw});
-  var draw = new VectorLayer({
-    source: source.draw,
-    style: new Style({
-      fill: new Fill({
-        color: 'rgba(255, 255, 255, 0.4)'
-      }),
-      stroke: new Stroke({
-        color: '#000000',
-        width: 2
-      }),
-      image: new CircleStyle({
-        radius: 7,
-        fill: new Fill({
-          color: '#ffcc33'
-        })
-      })
-    })
-  });
-  // } drawlayer
 
   var _layers = [raster];
 
@@ -143,6 +121,99 @@ window.map = function(opts) {
   }
   // } points
 
+  // drawlayer {
+  if(opts.draw) {
+    var typeSelect = document.getElementById(opts.typeSelect);
+    source.draw = new VectorSource();
+    var modify = new Modify({source: source.draw});
+    var draw = new VectorLayer({
+      source: source.draw,
+      style: new Style({
+        fill: new Fill({
+          color: 'rgba(255, 255, 255, 0.4)'
+        }),
+        stroke: new Stroke({
+          color: '#000000',
+          width: 2
+        }),
+        image: new CircleStyle({
+          radius: 7,
+          fill: new Fill({
+            color: '#ffcc33'
+          })
+        })
+      })
+    });
+    function addInteractions() {
+      _draw = new Draw({
+        source: source.draw,
+        type: typeSelect.value
+      });
+      _map.addInteraction(_draw);
+      _snap = new Snap({source: source.draw});
+      _map.addInteraction(_snap);
+    }
+    function getShapes() {
+      let shapes = draw.getSource().getFeatures().map(row => {
+        var kind = row.getGeometry();
+        if (kind instanceof Polygon) {
+          return ['Polygon', kind.getCoordinates()[0].map(coor => toLonLat(coor))];
+        } else {
+          return ['Circle', toLonLat(kind.getCenter()), kind.getRadius()];
+        }
+      });
+
+      return shapes;
+    }
+
+    function drawShapes(list) {
+      clear();
+      list.forEach(shape => {
+        var feature;
+        if(shape[0] === 'Circle') {
+          feature = new Feature({
+            geometry: new Circle(fromLonLat(shape[1]), shape[2])
+          });
+        }
+        else if(shape[0] === 'Polygon') {
+          feature = new Feature({
+            geometry: new Polygon([shape[1].map(coor => fromLonLat(coor))])
+          });
+        }
+        draw.getSource().addFeature(feature);
+      });
+    }
+
+    function clear() {
+      for(var feature of draw.getSource().getFeatures()) {
+        draw.getSource().removeFeature(feature);
+      }
+    }
+    function removeShape() {
+      let shapeList = draw.getSource().getFeatures();
+      if(shapeList) {
+        draw.getSource().removeFeature(shapeList.slice(-1)[0]);
+      }
+    }
+    function removePoint() {
+      _draw.removeLastPoint();
+    }
+
+    dom.onkeyup = function(e) {
+      if(e.key === 'Delete') { removePoint(); }
+      if(e.key === 'Backspace') { removeShape(); }
+    }
+
+    typeSelect.onchange = function() {
+      _map.removeInteraction(_draw);
+      _map.removeInteraction(_snap);
+      addInteractions();
+    };
+
+    addInteractions();
+  }
+  // } drawlayer
+
   _layers.push(draw);
 
   // eventually use geoip
@@ -155,75 +226,9 @@ window.map = function(opts) {
     })
   });
 
-  _map.addInteraction(modify);
-
-  function addInteractions() {
-    _draw = new Draw({
-      source: source.draw,
-      type: typeSelect.value
-    });
-    _map.addInteraction(_draw);
-    _snap = new Snap({source: source.draw});
-    _map.addInteraction(_snap);
+  if(opts.draw) {
+    _map.addInteraction(modify);
   }
-  function getShapes() {
-    let shapes = draw.getSource().getFeatures().map(row => {
-      var kind = row.getGeometry();
-      if (kind instanceof Polygon) {
-        return ['Polygon', kind.getCoordinates()[0].map(coor => toLonLat(coor))];
-      } else {
-        return ['Circle', toLonLat(kind.getCenter()), kind.getRadius()];
-      }
-    });
-
-    return shapes;
-  }
-
-  function drawShapes(list) {
-    clear();
-    list.forEach(shape => {
-      var feature;
-      if(shape[0] === 'Circle') {
-        feature = new Feature({
-          geometry: new Circle(fromLonLat(shape[1]), shape[2])
-        });
-      }
-      else if(shape[0] === 'Polygon') {
-        feature = new Feature({
-          geometry: new Polygon([shape[1].map(coor => fromLonLat(coor))])
-        });
-      }
-      draw.getSource().addFeature(feature);
-    });
-  }
-
-  function clear() {
-    for(var feature of draw.getSource().getFeatures()) {
-      draw.getSource().removeFeature(feature);
-    }
-  }
-  function removeShape() {
-    let shapeList = draw.getSource().getFeatures();
-    if(shapeList) {
-      draw.getSource().removeFeature(shapeList.slice(-1)[0]);
-    }
-  }
-  function removePoint() {
-    _draw.removeLastPoint();
-  }
-
-  dom.onkeyup = function(e) {
-    if(e.key === 'Delete') { removePoint(); }
-    if(e.key === 'Backspace') { removeShape(); }
-  }
-
-  typeSelect.onchange = function() {
-    _map.removeInteraction(_draw);
-    _map.removeInteraction(_snap);
-    addInteractions();
-  };
-
-  addInteractions();
 
   return {
     _map: _map,
