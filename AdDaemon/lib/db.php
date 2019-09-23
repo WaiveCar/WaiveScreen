@@ -160,6 +160,15 @@ $SCHEMA = [
     'created_at' => 'datetime default current_timestamp',
   ],
 
+  'social' => [
+    'id'         => 'integer primary key autoincrement',
+    'brand_id'   => 'integer',
+    'service'    => 'text',
+    'name'       => 'text',
+    'token'      => 'text'
+    'created_at' => 'datetime default current_timestamp',
+  ],
+
   'user' => [
     'id'         => 'integer primary key autoincrement',
     'name'       => 'text',
