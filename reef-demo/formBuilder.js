@@ -32,6 +32,7 @@ function select(what, data) {
 }
 
 function doit(table, opts) {
+  var wordMap = {org: 'organization'};
   var typeMap = {password: 'password'},
     form = document.getElementById('createForm'),
     obj = ucfirst(table);
@@ -75,8 +76,7 @@ function doit(table, opts) {
         name = k;
         input = `<input type="${type}" class="form-control" name="${k}">`;
       }
-
-      name = ucfirst(name);
+      name = ucfirst(wordMap[name] || name);
 
       html.push(`
             <div class="form-group">

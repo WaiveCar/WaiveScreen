@@ -1,4 +1,4 @@
-<html lang="en">
+
   <head>
     <base href="../../">
     <meta charset="utf-8">
@@ -77,7 +77,9 @@
     <script src="/formBuilder.js"></script>
     <script>
     window.onload = function(){
-      doit('user', {hide: ['balance']});
+      doit('user', {
+        fields: { role: ['Manager', 'Viewer'] },
+        hide: ['balance']});
     }
   </script>
   </body>

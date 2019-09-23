@@ -3,7 +3,7 @@ function toggleMenu() {
 }
 
 (() => {
-  document.getElementById('menu').innerHTML = `
+  let menu=`
       <ul class="navbar-nav bg-gradient-white sidebar sidebar-light">
         ${['approval', 'screens', 'campaigns', 'organizations', 'brands', 'users']
           .map(
@@ -17,6 +17,8 @@ function toggleMenu() {
           .join('')}
       </ul>
     `;
+  var profile = '<div class="row mb-2"> <div class="offset-md-1 col">Sign In</div></div>';
+  document.getElementById('menu').innerHTML = profile + menu;
   let items = document.querySelectorAll('.navbar-nav li');
   items.forEach(one => {
     if (window.location.href.includes(one.dataset.item)) {
