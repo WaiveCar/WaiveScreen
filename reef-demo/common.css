@@ -7,11 +7,23 @@ body {
   text-align: left;
 }
 
-.current-link {
-  padding: 0;
+.choice {
+  background-color: #efefef;
+  border-radius: 25px;
+  padding: 0.5rem 1rem;
+  color: #969696;
+  cursor: pointer;
+  user-select: none;
+}
+.choice input[type="radio"] {
+  display: none;
+}
+.selected {
+  color: black;
+}
+.selected, .current-link {
   border-radius: 25px;
   background-color: #fedc47;
-  color: white;
 }
 
 .sidebar .nav-item .nav-link {

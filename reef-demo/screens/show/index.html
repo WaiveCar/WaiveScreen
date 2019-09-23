@@ -60,6 +60,42 @@
         <button class="btn btn-primary mb-4" onclick="toggleEditor()">Show / Hide Editor</button>
         <div class="jumbotron editor">
           <h1 class="display-4">Edit Screen</h1>
+          <div class=section-title>Time & Date</div>
+          <div class=choice-list>
+            <label class=choice>
+              <input type=radio value=no name=showtime> No
+            </label>
+            <label class=choice>
+              <input type=radio value=yes name=showtime> Yes
+            </label>
+          </div>
+          <div class=section-title>Ticker</div>
+          <div class=choice-list>
+            <label class=choice>
+              <input type=radio value=no name=ticker> None
+            </label>
+            <label class=choice>
+              <input type=radio value=headline name=ticker> Headline
+            </label>
+            <label class=choice>
+              <input type=radio value=stock name=ticker> Stock
+            </label>
+            <label class=choice>
+              <input type=radio value=sports name=ticker> Sports
+            </label>
+          </div>
+          <div class=section-title>Widgets</div>
+          <div class=choice-list>
+            <label class=choice>
+              <input type=radio value=no name=widget> None
+            </label>
+            <label class=choice>
+              <input type=radio value=weather name=widget> Weather
+            </label>
+            <label class=choice>
+              <input type=radio value=traffic name=widget> Traffic
+            </label>
+          </div>
         </div>
         <div class="jumbotron">
           <h1 class="display-4">Past / Future</h1>

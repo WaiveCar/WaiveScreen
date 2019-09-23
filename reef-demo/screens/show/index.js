@@ -8,6 +8,11 @@ function toggleEditor() {
 }
 
 (() => {
+  $('input[value="no"]').prop('checked', true).parent().addClass('selected');
+  $("input[type=radio]").change(function(){
+    $(`input[name=${this.name}]`).parent().removeClass('selected');
+    this.parentNode.classList.add('selected');
+  });
   const id = new URL(location.href).searchParams.get('id');
   fetch(`http://waivescreen.com/api/screens?id=${id}`)
     .then(response => response.json())
