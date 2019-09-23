@@ -165,7 +165,7 @@ $SCHEMA = [
     'brand_id'   => 'integer',
     'service'    => 'text',
     'name'       => 'text',
-    'token'      => 'text'
+    'token'      => 'text',
     'created_at' => 'datetime default current_timestamp',
   ],
 
