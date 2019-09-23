@@ -672,11 +672,26 @@ def feature_detect():
   hasSim = int(os.popen('mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l').read().strip())
   layout = dcall('camera_layout', what='perlcall')
 
+  resolution_raw = os.popen("xrandr | grep connected | grep -Po '(\d+(?x))(\d+)").read().strip()
+  parts = [int(x) for x in resolution_raw.split('\n')]
+
+  resolution_list = []
+  size_list = []
+
+  for i in range(0, len(parts), 4):
+    resolution_list.append(parts[i:i+2])
+    size_list.append(parts[i+2:i+4])
+
   # * btle - todo
   return {
     'modem'   : os.path.exists("/dev/cdc-wdm0") or os.path.exists('/dev/cdc-wdm1'),
     'arduino' : os.path.exists("/dev/ttyACM0"),
     'cameras' : int(len(videoList) / 2),
+    'panels' : {
+      'count': int(len(parts) / 4),
+      'resolutions': resolution_list,
+      'size': size_list 
+    },
     'layout'  : layout,
     'wifi'    : os.path.exists("/proc/sys/net/ipv4/conf/wlp1s0"),
     'sim'     : hasSim > 0,

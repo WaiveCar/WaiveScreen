@@ -63,6 +63,9 @@ var Engine = function(opts){
       _debug: false,
 
     }, opts || {}),
+    // This is the actual breakdown of the content on
+    // the screen into different partitions
+    _box = {},
     _last = false,
     _uniq = 0,
     _last_uniq = false,
@@ -82,6 +85,11 @@ var Engine = function(opts){
       maxPriority: 0,
     },
     _fallback;
+
+  if(_res.dynamicSize) {
+    _res.target.width = _res.container.clientWidth;
+    _res.target.height = _res.container.clientHeight;
+  }
 
   _res.target.ratio = _res.target.width / _res.target.height;
 
@@ -135,6 +143,31 @@ var Engine = function(opts){
     },
   };
 
+  function layout() {
+    //
+    // <div class=top>
+    //   <div class=widget></div>
+    //   <div class=ad></div>
+    // </div>
+    // <div class=bottom>
+    //   <div class=time></div>
+    //   <div class=ticker></div>
+    // </div>
+    //
+    ["top","ad","widget","bottom","time","ticker"].forEach(function(row) {
+      _box[row] = document.createElement("div");
+      _box[row].className = row;
+    });
+    // this ordering is correct...trust me.
+    _box.top.appendChild(_box.widget);
+    _box.top.appendChild(_box.ad);
+    _box.bottom.appendChild(_box.time);
+    _box.bottom.appendChild(_box.ticker);
+    _res.container.appendChild(_box.top);
+    _res.container.appendChild(_box.bottom);
+    _res.container.classList.add('engine' + _key);
+  }
+
   function cleanTimeout(what, dur) {
     return setTimeout(function() { 
       what();
@@ -170,6 +203,7 @@ var Engine = function(opts){
     }
     img.onload = function(e) {
       if(e.target.width) {
+        /*
         var ratio = e.target.width / e.target.height;
         if(ratio > _res.target.ratio) {
           var maxHeight = _res.target.width * e.target.height / e.target.width;
@@ -181,6 +215,7 @@ var Engine = function(opts){
           e.target.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
           e.target.style.height = _res.target.height + "px";
         }
+        */
       }
       asset.active = true;
       obj.active = true;
@@ -192,6 +227,7 @@ var Engine = function(opts){
     asset.duration = asset.duration || _res.duration;
     obj.duration += asset.duration;
     asset.run = _nop;
+    asset.pause = _nop;
     asset.dom = img;
 
     return asset;
@@ -201,6 +237,7 @@ var Engine = function(opts){
     var dom = document.createElement('iframe');
     dom.src = asset.url;
     asset.dom = dom;
+    asset.pause = _nop;
     asset.run = function() {
       _playCount ++;
     }
@@ -223,6 +260,7 @@ var Engine = function(opts){
     asset.dom = vid;
 
     asset.cycles = 1;
+    asset.pause = vid.pause;
     asset.run = function(noreset) {
       if(!noreset) {
         vid.currentTime = 0;
@@ -305,7 +343,28 @@ var Engine = function(opts){
     if(asset.mime) { 
       return asset.mime.match(mime);
     }
+    if(asset.type) { 
+      return asset.type.match(mime);
+    }
     return asset.url.match('(' + ext.join('|') + ')');
+  }
+
+  function urlToAsset(url, obj) {
+    var container = document.createElement('div');
+    var asset = isString(url) ? {url: url} : url;
+    container.classList.add('container' + _key);
+
+    if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
+      asset = image(asset, obj);
+    } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
+      asset = video(asset, obj);
+    } else {
+      asset = iframe(asset, obj);
+    }
+    asset.uniq = _uniq++;
+    asset.container = container;
+    asset.container.appendChild(asset.dom);
+    return asset;
   }
 
   // All the things returned from this have 2 properties
@@ -314,25 +373,21 @@ var Engine = function(opts){
   //  duration - how long the asset should be displayed.
   //
   function makeJob(obj) {
-    obj.downweight = obj.downweight || 1;
-    obj.completed_seconds = obj.completed_seconds || 0;
-    // obj.what = obj.what || obj.url;
+    obj = merge({
+      downweight: 1,
+      completed_seconds: 0,
+      // We need multi-asset support on a per-job
+      // basis which means we need to be able
+      // to track
+      position: 0,
+      // This is the total duration of all the
+      // assets included in this job.
+      duration: 0,
+      assetList: [],
+      id: _job_id++,
+    }, obj);
     
-    // We need multi-asset support on a per-job
-    // basis which means we need to be able
-    // to track
-    obj.position = 0;
-
-    // This is the total duration of all the
-    // assets included in this job.
-    obj.duration = 0;
-
-    obj.id = obj.id || (_job_id ++);
-    //
-    // We don't want to manually set this.
-    // obj.goal
-    //
-    if( ! ('url' in obj) ) {
+    if( ! ('url' in obj) && ('asset' in obj) ) {
       obj.url = obj.asset;
     }
 
@@ -340,25 +395,20 @@ var Engine = function(opts){
       obj.url = [ obj.url ];
     }
 
-    obj.assetList = obj.url.map(function(asset) {
-      var container = document.createElement('div');
-      if(isString(asset)) {
-        asset = {url: asset};
-      }
-      container.classList.add('container' + _key);
+    if( obj.url ) {
+      obj.assetList = obj.url.map(function(row) { return urlToAsset(row, obj); });
+    }
 
-      if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
-        asset = image(asset, obj);
-      } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
-        asset = video(asset, obj);
-      } else {
-        asset = iframe(asset, obj);
-      }
-      asset.uniq = _uniq++;
-      asset.container = container;
-      asset.container.appendChild(asset.dom);
+    obj.remove = function(what) {
+      obj.assetList = obj.assetList.filter(function(row) { return row.uniq != what.uniq });
+      obj.duration = obj.assetList.reduce(function(a,b) { return a + b.duration }, 0);
+    }
+
+    obj.append = function(what) {
+      var asset = urlToAsset(what, obj);
+      obj.assetList.push(asset);
       return asset;
-    });
+    }
         
     return obj;
   }
@@ -494,6 +544,84 @@ var Engine = function(opts){
     });
   }
 
+  var Widget = {
+    doTime: function() {
+      var now = new Date();
+      _box.time.innerHTML = [
+          (now.getHours() + 100).toString().slice(1),
+          (now.getMinutes() + 100).toString().slice(1)
+        ].join(':')
+    },
+    active: {},
+    updateView: function(what, where) {
+      Widget.active[what] = where;
+      var hasBottom = Widget.active.time || Widget.active.ticker;
+      var hasWidget = hasBottom || Widget.active.app;
+      _res.container.classList[hasWidget ? 'add' : 'remove']('addon');
+      _res.container.classList[hasBottom ? 'add' : 'remove']('hasBottom');
+    },
+
+    time: function(onoff) {
+      Widget.updateView('time', onoff);
+      if(onoff) {
+        _box.time.style.display = 'block';
+        if(!Widget._time) {
+          Widget._time = setInterval(Widget.doTime, 1000);
+          Widget.doTime();
+        }
+      } else {
+        _box.time.style.display = 'none';
+        clearInterval(Widget._time);
+        Widget._time = false;
+      }
+    },
+    app: function(feed) {
+      if(arguments.length === 0) {
+        return;
+      }
+      Widget.updateView('app', feed);
+      if(feed) {
+        _box.widget.style.display = 'block';
+        _box.widget.innerHTML = "<div class='app weather cloudy'>72</div>";
+      } else {
+        _box.widget.style.display = 'none';
+      }
+    },
+    ticker: function(feed) {
+      if(arguments.length === 0) {
+        return;
+      }
+      Widget.updateView('ticker', feed);
+      if(feed) {
+        if(!Widget._ticker) {
+          _box.ticker.style.display = 'block';
+          Widget._ticker = setInterval(function(){
+            _box.ticker.scrollLeft += 1.4
+          }, 50);
+
+          _box.ticker.innerHTML = `
+          <span>Saudi oil attacks: all the latest updates</span>
+          <span>'Dollar diplomacy' - Taiwan condemns China after Solomons switch</span>
+          <span>West Papua unrest tests Indonesia's Jokowi as second term begins</span>
+          <span>Trump says he would 'certainly like to avoid' war with Iran</span>
+          <span>Venezuela opposition: Norway-mediated talks with Maduro are over</span>
+          <span>Saudi oil strikes: Will Gulf 'powder-keg' detonate?</span>
+          <span>New York prosecutors subpoena Trump's tax returns: reports</span>
+          <span>Italy: Navy, coastguard officials charged in migrant deaths</span>
+          <span>Will the attacks on Saudi oil facilities cripple global supplies?</span>
+          <span>Tunisia election: Outsider in lead stuns after most votes counted</span>
+          <span>European families 'feel safer' in Scotland than England</span>
+          <span>South Africa offers 'profuse' apologies to Nigeria after attacks</span>
+          <span>Millions of US women say first sexual experience was rape</span>
+          <span>'Desperate to be re-elected': Will Netanyahu win Israel vote?</span>`;
+        }
+      } else {
+        _box.ticker.style.display = 'none';
+        clearInterval(Widget._ticker);
+        Widget._ticker = false;
+      }
+    },
+  };
 
   function _timeout(fn, timeout, name, override) {
     var handle = override ? fn : setTimeout(fn, timeout);
@@ -570,7 +698,7 @@ var Engine = function(opts){
 
     _current.shown = _current.assetList[_current.position];
     _current.shown.run();
-    _res.container.appendChild(_current.shown.container);
+    _box.ad.appendChild(_current.shown.container);
 
     if(_current.shown.uniq != _last_uniq) {
       // This is NEEDED because by the time 
@@ -581,7 +709,7 @@ var Engine = function(opts){
         prev.classList.add('fadeOut' + _key);
         _timeout(function() {
           prev.classList.remove('fadeOut' + _key);
-          _res.container.removeChild(prev);
+          _box.ad.removeChild(prev);
         }, _res.fadeMs, 'assetFade');
         doFade = true;
       }
@@ -662,7 +790,7 @@ var Engine = function(opts){
     }
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
-      if(_res.server &&_res._debug) {
+      if(_res.server && _res._debug) {
         console.log("Range < 0, using fallback");
       }
 
@@ -729,6 +857,10 @@ var Engine = function(opts){
   // A repository of engines
   Engine.list.push(_res);
 
+  // This makes sure the _box references are valid before
+  // running Start().
+  layout();
+
   // The convention we'll be using is that
   // variables start with lower case letters,
   // function start with upper case.
@@ -738,28 +870,34 @@ var Engine = function(opts){
     },
     Play: function() {
       _res.pause = false;
-      _current.shown.dom.play();
-      nextAsset();
+      if(_current) {
+        _current.shown.dom.play();
+        nextAsset();
+      } else {
+        nextJob();
+      }
     },
     Pause: function() {
       _res.pause = !_res.pause;
       console.log("Clearing setTimeout for the next asset");
       clearTimeout(_stHandleMap.nextAsset.handle);
-      _current.shown.dom.pause();
+      _current.shown.pause();
     },
 
-    PlayNow: function(job) {
+    PlayNow: function(job, doNotModify) {
       // clear any pending timers
       clearAllTimeouts();
 
       // we set all the assets to active in the job regardless
       // of whether they've loaded or not.
-      job.assetList.forEach(function(asset) {
-        asset.active = true;
-        asset.duration = 16;
-      });
-      job.active = true;
-      job.duration = 16 * job.assetList.length;
+      if(!doNotModify) {
+        job.assetList.forEach(function(asset) {
+          asset.active = true;
+          asset.duration = 16;
+        });
+        job.active = true;
+        job.duration = 16 * job.assetList.length;
+      }
 
       // set it as the next thing to do
       setNextJob(job);
@@ -781,7 +919,6 @@ var Engine = function(opts){
       }
     },
     Start: function(){
-      _res.container.classList.add('engine' + _key);
       // Try to initially contact the server
       sow();
       _res.SetFallback();
@@ -798,20 +935,20 @@ var Engine = function(opts){
         _res.listeners[what].push(cb);
       }
     },
+    Widget: Widget,
     SetFallback: setFallback,
     AddJob: function(obj, params) {
-      var res = {};
+      var job;
 
       if(isString(obj)) {
         obj = {url: obj};
       }
 
-      obj = makeJob(obj);
+      job = makeJob(obj || {});
       // this allows someone to set say,
       // the priority to a high number
-      _res.db[obj.id] = merge(obj, params);
-      res[obj.id] = obj;
-      return obj;
+      _res.db[job.id] = merge(job, params);
+      return _res.db[job.id];
     }
   });
 };
@@ -823,6 +960,3 @@ Engine.all = function(what) {
 }
 
 Engine.list = [];
-Engine.width = 1920;
-Engine.height = 675;
-Engine.ratio = Engine.width / Engine.height;
