@@ -12,7 +12,7 @@ latlng = geocoder.ip('me').latlng
 def fetch_info():
     return {
         'catfact': get_cat_fact(),
-    '   forecast': get_forecast().json(),
+        'forecast': get_forecast(),
         'news': get_news_stories(),
         'mlb_scores': get_MLB_scores(),
         'nfl scores': get_NFL_scores(2),
