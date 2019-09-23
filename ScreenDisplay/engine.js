@@ -552,7 +552,17 @@ var Engine = function(opts){
           (now.getMinutes() + 100).toString().slice(1)
         ].join(':')
     },
+    active: {},
+    updateView: function(what, where) {
+      Widget.active[what] = where;
+      var hasBottom = Widget.active.time || Widget.active.ticker;
+      var hasWidget = hasBottom || Widget.active.app;
+      _res.container.classList[hasWidget ? 'add' : 'remove']('addon');
+      _res.container.classList[hasBottom ? 'add' : 'remove']('hasBottom');
+    },
+
     time: function(onoff) {
+      Widget.updateView('time', onoff);
       if(onoff) {
         _box.time.style.display = 'block';
         if(!Widget._time) {
@@ -569,6 +579,7 @@ var Engine = function(opts){
       if(arguments.length === 0) {
         return;
       }
+      Widget.updateView('app', feed);
       if(feed) {
         _box.widget.style.display = 'block';
         _box.widget.innerHTML = "<div class='app weather cloudy'>72</div>";
@@ -580,6 +591,7 @@ var Engine = function(opts){
       if(arguments.length === 0) {
         return;
       }
+      Widget.updateView('ticker', feed);
       if(feed) {
         if(!Widget._ticker) {
           _box.ticker.style.display = 'block';
