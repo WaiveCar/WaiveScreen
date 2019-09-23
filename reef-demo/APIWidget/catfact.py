@@ -13,7 +13,7 @@ def get_cat_fact():
         Random cat fact string
     """
     response = request('GET', url=url)
-    if 'status_code' in response:
+    if not isinstance(response, dict):
         if response.status_code != 200:
             return 0
         res = response.json()
@@ -21,5 +21,3 @@ def get_cat_fact():
     else: 
         return response['all'][randint(0,len(response['all']))]['text']
 
-
-print(get_cat_fact())

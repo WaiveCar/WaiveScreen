@@ -1,4 +1,4 @@
-import requests
+from cached_request import request
 from datetime import date, timedelta
 
 
@@ -33,11 +33,12 @@ def get_MLB_scores(day_offset=0):
         'api_key': api_key
     }
     send_url = url+target_date+url_end
-    print(send_url)
-    response = requests.request('GET', url=send_url, params=params)
-    if response.status_code != 200:
-        return 0
-    res = response.json()
+    response = request('GET', url=send_url, params=params)
+    if not isinstance(response, dict):
+        if response.status_code != 200:
+            return 0
+        res = response.json()
+    else: res = response
     daily_games = {'league': res['league']['alias'],
                    'games': []}
     for game in res['league']['games']:
@@ -54,7 +55,6 @@ def get_MLB_scores(day_offset=0):
             lean_game['top_bot'] = game['game']['outcome']['current_inning_half']
         daily_games['games'].append(lean_game)
     return daily_games
-
 
 def get_NFL_scores(week, year=2019, sched='REG'):
     """
@@ -87,11 +87,12 @@ def get_NFL_scores(week, year=2019, sched='REG'):
         'api_key': api_key
     }
     send_url = url + sched_wk + url_end
-    print(send_url)
-    response = requests.request('GET', url=send_url, params=params)
-    if response.status_code != 200:
-        return 0
-    res = response.json()
+    response = request('GET', url=send_url, params=params)
+    if not isinstance(response, dict):
+        if response.status_code != 200:
+            return 0
+        res = response.json()
+    else: res = response
     daily_games = {
         'year': res['year'],
         'sched': res['type'],

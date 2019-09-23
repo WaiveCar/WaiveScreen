@@ -1,5 +1,5 @@
 from catfact import get_cat_fact 
-from darkskyweather import get_forecast, get_hourly 
+from darkskyweather import get_forecast, get_hourly, get_current_weather 
 from newsheadlines import get_news_stories
 from sports import get_MLB_scores, get_NFL_scores
 from stocks import get_daily_stock_movement
