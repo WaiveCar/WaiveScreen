@@ -1,0 +1,13 @@
+.scan-wrap {
+  display: none;
+}
+.scan-wrap, #scanData {
+  position: absolute;
+  background-color: transparent;
+  left: 10px;
+  top: 30px;
+  width: 30%;
+  color: green;
+  font-weight: bold;
+  z-index: 1020;
+}

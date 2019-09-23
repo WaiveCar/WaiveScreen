@@ -3,6 +3,8 @@
 #  We're using a Debian image, rather than Raspbian to maximize compatibility and ease of installation.
 #  Image and instructions from here: https://wiki.debian.org/RaspberryPiImages
 #  Once flashed and booted up, we can ssh to the root account and do our updates.
+#
+# TODO: setup wifi client, add firmware-linux-nonfree, speed up eth0 unplugged, fullscreen video playback in chrome
 
 if [[ -z "$1" ]]
 then

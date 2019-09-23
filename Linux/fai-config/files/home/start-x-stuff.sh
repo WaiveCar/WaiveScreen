@@ -69,5 +69,6 @@ screen_display
 pycall lib.ping
 ssh_hole
 #sms_cleanup
+beacon_scanner
 first_run
 upgrade_scripts

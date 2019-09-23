@@ -38,6 +38,7 @@
     }
     </style>
     <link rel="stylesheet" href="engine.css">
+    <link rel="stylesheet" href="scan_data.css">
   </head>
 
   <body>
@@ -45,9 +46,15 @@
     <div class='sms-wrap'>
       <div id='sms'></div>
     </div>
+    <div class='scan-wrap'>NEARBY DEVICES:
+      <ul id='scanData'>
+        <li>Nothing here yet...</li>
+      </ul>
+    </div>
   </body>
 
   <script src="socket.io.js"></script>
   <script src="display.js"></script>
   <script src="engine.js"></script>
+  <script src="scan_data.js"></script>
 </html>
