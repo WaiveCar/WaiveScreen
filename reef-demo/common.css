@@ -300,11 +300,16 @@ body {
   text-transform: uppercase;
   text-indent: 0.5rem;
 }
-.form-group input {
+select.form-control,.form-group input,
+select.form-control:focus,.form-group input:focus
+{
   background: #f7f7f7;
   font-size: 1.25rem;
   color: #000;
   border: 0
+}
+.custom-select:focus,select.form-control:focus,.form-group input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(133,135,150,.25);
 }
 .card-text,.card-title {
   color: #000;
