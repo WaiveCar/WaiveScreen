@@ -14,6 +14,7 @@ function renderOrganizations(organizations) {
     .join('');
 }
 (() => {
+  tableIt('orgs');
   const organizations = [];
   fetch('http://waivescreen.com/api/organizations')
     .then(response => response.json())

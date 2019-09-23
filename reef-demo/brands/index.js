@@ -14,6 +14,7 @@ function renderBrands(brands) {
     .join('');
 }
 (() => {
+  tableIt('brands');
   const brands = [];
   fetch('http://waivescreen.com/api/brands')
     .then(response => response.json())
