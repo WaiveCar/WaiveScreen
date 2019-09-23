@@ -24,4 +24,3 @@ def get_random_fact():
     fact = {'fact': res['text'], 'source': res['source']}
     return fact
 
-print(get_random_fact())

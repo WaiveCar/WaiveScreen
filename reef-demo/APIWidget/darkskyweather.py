@@ -77,7 +77,6 @@ def get_current_weather(response):
     """
     res = None
     if not isinstance(response, dict):
-        print('here')
         if response.status_code != 200:
             return 0
         res = response.json()
