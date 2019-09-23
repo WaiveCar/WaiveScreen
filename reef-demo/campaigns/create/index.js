@@ -194,6 +194,14 @@ window.onload = function(){
     _preview.PlayNow(_job, true);
   });
 
+  doit(false, {
+    container: 'campaign-info',
+    schema: { 
+      'campaign title': 'text',
+      'org_id': 'integer',
+      'brand_id': 'integer',
+    }});
+
   // The event handler below handles the user uploading new files
   uploadInput = document.getElementById('image-upload');
   uploadInput.addEventListener('change', function() {

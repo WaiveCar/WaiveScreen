@@ -1,5 +1,6 @@
 function ucfirst(what) {
-  return what[0].toUpperCase() + what.slice(1);
+
+  return what ? what[0].toUpperCase() + what.slice(1) : what;
 }
 function select(what, data) {
   function gen(res) {
@@ -32,30 +33,33 @@ function select(what, data) {
 }
 
 function doit(table, opts) {
-  var wordMap = {org: 'organization'};
-  var typeMap = {password: 'password'},
-    form = document.getElementById('createForm'),
-    obj = ucfirst(table);
-
   opts = opts || {};
-  opts.fields = opts.fields || {};
-  opts.name = opts.name || ucfirst(table);
+  opts = Object.assign({
+    fields: {},
+    container: 'createForm',
+    name: ucfirst(table || '')
+  }, opts);
   opts.hide = ['id', 'image', 'created_at'].concat(opts.hide);
 
+  var 
+    wordMap = {org: 'organization'},
+    typeMap = {password: 'password'},
+    form = document.getElementById(opts.container);
+
   $('.head').each(function(k, j) {
-    j.innerHTML = `New  ${opts.name}`;
+    j.innerHTML = `New ${opts.name}`;
   });
 
   form.setAttribute('action', `/api/${table}s`);
 
-  $.getJSON(`/api/schema?table=${table}`, function(res) {
+  function builder(schema) {
     var html = [],
       type,
       input,
       xref,
       name;
 
-    for (var k in res) {
+    for (var k in schema) {
       if (opts.hide.includes(k)) {
         continue;
       }
@@ -85,9 +89,17 @@ function doit(table, opts) {
             </div>
           `);
     }
-    html.push(
-      `<button type="submit" class="btn btn-primary">Create ${opts.name}</button>`,
-    );
-    document.getElementById('createForm').innerHTML = html.join('');
-  });
+    if(table) {
+      html.push(
+        `<button type="submit" class="btn btn-primary">Create ${opts.name}</button>`,
+      );
+    }
+    form.innerHTML = html.join('');
+  }
+
+  if(opts.schema) {
+    builder(opts.schema);
+  } else {
+    $.getJSON(`/api/schema?table=${table}`, builder);
+  }
 }
