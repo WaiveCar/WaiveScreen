@@ -1,4 +1,4 @@
-import requests
+from cached_request import request
 from random import randint
 
 url = 'https://cat-fact.herokuapp.com/facts'
@@ -12,8 +12,14 @@ def get_cat_fact():
     Returns:
         Random cat fact string
     """
-    response = requests.request('GET', url=url)
-    if response.status_code != 200:
-        return 0
-    res = response.json()
-    return res['all'][randint(0,len(res['all']))]['text']
+    response = request('GET', url=url)
+    if 'status_code' in response:
+        if response.status_code != 200:
+            return 0
+        res = response.json()
+        return res['all'][randint(0,len(res['all']))]['text']
+    else: 
+        return response['all'][randint(0,len(response['all']))]['text']
+
+
+print(get_cat_fact())

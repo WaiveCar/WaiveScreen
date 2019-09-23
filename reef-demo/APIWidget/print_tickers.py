@@ -6,14 +6,18 @@ from stocks import get_daily_stock_movement
 from traffic import get_traffic_incidents
 from uselessfact import get_random_fact
 import geocoder
+import hashlib
 latlng = geocoder.ip('me').latlng
-print(latlng)
 
-print('cat fact: ', get_cat_fact())
-print('forecast: ', get_hourly(get_forecast()))
-print('news: ', get_news_stories())
-print('mlb scores: ', get_MLB_scores())
-print('nfl scores', get_NFL_scores(2))
-print('stocks: ', get_daily_stock_movement('MSFT'))
-print('traffic: ', get_traffic_incidents(latlng[0], latlng[1], 3))
-print('random fact: ', get_random_fact())
+def fetch_info():
+    return {
+        'catfact': get_cat_fact(),
+    '   forecast': get_forecast().json(),
+        'news': get_news_stories(),
+        'mlb_scores': get_MLB_scores(),
+        'nfl scores': get_NFL_scores(2),
+        'stocks': get_daily_stock_movement('MSFT'),
+        'random fact': get_random_fact()
+    }
+
+print('output: ', fetch_info())
