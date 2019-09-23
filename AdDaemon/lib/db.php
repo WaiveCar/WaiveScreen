@@ -88,7 +88,8 @@ $SCHEMA = [
     'phone'       => 'text',
     'car'         => 'text',
     'project'     => 'text',
-    'layout_id'   => 'integer',
+    'widget_id'   => 'integer',
+    'ticker_id'   => 'integer',
     'model'       => 'text',
     'panels'      => 'text',
     'photo'       => 'text',
@@ -183,16 +184,7 @@ $SCHEMA = [
     'created_at' => 'datetime default current_timestamp',
   ],
 
-  'preset' => [
-    'id'            => 'integer primary key autoincrement',
-    'name'          => 'text',
-    'exclusive_set' => 'integer',
-    'use_exchange'  => 'boolean', // for now whether that little check mark
-    'layout_id'     => 'integer', // is on or not.
-    'created_at'    => 'datetime default current_timestamp',
-  ],
-
-  'widget' => [
+  'addon' => [
     'id'     => 'integer primary key autoincrement',
     'name'   => 'text', // what to call it
     'image'  => 'text', // url of logo or screenshot
@@ -202,14 +194,6 @@ $SCHEMA = [
     'created_at' => 'datetime default current_timestamp',
   ],
 
-  'layout' => [
-    'id'         => 'integer primary key autoincrement',
-    'name'       => 'text',
-    'image'      => 'text', // url of logo or screenshot
-    'template'   => 'text', // html file to use
-    'widgetmap'  => 'text', // json list of ids to map to the template
-    'created_at' => 'datetime default current_timestamp',
-  ],
   //
   // consider: potentially create a second table for "staging" campaigns
   // that aren't active as opposed to relying on a boolean

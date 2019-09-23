@@ -13,6 +13,15 @@ if($json_payload) {
   $all = array_merge($all, $json_payload);
 } 
 
+function post_return($res) {
+  if(isset($_GET['next'])) {
+    header('Location: ' . $_GET['next']);
+    exit;
+  } else {
+    jemit($res);
+  }
+}
+
 try {
   if($func == 'state') {
     $list = array_values($_FILES);
@@ -34,9 +43,12 @@ try {
   }
   else if($func == 'screens' && ($verb == 'POST' || $verb == 'PUT')) {
     jemit(screen_edit($all));
-  } 
-  else if(array_search($func, [
-    'brands', 'organizations', 'widgets', 'layouts', 'attributions', 'users',
+  } else if(array_search($func, [ 'widgets', 'tickers' ] !== false )) {
+    $type = rtrim($func, 's');
+    post_return(show('addon', array_merge(['type' => $type], $all)));
+
+  } else if(array_search($func, [
+    'brands', 'organizations', 'attributions', 'users',
     'jobs', 'sensor_history', 'campaigns', 'screens', 'tasks']) !== false) {
     $table = rtrim($func, 's');
     $action = 'show';
@@ -44,14 +56,7 @@ try {
     if($verb == 'POST' || $verb == 'PUT') {
       $action = 'create';
     }
-    $res = $action($table, $all);
-
-    if(isset($_GET['next'])) {
-      header('Location: ' . $_GET['next']);
-      exit;
-    } else {
-      jemit($res);
-    }
+    post_return($action($table, $all));
 
   }
   else if(array_search($func, [
