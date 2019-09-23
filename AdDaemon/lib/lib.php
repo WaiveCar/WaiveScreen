@@ -721,7 +721,7 @@ function show($what, $clause = '') {
     }
   }
   //error_log(preg_replace('/\s+/', ' ', "select * from $what $clause"));
-  return db_all("select * from $what $clause", $what);
+  return db_all("select * from $what $clause order by id desc", $what);
 }
 
 function make_infinite($campaign_id) {

@@ -50,7 +50,7 @@ function doit(table, opts) {
     j.innerHTML = `New ${opts.name}`;
   });
 
-  form.setAttribute('action', `/api/${table}s`);
+  form.setAttribute('action', `/api/${table}s?next=/${table}s`);
 
   function builder(schema) {
     var html = [],

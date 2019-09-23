@@ -28,6 +28,7 @@ body {
 
 .navbar-nav {
   width: 160px !important;
+  overflow: hidden;
 }
 .main { margin-top: 3rem }
 

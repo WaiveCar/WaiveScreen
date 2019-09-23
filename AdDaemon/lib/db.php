@@ -145,7 +145,7 @@ $SCHEMA = [
     'created_at'    => 'datetime default current_timestamp',
   ],
 
-  'org' => [
+  'organization' => [
     'id'         => 'integer primary key autoincrement',
     'name'       => 'text',
     'image'      => 'text',
@@ -153,7 +153,7 @@ $SCHEMA = [
 
   'brand' => [
     'id'         => 'integer primary key autoincrement',
-    'org_id'     => 'integer',
+    'organization_id'     => 'integer',
     'name'       => 'text',
     'image'      => 'text',
     'balance'    => 'integer',
@@ -176,7 +176,7 @@ $SCHEMA = [
     'image'      => 'text',
     'email'      => 'text',
     'title'      => 'text',
-    'org_id'     => 'integer',
+    'organization_id'     => 'integer',
     'brand_id'   => 'integer',
     'role'       => 'text', // either admin/manager/viewer
     'phone'      => 'text',
@@ -230,7 +230,7 @@ $SCHEMA = [
     'name'        => 'text',
     'ref_id'      => 'text',
     'brand_id'    => 'integer',
-    'org_id'    => 'integer',
+    'organization_id'    => 'integer',
     'order_id'    => 'integer',
     'asset'       => 'text not null',
     'duration_seconds' => 'integer',

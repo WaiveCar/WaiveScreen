@@ -36,7 +36,7 @@ try {
     jemit(screen_edit($all));
   } 
   else if(array_search($func, [
-    'brands', 'orgs', 'widgets', 'layouts', 'attributions', 'users',
+    'brands', 'organizations', 'widgets', 'layouts', 'attributions', 'users',
     'jobs', 'sensor_history', 'campaigns', 'screens', 'tasks']) !== false) {
     $table = rtrim($func, 's');
     $action = 'show';
@@ -44,7 +44,15 @@ try {
     if($verb == 'POST' || $verb == 'PUT') {
       $action = 'create';
     }
-    jemit($action($table, $all));
+    $res = $action($table, $all);
+
+    if(isset($_GET['next'])) {
+      header('Location: ' . $_GET['next']);
+      exit;
+    } else {
+      jemit($res);
+    }
+
   }
   else if(array_search($func, [
     'active_campaigns', 
