@@ -203,6 +203,7 @@ var Engine = function(opts){
     }
     img.onload = function(e) {
       if(e.target.width) {
+        e.target.style.width = '100%';
         /*
         var ratio = e.target.width / e.target.height;
         if(ratio > _res.target.ratio) {
@@ -226,8 +227,7 @@ var Engine = function(opts){
     // TODO: per asset custom duration 
     asset.duration = asset.duration || _res.duration;
     obj.duration += asset.duration;
-    asset.run = _nop;
-    asset.pause = _nop;
+    asset.pause = asset.run = asset.play = _nop;
     asset.dom = img;
 
     return asset;
@@ -237,7 +237,7 @@ var Engine = function(opts){
     var dom = document.createElement('iframe');
     dom.src = asset.url;
     asset.dom = dom;
-    asset.pause = _nop;
+    asset.pause = asset.play = _nop;
     asset.run = function() {
       _playCount ++;
     }
@@ -261,6 +261,7 @@ var Engine = function(opts){
 
     asset.cycles = 1;
     asset.pause = vid.pause;
+    asset.play = vid.play;
     asset.run = function(noreset) {
       if(!noreset) {
         vid.currentTime = 0;
@@ -871,7 +872,7 @@ var Engine = function(opts){
     Play: function() {
       _res.pause = false;
       if(_current) {
-        _current.shown.dom.play();
+        _current.shown.play();
         nextAsset();
       } else {
         nextJob();
