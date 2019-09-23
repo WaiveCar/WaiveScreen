@@ -12,11 +12,8 @@ function signup() {
 
 (() => {
   document.querySelector('.form-fields').innerHTML = [
-    'name',
     'email',
     'password',
-    'confirm password',
-    'organization',
   ]
     .map(
       field => `

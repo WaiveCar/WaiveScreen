@@ -198,7 +198,7 @@ window.onload = function(){
     container: 'campaign-info',
     schema: { 
       'campaign title': 'text',
-      'org_id': 'integer',
+      'organization_id': 'integer',
       'brand_id': 'integer',
     }});
 
