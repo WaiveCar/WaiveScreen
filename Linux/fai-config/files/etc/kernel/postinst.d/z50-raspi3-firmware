@@ -116,6 +116,7 @@ cat >>/boot/firmware/config.txt <<EOF
 enable_uart=1
 disable_splash=1
 gpu_mem=128
+force_turbo=1
 
 kernel=${KERNEL}
 EOF
