@@ -1,6 +1,8 @@
 import requests, os, json, hashlib
 
 def request(verb, url, headers={}, params={}):
+    if not os.path.exists('./widgetfiles'):
+        os.makedirs('./widgetfiles')
     checksum_name = hashlib.md5(url.encode('utf-8')).hexdigest()
     if not os.path.exists('./widgetfiles/' + checksum_name):
         response = requests.request(verb, url, headers=headers, params=params)
