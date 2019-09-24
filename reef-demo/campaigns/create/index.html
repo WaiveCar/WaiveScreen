@@ -159,7 +159,7 @@
         </div>
 
         
-        <div class="row mb-4 instagram-wrapper" style='display:none'>
+        <div class="row mb-4 instagram-wrapper shown"><!-- style='display:none'>-->
           <div class="col-lg-12">
             <div class="card">
               <div class="card-body">
@@ -171,8 +171,24 @@
                     Pause/Play
                   </div>
 
-                  Log in with instagram
+                  <a href=https://api.instagram.com/oauth/authorize/?client_id=c49374cafc69431b945521bce7601840&redirect_uri=http://ads.waivecar.com/api/instagram&response_type=code> Log in with instagram</a>
 
+                  <div class=insta>
+                    <div class=header>
+                      <div class=profile>
+                        <img />
+                      </div>
+                      <div class=info>
+                        <div class=name></div>
+                        <div class=description></div>
+                      </div>
+                    </div>
+                    <div class=content>
+                    </div>
+                  </div>
+
+
+  
                   Show images
 
                   Select images
@@ -280,8 +296,8 @@ You will never spend more than $10,000 per month. Lastly, your ad needs to be ap
     <script src="/map.js?1"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="/formBuilder.js"></script>
-    <script src="./index.js"></script>
     <script src="../sharedLogic.js"></script>
+    <script src="./index.js"></script>
     <script src="/engine.js"></script>
     </body>
 </html>
