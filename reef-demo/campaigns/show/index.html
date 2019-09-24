@@ -11,6 +11,7 @@
     <link rel=stylesheet href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
     <link href="../../css/jquery.schedule.min.css" rel="stylesheet">
     <link href="../../common.css" rel="stylesheet">
+    <link href="/engine.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
     <title>Screen Admin</title>
   </head>
@@ -125,8 +126,7 @@
         <script src="../../menu.js"></script>
       </div>
       <div class="container-fluid">
-        <div class="campaign-preview">
-
+        <div id="campaign-preview">
         </div>
         <div class="alert alert-primary" id="notice" role="alert"></div>
         <div class="d-flex justify-content-between">
@@ -169,6 +169,30 @@
 	                <div style="width: 20%;" class="mobile-chart">
 	                	<canvas id="campaign-chart-3"></canvas>
 	                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body d-flex justify-content-center">
+                <div class="performance-download">
+                  <div class="plate-count">
+                    506
+                  </div>
+                  <div class="plate-title mb-1">
+                    LICENSE PLATES
+                  </div>
+                  <button class="btn btn-outline-dark">Download</button>
+                </div>
+                <div class="performance-download">
+                  <div class="plate-count">
+                    1327
+                  </div>
+                  <div class="plate-title mb-1">
+                    MOBILE DEVICES
+                  </div>
+                  <button class="btn btn-outline-dark">Download</button>
                 </div>
               </div>
             </div>
@@ -401,10 +425,10 @@ You will never spend more than $10,000 per month. Lastly, your ad needs to be ap
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
     <script src="./../../js/jquery.schedule.min.js"></script>
 	  <script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
+    <script src="../sharedLogic.js"></script>
     <script src="/map.js?1"></script>
     <script src="/engine.js"></script>
     <script src="/formBuilder.js"></script>
-    <script src="../sharedLogic.js"></script>
     <script src="./index.js"></script>
     <script src="./charts.js"></script>
     </body>

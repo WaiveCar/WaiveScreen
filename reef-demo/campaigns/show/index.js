@@ -85,7 +85,13 @@ function changeSelected(newIdx) {
   fetch(`http://waivescreen.com/api/campaigns?id=${id}`)
     .then(response => response.json())
     .then(json => {
+      self.j = json;
       campaign = json[0];
+      var e = Engine({
+        container: document.querySelector('#campaign-preview')
+      })
+      e.AddJob({url: json[0].asset});
+      e.Start();
       renderCampaign(json[0]);
     })
     .catch(e => console.log('error fetching screens', e));
@@ -100,40 +106,4 @@ function changeSelected(newIdx) {
     .addEventListener('mouseup', calcItems);
 
 })();
-
-function doMap() {
-  $.getJSON("http://waivescreen.com/api/screens?active=1&removed=0", function(Screens) {
-    self._map = map({points:Screens});
-    let success = false;
-
-    if(success) {
-      _map.load(_campaign.shape_list);
-    } else {
-      _map.center([-118.34,34.06], 11);
-    }
-  });
-}
-
-function clearmap() {
-  _map.clear();
-}
-
-function removeShape() {
-  _map.removeShape();
-}
-
-function geosave() {
-  var coords = _map.save();
-  // If we click on the map again we should show the updated coords
-  _campaign.shape_list = coords;
-  post('campaign_update', {id: _id, geofence: coords}, res => {
-    show({data: 'Updated Campaign'}, 1000);
-  });
-}
-
-function setRatio(container, what) {
-  if(what == 'car') {
-    container.style.height = (.351 * container.clientWidth) + "px";
-  }
-}
 
