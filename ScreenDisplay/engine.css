@@ -132,7 +132,10 @@
   background: rgba(0,0,0,0.5);
   color: #fff;
   font-family: monospace;
-  height: 10rem;
-  width: 50rem;
+  height: 25vw;
+  width: 20rem;
+  text-align: left;
+  overflow-Y: auto;
+  font-size: .8vw;
   white-space: pre;
 }

@@ -155,7 +155,8 @@ var Engine = function(opts){
 
   function dbg(what) {
     if(!_box.debug) { return; }
-    _box.debug.innerHTML += (new Date() - start) + ": " + what + "\n";
+    _box.debug.innerHTML += (new Date() - _start) + ": " + what + "\n";
+    _box.debug.scrollTo(0,_box.debug.scrollHeight);
   }
 
   function layout() {
@@ -306,7 +307,7 @@ var Engine = function(opts){
 
     ["emptied","ended","loadeddata","play","playing","progress","seeked","seeking","pause","timeupdate"].forEach(function(row) {
       vid.addEventListener(row, function() {
-        dbg(row + ' ' + JSON.stringify(Array.prototype.slice.call(arguments))); 
+        dbg(' > ' + row + ' ' + JSON.stringify(Array.prototype.slice.call(arguments))); 
       })
     });
 
@@ -728,11 +729,12 @@ var Engine = function(opts){
     } 
 
     _current.shown = _current.assetList[_current.position];
-    dbg("Before run");
+    dbg("run {");
     _current.shown.run();
-    dbg("After run, before appendChild");
+    dbg("} run")
+    dbg("appendChild {");
     _box.ad.appendChild(_current.shown.container);
-    dbg("After appendChild");
+    dbg("} appendChild");
 
     if(_current.shown.uniq != _last_uniq) {
       // This is NEEDED because by the time 
@@ -747,14 +749,14 @@ var Engine = function(opts){
             _box.ad.removeChild(prev);
           }, _res.fadeMs, 'assetFade');
         } else {
-          dbg("Before removeChild");
+          dbg("removeChild {");
           _box.ad.removeChild(prev);
-          dbg("After removeChild");
+          dbg("} removeChild");
           // we don't have to worry about the re-pointing
           // because we aren't in the timeout
-          dbg("Before rewind");
+          dbg("rewind {");
           _current.shown.rewind();
-          dbg("After rewind");
+          dbg("} rewind");
         }
         doFade = true;
       }
