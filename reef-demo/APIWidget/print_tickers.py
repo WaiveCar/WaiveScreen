@@ -16,15 +16,18 @@ def fetch_info():
         "mlb_scores": get_MLB_scores(),
         "nfl_scores": get_NFL_scores(2),
         "stocks": get_daily_stock_movement("MSFT"),
-        "random fact": get_random_fact(),
-        "traffic": get_traffic_incidents(latlng[0], latlng[1], 3)
+        "random_fact": get_random_fact(),
+        "traffic": get_traffic_incidents(latlng[0], latlng[1], 5)
     }
     with open("./widgetfiles/parsed_widget_data.json", "w+") as f:
         json.dump(raw_json, f)
 
     parsed = {}
     parsed["catfact"] = {
-        "feed": [raw_json["catfact"]], 
+        "feed": [{
+            "text": raw_json["catfact"],
+            "image": None
+        }], 
         "source": "https://cat-fact.herokuapp.com/facts",
         "expiration": None
     }
@@ -56,6 +59,7 @@ def fetch_info():
         "source": "http://api.sportradar.us/mlb/trial/v6.5/en/games/",
         "expiration": None
     }
+
     parsed["nfl_scores"] = {
         "feed": list(map(lambda obj: {
             "text": "{} vs. {}: {}-{}".format(obj["home"], obj["away"], obj["home_score"], obj["away_score"]),
@@ -65,9 +69,38 @@ def fetch_info():
         "expiration": None
     }
 
+    parsed["random_fact"] = {
+        "feed": [{
+            "text": raw_json["random_fact"],
+            "image": None
+        }], 
+        "source": "https://uselessfacts.jsph.pl/random.json?language=en",
+        "expiration": None
+    }
+
+    stocks = raw_json["stocks"]
+    parsed["stocks"] = {
+        "feed": [{
+            "text": "{}: Open: {}, Close: {}, High: {}, Low: {}".format(stocks["symbol"], stocks["open"], stocks["close"], stocks["high"], stocks["low"]), 
+            "image": None
+        }],
+        "source": "https://www.alphavantage.co/query",
+        "expiration": None
+    }
+
+    parsed["traffic"] = {
+        "feed": list(map(lambda obj: {
+            "text": "{} {}".format(obj["LOCATION"]["INTERSECTION"]["ORIGIN"]["STREET1"]["ADDRESS1"] if "INTERSECTION" in obj["LOCATION"] else obj["LOCATION"]["DEFINED"]["ORIGIN"]["ROADWAY"]["DESCRIPTION"][0]["content"], obj["TRAFFICITEMDESCRIPTION"][0]["content"]),
+            "image": None
+        }, raw_json["traffic"])),
+        "source": "https://traffic.api.here.com/traffic/6.0/incidents.json",
+        "expiration": None
+    }
+
     with open("./widgetfiles/parsed_widget_data.json", "w+") as f:
         json.dump(parsed, f)
 
     return raw_json
 
-print("output: ", fetch_info())
+if __name__ == "__main__":
+    fetch_info()
