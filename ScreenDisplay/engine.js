@@ -55,6 +55,8 @@ var Engine = function(opts){
 
       pause: false,
 
+      slowCPU: false,
+
       target: { width: 1920, height: 675 },
 
       listeners: {},
@@ -715,18 +717,24 @@ var Engine = function(opts){
       // redefined.
       prev = _last_container;
       if(prev) {
-        prev.classList.add('fadeOut' + _key);
-        _timeout(function() {
-          prev.classList.remove('fadeOut' + _key);
+        if(!_res.cheapCPU) {
+          prev.classList.add('fadeOut' + _key);
+          _timeout(function() {
+            prev.classList.remove('fadeOut' + _key);
+            _box.ad.removeChild(prev);
+          }, _res.fadeMs, 'assetFade');
+        } else {
           _box.ad.removeChild(prev);
-        }, _res.fadeMs, 'assetFade');
+        }
         doFade = true;
       }
     }
     _last_uniq = _current.shown.uniq;
     _last_container = _current.shown.container;
 
-    _current.shown.container.classList[doFade ? 'add' : 'remove' ]('fadeIn' + _key );
+    if(!_res.cheapCPU) {
+      _current.shown.container.classList[doFade ? 'add' : 'remove' ]('fadeIn' + _key );
+    }
 
     //console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
 
