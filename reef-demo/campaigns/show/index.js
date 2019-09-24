@@ -91,8 +91,11 @@ function changeSelected(newIdx) {
         container: document.querySelector('#campaign-preview')
       })
       e.AddJob({url: json[0].asset});
+      _preview.AddJob({url: json[0].asset});
       e.Start();
+      _preview.Start();
       renderCampaign(json[0]);
+      handleUploads(json[0].asset)
     })
     .catch(e => console.log('error fetching screens', e));
   document
@@ -104,6 +107,5 @@ function changeSelected(newIdx) {
   document
     .querySelector('.jqs-table tbody')
     .addEventListener('mouseup', calcItems);
-
 })();
 
