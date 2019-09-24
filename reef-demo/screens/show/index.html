@@ -102,8 +102,20 @@
         <div class="jumbotron">
           <h1 class="display-4">Screen Details / Location</h1>
         </div>
-        <div class="jumbotron">
-          <h1 class="display-4">Impression Graph</h1>
+        <div class="row mb-4">
+          <a name="Performance"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Impressions</h2>
+                <div class="d-flex justify-content-center chart-contain">
+	                <div style="width: 80%;" class="mobile-chart">
+	                	<canvas id="screen-chart-1"></canvas>
+	                </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -117,7 +129,10 @@
     <script src="../../js/sb-admin-2.min.js"></script>
     <script src="../../js/jquery.dataTables.min.js"></script>
     <script src="../../js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+	  <script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
     <script src="/engine.js"></script>
+    <script src="./charts.js"></script>
     <script src="./index.js"></script>
     </body>
 </html>
