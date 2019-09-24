@@ -361,3 +361,8 @@ select.form-control:focus,.form-group input:focus
 .btn-secondary {
   border-radius: 0!important;
 }
+
+.user-icon-holder a:hover {
+  text-decoration: none;
+  color: black;
+}
