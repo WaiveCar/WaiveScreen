@@ -145,6 +145,19 @@ var Engine = function(opts){
     },
   };
 
+  function makeBox(row) {
+    if(!_box[row]) {
+      _box[row] = document.createElement("div");
+      _box[row].className = row;
+      return _box[row];
+    }
+  }
+
+  function dbg(what) {
+    if(!_box.debug) { return; }
+    _box.debug.innerHTML += (new Date() - start) + ": " + what + "\n";
+  }
+
   function layout() {
     //
     // <div class=top>
@@ -156,10 +169,7 @@ var Engine = function(opts){
     //   <div class=ticker></div>
     // </div>
     //
-    ["top","ad","widget","bottom","time","ticker"].forEach(function(row) {
-      _box[row] = document.createElement("div");
-      _box[row].className = row;
-    });
+    ["top","ad","widget","bottom","time","ticker"].forEach(makeBox);
     // this ordering is correct...trust me.
     _box.top.appendChild(_box.widget);
     _box.top.appendChild(_box.ad);
@@ -293,6 +303,12 @@ var Engine = function(opts){
       }
       _playCount ++;
     }
+
+    ["emptied","ended","loadeddata","play","playing","progress","seeked","seeking","pause","timeupdate"].forEach(function(row) {
+      vid.addEventListener(row, function() {
+        dbg(row + ' ' + JSON.stringify(Array.prototype.slice.call(arguments))); 
+      })
+    });
 
     vid.ondurationchange = function(e) {
       // This will only come if things are playable.
@@ -712,8 +728,11 @@ var Engine = function(opts){
     } 
 
     _current.shown = _current.assetList[_current.position];
+    dbg("Before run");
     _current.shown.run();
+    dbg("After run, before appendChild");
     _box.ad.appendChild(_current.shown.container);
+    dbg("After appendChild");
 
     if(_current.shown.uniq != _last_uniq) {
       // This is NEEDED because by the time 
@@ -728,10 +747,14 @@ var Engine = function(opts){
             _box.ad.removeChild(prev);
           }, _res.fadeMs, 'assetFade');
         } else {
+          dbg("Before removeChild");
           _box.ad.removeChild(prev);
+          dbg("After removeChild");
           // we don't have to worry about the re-pointing
           // because we aren't in the timeout
+          dbg("Before rewind");
           _current.shown.rewind();
+          dbg("After rewind");
         }
         doFade = true;
       }
@@ -937,6 +960,11 @@ var Engine = function(opts){
 
     Debug: function() {
       _res._debug = true;
+      var div = makeBox('debug');
+      if(div) {
+        _box.top.appendChild(div);
+      }
+
       return {
         current: _current,
         last: _last,
