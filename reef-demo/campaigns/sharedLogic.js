@@ -182,6 +182,19 @@ function geosave() {
 }
 
 function instaGet() {
+  var user;
+  function Gen() {
+    $(".insta .selector").remove();
+    var ix = 1;
+    var selected = [];
+    selector.forEach(function(row) {
+      row.innerHTML += `<div class=selector>${ix}</div>`;
+      ix++;
+      selected.push(row.dataset.standard);
+    })
+    var param = JSON.stringify(selected);
+    $('.insta .preview').attr('src', `/insta.php?user=${user.username}&images=${selected}`);
+  }
   var selector = [];
   self.s = selector;
   get('instagram?info=1', function(res) {
@@ -190,12 +203,11 @@ function instaGet() {
       return;
     }
     res = res.data;
-    let user = res.data[0].user;
+    user = res.data[0].user;
     var row, content = [];
     $('.insta .profile img').attr('src', user.profile_picture);
     $('.insta .info .name').html( user.username );
     $('.insta .info .description').html( user.full_name );
-    console.log(user);
     for(var ix = 0; ix < res.data.length; ix++) {
       if(!(ix % 3)) {
         if(row) {
@@ -203,25 +215,30 @@ function instaGet() {
         }
         row = [];
       }
-      row.push( "<img src=" + res.data[ix].images.thumbnail.url + ">");
+      var big = res.data[ix].images.standard_resolution.url,
+          small = res.data[ix].images.thumbnail.url;
+      row.push( `<div class='box' data-standard='${big}'><img src=${small}></div>`);
     }
     if(row) {
       content.push("<div class=row>" + row.join('') + "</div>");
     }
     $('.insta .content').html( content.join('') );
-    $(".insta .content img").click(function() {
-      var exists = selector.filter(row => row.src == this.src);
-      if(exists) {
-        selector = selector.filter(row => row.src != this.src);
+    $(".insta .content .box").click(function() {
+      console.log("HI");
+      var exists = selector.filter(row => row.dataset.standard == this.dataset.standard);
+      if(exists.length) {
+        selector = selector.filter(row => row.dataset.standard != this.dataset.standard);
       } else {
         if(selector.length < 6) {
           selector.push(this);
         }
       }
+      Gen();
     });
 
   });
 }
+
 
 
 window.onload = function(){

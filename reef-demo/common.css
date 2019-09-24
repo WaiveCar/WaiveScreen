@@ -370,6 +370,47 @@ select.form-control:focus,.form-group input:focus
 .up-right {
   color: green;
 }
+.insta .info .name {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+.insta .content .row .selector {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  font-size:100px;
+  user-select: none;
+  cursor: pointer;
+  color: #fff;
+  justify-content: center;
+  opacity: 0.8;
+  border-radius: 6px;
+  background: rgba(0,0,0,.2);
+  border: 9px solid #fff;
+  align-items: center;
+  font-weight: 800;
+}
+.insta .content .row * {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.insta .content .row img {
+  height: 100%;
+  width: 100%;
+}
+.insta .content .row > div {
+  height: 150px;
+  border-radius: 6px;
+  width: 150px;
+  margin: .5rem;
+  position: relative;
+}
+.insta .content .row div:hover {
+  box-shadow: 0 0 4px 1px rgba(125,125,125,.7);
+  opacity: 0.9;
+}
 
 .down-right {
   color: red;
