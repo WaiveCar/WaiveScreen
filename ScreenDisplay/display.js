@@ -12,6 +12,7 @@ window.onload = function init() {
     slowCPU: true,
     server: 'http://localhost:4096/'
   });
+  //self.ads.Debug();
 
   self.sms = document.getElementById('sms');
 
