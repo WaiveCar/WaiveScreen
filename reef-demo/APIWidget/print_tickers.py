@@ -36,7 +36,7 @@ def fetch_info():
     parsed["forecast"] = {
         "feed": [{
             "text": "Today's forcast: {} with an actual temperature of {} degrees and a wind speed of {} mph.".format(forecast["summary"], forecast["temp"], forecast["wind_speed"]),
-            "image": None
+            "image": None,
             "temperature": forecast["temp"],
             "summary": forecast["summary"]
         }], 
