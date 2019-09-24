@@ -717,7 +717,7 @@ var Engine = function(opts){
       // redefined.
       prev = _last_container;
       if(prev) {
-        if(!_res.cheapCPU) {
+        if(!_res.slowCPU) {
           prev.classList.add('fadeOut' + _key);
           _timeout(function() {
             prev.classList.remove('fadeOut' + _key);
@@ -732,7 +732,7 @@ var Engine = function(opts){
     _last_uniq = _current.shown.uniq;
     _last_container = _current.shown.container;
 
-    if(!_res.cheapCPU) {
+    if(!_res.slowCPU) {
       _current.shown.container.classList[doFade ? 'add' : 'remove' ]('fadeIn' + _key );
     }
 
