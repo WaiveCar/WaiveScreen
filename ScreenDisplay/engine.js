@@ -55,6 +55,8 @@ var Engine = function(opts){
 
       pause: false,
 
+      slowCPU: false,
+
       target: { width: 1920, height: 675 },
 
       listeners: {},
@@ -203,6 +205,7 @@ var Engine = function(opts){
     }
     img.onload = function(e) {
       if(e.target.width) {
+        e.target.style.width = '100%';
         /*
         var ratio = e.target.width / e.target.height;
         if(ratio > _res.target.ratio) {
@@ -226,8 +229,7 @@ var Engine = function(opts){
     // TODO: per asset custom duration 
     asset.duration = asset.duration || _res.duration;
     obj.duration += asset.duration;
-    asset.run = _nop;
-    asset.pause = _nop;
+    asset.pause = asset.run = asset.play = _nop;
     asset.dom = img;
 
     return asset;
@@ -237,7 +239,7 @@ var Engine = function(opts){
     var dom = document.createElement('iframe');
     dom.src = asset.url;
     asset.dom = dom;
-    asset.pause = _nop;
+    asset.pause = asset.play = _nop;
     asset.run = function() {
       _playCount ++;
     }
@@ -261,6 +263,7 @@ var Engine = function(opts){
 
     asset.cycles = 1;
     asset.pause = vid.pause;
+    asset.play = vid.play;
     asset.run = function(noreset) {
       if(!noreset) {
         vid.currentTime = 0;
@@ -444,7 +447,6 @@ var Engine = function(opts){
       // This acts as the instantiation. 
       // the merging of the rest of the data
       // will come below.
-      console.log(job.asset);
       _res.db[job.campaign_id] = makeJob({ url: job.asset });
     }
 
@@ -553,6 +555,16 @@ var Engine = function(opts){
         ].join(':')
     },
     active: {},
+    show: {
+      weather: function(cloud, temp) {
+        _box.widget.innerHTML = [
+          "<div class='app weather cloudy'>", 
+          "<img src=cloudy_" + cloud + ".svg>",
+          temp + "&deg;",
+          "</div>"
+        ].join('');
+      }
+    },
     updateView: function(what, where) {
       Widget.active[what] = where;
       var hasBottom = Widget.active.time || Widget.active.ticker;
@@ -582,7 +594,7 @@ var Engine = function(opts){
       Widget.updateView('app', feed);
       if(feed) {
         _box.widget.style.display = 'block';
-        _box.widget.innerHTML = "<div class='app weather cloudy'>72</div>";
+        Widget.show.weather(50,72);
       } else {
         _box.widget.style.display = 'none';
       }
@@ -595,25 +607,24 @@ var Engine = function(opts){
       if(feed) {
         if(!Widget._ticker) {
           _box.ticker.style.display = 'block';
-          Widget._ticker = setInterval(function(){
-            _box.ticker.scrollLeft += 1.4
-          }, 50);
+          function scroll() {
+            _box.ticker.style.opacity = 1;
+            _box.ticker.scrollLeft = 1;
+            clearInterval(Widget._ticker);
+            Widget._ticker = setInterval(function(){
+              var before = _box.ticker.scrollLeft;
+              _box.ticker.scrollLeft += 1.4
+              if (_box.ticker.scrollLeft === before) {
+                clearInterval(Widget._ticker);
+                scroll();
+              }
+            }, 30);
+          }
 
           _box.ticker.innerHTML = `
           <span>Saudi oil attacks: all the latest updates</span>
-          <span>'Dollar diplomacy' - Taiwan condemns China after Solomons switch</span>
-          <span>West Papua unrest tests Indonesia's Jokowi as second term begins</span>
-          <span>Trump says he would 'certainly like to avoid' war with Iran</span>
-          <span>Venezuela opposition: Norway-mediated talks with Maduro are over</span>
-          <span>Saudi oil strikes: Will Gulf 'powder-keg' detonate?</span>
-          <span>New York prosecutors subpoena Trump's tax returns: reports</span>
-          <span>Italy: Navy, coastguard officials charged in migrant deaths</span>
-          <span>Will the attacks on Saudi oil facilities cripple global supplies?</span>
-          <span>Tunisia election: Outsider in lead stuns after most votes counted</span>
-          <span>European families 'feel safer' in Scotland than England</span>
-          <span>South Africa offers 'profuse' apologies to Nigeria after attacks</span>
-          <span>Millions of US women say first sexual experience was rape</span>
-          <span>'Desperate to be re-elected': Will Netanyahu win Israel vote?</span>`;
+          <span>'Dollar diplomacy' - Taiwan condemns China after Solomons switch</span>`;
+          scroll();
         }
       } else {
         _box.ticker.style.display = 'none';
@@ -706,18 +717,24 @@ var Engine = function(opts){
       // redefined.
       prev = _last_container;
       if(prev) {
-        prev.classList.add('fadeOut' + _key);
-        _timeout(function() {
-          prev.classList.remove('fadeOut' + _key);
+        if(!_res.cheapCPU) {
+          prev.classList.add('fadeOut' + _key);
+          _timeout(function() {
+            prev.classList.remove('fadeOut' + _key);
+            _box.ad.removeChild(prev);
+          }, _res.fadeMs, 'assetFade');
+        } else {
           _box.ad.removeChild(prev);
-        }, _res.fadeMs, 'assetFade');
+        }
         doFade = true;
       }
     }
     _last_uniq = _current.shown.uniq;
     _last_container = _current.shown.container;
 
-    _current.shown.container.classList[doFade ? 'add' : 'remove' ]('fadeIn' + _key );
+    if(!_res.cheapCPU) {
+      _current.shown.container.classList[doFade ? 'add' : 'remove' ]('fadeIn' + _key );
+    }
 
     //console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
 
@@ -871,7 +888,7 @@ var Engine = function(opts){
     Play: function() {
       _res.pause = false;
       if(_current) {
-        _current.shown.dom.play();
+        _current.shown.play();
         nextAsset();
       } else {
         nextJob();
@@ -911,7 +928,8 @@ var Engine = function(opts){
       return {
         current: _current,
         last: _last,
-        isNetUp: _isNetUp 
+        isNetUp: _isNetUp,
+        box: _box
       };
     }, 
     Scrub: function(relative_time) {
