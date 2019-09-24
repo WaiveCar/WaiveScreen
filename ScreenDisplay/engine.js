@@ -55,6 +55,8 @@ var Engine = function(opts){
 
       pause: false,
 
+      slowCPU: false,
+
       target: { width: 1920, height: 675 },
 
       listeners: {},
@@ -445,7 +447,6 @@ var Engine = function(opts){
       // This acts as the instantiation. 
       // the merging of the rest of the data
       // will come below.
-      console.log(job.asset);
       _res.db[job.campaign_id] = makeJob({ url: job.asset });
     }
 
@@ -606,25 +607,24 @@ var Engine = function(opts){
       if(feed) {
         if(!Widget._ticker) {
           _box.ticker.style.display = 'block';
-          Widget._ticker = setInterval(function(){
-            _box.ticker.scrollLeft += 1.4
-          }, 50);
+          function scroll() {
+            _box.ticker.style.opacity = 1;
+            _box.ticker.scrollLeft = 1;
+            clearInterval(Widget._ticker);
+            Widget._ticker = setInterval(function(){
+              var before = _box.ticker.scrollLeft;
+              _box.ticker.scrollLeft += 1.4
+              if (_box.ticker.scrollLeft === before) {
+                clearInterval(Widget._ticker);
+                scroll();
+              }
+            }, 30);
+          }
 
           _box.ticker.innerHTML = `
           <span>Saudi oil attacks: all the latest updates</span>
-          <span>'Dollar diplomacy' - Taiwan condemns China after Solomons switch</span>
-          <span>West Papua unrest tests Indonesia's Jokowi as second term begins</span>
-          <span>Trump says he would 'certainly like to avoid' war with Iran</span>
-          <span>Venezuela opposition: Norway-mediated talks with Maduro are over</span>
-          <span>Saudi oil strikes: Will Gulf 'powder-keg' detonate?</span>
-          <span>New York prosecutors subpoena Trump's tax returns: reports</span>
-          <span>Italy: Navy, coastguard officials charged in migrant deaths</span>
-          <span>Will the attacks on Saudi oil facilities cripple global supplies?</span>
-          <span>Tunisia election: Outsider in lead stuns after most votes counted</span>
-          <span>European families 'feel safer' in Scotland than England</span>
-          <span>South Africa offers 'profuse' apologies to Nigeria after attacks</span>
-          <span>Millions of US women say first sexual experience was rape</span>
-          <span>'Desperate to be re-elected': Will Netanyahu win Israel vote?</span>`;
+          <span>'Dollar diplomacy' - Taiwan condemns China after Solomons switch</span>`;
+          scroll();
         }
       } else {
         _box.ticker.style.display = 'none';
@@ -717,18 +717,24 @@ var Engine = function(opts){
       // redefined.
       prev = _last_container;
       if(prev) {
-        prev.classList.add('fadeOut' + _key);
-        _timeout(function() {
-          prev.classList.remove('fadeOut' + _key);
+        if(!_res.slowCPU) {
+          prev.classList.add('fadeOut' + _key);
+          _timeout(function() {
+            prev.classList.remove('fadeOut' + _key);
+            _box.ad.removeChild(prev);
+          }, _res.fadeMs, 'assetFade');
+        } else {
           _box.ad.removeChild(prev);
-        }, _res.fadeMs, 'assetFade');
+        }
         doFade = true;
       }
     }
     _last_uniq = _current.shown.uniq;
     _last_container = _current.shown.container;
 
-    _current.shown.container.classList[doFade ? 'add' : 'remove' ]('fadeIn' + _key );
+    if(!_res.slowCPU) {
+      _current.shown.container.classList[doFade ? 'add' : 'remove' ]('fadeIn' + _key );
+    }
 
     //console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
 
@@ -922,7 +928,8 @@ var Engine = function(opts){
       return {
         current: _current,
         last: _last,
-        isNetUp: _isNetUp 
+        isNetUp: _isNetUp,
+        box: _box
       };
     }, 
     Scrub: function(relative_time) {
