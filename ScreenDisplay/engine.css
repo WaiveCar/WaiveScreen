@@ -80,6 +80,8 @@
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
+  text-indent: 80vw;
+  padding-right: 90vw;
 }
 .engine-xA8tAY4YSBmn2RTQqnnXXw .ticker span {
   margin: 0 1rem;
