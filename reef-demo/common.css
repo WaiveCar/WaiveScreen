@@ -346,5 +346,19 @@ select.form-control:focus,.form-group input:focus
 
 .plate-title {
   font-size: 14px;
-
 }
+
+.btn-primary {
+  background-color: white!important;
+  color: #5a5c69!important;
+  border-color: #5a5c69;
+  border-radius: 0!important;
+}
+
+.btn-primary:hover {
+  background-color: black!important;
+  border-color: #5a5c69!important;
+  color: white!important;
+}
+
+
