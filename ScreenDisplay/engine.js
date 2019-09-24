@@ -624,9 +624,9 @@ var Engine = function(opts){
             }, 30);
           }
 
-          _box.ticker.innerHTML = `
+          _box.ticker.innerHTML = `<div class=ticker-content>
           <span>Saudi oil attacks: all the latest updates</span>
-          <span>'Dollar diplomacy' - Taiwan condemns China after Solomons switch</span>`;
+          <span>'Dollar diplomacy' - Taiwan condemns China after Solomons switch</span></div>`;
           scroll();
         }
       } else {
