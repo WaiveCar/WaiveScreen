@@ -129,11 +129,11 @@
   position: absolute;
   top: 0;
   left: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.8);
   color: #fff;
   font-family: monospace;
-  height: 25vw;
-  width: 20rem;
+  height: 35vw;
+  width: 40rem;
   text-align: left;
   overflow-Y: auto;
   font-size: .8vw;

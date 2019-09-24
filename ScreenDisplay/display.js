@@ -9,8 +9,10 @@ function showText(what) {
 
 window.onload = function init() {
   self.ads = Engine({
+    //slowCPU: true,
     server: 'http://localhost:4096/'
   });
+  //self.ads.Debug();
 
   self.sms = document.getElementById('sms');
 
