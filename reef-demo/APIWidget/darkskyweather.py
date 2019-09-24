@@ -1,4 +1,5 @@
 import requests
+from cached_request import request
 
 
 url = "https://dark-sky.p.rapidapi.com/"
@@ -20,9 +21,8 @@ def get_forecast(lat="35.6098", lon="-117.6781"):
     headers = {}
     headers['x-rapidapi-host'] = HOST
     headers['x-rapidapi-key'] = API_KEY
-    response = requests.request("GET", url+'/'+str(lat)+','+str(lon), headers=headers, params=querystring)
+    response = request("GET", url+'/'+str(lat)+','+str(lon), headers=headers, params=querystring)
     return response
-
 
 def get_hourly(response, hours=12, start=0):
     """
@@ -75,9 +75,12 @@ def get_current_weather(response):
             wind_speed - current average wind speed
             time - current time
     """
-    if response.status_code != 200:
-        return 0
-    res = response.json()
+    res = None
+    if not isinstance(response, dict):
+        if response.status_code != 200:
+            return 0
+        res = response.json()
+    else: res = response
     current = {
         'summary': res['currently']['summary'],         # current summary
         'temp': res['currently']['temperature'],        # current temp
@@ -86,3 +89,4 @@ def get_current_weather(response):
         'time': res['currently']['time']                # time
     }
     return current
+

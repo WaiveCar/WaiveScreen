@@ -1,4 +1,4 @@
-import requests
+from cached_request import request
 
 url = 'https://newsapi.org/v2/top-headlines'
 API_KEY = 'e80379b7b0854500a9b9dadb139ce9a5'
@@ -20,10 +20,14 @@ def get_news_stories(num=5):
             date - date of article publication
     """
     params = {'country': 'us', 'apiKey': API_KEY}
-    response = requests.request('GET', url=url, params=params)
-    if response.status_code != 200:
-        return 0
-    res = response.json()
+    response = request('GET', url=url, params=params)
+    res = None
+    if not isinstance(response, dict):
+        if response.status_code != 200:
+            return 0
+        res = response.json()
+    else: res = response
+
     articles = []
     for i in range(0, min(num, len(res['articles']))):
         article = {

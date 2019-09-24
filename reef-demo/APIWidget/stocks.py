@@ -1,4 +1,4 @@
-import requests
+from cached_request import request
 from datetime import date, timedelta
 
 
@@ -33,11 +33,12 @@ def get_daily_stock_movement(symbol):
         'datatype': 'json',
         'apikey': API_KEY
     }
-    response = requests.request('GET', url=url, params=params)
-    if response.status_code != 200:
-        print('bad response', response.status_code)
-        return 0
-    res = response.json()
+    response = request('GET', url=url, params=params)
+    if not isinstance(response, dict):
+        if response.status_code != 200:
+            return 0
+        res = response.json()
+    else: res = response
     try:
         today = date.today().strftime('%Y-%m-%d')
         daily = res['Time Series (Daily)'][today]
@@ -59,3 +60,4 @@ def get_daily_stock_movement(symbol):
         'volume': daily['5. volume']
     }
     return daily_movement
+
