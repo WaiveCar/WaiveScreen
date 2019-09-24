@@ -58,7 +58,6 @@ function changeSelected(newIdx) {
     'Overview',
     'Budget',
     'Performance',
-    'Controls',
     'Creatives',
     'Billing',
     'Summary',
@@ -138,21 +137,3 @@ function setRatio(container, what) {
   }
 }
 
-window.onload = function(){
-  self._container =  document.getElementById('engine');
-  doMap();
-  var isFirst = true;
-  setRatio(_container, 'car'); 
-
-  self._preview = Engine({ 
-    container: _container,
-    dynamicSize: true,
-    _debug: true });
-  self._job = _preview.AddJob();
-
-  $(".controls .rewind").click(function() {
-    // this is a lovely trick to force the current job
-    // which effectively resets itself
-    _preview.PlayNow(_job, true);
-  });
-}

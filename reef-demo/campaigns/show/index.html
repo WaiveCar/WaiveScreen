@@ -51,6 +51,65 @@
     .budget {
       width: 11rem;
     }
+    #content-wrapper span { color: #000 }
+    #image-upload { display: none }
+    .id,.version { font-family: monospace }
+    .edit { color: #999; cursor: pointer }
+    .last { text-align: right }
+    em { color: #555 }
+    .table td {padding: .75rem .2rem; }
+    td.edit { white-space: nowrap; }
+    .modal-body span {
+      min-width: 5rem; 
+      display: inline-block;
+      vertical-align: top;
+    }
+    .edit:hover { color: #000 }
+    #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
+    .editor {
+      display: none;
+    }
+    .show {
+      display: block;
+    }
+    #schedule {
+      height: 340px;
+    }
+    .remove-asset {
+      position:absolute;
+      right:0;
+      z-index:1
+    }
+    #engine { overflow: hidden; background: black }
+
+.screen {
+  background: black;
+  text-align: center;
+  position: relative;
+}
+.screen .bg {
+  width: 100%;
+}
+.preview-holder {
+  width: 100%;
+}
+ .controls { 
+   padding: 10px;
+   background: #333;
+   padding-bottom: 3px;
+   border-radius: 0 0 10px 10px;
+ }
+ .asset-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
   </style>
   <body id="page-top">
     <a name="Overview"></a>
@@ -132,7 +191,7 @@
             </div>
           </div>
         </div>
-
+        <!-- We are not doing this section for now
         <div class="row mb-4">
           <a name="Controls"></a>
           <div class="col-12">
@@ -149,28 +208,43 @@
             </div>
           </div>
         </div>
-
-        <div class="row mb-4">
-          <a name="Creatives"></a>
+        -->
+        <div class="row mb-4 creatives-wrapper">
           <div class="col-lg-12">
             <div class="card">
               <div class="card-body">
-                <h2 class="card-title">Edit Creatives</h2>
+                <h2 class="card-title">Add Creatives</h2>
                 <div class="card-body">
                   <div class="row no-gutters">
-                    <div class="col-lg-12" style=height:20vw;background:yellow>
+                    <div id="engine" class="col-lg-12"></div>
+                  </div>
+                  <div class="row no-gutters controls">
+                    <div class="col-6">
+                      <div class="btn-group" role="group" aria-label="Basic example">
+                        <button type="button" class="rewind btn btn-dark">
+                          <i class="fas fa-backward"></i>
+                        </button>
+                        <!--
+                        <button type="button" class="btn btn-dark">
+                          <i class="fas fa-play"></i>
+                        </button>
+                        -->
+                      </div>
                     </div>
-                    Pause/Play
-                    <span class="oi oi-play-circle" aria-hidden="true"></span>
+                    <div class="col-6">
+                      <div class="float-right">
+                        <label for="image-upload" class="btn btn-dark">
+                          <i class="fas fa-plus-square"></i> Image/Video
+                        </label>
+                        <input id="image-upload" multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
+                      </div>
+                    </div>
                   </div>
-                  <div class="row no-gutters">
-                    <div class="col-8 offset-2" style=height:15vw;background:blue></div>
-                  </div>
-                  <div class="row no-gutters">
-                    <div class="col-8 offset-2" style=height:15vw;background:blue></div>
+                  <div class="row justify-content-md-center">
+                    <div class="preview-holder col-8">
+                    </div>
                   </div>
 
-                  Add Image
 
                 </div>
               </div>
@@ -208,6 +282,7 @@
 
 
         <div class="row mb-4">
+          <a name="Budget"></a>
           <div class="col-lg-12">
             <div class="card" id="campaign-budget">
               <div class="card-body">
@@ -231,6 +306,7 @@
         </div>
 
         <div class="row mb-4">
+          <a name="Summary"></a>
           <div class="col-lg-12">
             <div class="card">
               <div class="card-body">
@@ -247,6 +323,21 @@
                   <div class="row no-gutters mb-2" id="price"> </div>
                   </div>
 
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Finalize</h2>
+                <div class="card-text">
+                  <p>Your ad will start immediately and run indefinitely until it is paused.
+You will never spend more than $10,000 per month. Lastly, your ad needs to be approved by our team before delivery begins.</p>
+                  <button type="button" class="btn btn-primary btn-lg">Launch Campaign</button>
                 </div>
               </div>
             </div>
@@ -312,6 +403,8 @@
 	  <script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
     <script src="/map.js?1"></script>
     <script src="/engine.js"></script>
+    <script src="/formBuilder.js"></script>
+    <script src="../sharedLogic.js"></script>
     <script src="./index.js"></script>
     <script src="./charts.js"></script>
     </body>
