@@ -554,6 +554,16 @@ var Engine = function(opts){
         ].join(':')
     },
     active: {},
+    show: {
+      weather: function(cloud, temp) {
+        _box.widget.innerHTML = [
+          "<div class='app weather cloudy'>", 
+          "<img src=cloudy_" + cloud + ".svg>",
+          temp + "&deg;",
+          "</div>"
+        ].join('');
+      }
+    },
     updateView: function(what, where) {
       Widget.active[what] = where;
       var hasBottom = Widget.active.time || Widget.active.ticker;
@@ -583,7 +593,7 @@ var Engine = function(opts){
       Widget.updateView('app', feed);
       if(feed) {
         _box.widget.style.display = 'block';
-        _box.widget.innerHTML = "<div class='app weather cloudy'>72</div>";
+        Widget.show.weather(50,72);
       } else {
         _box.widget.style.display = 'none';
       }
