@@ -1,5 +1,6 @@
 var 
   _preview,
+  _dq = document.querySelector,
   _assetList = [];
 
 function calcItems() {
@@ -118,6 +119,15 @@ function setRatio(container, what) {
   }
 }
 
+function get(ep, body, cb) {
+  fetch(new Request(`/api/${ep}`))
+    .then(res => {
+      if (res.status === 200) {
+        return res.json();
+      }
+    }).then(res => cb(res.data));
+}
+
 function post(ep, body, cb) {
   fetch(new Request(`http://waivescreen.com/api/${ep}`, {
     method: 'POST', 
@@ -142,10 +152,6 @@ function show(what) {
   _shown = what;
 }
 
-function get(id) {
-  var res = Data.filter(row => row.id == id);
-  return res ? res[0] : null;
-}
 function doMap() {
   $.getJSON("http://waivescreen.com/api/screens?active=1&removed=0", function(Screens) {
     self._map = map({points:Screens});
@@ -175,6 +181,17 @@ function geosave() {
     show({data: 'Updated Campaign'}, 1000);
   });
 }
+
+function instaGet() {
+  get('instagram?info=1', function(res) {
+    let obj = res.data[0];
+    cosole.log(obj);
+   _dq('.insta.profile img').src = obj.user.profile_picture;
+   _dq('.insta.info.name').innerHTML = obj.user.username;
+   _dq('.insta.info.description').innerHTML = obj.user.full_name;
+  });
+}
+
 
 window.onload = function(){
   self._container =  document.getElementById('engine');

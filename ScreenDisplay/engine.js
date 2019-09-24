@@ -78,6 +78,7 @@ var Engine = function(opts){
     _downweight = 0.7,
     _firstRun = false,
     _nop = function(){},
+    _passthru = function(cb){cb()},
     _isNetUp = true,
     _start = new Date(),
     _stHandleMap = {},
@@ -145,6 +146,20 @@ var Engine = function(opts){
     },
   };
 
+  function makeBox(row) {
+    if(!_box[row]) {
+      _box[row] = document.createElement("div");
+      _box[row].className = row;
+      return _box[row];
+    }
+  }
+
+  function dbg(what) {
+    if(!_box.debug) { return; }
+    _box.debug.innerHTML += (new Date() - _start) + ": " + what + "\n";
+    _box.debug.scrollTo(0,_box.debug.scrollHeight);
+  }
+
   function layout() {
     //
     // <div class=top>
@@ -156,10 +171,7 @@ var Engine = function(opts){
     //   <div class=ticker></div>
     // </div>
     //
-    ["top","ad","widget","bottom","time","ticker"].forEach(function(row) {
-      _box[row] = document.createElement("div");
-      _box[row].className = row;
-    });
+    ["top","ad","widget","bottom","time","ticker"].forEach(makeBox);
     // this ordering is correct...trust me.
     _box.top.appendChild(_box.widget);
     _box.top.appendChild(_box.ad);
@@ -229,7 +241,8 @@ var Engine = function(opts){
     // TODO: per asset custom duration 
     asset.duration = asset.duration || _res.duration;
     obj.duration += asset.duration;
-    asset.pause = asset.run = asset.rewind = asset.play = _nop;
+    asset.run = _passthru;
+    asset.pause = asset.rewind = asset.play = _nop;
     asset.dom = img;
 
     return asset;
@@ -240,8 +253,9 @@ var Engine = function(opts){
     dom.src = asset.url;
     asset.dom = dom;
     asset.rewind = asset.pause = asset.play = _nop;
-    asset.run = function() {
+    asset.run = function(cb) {
       _playCount ++;
+      cb();
     }
     asset.active = true;
     asset.duration = asset.duration || 100 * _res.duration;
@@ -253,6 +267,8 @@ var Engine = function(opts){
   function video(asset, obj) {
     var vid = document.createElement('video');
     var src = document.createElement('source');
+    var mylock = false;
+    var mycb;
 
     vid.setAttribute('muted', true);
     //vid.setAttribute('preload', 'auto');
@@ -267,10 +283,9 @@ var Engine = function(opts){
     asset.rewind = function() {
       vid.currentTime = 0;
     }
-    asset.run = function(noreset) {
-      if(!noreset) {
-        vid.currentTime = 0;
-      }
+    asset.run = function(cb) {
+      mycb = cb;
+      vid.currentTime = 0;
       vid.volume = 0;
       var now = new Date();
       var playPromise = vid.play();
@@ -340,6 +355,23 @@ var Engine = function(opts){
     // containers.
     src.onerror = function(e) {
       assetError(asset, e);
+    }
+
+    vid.addEventListener('seeked', function() {
+      if(mycb) {
+        mycb();
+        dbg("running");
+      }
+      mylock = false;
+    });
+
+    var m = ["emptied","ended","loadeddata","play","playing","progress","seeked","seeking","pause"];
+    for(var ix = 0; ix < m.length; ix++) {
+      (function(row) {
+        vid.addEventListener(row, function() {
+          dbg(' > ' + row + ' ' + JSON.stringify(Array.prototype.slice.call(arguments))); 
+        });
+      })(m[ix]);
     }
 
     return asset;
@@ -712,8 +744,16 @@ var Engine = function(opts){
     } 
 
     _current.shown = _current.assetList[_current.position];
-    _current.shown.run();
-    _box.ad.appendChild(_current.shown.container);
+    dbg("run {");
+    _current.shown.run( function() {
+      dbg("appendChild {");
+      if(_res.slowCPU && prev) {
+        _box.ad.removeChild(prev);
+      }
+      _box.ad.appendChild(_current.shown.container);
+      dbg("} appendChild");
+    });
+    dbg("} run")
 
     if(_current.shown.uniq != _last_uniq) {
       // This is NEEDED because by the time 
@@ -728,10 +768,14 @@ var Engine = function(opts){
             _box.ad.removeChild(prev);
           }, _res.fadeMs, 'assetFade');
         } else {
-          _box.ad.removeChild(prev);
+          //dbg("removeChild {");
+          //_box.ad.removeChild(prev);
+          //dbg("} removeChild");
           // we don't have to worry about the re-pointing
           // because we aren't in the timeout
+          dbg("rewind {");
           _current.shown.rewind();
+          dbg("} rewind");
         }
         doFade = true;
       }
@@ -937,6 +981,11 @@ var Engine = function(opts){
 
     Debug: function() {
       _res._debug = true;
+      var div = makeBox('debug');
+      if(div) {
+        _box.top.appendChild(div);
+      }
+
       return {
         current: _current,
         last: _last,
