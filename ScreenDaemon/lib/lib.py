@@ -672,7 +672,7 @@ def feature_detect():
   hasSim = int(os.popen('mmcli -m 0 --output-keyvalue | grep sim | grep org | wc -l').read().strip())
   layout = dcall('camera_layout', what='perlcall')
 
-  resolution_raw = os.popen("xrandr | grep connected | grep -Po '(\d+(?x))(\d+)").read().strip()
+  resolution_raw = os.popen("xrandr | grep connected | grep -Po '(\d+(?x))(\d+)'").read().strip()
   parts = [int(x) for x in resolution_raw.split('\n')]
 
   resolution_list = []
