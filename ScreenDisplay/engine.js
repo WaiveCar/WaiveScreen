@@ -229,7 +229,7 @@ var Engine = function(opts){
     // TODO: per asset custom duration 
     asset.duration = asset.duration || _res.duration;
     obj.duration += asset.duration;
-    asset.pause = asset.run = asset.play = _nop;
+    asset.pause = asset.run = asset.rewind = asset.play = _nop;
     asset.dom = img;
 
     return asset;
@@ -239,7 +239,7 @@ var Engine = function(opts){
     var dom = document.createElement('iframe');
     dom.src = asset.url;
     asset.dom = dom;
-    asset.pause = asset.play = _nop;
+    asset.rewind = asset.pause = asset.play = _nop;
     asset.run = function() {
       _playCount ++;
     }
@@ -264,6 +264,9 @@ var Engine = function(opts){
     asset.cycles = 1;
     asset.pause = vid.pause;
     asset.play = vid.play;
+    asset.rewind = function() {
+      vid.currentTime = 0;
+    }
     asset.run = function(noreset) {
       if(!noreset) {
         vid.currentTime = 0;
@@ -559,7 +562,7 @@ var Engine = function(opts){
       weather: function(cloud, temp) {
         _box.widget.innerHTML = [
           "<div class='app weather cloudy'>", 
-          "<img src=cloudy_" + cloud + ".svg>",
+          "<img src=/cloudy_" + cloud + ".svg>",
           temp + "&deg;",
           "</div>"
         ].join('');
@@ -665,6 +668,7 @@ var Engine = function(opts){
   // it calls nextJob again.
   function nextAsset() {
     var prev;
+    var timeoutDuration = 0;
     var doFade = false;
 
     if(_res.pause) {
@@ -725,6 +729,9 @@ var Engine = function(opts){
           }, _res.fadeMs, 'assetFade');
         } else {
           _box.ad.removeChild(prev);
+          // we don't have to worry about the re-pointing
+          // because we aren't in the timeout
+          _current.shown.rewind();
         }
         doFade = true;
       }
@@ -745,7 +752,12 @@ var Engine = function(opts){
     // when we come back around
     _current.position ++;
 
-    _timeout(nextAsset, Math.max(_current.shown.duration * 1000 - _res.fadeMs / 2, 1000), 'nextAsset');
+    timeoutDuration = _current.shown.duration * 1000; 
+    if(!_res.slowCPU) {
+      timeoutDuration -= _res.fadeMs / 2;
+    }
+
+    _timeout(nextAsset, Math.max(timeoutDuration, 1000), 'nextAsset');
   }
 
   function setNextJob(job) {
