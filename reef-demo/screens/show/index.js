@@ -9,7 +9,10 @@ function toggleEditor() {
 
 (() => {
   $('input[value="no"]').prop('checked', true).parent().addClass('selected');
+  var e = Engine({container: document.getElementById('screen')});
   $("input[type=radio]").change(function(){
+    console.log(this.name);
+    e.Widget[this.name](this.value != 'no');
     $(`input[name=${this.name}]`).parent().removeClass('selected');
     this.parentNode.classList.add('selected');
   });

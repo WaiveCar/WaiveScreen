@@ -9,12 +9,12 @@
 		<link rel=stylesheet href=https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css>
     <link href="../../css/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link href="../../common.css" rel="stylesheet">
+    <link href="/engine.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
     <title>Screen Admin</title>
   </head>
   <style>
     #content-wrapper span { color: #000 }
-    .id,.version { font-family: monospace }
     .edit { color: #999; cursor: pointer }
     .last { text-align: right }
     em { color: #555 }
@@ -59,14 +59,15 @@
         </div>
         <button class="btn btn-primary mb-4" onclick="toggleEditor()">Show / Hide Editor</button>
         <div class="jumbotron editor">
+          <div id=screen></div>
           <h1 class="display-4">Edit Screen</h1>
           <div class=section-title>Time & Date</div>
           <div class=choice-list>
             <label class=choice>
-              <input type=radio value=no name=showtime> No
+              <input type=radio value=no name=time> No
             </label>
             <label class=choice>
-              <input type=radio value=yes name=showtime> Yes
+              <input type=radio value=yes name=time> Yes
             </label>
           </div>
           <div class=section-title>Ticker</div>
@@ -87,13 +88,13 @@
           <div class=section-title>Widgets</div>
           <div class=choice-list>
             <label class=choice>
-              <input type=radio value=no name=widget> None
+              <input type=radio value=no name=app> None
             </label>
             <label class=choice>
-              <input type=radio value=weather name=widget> Weather
+              <input type=radio value=weather name=app> Weather
             </label>
             <label class=choice>
-              <input type=radio value=traffic name=widget> Traffic
+              <input type=radio value=traffic name=app> Traffic
             </label>
           </div>
         </div>
@@ -118,6 +119,7 @@
     <script src="../../js/sb-admin-2.min.js"></script>
     <script src="../../js/jquery.dataTables.min.js"></script>
     <script src="../../js/dataTables.bootstrap4.min.js"></script>
+    <script src="/engine.js"></script>
     <script src="./index.js"></script>
     </body>
 </html>
