@@ -72,7 +72,7 @@
   overflow: hidden;
 }
 .engine-xA8tAY4YSBmn2RTQqnnXXw .time {
-  padding: 0 1vw ;
+  margin: 0 1vw ;
   float: left;
   font-size: 3.75vw;
 }
@@ -80,6 +80,8 @@
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
+}
+.engine-xA8tAY4YSBmn2RTQqnnXXw .ticker-content {
   text-indent: 90vw;
   padding-right: 90vw;
 }
@@ -122,4 +124,18 @@
   color: rgba(100,240,100,0.3);
   font-family: "Bitstream Charter";
   z-index: 1000;
+}
+.engine-xA8tAY4YSBmn2RTQqnnXXw .debug {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  font-family: monospace;
+  height: 35vw;
+  width: 40rem;
+  text-align: left;
+  overflow-Y: auto;
+  font-size: .8vw;
+  white-space: pre;
 }
