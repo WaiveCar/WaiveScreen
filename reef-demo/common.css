@@ -367,10 +367,10 @@ select.form-control:focus,.form-group input:focus
   color: black;
 }
 
-.fa-arrow-up {
+.up-right {
   color: green;
 }
 
-.fa-arrow-down {
+.down-right {
   color: red;
 }
