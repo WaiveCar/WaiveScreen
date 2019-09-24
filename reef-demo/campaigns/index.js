@@ -10,8 +10,7 @@ function renderCampaigns(campaigns) {
            <a class="prevent-underline" href="/campaigns/show?id=${
              campaign.id
            }">
-             <div id="asset-container-${listIdx}-${campaignIdx}"> 
-               asset container
+             <div id="asset-container-${listIdx}-${campaignIdx}" style="height: 113px"> 
              </div>
              <div class="campaign-title mt-1">${campaign.project}</div>
              <div class="campaign-dates">
