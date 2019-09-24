@@ -72,7 +72,7 @@
   overflow: hidden;
 }
 .engine-xA8tAY4YSBmn2RTQqnnXXw .time {
-  padding: 0 1vw ;
+  margin: 0 1vw ;
   float: left;
   font-size: 3.75vw;
 }
@@ -80,6 +80,8 @@
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
+}
+.engine-xA8tAY4YSBmn2RTQqnnXXw .ticker-content {
   text-indent: 90vw;
   padding-right: 90vw;
 }
