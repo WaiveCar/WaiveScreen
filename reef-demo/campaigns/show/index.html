@@ -97,17 +97,21 @@
         <div class="row mb-4">
           <a name="Performance"></a>
           <div class="col-lg-12">
-            <div class="section-title">Performance</div>
-            <div class="d-flex justify-content-center chart-contain">
-	            <div style="width: 50%;" class="mobile-chart">
-	            	<canvas id="campaign-chart-1"></canvas>
-	            </div>
-	            <div style="width: 20%;" class="mobile-chart">
-	            	<canvas id="campaign-chart-2"></canvas>
-	            </div>
-	            <div style="width: 20%;" class="mobile-chart">
-	            	<canvas id="campaign-chart-3"></canvas>
-	            </div>
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Performance</h2>
+                <div class="d-flex justify-content-center chart-contain">
+	                <div style="width: 50%;" class="mobile-chart">
+	                	<canvas id="campaign-chart-1"></canvas>
+	                </div>
+	                <div style="width: 20%;" class="mobile-chart">
+	                	<canvas id="campaign-chart-2"></canvas>
+	                </div>
+	                <div style="width: 20%;" class="mobile-chart">
+	                	<canvas id="campaign-chart-3"></canvas>
+	                </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -227,23 +231,23 @@
         </div>
 
         <div class="row mb-4">
-          <a name="Summary"></a>
           <div class="col-lg-12">
             <div class="card">
               <div class="card-body">
                 <h2 class="card-title">Summary</h2>
-                  <div class="card-text">
-                    Budget:
-                    <div class="row no-gutters mb-2" id="budget">
-                    
-                    </div>
-                    CPM:
-                    <div class="row no-gutters mb-2" id="cpm">
-                    </div>
-                    Estimated Impressions:
-                    <div class="row no-gutters mb-2" id="impressions">
-                    </div>
+                <div class="card-text">
+                  <div id='summary'>
+                  CPM:
+                  <div class="row no-gutters mb-2" id="cpm"> </div>
+                  Estimated Impressions:
+                  <div class="row no-gutters mb-2" id="impressions"> </div>
+                  Guaranteed Hours
+                  <div class="row no-gutters mb-2" id="hours"> </div>
+                  Price
+                  <div class="row no-gutters mb-2" id="price"> </div>
                   </div>
+
+                </div>
               </div>
             </div>
           </div>
