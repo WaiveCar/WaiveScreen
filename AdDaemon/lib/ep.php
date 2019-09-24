@@ -45,11 +45,11 @@ try {
       if($token) {
         $info = [
           //'me' => json_decode(file_get_contents("https://api.instagram.com/v1/users/self/?access_token=$token"), true),
-          'posts' => json_decode(file_get_contents("https://api.instagram.com/v1/users/self/media/recent/?access_token=$token&count=60"), true)
+          'posts' => json_decode(file_get_contents("https://api.instagram.com/v1/users/self/media/recent/?access_token=$token&count=18"), true)
         ];
         jemit(doSuccess($info['posts']));
       } else {
-        jemit(doError("login needed");
+        jemit(doError("login needed"));
       }
     }
   } else if($func == 'campaign') {
