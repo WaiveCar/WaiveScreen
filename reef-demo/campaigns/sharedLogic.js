@@ -33,16 +33,19 @@ function calcItems() {
 }
 
 (() => {
-  $('#schedule').jqs();
-  document
-    .getElementById('campaign-budget')
-    .addEventListener('change', calcItems);
-  document
-    .getElementById('campaign-budget')
-    .addEventListener('keyup', calcItems);
-  document
-    .querySelector('.jqs-table tbody')
-    .addEventListener('mouseup', calcItems);
+ let campaignBudget = document.getElementById('campaign-budget');
+  if (campaignBudget) {
+    $('#schedule').jqs();
+    document
+      .getElementById('campaign-budget')
+      .addEventListener('change', calcItems);
+    document
+      .getElementById('campaign-budget')
+      .addEventListener('keyup', calcItems);
+    document
+      .querySelector('.jqs-table tbody')
+      .addEventListener('mouseup', calcItems);
+    }
 })();
 
 function create_campaign(obj) {
@@ -66,7 +69,7 @@ function create_campaign(obj) {
 
   return axios({
     method: 'post',
-    url: '/api/campaign',
+    url: 'http://waivescreen.com/api/campaign',
     data: formData,
     config: {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -119,7 +122,7 @@ function setRatio(container, what) {
 }
 
 function post(ep, body, cb) {
-  fetch(new Request(`/api/${ep}`, {
+  fetch(new Request(`http://waivescreen.com/api/${ep}`, {
     method: 'POST', 
     body: JSON.stringify(body)
   })).then(res => {
@@ -147,7 +150,7 @@ function get(id) {
   return res ? res[0] : null;
 }
 function doMap() {
-  $.getJSON("/api/screens?active=1&removed=0", function(Screens) {
+  $.getJSON("http://waivescreen.com/api/screens?active=1&removed=0", function(Screens) {
     self._map = map({points:Screens});
     let success = false;
 
@@ -178,88 +181,96 @@ function geosave() {
 
 window.onload = function(){
   self._container =  document.getElementById('engine');
-  doMap();
+  let map = document.getElementById('map');
+  if (map) {
+    doMap();
+  }
   var isFirst = true;
-  setRatio(_container, 'car'); 
-
-  self._preview = Engine({ 
+  if (self._container) {
+    setRatio(_container, 'car'); 
+    self._preview = Engine({ 
     container: _container,
     dynamicSize: true,
     _debug: true });
-  self._job = _preview.AddJob();
-
-  $(".controls .rewind").click(function() {
-    // this is a lovely trick to force the current job
+    self._job = _preview.AddJob();
+    $(".controls .rewind").click(function() {
+      // this is a lovely trick to force the current job
     // which effectively resets itself
-    _preview.PlayNow(_job, true);
-  });
+      _preview.PlayNow(_job, true);
+    });
+  }
+
+
 
   // The event handler below handles the user uploading new files
   uploadInput = document.getElementById('image-upload');
-  uploadInput.addEventListener('change', function() {
-    var container = $(".preview-holder");
+    if (uploadInput) {
+    uploadInput.addEventListener('change', function() {
+      var container = $(".preview-holder");
 
-    addtime(false);
-    Array.prototype.slice.call(uploadInput.files).forEach(function(file) {
+      addtime(false);
+      Array.prototype.slice.call(uploadInput.files).forEach(function(file) {
 
-      let reader = new FileReader();
+        let reader = new FileReader();
 
-      reader.onload = function(e) {
-        var asset, reference;
+        reader.onload = function(e) {
+          var asset, reference;
 
-        let row = $(
-          ['<div class="screen">',
-             '<img src="/assets/screen-black.png" class="bg">',
-             '<button type="button" class="remove-asset btn btn-sm btn-dark">',
-             '<i class="fas fa-times"></i>',
-             '</button>',
-             '<div class="asset-container"></div>',
-          '</div>'].join(''));
+          let row = $(
+            ['<div class="screen">',
+               '<img src="/assets/screen-black.png" class="bg">',
+               '<button type="button" class="remove-asset btn btn-sm btn-dark">',
+               '<i class="fas fa-times"></i>',
+               '</button>',
+               '<div class="asset-container"></div>',
+            '</div>'].join(''));
 
-        reference = _job.append(e.target.result);
+          reference = _job.append(e.target.result);
 
-        if(file.type.split('/')[0] === 'image') {
-          asset = document.createElement('img');
-          asset.onload = function() {
-            resize(asset, asset.width, asset.height);
-            container.append(row);
-            addtime( 7.5 );
+          if(file.type.split('/')[0] === 'image') {
+            asset = document.createElement('img');
+            asset.onload = function() {
+              resize(asset, asset.width, asset.height);
+              container.append(row);
+              addtime( 7.5 );
+            }
+
+            asset.src = e.target.result;
+            asset.className = 'asset';
+          } else {
+            asset = document.createElement('video');
+            var src = document.createElement('source');
+
+            asset.setAttribute('preload', 'auto');
+            asset.setAttribute('loop', 'true');
+            asset.appendChild(src);
+
+            src.src = e.target.result;
+
+            asset.ondurationchange = function(e) {
+              asset.currentTime = 0;
+              asset.play();
+              resize(asset, asset.videoWidth, asset.videoHeight);
+              container.append(row);
+              addtime( e.target.duration );
+            }
           }
 
-          asset.src = e.target.result;
-          asset.className = 'asset';
-        } else {
-          asset = document.createElement('video');
-          var src = document.createElement('source');
+          $(".remove-asset", row).click(function() {
+            _job.remove(reference);
+            row.remove();
+          });
 
-          asset.setAttribute('preload', 'auto');
-          asset.setAttribute('loop', 'true');
-          asset.appendChild(src);
+          $(".asset-container", row).append(asset);
+        };
+        reader.readAsDataURL(file);
+      });
 
-          src.src = e.target.result;
-
-          asset.ondurationchange = function(e) {
-            asset.currentTime = 0;
-            asset.play();
-            resize(asset, asset.videoWidth, asset.videoHeight);
-            container.append(row);
-            addtime( e.target.duration );
-          }
-        }
-
-        $(".remove-asset", row).click(function() {
-          _job.remove(reference);
-          row.remove();
-        });
-
-        $(".asset-container", row).append(asset);
-      };
-      reader.readAsDataURL(file);
+      if(isFirst) {
+        _preview.Play();
+        isFirst = false;
+      }
     });
-
-    if(isFirst) {
-      _preview.Play();
-      isFirst = false;
-    }
-  });
+  }
 }
+

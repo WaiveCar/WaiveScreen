@@ -1,18 +1,25 @@
 function renderCampaigns(campaigns) {
   moment.locale('en');
-  document.querySelectorAll('.campaign-list').forEach(node => node.innerHTML = campaigns
-    .map(
-      campaign =>
-        `<div class="card mt-1 ml-2">
-           <a class="prevent-underline" href="/campaigns/show?id=${campaign.id}">
-             <div id="asset-container-1"> 
-               <div>
-                 <img src="http://waivecar-prod.s3.amazonaws.com/311a1ccb-c3d0-4c42-995d-5d3d38af0bf2.jpeg" class="campaign-image-preview">
-               </div>
+  let campaignList = document.querySelectorAll('.campaign-list');
+  campaignList.forEach(
+    (node, listIdx) =>
+      (node.innerHTML = campaigns
+        .map(
+          (campaign, campaignIdx) =>
+            `<div class="card mt-1 ml-2">
+           <a class="prevent-underline" href="/campaigns/show?id=${
+             campaign.id
+           }">
+             <div id="asset-container-${listIdx}-${campaignIdx}"> 
+               asset container
              </div>
              <div class="campaign-title mt-1">${campaign.project}</div>
              <div class="campaign-dates">
-               ${`${moment(campaign.start_time).format('MMM D')}   `}<i class="fas fa-play arrow"></i> ${`   ${moment(campaign.end_time).format('MMM D')}`}
+               ${`${moment(campaign.start_time).format(
+                 'MMM D',
+               )}   `}<i class="fas fa-play arrow"></i> ${`   ${moment(
+              campaign.end_time,
+            ).format('MMM D')}`}
              </div>
              <div class="user-icon-holder">
                <img src="../svg/user-icon.svg" class="user-icon">
@@ -22,17 +29,27 @@ function renderCampaigns(campaigns) {
              </div>
            </a>
          </div>`,
-    )
-    .join(''));
+        )
+        .join('')),
+  );
+  campaignList.forEach((node, listIdx) =>
+    campaigns.forEach((campaign, campaignIdx) => {
+      let e = Engine({
+        container: document.querySelector(
+          `#asset-container-${listIdx}-${campaignIdx}`,
+        ),
+      });
+      e.AddJob({url: campaign.asset});
+      e.Start();
+    }),
+  );
 }
 
 (() => {
   fetch('http://waivescreen.com/api/campaigns')
     .then(response => response.json())
     .then(json => {
-      ['brand-1', 'brand-2'].forEach(
-        brand => renderCampaigns(json, brand),
-      );
+      ['brand-1', 'brand-2'].forEach(brand => renderCampaigns(json, brand));
     })
     .catch(e => console.log('error fetching screens', e));
 })();
