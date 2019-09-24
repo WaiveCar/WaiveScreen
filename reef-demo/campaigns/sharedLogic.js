@@ -1,6 +1,5 @@
 var 
   _preview,
-  _dq = document.querySelector,
   _assetList = [];
 
 function calcItems() {
@@ -119,13 +118,13 @@ function setRatio(container, what) {
   }
 }
 
-function get(ep, body, cb) {
+function get(ep, cb) {
   fetch(new Request(`/api/${ep}`))
     .then(res => {
       if (res.status === 200) {
         return res.json();
       }
-    }).then(res => cb(res.data));
+    }).then(cb);
 }
 
 function post(ep, body, cb) {
@@ -183,12 +182,44 @@ function geosave() {
 }
 
 function instaGet() {
+  var selector = [];
+  self.s = selector;
   get('instagram?info=1', function(res) {
-    let obj = res.data[0];
-    cosole.log(obj);
-   _dq('.insta.profile img').src = obj.user.profile_picture;
-   _dq('.insta.info.name').innerHTML = obj.user.username;
-   _dq('.insta.info.description').innerHTML = obj.user.full_name;
+    if(!res.res) {
+      $(".insta .login").css("display","flex");
+      return;
+    }
+    res = res.data;
+    let user = res.data[0].user;
+    var row, content = [];
+    $('.insta .profile img').attr('src', user.profile_picture);
+    $('.insta .info .name').html( user.username );
+    $('.insta .info .description').html( user.full_name );
+    console.log(user);
+    for(var ix = 0; ix < res.data.length; ix++) {
+      if(!(ix % 3)) {
+        if(row) {
+          content.push("<div class=row>" + row.join('') + "</div>");
+        }
+        row = [];
+      }
+      row.push( "<img src=" + res.data[ix].images.thumbnail.url + ">");
+    }
+    if(row) {
+      content.push("<div class=row>" + row.join('') + "</div>");
+    }
+    $('.insta .content').html( content.join('') );
+    $(".insta .content img").click(function() {
+      var exists = selector.filter(row => row.src == this.src);
+      if(exists) {
+        selector = selector.filter(row => row.src != this.src);
+      } else {
+        if(selector.length < 6) {
+          selector.push(this);
+        }
+      }
+    });
+
   });
 }
 
@@ -205,6 +236,7 @@ window.onload = function(){
     _debug: true });
   self._job = _preview.AddJob();
 
+  instaGet();
   $(".controls .rewind").click(function() {
     // this is a lovely trick to force the current job
     // which effectively resets itself
