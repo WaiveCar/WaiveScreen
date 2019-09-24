@@ -27,6 +27,12 @@
     }
     .edit:hover { color: #000 }
     #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
+    .left {
+      color: #858796;
+    }
+    .right {
+      color: black;
+    }
   </style>
   <body id="page-top">
     <div class="menu-btn mt-1 top-bar">
@@ -52,32 +58,37 @@
         </div>
         <div class="row mb-4">
           <div class="col-lg-12 d-flex justify-content-center">
-            <div class="card">
+            <div class="card" style="width: 24%">
               <div class="card-body">
-                <select name="time-period">
-                  <option value="all-time" selected>All Time</option>
-                  <option value="3-months">Last 3 Months</option>
+                <select name="time-period" class="custom-select">
+                  <option value="3-months" selected>Last 3 Months</option>
                   <option value="30-days">Last 30 Days</option>
                   <option value="7-days">Last 7 Days</option>
                 </select>
-                <div class="d-flex flex-column justify-content-around" style="height: 100%"> 
-                  <div>
-                    Revenue Total: $XXX <i class="fas fa-level-up-alt"></i> 3% 
+                <div class="d-flex flex-column justify-content-around" style="height: 90%"> 
+                  <div class="d-flex justify-content-between">
+                    <div class="left">Revenue Total:</div>
+                    <div class="right">$XXX <i class="fas fa-level-up-alt"></i> 3%</div>
                   </div>
-                  <div>
-                    Per Screen: $XXX <i class="fas fa-level-down-alt"></i> 2% 
+                  <div class="d-flex justify-content-between">
+                    <div class="left">Per Screen:</div>
+                    <div class="right">$XXX <i class="fas fa-level-down-alt"></i> 1%</div>
                   </div>
-                  <div>
-                    Impressions Total: XXXX
+                  <div class="d-flex justify-content-between">
+                    <div class="left">Impressions Total:</div>
+                    <div class="right">XXX <i class="fas fa-level-down-alt"></i> 2%</div>
                   </div>
-                  <div>
-                    Impressions Per Screen: XXXX
+                  <div class="d-flex justify-content-between">
+                    <div class="left">Per Screen:</div>
+                    <div class="right">$XXX <i class="fas fa-level-up-alt"></i> 4%</div>
                   </div>
-                  <div>
-                    Best Performanace: #X
+                  <div class="d-flex justify-content-between">
+                    <div class="left">Best Performance:</div>
+                    <div class="right">#X</div>
                   </div>
-                  <div>
-                    Worst Perfomance: #X
+                  <div class="d-flex justify-content-between">
+                    <div class="left">Worst Performance:</div>
+                    <div class="right">#X</div>
                   </div>
                 </div>
               </div>

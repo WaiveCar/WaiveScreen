@@ -16,7 +16,7 @@ function chart1() {
   function nextVal(date, lastCount, i) {
     var impressionCounts = [
       0,
-      40846,
+      4084,
       33074,
       106723,
       83706,
