@@ -358,4 +358,6 @@ select.form-control:focus,.form-group input:focus
   color: white!important;
 }
 
-
+.btn-secondary {
+  border-radius: 0!important;
+}

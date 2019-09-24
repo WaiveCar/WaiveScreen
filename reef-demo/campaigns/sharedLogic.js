@@ -33,19 +33,16 @@ function calcItems() {
 }
 
 (() => {
- let campaignBudget = document.getElementById('campaign-budget');
-  if (campaignBudget) {
-    $('#schedule').jqs();
-    document
-      .getElementById('campaign-budget')
-      .addEventListener('change', calcItems);
-    document
-      .getElementById('campaign-budget')
-      .addEventListener('keyup', calcItems);
-    document
-      .querySelector('.jqs-table tbody')
-      .addEventListener('mouseup', calcItems);
-    }
+  $('#schedule').jqs();
+  document
+    .getElementById('campaign-budget')
+    .addEventListener('change', calcItems);
+  document
+    .getElementById('campaign-budget')
+    .addEventListener('keyup', calcItems);
+  document
+    .querySelector('.jqs-table tbody')
+    .addEventListener('mouseup', calcItems);
 })();
 
 function create_campaign(obj) {
@@ -181,10 +178,7 @@ function geosave() {
 
 window.onload = function(){
   self._container =  document.getElementById('engine');
-  let map = document.getElementById('map');
-  if (map) {
-    doMap();
-  }
+  doMap();
   var isFirst = true;
   if (self._container) {
     setRatio(_container, 'car'); 
