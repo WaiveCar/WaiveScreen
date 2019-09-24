@@ -37,6 +37,8 @@ def fetch_info():
         "feed": [{
             "text": "Today's forcast: {} with an actual temperature of {} degrees and a wind speed of {} mph.".format(forecast["summary"], forecast["temp"], forecast["wind_speed"]),
             "image": None
+            "temperature": forecast["temp"],
+            "summary": forecast["summary"]
         }], 
         "source": "https://dark-sky.p.rapidapi.com/",
         "expiration": None
