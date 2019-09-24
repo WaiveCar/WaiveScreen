@@ -39,11 +39,12 @@ class Ssi(socketserver.BaseRequestHandler):
 
 
 class Beacons():
-  def __init__(self):
+  def __init__(self, max_device_age=120):
     self.devices = {}
     self.ingesting = False
     self.last_report = time.time()
     self.report_interval = 1
+    self.max_device_age = max_device_age
 
   def ingestor(self, queue):
     self.ingesting = True
@@ -54,7 +55,7 @@ class Beacons():
       except:
         pass
       if time.time() - self.last_report > self.report_interval:
-        self.prune_devices()
+        self.prune_devices(self.max_device_age)
         device_list = self.sorted_devices(reverse=True)
         try:
           if q.full():
@@ -98,7 +99,7 @@ class Beacons():
     print('sorted_devices: {}'.format(l))
     return l
 
-  def prune_devices(self, max_age=120):
+  def prune_devices(self, max_age):
     t = time.time()
     for mac in list(self.devices):
       if t - self.devices[mac]['last_seen'] > max_age:
@@ -106,7 +107,7 @@ class Beacons():
         del self.devices[mac]
 
 
-def build_packet_callback(time_fmt, output, delimiter, mac_info, ssid, rssi):
+def build_packet_callback(time_fmt, output, delimiter, mac_info, ssid, rssi, min_rssi, macs):
     def packet_callback(packet):
         if not packet.haslayer(dot11.Dot11):
             return
@@ -115,6 +116,10 @@ def build_packet_callback(time_fmt, output, delimiter, mac_info, ssid, rssi):
         # if neither match we are done here
         if packet.type != 0 or packet.subtype != 0x04:
             return
+        elif len(macs) > 0 and packet.addr2 not in macs:
+          return
+        elif packet.dBm_AntSignal < min_rssi:
+          return
 
         # list of output fields
         fields = []
@@ -184,16 +189,24 @@ def main():
     parser.add_argument('-f', '--mac-info', action='store_true', help="include MAC address manufacturer")
     parser.add_argument('-s', '--ssid', action='store_true', help="include probe SSID in output")
     parser.add_argument('-r', '--rssi', action='store_true', help="include rssi in output")
+    parser.add_argument('-m', '--macs', default='', help="only look for these MAC addresses (space separated)")
+    parser.add_argument('-R', '--min-rssi', default=-200, type=int, help="filter out low rssi values (ex: -60)")
     args = parser.parse_args()
 
     if not args.interface:
         print("error: capture interface not given, try --help")
         sys.exit(-1)
     
-    built_packet_cb = build_packet_callback(args.time, args.output, 
-        args.delimiter, args.mac_info, args.ssid, args.rssi)
+    if len(args.macs) == 0:
+      beacons = Beacons()
+      mac_list = []
+    else:
+      beacons = Beacons(30)
+      mac_list = args.macs.split(' ')
 
-    beacons = Beacons()
+    built_packet_cb = build_packet_callback(args.time, args.output, 
+        args.delimiter, args.mac_info, args.ssid, args.rssi, args.min_rssi, mac_list)
+
 
     # Start the sniffer and hb writer
     #Process(target = writer, args=(q,args.output)).start()
