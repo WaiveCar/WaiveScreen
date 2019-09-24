@@ -102,3 +102,57 @@ function changeSelected(newIdx) {
 
 })();
 
+function doMap() {
+  $.getJSON("http://waivescreen.com/api/screens?active=1&removed=0", function(Screens) {
+    self._map = map({points:Screens});
+    let success = false;
+
+    if(success) {
+      _map.load(_campaign.shape_list);
+    } else {
+      _map.center([-118.34,34.06], 11);
+    }
+  });
+}
+
+function clearmap() {
+  _map.clear();
+}
+
+function removeShape() {
+  _map.removeShape();
+}
+
+function geosave() {
+  var coords = _map.save();
+  // If we click on the map again we should show the updated coords
+  _campaign.shape_list = coords;
+  post('campaign_update', {id: _id, geofence: coords}, res => {
+    show({data: 'Updated Campaign'}, 1000);
+  });
+}
+
+function setRatio(container, what) {
+  if(what == 'car') {
+    container.style.height = (.351 * container.clientWidth) + "px";
+  }
+}
+
+window.onload = function(){
+  self._container =  document.getElementById('engine');
+  doMap();
+  var isFirst = true;
+  setRatio(_container, 'car'); 
+
+  self._preview = Engine({ 
+    container: _container,
+    dynamicSize: true,
+    _debug: true });
+  self._job = _preview.AddJob();
+
+  $(".controls .rewind").click(function() {
+    // this is a lovely trick to force the current job
+    // which effectively resets itself
+    _preview.PlayNow(_job, true);
+  });
+}

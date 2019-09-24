@@ -76,10 +76,10 @@
               <div class="campaign-show-title"></div>
             </div>
             <div class="advert-holder">
-              <div class="advert-a">Advert-A</div>
+              <div class="advert-a"><!--Advert-A--></div>
             </div>
             <div class="advert-holder">
-              <div class="advert-b">Advert-B</div>
+              <div class="advert-b"><!--Advert-B--></div>
             </div>
           </div>
           <div class="sub-users mt-3">
@@ -118,19 +118,12 @@
             <div class="card">
               <div class="card-body">
                 <h2 class="card-title">Location</h2>
-                Filter:
-                  [] Moving   [] Stationary
-                  [] Full Screen [] Widget
-
-                Advanced:
-                  [] Single-user [] Multi-user
-                  [] Captive  [] Non-captive
 
                 <select id="type" class="custom-select custom-select-lg">
                   <option value="Circle">Circle</option>
                   <option value="Polygon">Geofence</option>
                 </select>
-                <div style='width:100%;height:20vw' id='map'></div>
+                <div style='width:100%;height:40vw' id='map'></div>
               </div>
             </div>
           </div>
@@ -311,6 +304,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
     <script src="./../../js/jquery.schedule.min.js"></script>
 	  <script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
+    <script src="/map.js?1"></script>
+    <script src="/engine.js"></script>
     <script src="./index.js"></script>
     <script src="./charts.js"></script>
     </body>
