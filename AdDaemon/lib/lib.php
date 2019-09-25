@@ -11,12 +11,13 @@ include_once($mypath . 'db.php');
 
 $PORT_OFFSET = 7000;
 $DAY = 24 * 60 * 60;
-$PROJECT_LIST = ['LA', 'NY'];
+$PROJECT_LIST = ['LA', 'NY', 'REEF'];
 $DEFAULT_CAMPAIGN_MAP = [
   'none' => 1,
   'LA' => 1,
   'NY' => 2,
-  'dev' => 3
+  'dev' => 3,
+  'REEF' => 131
 ];
 
 // Play time in seconds of one ad.
