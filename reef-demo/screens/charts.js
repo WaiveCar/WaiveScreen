@@ -92,7 +92,7 @@ function chart1() {
   }
 
   var ctx = document.getElementById('screen-chart-1').getContext('2d');
-  ctx.canvas.width = 1000;
+  ctx.canvas.width = 700;
   ctx.canvas.height = 300;
 
   var color = Chart.helpers.color;
