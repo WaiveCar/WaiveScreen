@@ -26,6 +26,12 @@ try {
     $list = array_values($_FILES);
     move_uploaded_file(aget($list, '0.tmp_name'), "/var/states/" . aget($list, '0.name'));
     jemit(doSuccess('uploaded'));
+  } else if($func == 'me.css') {
+    emit_css();
+    exit;
+  } else if($func == 'me.js') {
+    emit_js();
+    exit;
   } else if($func == 'me') {
     jemit(doSuccess($_SESSION));
   } else if($func == 'instagram') {
