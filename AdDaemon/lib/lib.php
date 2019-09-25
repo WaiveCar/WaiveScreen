@@ -525,13 +525,17 @@ function create($table, $payload) {
   // TODO: whitelist the tables
   global $SCHEMA;
   foreach($payload as $k => $v) {
-    $typeRaw = $SCHEMA[$table][$k];
-    $parts = explode(' ', $typeRaw);
-    $type = $parts[0];
-    if($type == 'text') {
-      $payload[$k] = db_string($v);
-    }
-    if(empty($payload[$k])) {
+    $typeRaw = aget($SCHEMA, "$table.$k");
+    if($typeRaw) {
+      $parts = explode(' ', $typeRaw);
+      $type = $parts[0];
+      if($type == 'text') {
+        $payload[$k] = db_string($v);
+      }
+      if(empty($payload[$k])) {
+        unset($payload[$k]);
+      }
+    } else {
       unset($payload[$k]);
     }
   }
