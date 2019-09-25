@@ -56,7 +56,7 @@ class Beacons():
         pass
       if time.time() - self.last_report > self.report_interval:
         self.prune_devices(self.max_device_age)
-        device_list = self.sorted_devices(reverse=True)
+        device_list = self.sorted_devices(reverse=True, max_num=10000)
         try:
           if q.full():
             q.get_nowait()
@@ -79,7 +79,7 @@ class Beacons():
   def update_device(self, packet):
     device = self.devices[packet.addr2]
     t = time.time()
-    print('{} - Time between packets: {}'.format(packet.addr2, t - device['last_seen']))
+    #print('{} - Time between packets: {}'.format(packet.addr2, t - device['last_seen']))
     device['last_seen'] = t
     device['seen_count'] += 1
     rssi = packet.dBm_AntSignal
@@ -96,14 +96,14 @@ class Beacons():
     l = []
     for k in keys:
       l.append(self.devices[k])
-    print('sorted_devices: {}'.format(l))
+    #print('sorted_devices: {}'.format(l))
     return l
 
   def prune_devices(self, max_age):
     t = time.time()
     for mac in list(self.devices):
       if t - self.devices[mac]['last_seen'] > max_age:
-        print('Pruning device [{}]: {}'.format(mac, self.devices[mac]))
+        #print('Pruning device [{}]: {}'.format(mac, self.devices[mac]))
         del self.devices[mac]
 
 
@@ -176,9 +176,21 @@ def sniff_wrap(iface, prn, store):
                 os.system("/sbin/ifconfig %s up" % iface)
             time.sleep(0.1)
             pass
+
 def kill(p):
   p.terminate()
   p.join()
+
+def start_scanning_module():
+  global q, packet_q
+  q = Queue(1)
+  packet_q = Queue()
+  beacons = Beacons(1000000)
+  built_packet_cb = build_packet_callback('iso', '/var/log/screen/probemon.log',
+      '\t', True, True, True, -200, [])
+  Process(target = beacons.ingestor, args=(packet_q,)).start()
+  sniff_p = Process(target = sniff_wrap, args=('wlan1', built_packet_cb, 0)).start()
+  return q
 
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
@@ -198,7 +210,7 @@ def main():
         sys.exit(-1)
     
     if len(args.macs) == 0:
-      beacons = Beacons()
+      beacons = Beacons(120)
       mac_list = []
     else:
       beacons = Beacons(30)
