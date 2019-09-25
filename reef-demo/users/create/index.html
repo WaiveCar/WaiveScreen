@@ -80,8 +80,9 @@
     <script>
     window.onload = function(){
       doit('user', {
-        fields: { role: ['Manager', 'Viewer'] },
-        hide: ['balance']});
+        fields: { role: ['Manager', 'Admin'] },
+        fillNhide: ['organization_id', 'brand_id', 'role']
+      });
     }
   </script>
   </body>
