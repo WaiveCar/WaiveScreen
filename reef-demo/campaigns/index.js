@@ -6,7 +6,7 @@ function renderCampaigns(campaigns, brand, brandIdx) {
     <div class="mt-2 mb-3">
       <span class="brand-name">${brand}</span>
     </div>
-    <div class="row card-group ml-1" id="brand-${brandIdx}">
+    <div class="row card-group ml-1 mb-3" id="brand-${brandIdx}">
       ${campaigns
         .map(
           (campaign, campaignIdx) =>
