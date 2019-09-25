@@ -45,7 +45,7 @@ function renderCampaigns(campaigns) {
 }
 
 (() => {
-  fetch('http://waivescreen.com/api/campaigns')
+  fetch('http://192.168.86.58/api/campaigns')
     .then(response => response.json())
     .then(json => {
       ['brand-1', 'brand-2'].forEach(brand => renderCampaigns(json, brand));

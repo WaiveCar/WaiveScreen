@@ -27,6 +27,22 @@ body {
   color: black;
 }
 
+.table, .table a {
+  color: black;
+  font-weight: 300;
+}
+
+.table a:hover {
+  color: blue;
+  text-decoration: none;
+}
+
+
+.table th {
+  text-transform: uppercase;
+  font-weight: 300;
+}
+
 .choice {
   background-color: #efefef;
   border-radius: 25px;

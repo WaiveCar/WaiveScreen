@@ -28,7 +28,7 @@ function select(what, data) {
       );
     });
   } else {
-    $.getJSON(`/api/${what}s`, gen);
+    $.getJSON(`http://192.168.86.58/api/${what}s`, gen);
   }
 }
 
@@ -50,7 +50,7 @@ function doit(table, opts) {
     j.innerHTML = `New ${opts.name}`;
   });
 
-  form.setAttribute('action', `/api/${table}s?next=/${table}s`);
+  form.setAttribute('action', `http://192.168.86.58/api/${table}s?next=/${table}s`);
 
   function builder(schema) {
     var html = [],
@@ -100,6 +100,6 @@ function doit(table, opts) {
   if(opts.schema) {
     builder(opts.schema);
   } else {
-    $.getJSON(`/api/schema?table=${table}`, builder);
+    $.getJSON(`http://192.168.86.58/api/schema?table=${table}`, builder);
   }
 }

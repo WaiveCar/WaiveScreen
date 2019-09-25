@@ -1,4 +1,5 @@
 function renderScreens(screens, locations) {
+  screens.sort((a, b) => a.phone ? -1 : 1)
   const screenTableBody = document.getElementById('screen-table-body');
   screenTableBody.innerHTML = screens
     .map(
@@ -17,7 +18,7 @@ function renderScreens(screens, locations) {
 (() => {
   const screens = [];
   const locations = [];
-  fetch('http://waivescreen.com/api/screens')
+  fetch('http://192.168.86.58/api/screens')
     .then(response => response.json())
     .then(json => screens.push(...json))
     .then(() => {

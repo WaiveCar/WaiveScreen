@@ -7,7 +7,7 @@ var tableIt = (function() {
     }
     _map[what] = {}
 
-    $.getJSON(`/api/${what}s`, function(res) {
+    $.getJSON(`http://192.168.86.58/api/${what}s`, function(res) {
       res.forEach(row => _map[row.id] = row);
       $(`td.${what}_id`).each(function(ix, el) {
         var myid = el.innerHTML;
@@ -21,7 +21,7 @@ var tableIt = (function() {
       filter: (opts && opts.filter || []).concat(['id','password','created_at','image'])
     }, opts || {});
 
-    $.getJSON(`/api/${table}`, function(res) {
+    $.getJSON(`http://192.168.86.58/api/${table}`, function(res) {
       console.log(res);
       
       if(res.length === 0) {
@@ -30,9 +30,10 @@ var tableIt = (function() {
         return;
       }
       let fields = Object.keys(res[0]).filter(row => !opts.filter.includes(row)) 
+      console.log('fields', fields);
       $("#table-head").html(
-        "<tr>" +
-        fields.map(field => `<th class="${field}" scope="col">${field}</th>`) +
+        '<tr>' +
+        fields.map(field => `<th class="${field}" style="font-weight: 600" scope="col">${field}</th>`) +
         "</tr>"
       );
       $("#table-body").html(

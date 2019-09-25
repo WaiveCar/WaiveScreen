@@ -66,7 +66,7 @@ function create_campaign(obj) {
 
   return axios({
     method: 'post',
-    url: 'http://waivescreen.com/api/campaign',
+    url: 'http://192.168.86.58/api/campaign',
     data: formData,
     config: {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -128,7 +128,7 @@ function get(ep, cb) {
 }
 
 function post(ep, body, cb) {
-  fetch(new Request(`http://waivescreen.com/api/${ep}`, {
+  fetch(new Request(`http://192.168.86.58/api/${ep}`, {
     method: 'POST', 
     body: JSON.stringify(body)
   })).then(res => {
@@ -152,7 +152,7 @@ function show(what) {
 }
 
 function doMap() {
-  $.getJSON("http://waivescreen.com/api/screens?active=1&removed=0", function(Screens) {
+  $.getJSON("http://192.168.86.58/api/screens?active=1&removed=0", function(Screens) {
     self._map = map({points:Screens});
     let success = false;
 

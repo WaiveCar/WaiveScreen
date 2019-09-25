@@ -15,7 +15,7 @@ function renderUsers(users) {
 }
 (() => {
   const users = [];
-  fetch('http://waivescreen.com/api/users')
+  fetch('http://192.168.86.58/api/users')
     .then(response => response.json())
     .then(json => users.push(...json))
     .then(() => {
