@@ -34,7 +34,6 @@ var tableIt = (function() {
         return;
       }
       let fields = Object.keys(res[0]).filter(row => !opts.filter.includes(row)) 
-      console.log(opts);
       if(opts.perms) {
         for(var x in opts.perms) {
           let level = opts.perms[x];
