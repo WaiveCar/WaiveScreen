@@ -109,21 +109,21 @@
 }
   </style>
   <body id="page-top">
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="share-modal" tabindex="-1" role="dialog" aria-labelledby="share-modal-label" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <h5 class="modal-title" id="exampleModalLabel">Share This Campaign</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-            ...
+            <div id="campaign-url"></div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
+            <button type="button" class="btn btn-primary">Add Password Protection</button>
           </div>
         </div>
       </div>
@@ -156,7 +156,7 @@
             </div>
           </div>
           <div class="sub-users mt-3">
-            <img src="../../svg/share-alt.svg" data-toggle="modal" data-target="#exampleModal"id="share-icon">
+            <img src="../../svg/share-alt.svg" data-toggle="modal" data-target="#share-modal" id="share-icon">
             <img src="../../svg/user-icon.svg" class="user-icon">
             <img src="../../svg/user-icon.svg" class="user-icon">
             <img src="../../svg/user-icon.svg" class="user-icon">

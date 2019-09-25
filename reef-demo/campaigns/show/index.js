@@ -54,6 +54,8 @@ function changeSelected(newIdx) {
 }
 
 (() => {
+  console.log('href', window.location.href);
+  document.querySelector('#campaign-url').innerHTML = `URL: ${window.location.href}`;
   topBarRight.innerHTML = [
     'Overview',
     'Budget',
