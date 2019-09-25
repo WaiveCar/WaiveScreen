@@ -5,12 +5,18 @@ function toggleMenu() {
 (() => {
   let menu=`
       <ul class="navbar-nav bg-gradient-white sidebar sidebar-light">
-        ${['approval', 'screens', 'campaigns', 'organizations', 'brands', 'users']
-          .map(
+        ${[
+            ['approval', 'admin'], 
+            ['screens', 'admin'], 
+            ['campaigns', 'viewer'], 
+            ['organizations', 'admin'],
+            ['brands', 'viewer'],
+            ['users', 'manager']
+          ].map(
             item => `
-          <li class="ml-2 nav-item menu-item sidebar-link active" data-item="${item}">
-            <a class="nav-link" href="/${item}/">
-            <span>${item}</span></a>
+          <li class="ml-2 nav-item menu-item sidebar-link active p-${item[1]}" data-item="${item[0]}">
+            <a class="nav-link" href="/${item[0]}/">
+            <span>${item[0]}</span></a>
           </li>
         `,
           )

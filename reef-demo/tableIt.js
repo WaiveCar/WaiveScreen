@@ -34,6 +34,16 @@ var tableIt = (function() {
         return;
       }
       let fields = Object.keys(res[0]).filter(row => !opts.filter.includes(row)) 
+      console.log(opts);
+      if(opts.perms) {
+        for(var x in opts.perms) {
+          let level = opts.perms[x];
+          if(!_me[level]) {
+            fields = fields.filter(row => row !== x);
+          }
+        }
+      }
+
       var header = '<tr>' +
         fields.map(field => `<th class="${field}" style="font-weight: 600" scope="col">${field}</th>`) +
         "</tr>";
