@@ -105,6 +105,7 @@ try {
     'response',
     'screen_tag', 
     'schema',
+    'signup',
     'sow', 
     'tag', 
     'task_dump' 
