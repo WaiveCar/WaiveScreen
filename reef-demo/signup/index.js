@@ -15,7 +15,6 @@ function signup() {
     'name',
     'email',
     'password',
-    'confirm password',
     'organization',
   ]
     .map(
