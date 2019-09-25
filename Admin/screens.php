@@ -1,4 +1,5 @@
 <?
+include('../AdDaemon/lib/lib.php');
 include('lib.php');
 
 $screenList = get('screens', ['removed' => 0, 'active' => 1]);
