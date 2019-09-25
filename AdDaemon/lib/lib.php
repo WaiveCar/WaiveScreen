@@ -790,8 +790,11 @@ function show($what, $clause = '') {
       $clause = '';
     }
   }
+  if(strpos($clause, 'order by') === false) {
+    $clause .= ' order by id desc';
+  }
   //error_log(preg_replace('/\s+/', ' ', "select * from $what $clause"));
-  return db_all("select * from $what $clause order by id desc", $what);
+  return db_all("select * from $what $clause", $what);
 }
 
 function make_infinite($campaign_id) {
