@@ -37,10 +37,28 @@ body {
   text-decoration: none;
 }
 
+.black {
+  color: black;
+  font-weight: 300;
+}
+
+.amount {
+  color: #77c924;
+  margin-left: 55px;
+  font-weight: bold;
+  font-size: 18px;
+}
 
 .table th {
+  line-height: 2.4;
   text-transform: uppercase;
   font-weight: 300;
+  padding: 0;
+}
+
+#screen-table-body .rounded-btn {
+  border-radius: 25px!important;
+  border: 1px solid;
 }
 
 .choice {

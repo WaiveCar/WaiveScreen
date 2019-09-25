@@ -45,10 +45,6 @@
     .center {
       text-align: center;
     }
-    .billing-table {
-      width: 80%;
-      margin: 0 auto;
-    }
     .budget {
       width: 11rem;
     }
@@ -374,17 +370,16 @@ You will never spend more than $10,000 per month. Lastly, your ad needs to be ap
           <div class="col-lg-12">
             <div class="card">
               <div class="card-body">
-                <h2 class="card-title">Billing</h2>
-                <b>Balance: $577.92</b>
-                <h4>Invoices:</h4>
-                <div class="table-responsive billing-table">
-                  <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <h2 class="card-title mb-3">Billing & Invoices</h2>
+                <b class="black">Balance <span class="amount">$577.92</span></b>
+                <div class="table-responsive billing-table mt-4">
+                  <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                       <tr>
-                        <th scope="col">id</th>
-                        <th scope="col">date</th>
-                        <th scope="col">cost</th>
-                        <th scope="col">paid</th>
+                        <th style="font-weight: 600" scope="col">id</th>
+                        <th style="font-weight: 600" scope="col">date</th>
+                        <th style="font-weight: 600" scope="col">cost</th>
+                        <th style="font-weight: 600" scope="col">paid</th>
                         <th></th>
                       </tr>
                     </thead>
@@ -394,14 +389,14 @@ You will never spend more than $10,000 per month. Lastly, your ad needs to be ap
                         <td>9/22/2019</td>
                         <td>$894.15</td>
                         <td class="center"><input type="checkbox" checked></td>
-                        <td class="center"><button class="btn btn-primary">download</button></td>
+                        <td class="center"><button class="btn btn-primary rounded-btn">download</button></td>
                       </tr>
                       <tr>
                         <td>15</td>
                         <td>10/1/2019</td>
                         <td>$577.92</td>
                         <td class="center"><input type="checkbox"></td>
-                        <td class="center"><button class="btn btn-primary">download</button></td>
+                        <td class="center"><button class="btn btn-primary rounded-btn">download</button></td>
                       </tr>
                     </tbody>
                   </table>

@@ -30,7 +30,6 @@ var tableIt = (function() {
         return;
       }
       let fields = Object.keys(res[0]).filter(row => !opts.filter.includes(row)) 
-      console.log('fields', fields);
       $("#table-head").html(
         '<tr>' +
         fields.map(field => `<th class="${field}" style="font-weight: 600" scope="col">${field}</th>`) +
