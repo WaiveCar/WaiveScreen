@@ -424,6 +424,11 @@ select.form-control:focus,.form-group input:focus
 .up-right {
   color: green;
 }
+/* This is so the hover works well */
+#createForm {
+  margin-left: 4px;
+  margin-right: 4px;
+}
 .insta .info  {
   display: inline-block;
   height: 100%;

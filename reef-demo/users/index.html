@@ -17,7 +17,6 @@
     .id,.version { font-family: monospace }
     .edit { color: #999; cursor: pointer }
     .last { text-align: right }
-    em { color: #555 }
     .table td {padding: .75rem .2rem; }
     td.edit { white-space: nowrap; }
     .modal-body span {
@@ -57,16 +56,8 @@
 
           <div class="table-responsive">
             <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
-              <thead>
-                <tr style="font-weight: 600">
-                  <th scope="col">id</th>
-                  <th scope="col">city</th>
-                  <th scope="col">location</th>
-                  <th scope="col">phone</th>
-                </tr>
-              </thead>
-              <tbody id="users-table-body">
-              </tbody>
+              <thead id="table-head"> </thead>
+              <tbody id="table-body"> </tbody>
             </table>
           </div>
         </div>

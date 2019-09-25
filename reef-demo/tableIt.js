@@ -11,7 +11,11 @@ var tableIt = (function() {
       res.forEach(row => _map[row.id] = row);
       $(`td.${what}_id`).each(function(ix, el) {
         var myid = el.innerHTML;
-        el.innerHTML = `<a href='/${what}/show/?id=${myid}'>${_map[myid].name}</a>`;
+        if(myid !== "null") {
+          el.innerHTML = `<a href='/${what}/show/?id=${myid}'>${_map[myid].name}</a>`;
+        } else {
+          el.innerHTML = "&mdash;";
+        }
       });
     });
   }
@@ -30,11 +34,10 @@ var tableIt = (function() {
         return;
       }
       let fields = Object.keys(res[0]).filter(row => !opts.filter.includes(row)) 
-      $("#table-head").html(
-        '<tr>' +
+      var header = '<tr>' +
         fields.map(field => `<th class="${field}" style="font-weight: 600" scope="col">${field}</th>`) +
-        "</tr>"
-      );
+        "</tr>";
+      $("#table-head").html(header);
       $("#table-body").html(
         res.map(function(row) {
           return '<tr>' +

@@ -6,12 +6,14 @@ function select(what, data) {
   function gen(res) {
     let options = res.map(
       row => `<option value=${row.id}>${row.name}</option>`,
-    );
+    ), name = what;
     if (!data) {
       options.unshift("<option value=''>-- None --</option>");
-    }
+      name += "_id";
+    } 
+
     document.getElementById(`${what}-wrap`).innerHTML = `
-          <select class="form-control" name="${what}_id">
+          <select class="form-control" name="${name}">
             ${options}
           </select>
         `;
