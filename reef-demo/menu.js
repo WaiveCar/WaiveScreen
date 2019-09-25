@@ -4,7 +4,7 @@ function toggleMenu() {
 
 (() => {
   let menu=`
-      <ul class="navbar-nav bg-gradient-white sidebar sidebar-light">
+      <ul class="navbar-nav bg-gradient-white sidebar sidebar-light p-manager">
         ${[
             ['approval', 'admin'], 
             ['screens', 'admin'], 

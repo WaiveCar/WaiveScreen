@@ -72,7 +72,7 @@ function changeSelected(newIdx) {
     </a>
   `,
     )
-    .concat(['<div class="top-bar-link update-campaign-btn">Update</div>'])
+    .concat(['<div class="top-bar-link update-campaign-btn p-manager">Update</div>'])
     .join('');
   topBarRight.children[selectedLinkIdx].classList.add('top-bar-selected');
 
