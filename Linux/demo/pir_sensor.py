@@ -1,6 +1,7 @@
 import RPi.GPIO as gpio
 import time
 import datetime
+import requests
 from random import randint
 import probemon
 
@@ -27,8 +28,16 @@ class WelcomePopUp():
     if not target == -1:
       gpio.output(17, True)
       print('Displaying asset: ', assets[target])
+      self.post_ad(target)
       time.sleep(15)
       gpio.output(17, False)
+
+  def post_ad(self, target):
+    print('post ad')
+    url = 'http://localhost:4096/browser'
+    data = 'playnow,file://' + assets[target]
+    resp = requests.post(url, data=data)
+    return resp.status_code
 
   def get_motion_reading(self):
     return gpio.input(24)
@@ -73,6 +82,8 @@ def main():
       if pop.get_motion_reading():
         pop.show_ad(pop.check_mac(pop.get_low_mac(pop.get_macs())))
         time.sleep(5)
+      else:
+        time.sleep(0.1)
   except Exception as e:
     print('exception, cleaning up gpio')
     gpio.cleanup()
