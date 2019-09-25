@@ -352,6 +352,10 @@ body {
   height: 1.8rem;
 }
 
+#share-icon:hover {
+  cursor: pointer;
+}
+
 .user-area > * { 
   display: none
 }
