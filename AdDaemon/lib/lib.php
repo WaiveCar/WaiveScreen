@@ -791,8 +791,21 @@ function guarded_show($what) {
   return show($what, $clause);
 }
 
-function show($what, $clause = '') {
+function show($what, $clause = []) {
+  global $SCHEMA;
+  $me = me();
+  $where = [];
+  error_log(json_encode($_SESSION));
+  if($me) {
+    $schema = $SCHEMA[$what];
+    if($me['organization_id'] && isset($schema['organization_id'])) {
+      $where['organization_id'] = $me['organization_id'];
+    }
+  }
+
   if(is_array($clause)) {
+    $clause = array_merge($where, $clause);
+    error_log(json_encode($clause));
     if( !empty($clause) ) {
       $clause = " where " . implode(' and ', sql_kv($clause));
     } else {
@@ -986,11 +999,8 @@ function emit_js() {
     $params = array_merge($params, $user);
     $role = strtolower($user['role']);
     unset($params['password']);
-    if($role === 'manager') {
-      $params['manager'] = true;
-    }
+    $params['manager'] = true;
     if($role === 'admin') {
-      $params['manager'] = true;
       $params['admin'] = true;
     }
   }
@@ -1005,11 +1015,8 @@ function emit_css() {
   if(isset($_SESSION['user'])) {
     $user = $_SESSION['user'];
     $role = strtolower($user['role']);
-    if($role === 'manager') {
-      $manager = true;
-    }
+    $manager = true;
     if($role === 'admin') {
-      $manager = true;
       $admin = true;
     }
     echo '.p-nobody { display: none }';
@@ -1021,6 +1028,23 @@ function emit_css() {
     echo '.p-admin { display: none }';
   }
   return;
+}
+
+function me() {
+  if(isset($_SESSION['user'])) {
+    return $_SESSION['user'];
+  }
+}
+function signup($all) {
+  $organization = aget($all, 'organization');
+  $org_id = create('organization', ['name' => $organization]);
+  $all['organization_id'] = $org_id;
+  $all['role'] = 'Manager';
+  $user_id = create('user', $all);
+  if($user_id) {
+    $_SESSION['user'] = Get::user($user_id);
+  }
+  return $user_id;
 }
 
 function login($all) {
