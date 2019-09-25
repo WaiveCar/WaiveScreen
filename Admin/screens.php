@@ -47,7 +47,8 @@ $PROJECT_LIST = [
   '' => 'none',
   'LA' => 'LA', 
   'NY' => 'NY',
-  'dev' => 'dev'
+  'dev' => 'dev',
+  'REEF' => 'REEF'
 ];
 $MODEL_LIST = [
   '' => 'none',
