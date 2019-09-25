@@ -198,6 +198,7 @@ function instaGet() {
   var selector = [];
   self.s = selector;
   get('instagram?info=1', function(res) {
+    $(".insta .loader").slideUp();
     if(!res.res) {
       $(".insta .login").css("display","flex");
       return;
@@ -223,6 +224,15 @@ function instaGet() {
       content.push("<div class=row>" + row.join('') + "</div>");
     }
     $('.insta .content').html( content.join('') );
+    setTimeout(function(){
+      $(".insta .content .box").each(function() {
+        console.log(this);
+        if(selector.length < 6) {
+          selector.push(this);
+        }
+      });
+      Gen();
+    }, 10);
     $(".insta .content .box").click(function() {
       var exists = selector.filter(row => row.dataset.standard == this.dataset.standard);
       if(exists.length) {
@@ -230,10 +240,14 @@ function instaGet() {
       } else {
         if(selector.length < 6) {
           selector.push(this);
+        } else {
+          // don't gen.
+          return;
         }
       }
       Gen();
     });
+    $(".insta .mock").fadeIn(1000);
 
   });
 }
