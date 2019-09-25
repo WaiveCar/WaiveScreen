@@ -10,7 +10,7 @@ upgradepost() {
   done
 
   plymouth-set-default-theme -R adcast
-  systemctl disable ModemManager wpa_supplicant
+  systemctl disable ModemManager wpa_supplicant location-daemon hostapd isc-dhcp-server
   reboot
 }
 

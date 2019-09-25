@@ -28,6 +28,11 @@ then
   echo "Unable to install the temp ssh key for access to the Raspberry Pi" && exit 1
 fi
 
+${SSH} 'echo "force_turbo=1" >> /boot/firmware/config.txt'
+${SSH} reboot
+
+sleep 30
+
 ${SCP} ${DIR}/../../Linux/fai-config/files/home/.ssh/{config,github} ${RPI}:.ssh/
 ${SSH} << EOF
 chmod 0600 .ssh/github
@@ -42,7 +47,6 @@ sed -i '/^\(pandas\|opencv\|numpy\)/d' WaiveScreen/ScreenDaemon/requirements.txt
 NONET=1 WaiveScreen/tools/server/syncer.sh pip
 fai -v -N -c DEBIAN -s file:///srv/fai/config softupdate
 systemctl disable location-daemon hostapd isc-dhcp-server
-#sed -i 's/cma=[0-9]\+M/cma=512M/g' /boot/firmware/cmdline.txt
 EOF
 
 # Cleanup after we're done
