@@ -1,0 +1,17 @@
+#!/bin/bash
+
+upgradepost() {
+  apt install -y firmware-{misc-nonfree,linux-nonfree,realtek,ralink,linux,libertas,b43-installer}
+
+  cd /home/adorno/WaiveScreen/Linux/fai-config/files
+  for i in etc/default/raspi3-firmware etc/kernel/postinst.d/z50-raspi3-firmware etc/network/interfaces.d/ usr/share/plymouth/themes/adcast/
+  do
+    rsync -avP ./${i} /${i}
+  done
+
+  plymouth-set-default-theme -R adcast
+  systemctl disable ModemManager wpa_supplicant
+  reboot
+}
+
+eval $1
