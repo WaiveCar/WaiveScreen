@@ -529,6 +529,11 @@ function create($table, $payload) {
     if($typeRaw) {
       $parts = explode(' ', $typeRaw);
       $type = $parts[0];
+      if($k === 'password') {
+        $orig = $v;
+        $v = password_hash($v, PASSWORD_BCRYPT);
+        error_log("<$orig> -> <$v>");
+      }
       if($type == 'text') {
         $payload[$k] = db_string($v);
       }
@@ -970,21 +975,68 @@ function getUser() {
   }
 }
 function emit_js() {
-  echo 'self._me = { admin: true, manager: false, viewer: true, role: "viewer" }';
+  $params = [
+    'admin' => false,
+    'manager' => false,
+    'viewer' => true
+  ];
+  
+  if(isset($_SESSION['user'])) {
+    $user = $_SESSION['user'];
+    $params = array_merge($params, $user);
+    $role = strtolower($user['role']);
+    unset($params['password']);
+    if($role === 'manager') {
+      $params['manager'] = true;
+    }
+    if($role === 'admin') {
+      $params['manager'] = true;
+      $params['admin'] = true;
+    }
+  }
+
+  echo 'self._me = ' . json_encode($params);
 }
 
 function emit_css() {
-  //echo '.p-manager { display: none }';
-  //echo '.p-admin { display: none }';
+  header("Content-type: text/css");
+  $manager = false;
+  $admin = false; 
+  if(isset($_SESSION['user'])) {
+    $user = $_SESSION['user'];
+    $role = strtolower($user['role']);
+    if($role === 'manager') {
+      $manager = true;
+    }
+    if($role === 'admin') {
+      $manager = true;
+      $admin = true;
+    }
+    echo '.p-nobody { display: none }';
+  }
+  if(!$manager) {
+    echo '.p-manager { display: none }';
+  }
+  if(!$admin) {
+    echo '.p-admin { display: none }';
+  }
+  return;
 }
 
-function login($email) {
-  $user = Get::user(['email' => $email]);
-  if ($user) {
-    $_SESSION['user_id'] = $user['id'];
-    return doSuccess($user);
+function login($all) {
+  $who = aget($all, 'email');
+  if($who) {
+    $user = Get::user(['email' => $who]);
+    if ($user) {
+      if( password_verify($all['password'], $user['password'])) {
+        $_SESSION['user'] = $user;
+        return doSuccess($user);
+      } else {
+        return doError("Wrong password");
+      }
+    }
   }
-  return doError("No user found");
+  return doError("User $who not found");
 }
 
 function logout() {
