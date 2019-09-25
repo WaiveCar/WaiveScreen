@@ -274,6 +274,18 @@ window.onload = function(){
     });
   }
 
+  $(".ratios button").click(function(){
+    $(this).siblings().removeClass('active');
+    $(this).addClass('active');
+    console.log("<" + this.innerHTML + ">");
+    if(this.innerHTML == "16:9") {
+      _container.style.width = _container.clientHeight * 16/9 + "px";
+    } else if(this.innerHTML == "3:2") {
+      _container.style.width = _container.clientHeight * 3/2 + "px";
+    } else {
+      _container.style.width = "100%";
+    }
+  });
 
 
   // The event handler below handles the user uploading new files
@@ -292,7 +304,7 @@ window.onload = function(){
 
           let row = $(
             ['<div class="screen">',
-               '<img src="/assets/screen-black.png" class="bg">',
+               '<img src="/screen-black.png" class="bg">',
                '<button type="button" class="remove-asset btn btn-sm btn-dark">',
                '<i class="fas fa-times"></i>',
                '</button>',
