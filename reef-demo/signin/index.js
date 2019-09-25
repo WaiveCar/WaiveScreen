@@ -1,15 +1,3 @@
-let form = document.querySelector('form');
-
-function signup() {
-  let data = new FormData(form);
-  let object = {};
-  data.forEach((value, key) => {
-    object[key] = value;
-  });
-  let json = JSON.stringify(object);
-  console.log(json);
-}
-
 (() => {
   document.querySelector('.form-fields').innerHTML = [
     'email',

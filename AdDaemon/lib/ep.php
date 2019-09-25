@@ -100,6 +100,8 @@ try {
     'car_history', 
     'command', 
     'ping', 
+    'login',
+    'logout',
     'response',
     'screen_tag', 
     'schema',
@@ -107,7 +109,7 @@ try {
     'tag', 
     'task_dump' 
   ]) !== false) { 
-    jemit($func($all, $verb));
+    post_return($func($all, $verb));
   } else {
     jemit([
       'res' => false,
