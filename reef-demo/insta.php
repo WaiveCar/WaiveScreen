@@ -30,17 +30,23 @@ $contents = file_get_contents("/tmp/$handle");
 $smalltext = $_GET['smalltext'] ?: json_decode('"' . get('full_name') . '"');
 $bigtext = $_GET['bigtext'] ?: $handle;
 $logo = $_GET['logo'] ?: get('profile_pic_url_hd');
-$images = $_GET['images'] ?: [];
-$sizes = $_GET['sizes'] ?: [];
+$images_real = $_GET['images'];
+$sizes_real = $_GET['sizes'];
 
-preg_match_all('/.height.:(\d*),.width.:1080},.display_url...([^"]*)/', $contents, $matchList);
-$sizes = array_merge($sizes, $matchList[1]);
-$images = array_merge($images, $matchList[2]);
-$iy = 0;
-for($ix = count($images); $ix < 6; $ix ++) {
-  $images[] = $images[$iy];
-  $sizes[] = $sizes[$iy];
-  $iy++;
+/*
+//preg_match_all('/.height.:(\d*),.width.:1080},.display_url...([^"]*)/', $contents, $matchList);
+$sizes = [];//array_merge($sizes, $matchList[1]);
+$images = [];//array_merge($images, $matchList[2]);
+ */
+
+$pattern = [0, 3, 1, 4, 2, 5];
+$len = count($images_real);
+$images = [];
+$sizes = [];
+for($ix = 0; $ix < 6; $ix ++) {
+  $place = $pattern[$ix];
+  $images[$place] = $images_real[$ix % $len];
+  $sizes[$place] = $sizes_real[$ix % $len];
 }
 
 $dur = $_GET['duration'] ?: 16;

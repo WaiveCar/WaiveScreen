@@ -438,16 +438,16 @@ select.form-control:focus,.form-group input:focus
   height: 100%;
   width: 100%;
   display: flex;
+  justify-content: center;
+  align-items: center;
   font-size:100px;
   user-select: none;
   cursor: pointer;
   color: #fff;
-  justify-content: center;
   opacity: 0.8;
   border-radius: 6px;
   background: rgba(0,0,0,.2);
   border: 9px solid #fff;
-  align-items: center;
   font-weight: 800;
 }
 .insta .content .row * {
@@ -471,16 +471,31 @@ select.form-control:focus,.form-group input:focus
   box-shadow: 0 0 4px 1px rgba(125,125,125,.7);
   opacity: 0.9;
 }
-.insta iframe {
+.insta .mock { 
+  display: none;
+}
+.insta .preview {
   border: 0;
-  width: 100%;
-  height: 12.7rem;
+  width: calc(2rem + 150px * 3);
+  height: calc(0.35 * (2rem + 150px * 3));
   box-shadow: 0 0 7px 1px #e4e4e4;
   background: #eee;
 }
+.insta .loader {
+  height: 12rem;
+  width: calc(2rem + 150px * 3);
+  border: 2px solid #e6e6e6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .insta .header  {
   height: 100px;
+  width: calc(2rem + 150px * 3);
   margin: 1rem 0;
+}
+.insta .header .logout {
+  float: right;
 }
 .insta .profile  {
   width: 150px;
@@ -497,7 +512,8 @@ select.form-control:focus,.form-group input:focus
 }
 .insta .login {
   display: none;
-  height: 35.1vw;
+  height: 12rem;
+  width: calc(2rem + 150px * 3);
   border: 2px solid #e6e6e6;
   justify-content: center;
   font-size:1.7rem;
