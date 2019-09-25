@@ -9,25 +9,49 @@ function renderScreen(screen) {
       details.innerHTML = `
         <div class="d-flex justify-content-between mt-4">
           <img src="/screen_image.jpg"> 
-          <div class="screen-details-text d-flex flex-column justify-content-around"> 
-            <div class="d-flex justify-content-between">
-              <div class="left">Resolution</div>
-              <div class="right">1920 x 720</div>
+          <div class="screen-details-text"> 
+            <div class="d-flex">
+              <div class="left col-5">
+                <div>
+                  Resolution
+                </div>
+                <div>
+                  Type
+                </div>
+                <div>
+                  Stationary
+                </div>
+                <div>
+                  Location
+                </div>
+                <div>
+                  Measurements
+                </div>
+                <div>
+                  Busy Times
+                </div>
+              </div>
+              <div class="right">
+                <div>
+                  1920 x 720
+                </div>
+                <div>
+                  Car Screen
+                </div>
+                <div>
+                  No
+                </div>
+                <div>
+                  ${json.stnumber} ${json.staddress}
+                </div>
+                <div>
+                  52.3" x 29.4"
+                </div>
+                <div>
+                </div>
+              </div>
             </div>
-            <div class="d-flex justify-content-between">
-              <div class="left">Type</div>
-              <div class="right">Car Screen</div>
-            </div>
-            <div class="d-flex justify-content-between">
-              <div class="left">Location</div>
-              <div class="right">${json.stnumber} ${json.staddress}</div>
-            </div>
-            <div class="d-flex justify-content-between">
-              <div class="left">Measurements</div>
-              <div class="right">52.3" x 29.4"</div>
-            </div>
-            <div class="left">Busy Times</div>
-            <div class="d-flex justify-content-center">
+            <div>
               <img src="/busy_times.png">
             </div>
           </div>
