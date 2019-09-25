@@ -31,7 +31,6 @@ $smalltext = $_GET['smalltext'] ?: json_decode('"' . get('full_name') . '"');
 $bigtext = $_GET['bigtext'] ?: $handle;
 $logo = $_GET['logo'] ?: get('profile_pic_url_hd');
 $images = $_GET['images'] ?: [];
-var_dump($images);
 $sizes = $_GET['sizes'] ?: [];
 
 preg_match_all('/.height.:(\d*),.width.:1080},.display_url...([^"]*)/', $contents, $matchList);
