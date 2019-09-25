@@ -65,6 +65,8 @@ screen_display
 #
 #modem_connect
 #hotspot
+pycall kv_set Lat,34.0850906
+pycall kv_set Lng,-118.3383365
 
 pycall lib.ping
 ssh_hole
