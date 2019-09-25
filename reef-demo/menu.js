@@ -23,13 +23,35 @@ function toggleMenu() {
           .join('')}
       </ul>
     `;
-  var profile = '<div class="row mb-2"> <div class="offset-md-1 col">Sign In</div></div>';
+  var profile =  `
+    <div class="row mb-2 user-area offset-md-1"> 
+      <div class="signin"><a href=/signin/>Signin / Signup</a></div>
+      <div class="signed-in"><img><span></span></div>
+    </div>`;
   document.getElementById('menu').innerHTML = profile + menu;
   let items = document.querySelectorAll('.navbar-nav li');
   items.forEach(one => {
     if (window.location.href.includes(one.dataset.item)) {
       one.classList.add('current-link');
       one.querySelector('span').classList.add('current-link-text');
+    }
+  });
+  function when(lib) {
+    var _cb, _ival = setInterval(function(){
+      if(self[lib]) {
+        _cb();
+        clearInterval(_ival);
+      }
+    }, 20);
+    return {
+      run: function(cb) { _cb = cb; }
+    }
+  }
+  when('_me').run(() => {
+    if(_me && _me.id) {
+      $('.signed-in').html(_me.name).show();
+    } else {
+      $('.signin').show();
     }
   });
 })();
