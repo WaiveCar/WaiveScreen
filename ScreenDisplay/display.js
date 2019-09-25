@@ -40,7 +40,7 @@ window.onload = function init() {
     });
   }
 
-  function doWs() { 
+  function doWS() { 
     var ws = new WebSocket("ws://127.0.0.1:4096/ws");
 
     ws.onerror = ws.onclose = function(){ 
@@ -72,5 +72,5 @@ window.onload = function init() {
       console.log(event.data);
     };
   }
-  doIO();
+  doWS();
 }

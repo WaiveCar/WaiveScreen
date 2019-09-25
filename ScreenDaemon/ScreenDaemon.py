@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
-#from aiohttp import web
-#import aiohttp_cors
-#import aiohttp
+from aiohttp import web
+import aiohttp_cors
+import aiohttp
 
-from flask_socketio import SocketIO, emit
-from flask import Flask, request, Response, jsonify
-from flask_cors import CORS
+#from flask_socketio import SocketIO, emit
+#from flask import Flask, request, Response, jsonify
+#from flask_cors import CORS
 
 import json
 import urllib
@@ -25,16 +25,16 @@ from pdb import set_trace as bp
 
 
 _reading = False
-_app = Flask(__name__)
-#_conn = None
-#_app = web.Application()
-#_cors = aiohttp_cors.setup(_app)
-CORS(_app)
+_conn = None
+_app = web.Application()
+_cors = aiohttp_cors.setup(_app)
+#_app = Flask(__name__)
+#CORS(_app)
 DTFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 def res(what):
-  return jsonify(what)
-  #return web.json_response(what)
+  #return jsonify(what)
+  return web.json_response(what)
 
 def success(what):
   return res({ 'res': True, 'data': what })
@@ -45,8 +45,9 @@ def failure(what):
 def get_location():
   return lib.sensor_last()
 
-@_app.route('/default')
-def default():
+#@_app.route('/default')
+#def default():
+async def default(request):
   attempted_ping = False
   campaign = False
   campaign_id = db.kv_get('default')
@@ -77,8 +78,9 @@ def default():
     'system': db.kv_get()
   })
 
-@_app.route('/sow', methods=['GET', 'POST'])
-def sow(work = False):
+#@_app.route('/sow', methods=['GET', 'POST'])
+#def sow(work = False):
+async def sow(request):
   """
   For now we are going to do a stupid pass-through to the remote server
   and then just kinda return stuff. Keeping track of our own things 
@@ -107,7 +109,8 @@ def sow(work = False):
     power = 'awake' if dpms == 'On' else 'sleep'
 
     if power != 'sleep':
-      jobList = request.get_json()
+      jobList = json.loads(await request.text())
+      #jobList = request.get_json()
       # jobList = json.loads(await request.text())
 
       if type(jobList) is not list:
@@ -194,41 +197,64 @@ def sow(work = False):
   else:
     return failure('Error: {}'.format(err))
 
-@_app.route('/browser')
-def browser(request):
-  text = request.get_text()
+#@_app.route('/browser', methods=['GET', 'POST'])
+#def browser():
+async def browser(request):
+  global _conn
+  #text = request.get_text()
+  text = await request.text()
 
   parts = text.split(',')
   func = parts[0]
   args = ','.join(parts[1:])
 
+
   # todo: connection detection
-  #if _conn is not None:
-  if args[0] == '@':
-    playlist = []
-    for user in args.split(','):
+  if _conn is not None:
+    if args[0] == '@':
+      playlist = []
+      for user in args.split(','):
 
-      user = user.strip()
+        user = user.strip()
 
-      if user[0] == '@':
-        insta = user[1:]
-      else:
-        insta = user
+        if user[0] == '@':
+          insta = user[1:]
+        else:
+          insta = user
 
-      playlist.append(lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(insta), only_filename=True, announce="@{}".format(insta)))
+        playlist.append(lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(insta), only_filename=True, announce="@{}".format(insta)))
 
-    payload = {'action': 'playnow', 'args': playlist}
-  
-  elif "http" in args:
-    payload = {'action': 'playnow', 'args': args}
+      payload = {'action': 'playnow', 'args': playlist}
+    
+    elif "http" in args:
+      payload = {'action': 'playnow', 'args': args}
 
-  else:
-    payload = {'action': 'text', 'args': args}
+    else:
+      payload = {'action': 'text', 'args': args}
 
-  socketio.emit(payload['action'], payload['args'])
-  #await _conn.send_str(json.dumps(payload))
+    #emit(payload['action'], payload['args'])
+    await _conn.send_str(json.dumps(payload))
+    return success(payload)
 
-  return success(payload)
+  return failure("no client")
+
+
+async def ws(request):
+   global _conn
+   ws = web.WebSocketResponse()
+   await ws.prepare(request)
+ 
+   _conn = ws
+   async for msg in ws:
+     if msg.type == aiohttp.WSMsgType.TEXT:
+       if msg.data == 'close':
+         await ws.close()
+        
+       elif msg.type == aiohttp.WSMsgType.ERROR:
+         print('ws connection closed with exception %s' %
+           ws.exception())
+       
+   return ws
 
 if __name__ == '__main__':
 
@@ -239,6 +265,7 @@ if __name__ == '__main__':
     sys.exit(0)
 
   db.incr('runcount')
+  """
   _app.run(port=4096)
 
   """
@@ -263,4 +290,3 @@ if __name__ == '__main__':
     )
 
   web.run_app(_app, port=4096)
-  """
