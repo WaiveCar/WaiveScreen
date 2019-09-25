@@ -400,6 +400,10 @@ select.form-control:focus,.form-group input:focus
   }
 }
 
+.modal-content  {
+  border-radius: 0 !important;
+}
+
 .performance-download {
   width: 11rem;
   text-align: center;
