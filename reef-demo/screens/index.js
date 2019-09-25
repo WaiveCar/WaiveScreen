@@ -22,6 +22,13 @@ function renderScreens(screens, locations) {
     .then(json => screens.push(...json))
     .then(() => {
       renderScreens(screens);
+      self._map = map({points: screens});
+      let success = false;
+      if(success) {
+        _map.load(_campaign.shape_list);
+      } else {
+        _map.center([-118.34,34.06], 11);
+      }
       // The fetching of locations currently doesn't work due to cors issues. Return to this later if time
       /*
       return fetch(

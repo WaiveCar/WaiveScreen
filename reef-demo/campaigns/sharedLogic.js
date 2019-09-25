@@ -224,7 +224,6 @@ function instaGet() {
     }
     $('.insta .content').html( content.join('') );
     $(".insta .content .box").click(function() {
-      console.log("HI");
       var exists = selector.filter(row => row.dataset.standard == this.dataset.standard);
       if(exists.length) {
         selector = selector.filter(row => row.dataset.standard != this.dataset.standard);
