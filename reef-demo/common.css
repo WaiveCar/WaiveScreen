@@ -527,3 +527,14 @@ select.form-control:focus,.form-group input:focus
 .down-right {
   color: red;
 }
+.engine-holder {
+  background: #222;
+  text-align: center;
+  font-size: 0;
+  width: 100%;
+}
+.engine-holder > div{
+  width: 100%;
+  display:inline-block;
+}
+
