@@ -54,7 +54,7 @@ function doit(table, opts) {
 
   form.setAttribute('action', `http://192.168.86.58/api/${table}s?next=/${table}s`);
 
-  function builder(schema) {
+  function builder(schema, permissions) {
     var html = [],
       type,
       input,
@@ -85,7 +85,7 @@ function doit(table, opts) {
       name = ucfirst(wordMap[name] || name);
 
       html.push(`
-            <div class="form-group">
+            <div class="form-group ${permissions[k] ? permissions[k] : ''}">
               <label for="${k}">${name}</label>
               ${input}
             </div>
@@ -100,7 +100,7 @@ function doit(table, opts) {
   }
 
   if(opts.schema) {
-    builder(opts.schema);
+    builder(opts.schema, opts.permissions);
   } else {
     $.getJSON(`http://192.168.86.58/api/schema?table=${table}`, builder);
   }
