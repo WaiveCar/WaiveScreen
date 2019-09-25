@@ -192,8 +192,8 @@ function instaGet() {
       ix++;
       selected.push(row.dataset.standard);
     })
-    var param = JSON.stringify(selected);
-    $('.insta .preview').attr('src', `/insta.php?user=${user.username}&images=${selected}`);
+    var param = selected.map(row => `images[]=${row}`).join('&');
+    $('.insta .preview').attr('src', `/insta.php?user=${user.username}&${param}`);
   }
   var selector = [];
   self.s = selector;
