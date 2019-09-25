@@ -1,11 +1,12 @@
-function renderCampaigns(campaigns, brand) {
+function renderCampaigns(campaigns, brand, brandIdx) {
   moment.locale('en');
   let campaignList = document.querySelector('.campaign-list');
-  campaignList.innerHTML = campaignList.innerHTML + `
+  let newEl = document.createElement('div');
+  newEl.innerHTML = `
     <div class="mt-2 mb-3">
       <span class="brand-name">${brand}</span>
     </div>
-    <div class="row card-group ml-1" id="brand-${brand}">
+    <div class="row card-group ml-1" id="brand-${brandIdx}">
       ${campaigns
         .map(
           (campaign, campaignIdx) =>
@@ -13,7 +14,7 @@ function renderCampaigns(campaigns, brand) {
              <a class="prevent-underline" href="/campaigns/show?id=${
                campaign.id
              }">
-               <div id="asset-container-${brand}-${campaignIdx}" style="height: 113px"> 
+               <div id="asset-container-${brandIdx}-${campaignIdx}" style="height: 113px"> 
                </div>
                <div class="campaign-title mt-1">${campaign.project}</div>
                <div class="campaign-dates">
@@ -34,10 +35,11 @@ function renderCampaigns(campaigns, brand) {
         )
         .join('')}
     </div>`;
+  campaignList.appendChild(newEl);
   campaigns.forEach((campaign, campaignIdx) => {
     let e = Engine({
       container: document.querySelector(
-        `#asset-container-${brand}-${campaignIdx}`,
+        `#asset-container-${brandIdx}-${campaignIdx}`,
       ),
     });
     e.AddJob({url: campaign.asset});
@@ -45,30 +47,40 @@ function renderCampaigns(campaigns, brand) {
   });
 }
 
-function groupByBrand(response) {
+function groupByBrand(response, brands) {
+  let brandTable = {};
+  for (let brand of brands) {
+    brandTable[brand.id] = brand.name;
+  }
   let output = {};
   for (let c of response) {
-    if (!output[c.brand_id]) {
-      output[c.brand_id] = [];
+    if (!output[brandTable[c.brand_id]]) {
+      output[brandTable[c.brand_id]] = [];
     }
-    output[c.brand_id].push(c);
+    output[brandTable[c.brand_id]].push(c);
   }
   return output;
 }
 
 (() => {
   const brandId = new URL(location.href).searchParams.get('brand_id');
-  fetch(
-    `http://192.168.86.58/api/campaigns${
-      brandId ? `?brand_id=${brandId}` : ''
-    }`,
-  )
+  fetch('http://192.168.86.58/api/brands')
     .then(response => response.json())
-    .then(json => {
-      let byBrand = groupByBrand(json);
-      Object.keys(byBrand).forEach(brand =>
-        renderCampaigns(byBrand[brand], brand),
-      );
+    .then(brands => {
+      fetch(
+        `http://192.168.86.58/api/campaigns${
+          brandId ? `?brand_id=${brandId}` : ''
+        }`,
+      )
+        .then(response => response.json())
+        .then(json => {
+          let byBrand = groupByBrand(json, brands);
+          console.log('byBrand', byBrand);
+          Object.keys(byBrand).forEach((brand, brandIdx) => {
+            console.log('brand', brand);
+            renderCampaigns(byBrand[brand], brand, brandIdx);
+          });
+        });
     })
     .catch(e => console.log('error fetching screens', e));
 })();
