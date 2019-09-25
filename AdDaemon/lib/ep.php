@@ -40,6 +40,10 @@ try {
       $_SESSION['instagram'] = $token;
       header('Location: /campaigns/create');
       exit;
+    } else if(isset($all['logout'])) {
+      unset( $_SESSION['instagram'] );
+      header('Location: /campaigns/create');
+      exit;
     } else if(isset($all['info'])) {
       $token = aget($_SESSION, 'instagram.access_token');
       if($token) {
