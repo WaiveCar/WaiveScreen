@@ -4,11 +4,13 @@
     'password',
   ]
     .map(
-      field => `
+      field => {
+        var type = field == 'email' ? 'text' : 'password';
+        return `
     <div class="form-group">
       <input 
         name="${field}" 
-        type="${field}" 
+        type="${type}" 
         class="form-control" 
         id="${field}" 
         placeholder="${`${field[0].toUpperCase() + field.slice(1)}`}" 
@@ -16,7 +18,7 @@
       >
     </div>
   
-  `,
+  `}
     )
     .join('');
 })();
