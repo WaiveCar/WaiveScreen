@@ -969,6 +969,14 @@ function getUser() {
     return Get::user($_SESSION['user_id']);
   }
 }
+function emit_js() {
+  echo 'self._me = { admin: true, manager: false, viewer: true, role: "viewer" }';
+}
+
+function emit_css() {
+  //echo '.p-manager { display: none }';
+  //echo '.p-admin { display: none }';
+}
 
 function login($email) {
   $user = Get::user(['email' => $email]);
