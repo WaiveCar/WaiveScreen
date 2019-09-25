@@ -7,7 +7,7 @@ function renderScreen(screen) {
       console.log(json);
       const details = document.querySelector('.screen-details');
       details.innerHTML = `
-        <div class="d-flex justify-content-around mt-4">
+        <div class="d-flex justify-content-between mt-4">
           <img src="/screen_image.jpg"> 
           <div class="screen-details-text d-flex flex-column justify-content-around"> 
             <div class="d-flex justify-content-between">
@@ -26,6 +26,7 @@ function renderScreen(screen) {
               <div class="left">Measurements</div>
               <div class="right">52.3" x 29.4"</div>
             </div>
+            <div class="left">Busy Times</div>
             <div class="d-flex justify-content-center">
               <img src="/busy_times.png">
             </div>
