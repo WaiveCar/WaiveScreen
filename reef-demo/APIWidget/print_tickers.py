@@ -6,6 +6,7 @@ from sports import get_MLB_scores, get_NFL_scores
 from stocks import get_daily_stock_movement
 from traffic import get_traffic_incidents
 from uselessfact import get_random_fact
+from reuters import get_reuters_stories
 import hashlib, json, geocoder
 latlng = geocoder.ip("me").latlng
 
@@ -18,12 +19,14 @@ def fetch_info():
         "nfl_scores": get_NFL_scores(2),
         "stocks": get_daily_stock_movement("MSFT"),
         "random_fact": get_random_fact(),
+        "reuters": get_reuters_stories(),
         "traffic": get_traffic_incidents(latlng[0], latlng[1], 5)
     }
     with open("./widgetfiles/parsed_widget_data.json", "w+") as f:
         json.dump(raw_json, f)
 
-    parsed = {}
+    parsed = { "reuters" : { "feed": raw_json["reuters"] } }
+
     parsed["catfact"] = {
         "feed": [{
             "text": raw_json["catfact"],

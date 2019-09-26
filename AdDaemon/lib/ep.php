@@ -34,6 +34,8 @@ try {
     exit;
   } else if($func == 'me') {
     jemit(doSuccess($_SESSION));
+  } else if($func == 'feed') {
+    jemit(json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . "./reef-demo/APIWidget/widgetfiles/parsed_widget_data.json")));
   } else if($func == 'instagram') {
     if(isset($all['code'])) {
       $token = curldo('https://api.instagram.com/oauth/access_token', [
