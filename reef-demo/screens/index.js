@@ -6,10 +6,9 @@ function renderScreens(screens, locations) {
       screen =>
         `
         <tr>
-          <th><a href="show?id=${screen.id}">${screen.id}</a></th>
+          <th><a style="font-family:monospace" href="show?id=${screen.uid}">${screen.uid}</a></th>
           <th>${screen.project}</th>
           <th>${screen.lat}, ${screen.lng}</th>
-          <th>${screen.phone}</th>
         </tr>
       `,
     )
