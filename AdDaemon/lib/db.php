@@ -557,7 +557,10 @@ function db_clean($kv) {
 function sql_kv($hash, $operator = '=', $quotes = "'", $intList = []) {
   $ret = [];
   foreach($hash as $key => $value) {
-    if ( is_string($value) ) {
+    if ( is_numeric($value) ) {
+      $ret[] = "$key $operator $value";
+    }
+    else if ( is_string($value) ) {
       if(in_array($key, $intList)) {
         $ret[] = "$key $operator $value";
       } else {
