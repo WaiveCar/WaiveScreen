@@ -88,6 +88,7 @@ $SCHEMA = [
     'phone'       => 'text',
     'car'         => 'text',
     'project'     => 'text',
+    'has_time'    => 'boolean default false',
     'widget_id'   => 'integer',
     'ticker_id'   => 'integer',
     'model'       => 'text',
@@ -129,7 +130,6 @@ $SCHEMA = [
     'mark'       => 'text',    // such as the 48-bit MAC address
     'created_at' => 'datetime default current_timestamp',
   ],
-
 
   'exclusive' => [
     'id'          => 'integer primary key autoincrement',
