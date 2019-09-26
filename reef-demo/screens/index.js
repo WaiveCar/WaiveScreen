@@ -1,13 +1,14 @@
 function renderScreens(screens, locations) {
   screens.sort((a, b) => {
-    if (a.lat && !b.lat) {
-      return -1;
-    }
-    if (b.lat && !a.lat) {
+    if (a.uid.match(/fake/gi) && !b.uid.match(/fake/gi)) {
       return 1;
+    }
+    if (b.uid.match(/fake/gi) && !a.uid.match(/fake/gi)) {
+      return -1;
     }
     return;
   });
+  screens = screens.filter(s => s.lat && !isNaN(Number(s.lat))).filter(s => s.phone);
   screens = screens.slice(0, 30);
   let latLngs = '';
   screens.forEach(screen => (latLngs += `[${screen.lat}, ${screen.lng}],`));
@@ -24,7 +25,7 @@ function renderScreens(screens, locations) {
           <th><a href="show?id=${screen.id}">${screen.uid.slice(
               screen.uid.length - 4,
             )}</a></th>
-          <th>${screen.project}</th>
+          <th>${screen.uptime}</th>
           <th>${json[i]}</th>
           <th>${screen.phone}</th>
         </tr>
