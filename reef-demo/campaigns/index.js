@@ -55,12 +55,17 @@ function groupByBrand(response, brands) {
 }
 
 (() => {
+  var pre = '';
+  if(document.location.hostname != '127.0.0.1') {
+    pre = `http://192.168.86.58/`;
+  }
+
   const brandId = new URL(location.href).searchParams.get('brand_id');
-  fetch('http://192.168.86.58/api/brands')
+  fetch(`${pre}/api/brands`)
     .then(response => response.json())
     .then(brands => {
       fetch(
-        `http://192.168.86.58/api/campaigns${
+        `${pre}/api/campaigns${
           brandId ? `?brand_id=${brandId}` : ''
         }`,
       )

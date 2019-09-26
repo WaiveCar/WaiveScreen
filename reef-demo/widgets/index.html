@@ -8,19 +8,24 @@
     <link href="../css/sb-admin-2.min.css" rel="stylesheet">
 		<link rel=stylesheet href=https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css>
     <link href="../css/dataTables.bootstrap4.min.css" rel="stylesheet">
-    <link rel='stylesheet' href='/engine.css'>
     <link href="../common.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
-<link href="/api/me.css" rel="stylesheet">
-    <title>Screen Admin</title>
+    <link href="/api/me.css" rel="stylesheet">
+    <title>Widgets</title>
   </head>
   <style>
-    form { float: right }
-    #content-wrapper h4 { color: #000 }
-    .form-control-file { display: none }
-    .upload-button { margin-bottom: 0 }
-    #notice { position: fixed; top:0; left:0; width: 100%; z-index: 100;display:none}
-    .dropdown-menu > a.dark { color: #000;cursor: default }
+    #content-wrapper span { color: #000 }
+    .id,.version { font-family: monospace }
+    .last { text-align: right }
+    .table td {padding: .75rem .2rem; }
+    td.edit { white-space: nowrap; }
+    .modal-body span {
+      min-width: 5rem; 
+      display: inline-block;
+      vertical-align: top;
+    }
+    .edit:hover { color: #000 }
+    #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
   </style>
   <body id="page-top">
     <div class="menu-btn mt-1 top-bar">
@@ -28,19 +33,32 @@
         <img src="../svg/adcast.svg">
       </div>
       <span class="top-bar-right ml-4 mt-2">
-        <div class="vertical-flex p-manager">
-          <span class="company-name">Campaigns</span>
+        <div class="vertical-flex">
+          <span class="company-name">Widgets</span>
         </div>
-        <div class="vertical-flex p-manager">
-          <a href="/campaigns/create" class="new-campaign-btn">New Campaign</a>
+        <div class="vertical-flex">
+          <a href="/widgets/create" class="new-campaign-btn p-manager">New Widget</a>
         </div>
       </span>
     </div>
-    <div id="wrapper" class="campaign-show">
+    <div id="wrapper" class="offset-top">
       <div id="menu">
       </div>
-      <div class="container-fluid">
-        <div class="campaign-list">
+      <div class="container-fluid model-list">
+        <div class="alert alert-primary" id="notice" role="alert"></div>
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        </div>
+        <div id="content-wrapper" class="d-flex flex-column">
+          <h3>
+            <div class="alert alert-primary" id="notice" role="alert"></div>
+          </h3>
+
+          <div class="table-responsive">
+            <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+              <thead id="table-head"> </thead>
+              <tbody id="table-body"> </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -52,12 +70,11 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="../js/jquery.easing.min.js"></script>
 <script src="/api/me.js"></script>
-    <script src="../js/sb-admin-2.min.js"></script>
-    <script src="../js/jquery.dataTables.min.js"></script>
-    <script src="../js/dataTables.bootstrap4.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
-    <script src="/engine.js"></script>
+    <script src="/api/me.js"></script>
     <script src="../menu.js"></script>
-    <script src="./index.js"></script>
+    <script src="/tableIt.js"></script>
+  <script>
+    tableIt('widgets', {perms: {'organization_id': 'admin', 'balance': 'admin'}});
+  </script>
   </body>
 </html>
