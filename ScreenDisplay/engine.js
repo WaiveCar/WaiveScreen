@@ -342,8 +342,15 @@ var Engine = function(opts){
       }
       vid.muted = true;
       if(vid.videoWidth) {
+        var container = _res.container.getBoundingClientRect();
+        var parentratio = container.width/container.height;
         var ratio = vid.videoWidth / vid.videoHeight;
-        if(ratio > _res.target.ratio) {
+        if(ratio > parentratio) {
+          vid.style.width = '100%';
+        } else {
+          vid.style.height = '100%';
+        }
+          /*
           var maxHeight = _res.target.width * vid.videoHeight / vid.videoWidth;
           vid.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
           vid.style.width = _res.target.width + "px";
@@ -352,6 +359,7 @@ var Engine = function(opts){
           vid.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
           vid.style.height = _res.target.height + "px";
         }
+        */
       } 
       obj.duration += asset.duration;
       obj.active = true;
@@ -403,6 +411,7 @@ var Engine = function(opts){
       asset = image(asset, obj);
     } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
       asset = video(asset, obj);
+      container.className += " hasvideo";
     } else {
       asset = iframe(asset, obj);
     }
