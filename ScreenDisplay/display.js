@@ -37,9 +37,9 @@ window.onload = function init() {
     .then(res => res.json())
     .then(data =>{
       self.d = data;
-      e.Widget.ticker(data.reuters.feed.map(r => r.title)); 
-      e.Widget.app(data.forecast.feed[0]); 
-      console.log(data);
+      self.ads.Widget.ticker(data.reuters.feed.map(r => r.title));
+      self.ads.Widget.app(data.forecast.feed[0]);
+      self.ads.start();
     })
 
   self.sms = document.getElementById('sms');
