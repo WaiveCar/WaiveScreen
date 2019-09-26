@@ -226,6 +226,9 @@ async def browser(request):
 
       payload = {'action': 'playnow', 'args': playlist}
     
+    elif "feature" in args:
+      payload = {'action': 'feature', 'args': args.split(',')[-1]}
+
     elif "http" in args or 'file://' in args:
       payload = {'action': 'playnow', 'args': args}
 
