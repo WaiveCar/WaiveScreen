@@ -645,7 +645,7 @@ def ping():
         screen = data.get('screen') or {} 
         default = data.get('default') or {}
 
-        for key in ['port','model','project','car','serial','ticker_id','app_id']:
+        for key in ['port','model','project','car','serial','ticker_id','app_id','has_time']:
           if key in screen:
             db.kv_set(key, screen[key])
   

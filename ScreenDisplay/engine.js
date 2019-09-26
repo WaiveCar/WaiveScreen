@@ -974,6 +974,7 @@ var Engine = function(opts){
       get('/default', function(res) {
         _fallback = makeJob(res.data.campaign);
         _res.system = res.data.system;
+        Widget.time(_res.system.has_time);
         event('system', _res.system);
         _timeout(function() {
           setFallback(false, true);
