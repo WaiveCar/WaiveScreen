@@ -32,6 +32,9 @@ try {
   } else if($func == 'me.js') {
     emit_js();
     exit;
+  } else if($func == 'location') {
+    echo(file_get_contents('http://basic.waivecar.com/location.php?' . http_build_query($all)) );
+    exit;
   } else if($func == 'me') {
     jemit(doSuccess($_SESSION));
   } else if($func == 'feed') {
