@@ -50,9 +50,9 @@
     #engine { overflow: hidden; background: black }
 
 .screen {
-  background: black;
   text-align: center;
   position: relative;
+  margin: 0.5rem 0;
 }
 .screen .bg {
   width: 100%;
@@ -62,9 +62,10 @@
 }
  .controls { 
    padding: 10px;
-   background: #333;
+   background: #334;
    padding-bottom: 3px;
-   border-radius: 0 0 10px 10px;
+   margin-bottom: 1.5rem;
+   border-radius: 0 0 6px 6px;
  }
  .asset-container {
   position: absolute;
@@ -76,6 +77,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  overflow: hidden;
 }
   </style>
   <body id="page-top">
@@ -133,16 +135,11 @@
                         <button type="button" class="rewind btn btn-dark">
                           <i class="fas fa-backward"></i>
                         </button>
-                        <!--
-                        <button type="button" class="btn btn-dark">
-                          <i class="fas fa-play"></i>
-                        </button>
-                        -->
                       </div>
                     </div>
                     <div class="col-6">
                       <div class="float-right">
-                        <div class="btn-group ratios" role="group" style='margin-bottom:0.5rem;margin-right:1rem' aria-label="Basic example">
+                        <div class="btn-group ratios" role="group" style='margin-bottom:0.5rem;margin-right:1rem'>
                           <button type="button" class="btn btn-dark">3:2</button>
                           <button type="button" class="btn btn-dark">16:9</button>
                           <button type="button" class="btn btn-dark active">Car</button>
@@ -155,7 +152,7 @@
                     </div>
                   </div>
                   <div class="row justify-content-md-center">
-                    <div class="preview-holder col-8">
+                    <div class="preview-holder col-6">
                     </div>
                   </div>
 
@@ -167,7 +164,7 @@
         </div>
 
         
-        <div class="row mb-4 instagram-wrapper shown"><!-- style='display:none'>-->
+        <div class="row mb-4 instagram-wrapper shown" style='display:none'>
           <div class="col-lg-12">
             <div class="card">
               <div class="card-body">

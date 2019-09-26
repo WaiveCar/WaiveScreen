@@ -94,9 +94,9 @@ function create_campaign(obj) {
 }
 function resize(asset, width, height) {
   if( height * (1920/756) > width) {
-    asset.style.height = '100%';
-  } else {
     asset.style.width = '100%';
+  } else {
+    asset.style.height = '100%';
   }
 }
 function addtime(n) {
@@ -277,7 +277,6 @@ window.onload = function(){
   $(".ratios button").click(function(){
     $(this).siblings().removeClass('active');
     $(this).addClass('active');
-    console.log("<" + this.innerHTML + ">");
     if(this.innerHTML == "16:9") {
       _container.style.width = _container.clientHeight * 16/9 + "px";
     } else if(this.innerHTML == "3:2") {

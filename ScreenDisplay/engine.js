@@ -722,7 +722,7 @@ var Engine = function(opts){
         dom  = obj.dom,
         goal = obj.goal,
         time = obj.duration || 7500,
-        period = 1000 / (_res.slowCPU ? 14 : 30),
+        period = 1000 / (_res.slowCPU ? 14 : 40),
         rounds = time / period,
         step = goal / rounds,
         ix = 0;
@@ -733,7 +733,7 @@ var Engine = function(opts){
         if (ix++ >= rounds) {
           clearInterval(scrollIval);
         }
-        dom.style[ anchor ] = -(ix * step) + "px";
+        dom.style[ anchor ] = -(Math.min(ix * step, goal)) + "px";
       }, period);
     }
     p.style.marginTop = p.style.marginLeft = 0;
