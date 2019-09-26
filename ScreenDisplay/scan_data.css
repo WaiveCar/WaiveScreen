@@ -4,9 +4,9 @@
 .scan-wrap, #scanData {
   position: absolute;
   background-color: transparent;
-  left: 10px;
-  top: 30px;
-  width: 40%;
+  left: 2px;
+  top: 20px;
+  width: 45%;
   color: green;
   font-weight: bold;
   z-index: 1020;
