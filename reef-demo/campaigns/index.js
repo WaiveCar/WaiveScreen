@@ -14,7 +14,7 @@ function renderCampaigns(campaigns, brand, brandIdx) {
              <a class="prevent-underline" href="/campaigns/show?id=${
                campaign.id
              }">
-               <div id="asset-container-${brandIdx}-${campaignIdx}" style="height: 113px"> 
+               <div id="asset-container-${brandIdx}-${campaignIdx}" style="height: 145px;"> 
                </div>
                <div class="campaign-title mt-1">${campaign.project}</div>
                <div class="campaign-dates">
@@ -75,9 +75,7 @@ function groupByBrand(response, brands) {
         .then(response => response.json())
         .then(json => {
           let byBrand = groupByBrand(json, brands);
-          console.log('byBrand', byBrand);
           Object.keys(byBrand).forEach((brand, brandIdx) => {
-            console.log('brand', brand);
             renderCampaigns(byBrand[brand], brand, brandIdx);
           });
         });
