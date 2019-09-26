@@ -28,6 +28,7 @@ function calcItems() {
       document.querySelector(
         '#impressions',
       ).textContent = `${fakeNumImpressionsPerWeek}`;
+      document.querySelector('#price').textContent = `$${budget}`;
     }
   });
 }
@@ -258,6 +259,7 @@ window.onload = function(){
   self._container =  document.getElementById('engine');
   doMap();
   var isFirst = true;
+  var ratio = 'car';
   if (self._container) {
     setRatio(_container, 'car'); 
     self._preview = Engine({ 
@@ -277,6 +279,7 @@ window.onload = function(){
   $(".ratios button").click(function(){
     $(this).siblings().removeClass('active');
     $(this).addClass('active');
+    ratio = this.innerHTML.replace(':', '-').toLowerCase();
     if(this.innerHTML == "16:9") {
       _container.style.width = _container.clientHeight * 16/9 + "px";
     } else if(this.innerHTML == "3:2") {
@@ -284,6 +287,8 @@ window.onload = function(){
     } else {
       _container.style.width = "100%";
     }
+      $(`.preview-holder-${ratio}`).siblings().removeClass('selector');
+      $(`.preview-holder-${ratio}`).addClass('selector');
   });
 
 
@@ -291,7 +296,10 @@ window.onload = function(){
   uploadInput = document.getElementById('image-upload');
     if (uploadInput) {
     uploadInput.addEventListener('change', function() {
-      var container = $(".preview-holder");
+      console.log("<<" + ratio);
+      $(`.preview-holder-${ratio}`).siblings().removeClass('selector');
+      $(`.preview-holder-${ratio}`).addClass('selector');
+      var container = $(`.preview-holder-${ratio} .assets`);
 
       addtime(false);
       Array.prototype.slice.call(uploadInput.files).forEach(function(file) {

@@ -562,3 +562,14 @@ select.form-control:focus,.form-group input:focus
   width: 100%;
   display:inline-block;
 }
+.preview-collection .selector {
+  background: #eee;
+  color: #111;
+  border-radius: 2px;
+}
+.preview-collection > div {
+  padding-top: 0.5rem;
+}
+.preview-collection h2 {
+  margin-bottom: 0.5rem;
+}

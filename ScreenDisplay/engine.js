@@ -224,17 +224,7 @@ var Engine = function(opts){
           e.target.style.width = '100%';
         } else {
           e.target.style.height = '100%';
-        }/*
-          var maxHeight = _res.target.width * e.target.height / e.target.width;
-          e.target.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
-          e.target.style.width = _res.target.width + "px";
-          //console.log(_res.target.width, e.target.height, e.target.width, e.target.src);
-        } else { 
-          var maxWidth = _res.target.height * e.target.width / e.target.height;
-          e.target.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
-          e.target.style.height = _res.target.height + "px";
         }
-        */
       }
       asset.active = true;
       obj.active = true;
@@ -245,7 +235,22 @@ var Engine = function(opts){
     // TODO: per asset custom duration 
     asset.duration = asset.duration || _res.duration;
     obj.duration += asset.duration;
-    asset.run = _passthru;
+    asset.run = function(cb) {
+      console.log("HERE");
+      var container = _res.container.getBoundingClientRect();
+      var parentratio = container.width/container.height;
+      var ratio = img.width / img.height;
+      if(parentratio > ratio) {
+        img.style.width = '100%';
+        img.style.height = 'auto';
+      } else {
+        img.style.width = 'auto';
+        img.style.height = '100%';
+      }
+      if(cb) {
+        cb();
+      }
+    }
     asset.pause = asset.rewind = asset.play = _nop;
     asset.dom = img;
     asset.type = 'image';
