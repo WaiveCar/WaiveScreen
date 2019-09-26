@@ -1,3 +1,7 @@
+var pre = '';
+if(document.location.hostname != '127.0.0.1') {
+  pre = `http://192.168.86.58/`;
+}
 function ucfirst(what) {
 
   return what ? what[0].toUpperCase() + what.slice(1) : what;
@@ -30,13 +34,14 @@ function select(what, data) {
       );
     });
   } else {
-    $.getJSON(`http://192.168.86.58/api/${what}s`, gen);
+    $.getJSON(`${pre}/api/${what}s`, gen);
   }
 }
 
 function doit(table, opts) {
   opts = opts || {};
   opts = Object.assign({
+    fillNhide: [],
     fields: {},
     container: 'createForm',
     name: ucfirst(table || '')
@@ -52,7 +57,7 @@ function doit(table, opts) {
     j.innerHTML = `New ${opts.name}`;
   });
 
-  form.setAttribute('action', `http://192.168.86.58/api/${table}s?next=/${table}s`);
+  form.setAttribute('action', `${pre}/api/${table}s?next=/${table}s`);
 
   function builder(schema, permissions) {
     var html = [],
@@ -63,6 +68,10 @@ function doit(table, opts) {
 
     for (var k in schema) {
       if (opts.hide.includes(k)) {
+        continue;
+      }
+      if (opts.fillNhide.includes(k) && _me[k]) {
+        html.push(`<input type=hidden name=${k} value="${_me[k]}">`);
         continue;
       }
 
@@ -102,6 +111,6 @@ function doit(table, opts) {
   if(opts.schema) {
     builder(opts.schema, opts.permissions);
   } else {
-    $.getJSON(`http://192.168.86.58/api/schema?table=${table}`, builder);
+    $.getJSON(`${pre}/api/schema?table=${table}`, builder);
   }
 }
