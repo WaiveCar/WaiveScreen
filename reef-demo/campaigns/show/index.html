@@ -93,9 +93,10 @@
 }
  .controls { 
    padding: 10px;
-   background: #333;
+   background: #334;
    padding-bottom: 3px;
-   border-radius: 0 0 10px 10px;
+   margin-bottom: 1.5rem;
+   border-radius: 0 0 6px 6px;
  }
  .asset-container {
   position: absolute;
@@ -107,6 +108,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  overflow: hidden;
 }
   </style>
   <body id="page-top">
@@ -255,15 +257,17 @@
           </div>
         </div>
         -->
-        <div class="row mb-4 creatives-wrapper p-manager">
-          <a name="Creatives"></a>
+        <div class="row mb-4 creatives-wrapper">
+          <a name="creatives"></a>
           <div class="col-lg-12">
             <div class="card">
               <div class="card-body">
                 <h2 class="card-title">Add Creatives</h2>
                 <div class="card-body">
                   <div class="row no-gutters">
-                    <div id="engine" class="col-lg-12"></div>
+                    <div class="engine-holder">
+                      <div id="engine"></div>
+                    </div>
                   </div>
                   <div class="row no-gutters controls">
                     <div class="col-6">
@@ -271,15 +275,15 @@
                         <button type="button" class="rewind btn btn-dark">
                           <i class="fas fa-backward"></i>
                         </button>
-                        <!--
-                        <button type="button" class="btn btn-dark">
-                          <i class="fas fa-play"></i>
-                        </button>
-                        -->
                       </div>
                     </div>
                     <div class="col-6">
                       <div class="float-right">
+                        <div class="btn-group ratios" role="group" style='margin-bottom:0.5rem;margin-right:1rem'>
+                          <button type="button" class="btn btn-dark">3:2</button>
+                          <button type="button" class="btn btn-dark">16:9</button>
+                          <button type="button" class="btn btn-dark active">Car</button>
+                        </div>
                         <label for="image-upload" class="btn btn-dark">
                           <i class="fas fa-plus-square"></i> Image/Video
                         </label>
@@ -287,17 +291,26 @@
                       </div>
                     </div>
                   </div>
-                  <div class="row justify-content-md-center">
-                    <div class="preview-holder col-8">
+                  <div class="row justify-content-md-center preview-collection">
+                    <div class="preview-holder-3-2 col-4">
+                      <h4>3:2</h4>
+                      <div class="assets"></div>
+                    </div>
+                    <div class="preview-holder-16-9 col-4">
+                      <h4>16:9</h4>
+                      <div class="assets"></div>
+                    </div>
+                    <div class="preview-holder-car col-4">
+                      <h4>Car</h4>
+                      <div class="assets"></div>
                     </div>
                   </div>
-
-
                 </div>
               </div>
             </div>
           </div>
         </div>
+
 
         <!--
         <div class="row mb-4">
