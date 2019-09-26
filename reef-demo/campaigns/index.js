@@ -61,7 +61,7 @@ function groupByBrand(response, brands) {
   }
 
   const brandId = new URL(location.href).searchParams.get('brand_id');
-  fetch(`${pre}/api/brands')
+  fetch(`${pre}/api/brands`)
     .then(response => response.json())
     .then(brands => {
       fetch(
