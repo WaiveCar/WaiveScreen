@@ -59,7 +59,7 @@ var tableIt = (function() {
             fields.map(function(field) {
               return '<td class=' + field + '>' + (
                 field === 'name' ?
-                  `<a href="/${table}/show/?id=${row.id}">${row[field]}</a>` :
+                  (table !== 'brands' ? `<a href="/${table}/show/?id=${row.id}">${row[field]}</a>`: `<a href="/campaigns/?brand_id=${row.id}">${row[field]}</a>`) :
                   row[field]
                ) + '</td>'
             }) + '</tr>'
