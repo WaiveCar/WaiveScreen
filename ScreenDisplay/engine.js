@@ -678,6 +678,7 @@ var Engine = function(opts){
     what.assetList[index].duration = amount;
   }
 
+  var scrollIval;
   function scrollIfNeeded(){
     var p = _current.shown.dom;
     function scroll(obj, dim) {
@@ -689,13 +690,16 @@ var Engine = function(opts){
         period = 1000 / 30,
         rounds = time / period,
         step = goal / rounds,
-        ix = 0,
-        ival = setInterval(function() {
-          if (ix++ >= rounds) {
-            clearInterval(ival);
-          }
-          dom.style[ anchor ] = -(ix * step) + "px";
-        }, period);
+        ix = 0;
+
+      clearInterval(scrollIval);
+
+      scrollIval = setInterval(function() {
+        if (ix++ >= rounds) {
+          clearInterval(scrollIval);
+        }
+        dom.style[ anchor ] = -(ix * step) + "px";
+      }, period);
     }
     p.style.marginTop = p.style.marginLeft = 0;
     setTimeout(function(){
