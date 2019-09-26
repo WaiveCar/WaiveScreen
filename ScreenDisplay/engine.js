@@ -217,10 +217,14 @@ var Engine = function(opts){
     }
     img.onload = function(e) {
       if(e.target.width) {
-        e.target.style.width = '100%';
-        /*
+        var container = _res.container.getBoundingClientRect();
+        var parentratio = container.width/container.height;
         var ratio = e.target.width / e.target.height;
-        if(ratio > _res.target.ratio) {
+        if(parentratio > ratio) {
+          e.target.style.width = '100%';
+        } else {
+          e.target.style.height = '100%';
+        }/*
           var maxHeight = _res.target.width * e.target.height / e.target.width;
           e.target.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
           e.target.style.width = _res.target.width + "px";
@@ -244,6 +248,7 @@ var Engine = function(opts){
     asset.run = _passthru;
     asset.pause = asset.rewind = asset.play = _nop;
     asset.dom = img;
+    asset.type = 'image';
 
     return asset;
   }
@@ -261,6 +266,7 @@ var Engine = function(opts){
     asset.duration = asset.duration || 100 * _res.duration;
     obj.duration += asset.duration;
     obj.active = true;
+    asset.type = 'iframe';
     return asset;
   }
   
@@ -336,8 +342,15 @@ var Engine = function(opts){
       }
       vid.muted = true;
       if(vid.videoWidth) {
+        var container = _res.container.getBoundingClientRect();
+        var parentratio = container.width/container.height;
         var ratio = vid.videoWidth / vid.videoHeight;
-        if(ratio > _res.target.ratio) {
+        if(ratio > parentratio) {
+          vid.style.width = '100%';
+        } else {
+          vid.style.height = '100%';
+        }
+          /*
           var maxHeight = _res.target.width * vid.videoHeight / vid.videoWidth;
           vid.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
           vid.style.width = _res.target.width + "px";
@@ -346,6 +359,7 @@ var Engine = function(opts){
           vid.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
           vid.style.height = _res.target.height + "px";
         }
+        */
       } 
       obj.duration += asset.duration;
       obj.active = true;
@@ -374,6 +388,7 @@ var Engine = function(opts){
       })(m[ix]);
     }
 
+    asset.type = 'video';
     return asset;
   }
     
@@ -396,6 +411,7 @@ var Engine = function(opts){
       asset = image(asset, obj);
     } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
       asset = video(asset, obj);
+      container.className += " hasvideo";
     } else {
       asset = iframe(asset, obj);
     }
@@ -449,30 +465,6 @@ var Engine = function(opts){
     }
         
     return obj;
-  }
-
-  function scroll(obj, dim) {
-    var 
-      size     = dim == 'vertical' ? _res.target.height : _res.target.width,
-      anchor   = dim == 'vertical' ? 'marginTop' : 'marginLeft',
-      goal = obj[dim == 'vertical' ? 'height' : 'width'] - size,
-      time = _res.duration * 1000,
-      period = 1000 / 30,
-      rounds = time / period,
-      step = goal / rounds,
-      ix = 0,
-      ival = setInterval(function() {
-        if (ix++ >= rounds) {
-          clearInterval(ival);
-        }
-        obj.style[ anchor ] = -(ix * step) + "px";
-      }, period);
-  }
-  scroll.vertical = function (obj) {
-    return scroll(obj, 'vertical');
-  }
-  scroll.horizontal = function (obj) {
-    return scroll(obj, 'horizontal');
   }
 
   // LRU cache invalidation should eventually exist.
@@ -695,6 +687,46 @@ var Engine = function(opts){
     what.assetList[index].duration = amount;
   }
 
+  var scrollIval;
+  function scrollIfNeeded(){
+    var p = _current.shown.dom;
+    function scroll(obj, dim) {
+      var 
+        anchor  = dim == 'vertical' ? 'marginTop' : 'marginLeft',
+        dom  = obj.dom,
+        goal = obj.goal,
+        time = obj.duration || 7500,
+        period = 1000 / 30,
+        rounds = time / period,
+        step = goal / rounds,
+        ix = 0;
+
+      clearInterval(scrollIval);
+
+      scrollIval = setInterval(function() {
+        if (ix++ >= rounds) {
+          clearInterval(scrollIval);
+        }
+        dom.style[ anchor ] = -(ix * step) + "px";
+      }, period);
+    }
+    p.style.marginTop = p.style.marginLeft = 0;
+    setTimeout(function(){
+      var
+        opts = {dom: p, duration: 0.7 * _current.shown.duration * 1000},
+        el = p.getBoundingClientRect(),
+        box = p.parentNode.getBoundingClientRect();
+
+      if(box.height < p.height) {
+        opts.goal = p.height - box.height;
+        scroll(opts, 'vertical');
+      } else if (box.width < p.width) {
+        opts.goal = p.width - box.width;
+        scroll(opts, 'horizontal');
+      }
+    }, _current.shown.duration * .15 * 1000);
+  }
+
   // Jobs have assets. nextJob chooses a job to run and then asks nextAsset
   // to do that work ... when nextAsset has no more assets for a particular job
   // it calls nextJob again.
@@ -751,6 +783,9 @@ var Engine = function(opts){
         _box.ad.removeChild(prev);
       }
       _box.ad.appendChild(_current.shown.container);
+      if(_current.shown.type == 'image') {
+        scrollIfNeeded();
+      }
       dbg("} appendChild");
     });
     dbg("} run")
