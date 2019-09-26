@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from catfact import get_cat_fact 
 from darkskyweather import get_forecast, get_hourly, get_current_weather 
 from newsheadlines import get_news_stories
