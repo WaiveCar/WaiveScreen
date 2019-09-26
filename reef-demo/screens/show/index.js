@@ -61,6 +61,9 @@ function renderScreen(screen) {
     .catch(e => console.log('error: ', e));
 }
 
+function update_screen(el) {
+  console.log(el);
+}
 function toggleEditor() {
   document.getElementsByClassName('editor')[0].classList.toggle('show');
 }

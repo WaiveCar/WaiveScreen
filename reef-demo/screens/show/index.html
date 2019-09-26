@@ -54,6 +54,7 @@
           <h1 class="display-4">View Cameras</h1>
         </div>
         <div class="jumbotron editor">
+          <form onsubmit="return update_screen(this)">
           <div id=screen></div>
           <div class=section-title>Time & Date</div>
           <div class=choice-list>
@@ -91,6 +92,8 @@
               <input type=radio value=traffic name=app> Traffic
             </label>
           </div>
+          </form>
+          <button onclick=update_screen() class="btn btn-primary">Update</button>
         </div>
         <div class="jumbotron">
           <h1 class="display-4">Past / Future</h1>

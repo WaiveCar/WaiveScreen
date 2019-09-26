@@ -19,7 +19,7 @@ function select(what, data) {
     } 
 
     document.getElementById(`${what}-wrap`).innerHTML = `
-          <select class="form-control" name="${name}">
+          <select id="form-${form_ix}-${name}" class="form-control" name="${name}">
             ${options}
           </select>
         `;
@@ -40,11 +40,14 @@ function select(what, data) {
   }
 }
 
+var form_ix = 1;
 function doit(table, opts) {
+  var _schema, _myid = form_ix;
   opts = opts || {};
   opts = Object.assign({
     fillNhide: [],
     fields: {},
+    permissions: {},
     container: 'createForm',
     name: ucfirst(table || '')
   }, opts);
@@ -68,18 +71,20 @@ function doit(table, opts) {
       xref,
       name;
 
+    _schema = schema;
     for (var k in schema) {
       if (opts.hide.includes(k)) {
         continue;
       }
       if (opts.fillNhide.includes(k) && _me[k]) {
-        html.push(`<input type=hidden name=${k} value="${_me[k]}">`);
+        html.push(`<input id="form-${form_ix}-${name}" type=hidden name=${k} value="${_me[k]}">`);
         continue;
       }
 
       type = typeMap[k] || 'text';
       xref = k.match(/(\w*)_id/);
 
+      k = k.replace(/\s/, '_');
       if (xref) {
         let field = xref[1];
         name = field;
@@ -91,7 +96,7 @@ function doit(table, opts) {
         select(k, opts.fields[k]);
       } else {
         name = k;
-        input = `<input type="${type}" class="form-control" name="${k}">`;
+        input = `<input id="form-${form_ix}-${name}" type="${type}" class="form-control" name="${k}">`;
       }
       name = ucfirst(wordMap[name] || name);
 
@@ -115,4 +120,14 @@ function doit(table, opts) {
   } else {
     $.getJSON(`${pre}/api/schema?table=${table}`, builder);
   }
+  return {
+    obj: form,
+    getValues: function() {
+      var map = {};
+      Object.keys(_schema).forEach(field => {
+        map[field] = $(`#form-${form_ix}-${field}`).val();
+      });
+      return map;
+    }
+  };
 }

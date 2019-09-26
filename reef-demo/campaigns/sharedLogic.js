@@ -1,4 +1,5 @@
 var 
+  uploadInput,
   _preview,
   _assetList = [];
 
@@ -50,19 +51,19 @@ function create_campaign(obj) {
   // Before the payment is processed by paypal, a user's purchase is sent to the server with 
   // the information that has so far been obtained including the picture.
   let formData = new FormData();
-  $(document.forms[0]).serializeArray().forEach(function(row) {
-    state[row.name] = row.value;
-    formData.append(row.name, row.value);
-  });
-  state.total = dealMap[state.option].price;
+  let valMap = myform.getValues();
+  for(var key in valMap) {
+    formData.append(key, valMap[key]);
+  }
+  formData.append('geofence', _map.save());
 
   /*
-  for(var ix = 0; ix < uploadInput.files.length; ix++) {
-    formData.append('file' + ix, uploadInput.files[ix]);
+  for(var ix = 0; ix < _job.assetList.length; ix++) {
+    formData.append('file' + ix, _job.assetList[ix].url);
   }
   */
-  for(var ix = 0; ix < _job.assetList.length; ix++) {
-    formData.append('file' + ix, _job.assetList[ix]);
+  for(var ix = 0; ix < uploadInput.files.length; ix++) {
+    formData.append('file' + ix, uploadInput.files[ix]);
   }
 
   return axios({
@@ -73,24 +74,7 @@ function create_campaign(obj) {
       headers: { 'Content-Type': 'multipart/form-data' },
     },
   }).then(function(resp) {
-    if(resp.res) {
-      state.campaign_id = res.data;
-    }
-    if(!obj) {
-      return true;
-    }
-    return obj.payment.create({
-      payment: {
-        transactions: [
-          {
-            amount: {
-              total: (state.total / 100).toFixed(2),
-              currency: 'USD',
-            }
-          }
-        ]
-      }
-    });
+    window.location = 'http://' + window.location.hostname + '/campaigns';
   });
 }
 function resize(asset, width, height) {

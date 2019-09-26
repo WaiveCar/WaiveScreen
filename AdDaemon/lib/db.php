@@ -89,7 +89,7 @@ $SCHEMA = [
     'car'         => 'text',
     'project'     => 'text',
     'has_time'    => 'boolean default false',
-    'widget_id'   => 'integer',
+    'app_id'      => 'integer',
     'ticker_id'   => 'integer',
     'model'       => 'text',
     'panels'      => 'text',
@@ -184,7 +184,7 @@ $SCHEMA = [
     'created_at' => 'datetime default current_timestamp',
   ],
 
-  'addon' => [
+  'widget' => [
     'id'     => 'integer primary key autoincrement',
     'name'   => 'text', // what to call it
     'image'  => 'text', // url of logo or screenshot
@@ -211,7 +211,7 @@ $SCHEMA = [
   //
   'campaign' => [
     'id'          => 'integer primary key autoincrement',
-    'name'        => 'text',
+    'title'       => 'text',
     'ref_id'      => 'text',
     'brand_id'    => 'integer',
     'organization_id'    => 'integer',
