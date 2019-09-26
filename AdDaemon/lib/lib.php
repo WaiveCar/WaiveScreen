@@ -805,7 +805,6 @@ function show($what, $clause = []) {
 
   if(is_array($clause)) {
     $clause = array_merge($where, $clause);
-    error_log(json_encode($clause));
     if( !empty($clause) ) {
       $clause = " where " . implode(' and ', sql_kv($clause));
     } else {
