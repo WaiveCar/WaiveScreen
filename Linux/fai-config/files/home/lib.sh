@@ -855,12 +855,15 @@ get_location() {
 beacon_scanner() {
   if [[ -z ${BEACON_SCAN_IF} ]]; then
     echo "BEACON_SCAN_IF is not set.  Aborting start of scanner"
+    return 1
   fi
   if $(ifconfig ${BEACON_SCAN_IF} &> /dev/null); then
     $SUDO iwconfig ${BEACON_SCAN_IF} mode monitor
     $SUDO ifconfig ${BEACON_SCAN_IF} up
     $SUDO python3 ${BASE}/Linux/demo/probemon.py -i ${BEACON_SCAN_IF} &>> /var/log/screen/probemon.log &
+    return 0
   else
     echo "BEACON_SCAN_IF: ${BEACON_SCAN_IF} is not a valid network interface."
+    return 1
   fi
 }
