@@ -8,7 +8,7 @@ function renderScreens(screens, locations) {
     }
     return;
   });
-  screens = screens.slice(0, 20);
+  screens = screens.slice(0, 30);
   let latLngs = '';
   screens.forEach(screen => (latLngs += `[${screen.lat}, ${screen.lng}],`));
   latLngs = latLngs.slice(0, latLngs.length - 1);
@@ -41,6 +41,7 @@ function renderScreens(screens, locations) {
     .then(response => response.json())
     .then(json => screens.push(...json))
     .then(() => {
+      document.querySelector('#screen-count').textContent = `${screens.length} Screens`
       renderScreens(screens);
       self._map = map({points: screens});
       let success = false;
