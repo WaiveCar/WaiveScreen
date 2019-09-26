@@ -7,7 +7,7 @@ var tableIt = (function() {
     }
     _map[what] = {}
 
-    $.getJSON(`http://192.168.86.58/api/${what}s`, function(res) {
+    $.getJSON(`http://adcast/api/${what}s`, function(res) {
       res.forEach(row => _map[row.id] = row);
       $(`td.${what}_id`).each(function(ix, el) {
         var myid = el.innerHTML;
@@ -26,11 +26,6 @@ var tableIt = (function() {
     }, opts || {});
 
     var pre = 'http://adcast/';
-    /*
-    if(document.location.hostname != '127.0.0.1') {
-      pre = `http://192.168.86.58/`;
-    }
-    */
 
     $.getJSON(`${pre}/api/${table}`, function(res) {
       console.log(res);

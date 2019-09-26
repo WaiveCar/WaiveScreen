@@ -13,7 +13,7 @@ function renderScreens(screens, locations) {
   let latLngs = '';
   screens.forEach(screen => (latLngs += `[${screen.lat}, ${screen.lng}],`));
   latLngs = latLngs.slice(0, latLngs.length - 1);
-  fetch(`http://192.168.86.58/api/location?multi=[${latLngs}]`)
+  fetch(`http://adcast/api/location?multi=[${latLngs}]`)
     .then(response => response.json())
     .then(json => {
       const screenTableBody = document.getElementById('screen-table-body');
@@ -38,7 +38,7 @@ function renderScreens(screens, locations) {
   const screens = [];
   const locations = [];
 
-  fetch('http://192.168.86.58/api/screens')
+  fetch('http://adcast/api/screens')
     .then(response => response.json())
     .then(json => screens.push(...json))
     .then(() => {
