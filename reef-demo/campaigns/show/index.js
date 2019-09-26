@@ -84,7 +84,7 @@ function changeSelected(newIdx) {
 
   $('#schedule').jqs();
   const id = new URL(location.href).searchParams.get('id');
-  fetch(`http://waivescreen.com/api/campaigns?id=${id}`)
+  fetch(`http://adcast/api/campaigns?id=${id}`)
     .then(response => response.json())
     .then(json => {
       self.j = json;
