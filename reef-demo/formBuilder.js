@@ -1,7 +1,9 @@
-var pre = '';
+var pre = 'http://adcast/';
+/*
 if(document.location.hostname != '127.0.0.1') {
   pre = `http://192.168.86.58/`;
 }
+*/
 function ucfirst(what) {
 
   return what ? what[0].toUpperCase() + what.slice(1) : what;

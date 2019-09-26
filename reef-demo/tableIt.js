@@ -25,10 +25,12 @@ var tableIt = (function() {
       filter: (opts && opts.filter || []).concat(['id','password','created_at','image'])
     }, opts || {});
 
-    var pre = '';
+    var pre = 'http://adcast/';
+    /*
     if(document.location.hostname != '127.0.0.1') {
       pre = `http://192.168.86.58/`;
     }
+    */
 
     $.getJSON(`${pre}/api/${table}`, function(res) {
       console.log(res);

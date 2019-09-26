@@ -12,7 +12,7 @@ function toggleMenu() {
             ['organizations', 'admin'],
             ['brands', 'viewer'],
             ['users', 'manager'],
-            ['wigets', 'admin']
+            ['widgets', 'admin']
           ].map(
             item => `
           <li class="ml-2 nav-item menu-item sidebar-link active p-${item[1]}" data-item="${item[0]}">
