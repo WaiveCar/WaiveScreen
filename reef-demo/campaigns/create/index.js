@@ -7,6 +7,5 @@ doit(false, {
   },
   permissions: {
     'organization_id': 'p-admin',
-    'brand_id': 'p-admin'
   }
 });
