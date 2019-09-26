@@ -574,6 +574,26 @@ var Engine = function(opts){
   }
 
   var Widget = {
+    // a little fisher yates to start the day
+    shuffle: function (array) {
+     var currentIndex = array.length;
+     var temporaryValue, randomIndex;
+
+     // While there remain elements to shuffle...
+     while (0 !== currentIndex) {
+       // Pick a remaining element...
+       randomIndex = Math.floor(Math.random() * currentIndex);
+       currentIndex -= 1;
+
+       // And swap it with the current element.
+       temporaryValue = array[currentIndex];
+       array[currentIndex] = array[randomIndex];
+       array[randomIndex] = temporaryValue;
+     }
+
+     return array;
+
+    },
     doTime: function() {
       var now = new Date();
       _box.time.innerHTML = [
@@ -581,6 +601,7 @@ var Engine = function(opts){
           (now.getMinutes() + 100).toString().slice(1)
         ].join(':')
     },
+    feedMap: {},
     active: {},
     show: {
       weather: function(cloud, temp) {
@@ -621,7 +642,13 @@ var Engine = function(opts){
       Widget.updateView('app', feed);
       if(feed) {
         _box.widget.style.display = 'block';
-        Widget.show.weather(50,72);
+        var cloud;
+        if(feed.summary.match(/partly/i)) {
+          cloud = 50;
+        } else {
+          cloud = 0;
+        }
+        Widget.show.weather(cloud,Math.round(feed.temperature));
       } else {
         _box.widget.style.display = 'none';
       }
@@ -630,29 +657,28 @@ var Engine = function(opts){
       if(arguments.length === 0) {
         return;
       }
+      function scroll() {
+        _box.ticker.style.opacity = 1;
+        _box.ticker.scrollLeft = 1;
+        clearInterval(Widget._ticker);
+        Widget._ticker = setInterval(function(){
+          var before = _box.ticker.scrollLeft;
+          _box.ticker.scrollLeft += 1.4
+          if (_box.ticker.scrollLeft === before) {
+            clearInterval(Widget._ticker);
+            scroll();
+          }
+        }, 30);
+      }
       Widget.updateView('ticker', feed);
       if(feed) {
-        if(!Widget._ticker) {
-          _box.ticker.style.display = 'block';
-          function scroll() {
-            _box.ticker.style.opacity = 1;
-            _box.ticker.scrollLeft = 1;
-            clearInterval(Widget._ticker);
-            Widget._ticker = setInterval(function(){
-              var before = _box.ticker.scrollLeft;
-              _box.ticker.scrollLeft += 1.4
-              if (_box.ticker.scrollLeft === before) {
-                clearInterval(Widget._ticker);
-                scroll();
-              }
-            }, 30);
-          }
-
-          _box.ticker.innerHTML = `<div class=ticker-content>
-          <span>Saudi oil attacks: all the latest updates</span>
-          <span>'Dollar diplomacy' - Taiwan condemns China after Solomons switch</span></div>`;
-          scroll();
+        _box.ticker.style.display = 'block';
+        if(feed.map) {
+          _box.ticker.innerHTML = "<div class=ticker-content>" + 
+            Widget.shuffle(feed).map(row => `<span>${row}</span>`) + "</div>";
         }
+
+        scroll();
       } else {
         _box.ticker.style.display = 'none';
         clearInterval(Widget._ticker);
