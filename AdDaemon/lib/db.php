@@ -360,6 +360,21 @@ $SCHEMA = [
     'created_at'=> 'datetime default current_timestamp',
   ],
 
+  # this is a normalized system. Dunno if it's a good idea
+  # becaue most of thetime this will return no results. Maybe
+  # keeping a counter in a screen definition of "has_campaigns"
+  # and then when they are purged from this list that gets updated.
+  #
+  # This "optimization" which shouldn't be done because of
+  # that word I just used, would avoid the extra query for no 
+  # results problem
+  'screen_campaign' => [
+    'id' => 'integer primary key autoincrement',
+    'screen_id' => 'integer',
+    'campaign_id' => 'integer',
+    'created_at'=> 'datetime default current_timestamp',
+  ],
+
   // This is going to be a monstrosity really and will
   // be the majority of the storage.
   'sensor_history' => [
