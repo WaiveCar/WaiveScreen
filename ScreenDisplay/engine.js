@@ -659,6 +659,8 @@ var Engine = function(opts){
       }
     },
     ticker: function(feed) {
+      var amount =_res.slowCPU ? 3 : 1.4,
+          delay = _res.slowCPU ? 70 : 30;
       if(arguments.length === 0) {
         return;
       }
@@ -668,12 +670,12 @@ var Engine = function(opts){
         clearInterval(Widget._ticker);
         Widget._ticker = setInterval(function(){
           var before = _box.ticker.scrollLeft;
-          _box.ticker.scrollLeft += 1.4
+          _box.ticker.scrollLeft += amount;
           if (_box.ticker.scrollLeft === before) {
             clearInterval(Widget._ticker);
             scroll();
           }
-        }, 30);
+        }, delay);
       }
       Widget.updateView('ticker', feed);
       if(feed) {
