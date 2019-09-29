@@ -5,12 +5,12 @@
   /*height: 35.1vw;*/
   font-family: 'Roboto Condensed', sans-serif;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw.addon .ad,
-.engine-xA8tAY4YSBmn2RTQqnnXXw.addon .time,
-.engine-xA8tAY4YSBmn2RTQqnnXXw.addon .widget {
+.engine-xA8tAY4YSBmn2RTQqnnXXw.addon .ad-xA8tAY4YSBmn2RTQqnnXXw,
+.engine-xA8tAY4YSBmn2RTQqnnXXw.addon .time-xA8tAY4YSBmn2RTQqnnXXw,
+.engine-xA8tAY4YSBmn2RTQqnnXXw.addon .widget-xA8tAY4YSBmn2RTQqnnXXw {
   padding: 0.35vw;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw.addon .ticker {
+.engine-xA8tAY4YSBmn2RTQqnnXXw.addon .ticker-xA8tAY4YSBmn2RTQqnnXXw {
   margin: 0.35vw;
 }
 .engine-xA8tAY4YSBmn2RTQqnnXXw .container-xA8tAY4YSBmn2RTQqnnXXw {
@@ -28,28 +28,28 @@
   align-items: center;
   justify-content: center;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .top {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .top-xA8tAY4YSBmn2RTQqnnXXw {
   height: 100%;
   overflow: hidden;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw.addon .top {
+.engine-xA8tAY4YSBmn2RTQqnnXXw.addon .top-xA8tAY4YSBmn2RTQqnnXXw {
   height: calc(100% - 0.35vw);
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw.hasBottom .top {
+.engine-xA8tAY4YSBmn2RTQqnnXXw.hasBottom .top-xA8tAY4YSBmn2RTQqnnXXw {
   height: 80%;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .ad {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .ad-xA8tAY4YSBmn2RTQqnnXXw {
   overflow: hidden;
   position: relative;
   height: 100%;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .widget {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .widget-xA8tAY4YSBmn2RTQqnnXXw {
   display: none;
   width: 19.2%;
   float: right;
   height: 100%;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .app {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .app-xA8tAY4YSBmn2RTQqnnXXw {
   font-size: 7vw;
   display: flex;
   flex-direction: column;
@@ -57,14 +57,14 @@
   justify-content: center;
   height: 100%;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .weather {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .weather-xA8tAY4YSBmn2RTQqnnXXw {
   background: rgb(110,210,255);
   background: linear-gradient(142deg, rgba(110,210,255,1) 0%, rgba(0,84,155,1) 100%);
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .weather img {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .weather-xA8tAY4YSBmn2RTQqnnXXw img {
   width: 75%;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .bottom {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .bottom-xA8tAY4YSBmn2RTQqnnXXw {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -73,21 +73,21 @@
   height: 20%;
   overflow: hidden;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .time {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .time-xA8tAY4YSBmn2RTQqnnXXw {
   margin: 0 1vw ;
   float: left;
   font-size: 3.75vw;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .ticker {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .ticker-xA8tAY4YSBmn2RTQqnnXXw {
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .ticker-content {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .ticker-content-xA8tAY4YSBmn2RTQqnnXXw {
   text-indent: 90vw;
   padding-right: 90vw;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .ticker span {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .ticker-xA8tAY4YSBmn2RTQqnnXXw span {
   margin: 0 1rem;
 }
 .engine-xA8tAY4YSBmn2RTQqnnXXw video {
@@ -102,23 +102,23 @@
 .engine-xA8tAY4YSBmn2RTQqnnXXw iframe body { 
   overflow:hidden; 
 }
-@keyframes enginefadeOut {
+@keyframes enginefadeOut-xA8tAY4YSBmn2RTQqnnXXw {
   0% {opacity: 1;}
   100% {opacity: 0;} 
 } 
-@keyframes enginefadeIn {
+@keyframes enginefadeIn-xA8tAY4YSBmn2RTQqnnXXw {
   0% {opacity: 0;}
   100% {opacity: 1;} 
 } 
 .engine-xA8tAY4YSBmn2RTQqnnXXw .fadeOut-xA8tAY4YSBmn2RTQqnnXXw {
-  animation-name: enginefadeOut;
+  animation-name: enginefadeOut-xA8tAY4YSBmn2RTQqnnXXw;
   animation-duration: 0.4s;
 }
 .engine-xA8tAY4YSBmn2RTQqnnXXw .fadeIn-xA8tAY4YSBmn2RTQqnnXXw {
-  animation-name: enginefadeIn;
+  animation-name: enginefadeIn-xA8tAY4YSBmn2RTQqnnXXw;
   animation-duration: 0.4s;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .info { 
+.engine-xA8tAY4YSBmn2RTQqnnXXw .info-xA8tAY4YSBmn2RTQqnnXXw { 
   position: absolute;
   bottom: 0;
   right: 0;
@@ -127,7 +127,7 @@
   font-family: "Bitstream Charter";
   z-index: 1000;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .debug {
+.engine-xA8tAY4YSBmn2RTQqnnXXw .debug-xA8tAY4YSBmn2RTQqnnXXw {
   position: absolute;
   top: 0;
   left: 0;
