@@ -146,13 +146,6 @@ var Engine = function(opts){
     },
   };
 
-  function makeBox(row) {
-    if(!_box[row]) {
-      _box[row] = document.createElement("div");
-      _box[row].className = row;
-      return _box[row];
-    }
-  }
 
   function dbg(what) {
     if(!_box.debug) { return; }
@@ -160,6 +153,13 @@ var Engine = function(opts){
     _box.debug.scrollTo(0,_box.debug.scrollHeight);
   }
 
+  function makeBox(row) {
+    if(!_box[row]) {
+      _box[row] = document.createElement("div");
+      _box[row].className = row + _key;
+      return _box[row];
+    }
+  }
   function layout() {
     //
     // <div class=top>
@@ -611,7 +611,7 @@ var Engine = function(opts){
     show: {
       weather: function(cloud, temp) {
         _box.widget.innerHTML = [
-          "<div class='app weather cloudy'>", 
+          "<div class='app weather-xA8tAY4YSBmn2RTQqnnXXw cloudy'>", 
           "<img src=/cloudy_" + cloud + ".svg>",
           temp + "&deg;",
           "</div>"
@@ -679,7 +679,7 @@ var Engine = function(opts){
       if(feed) {
         _box.ticker.style.display = 'block';
         if(feed.map) {
-          _box.ticker.innerHTML = "<div class=ticker-content>" + 
+          _box.ticker.innerHTML = "<div class=ticker-content-xA8tAY4YSBmn2RTQqnnXXw>" + 
             Widget.shuffle(feed).map(row => `<span>${row}</span>`) + "</div>";
         }
 
@@ -1018,7 +1018,6 @@ var Engine = function(opts){
     },
     Pause: function() {
       _res.pause = !_res.pause;
-      console.log("Clearing setTimeout for the next asset");
       clearTimeout(_stHandleMap.nextAsset.handle);
       _current.shown.pause();
     },
@@ -1070,7 +1069,6 @@ var Engine = function(opts){
       nextJob();
     },
     on: function(what, cb) {
-      console.log('>> on ' + what);
       if(_res.data[what]) {
         cb(_res.data[what]);
       } else { 
