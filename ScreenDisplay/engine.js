@@ -748,10 +748,10 @@ var Engine = function(opts){
         el = p.getBoundingClientRect(),
         box = p.parentNode.getBoundingClientRect();
 
-      if(box.height < p.height) {
+      if(box.height < p.height * .8) {
         opts.goal = p.height - box.height;
         scroll(opts, 'vertical');
-      } else if (box.width < p.width) {
+      } else if (box.width < p.width * .8) {
         opts.goal = p.width - box.width;
         scroll(opts, 'horizontal');
       }
