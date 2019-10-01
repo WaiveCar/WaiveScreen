@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="../../css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link href="../../css/sb-admin-2.min.css" rel="stylesheet">
+    <link rel=stylesheet href=https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css>
+    <link href="../../css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link rel=stylesheet href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <link href="../../css/jquery.schedule.min.css" rel="stylesheet">
+    <link href="../../common.css" rel="stylesheet">
+    <link href="/engine.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
+<link href="http://adcast/api/me.css" rel="stylesheet">
+    <title>Screen Admin</title>
+  </head>
+  <style>
+    #content-wrapper span { color: #000 }
+    .id,.version { font-family: monospace }
+    .edit { color: #999; cursor: pointer }
+    .last { text-align: right }
+    em { color: #555 }
+    .table td {padding: .75rem .2rem; }
+    td.edit { white-space: nowrap; }
+    .modal-body span {
+      min-width: 5rem; 
+      display: inline-block;
+      vertical-align: top;
+    }
+    .edit:hover { color: #000 }
+    #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
+    .editor {
+      display: none;
+    }
+    .show {
+      display: block;
+    }
+    .editor {
+      display: none;
+    }
+    #schedule {
+      height: 340px;
+    }
+    .center {
+      text-align: center;
+    }
+    .budget {
+      width: 11rem;
+    }
+    #content-wrapper span { color: #000 }
+    #image-upload { display: none }
+    .id,.version { font-family: monospace }
+    .edit { color: #999; cursor: pointer }
+    .last { text-align: right }
+    em { color: #555 }
+    .table td {padding: .75rem .2rem; }
+    td.edit { white-space: nowrap; }
+    .modal-body span {
+      min-width: 5rem; 
+      display: inline-block;
+      vertical-align: top;
+    }
+    .edit:hover { color: #000 }
+    #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
+    .editor {
+      display: none;
+    }
+    .show {
+      display: block;
+    }
+    #schedule {
+      height: 340px;
+    }
+    .remove-asset {
+      position:absolute;
+      right:0;
+      z-index:1
+    }
+    #engine { overflow: hidden; background: black }
+
+.screen {
+  background: black;
+  text-align: center;
+  position: relative;
+}
+.screen .bg {
+  width: 100%;
+}
+.preview-holder {
+  width: 100%;
+}
+ .controls { 
+   padding: 10px;
+   background: #334;
+   padding-bottom: 3px;
+   margin-bottom: 1.5rem;
+   border-radius: 0 0 6px 6px;
+ }
+ .asset-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  overflow: hidden;
+}
+  </style>
+  <body id="page-top">
+    <div class="modal fade" id="share-modal" tabindex="-1" role="dialog" aria-labelledby="share-modal-label" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Share This Campaign</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="campaign-url"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Add Password Protection</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <a name="Overview"></a>
+    <div class="menu-btn mt-1 top-bar">
+      <div class="top-bar-left" onclick="toggleMenu()">
+        <img src="../../svg/adcast.svg">
+      </div>
+      <span class="top-bar-right mt-2 with-links hidable-top-bar">
+      </span>
+    </div>
+    <div id="wrapper" class="offset-top">
+      <div id="menu" class="sticky-menu">
+      </div>
+      <div class="container-fluid">
+        <div id="campaign-preview">
+        </div>
+        <div class="alert alert-primary" id="notice" role="alert"></div>
+        <div class="d-flex justify-content-between">
+          <div class="d-flex justify-content-between campaign-show-sub mt-3">
+            <div class="advert-holder">
+              <div class="campaign-show-title"></div>
+            </div>
+            <div class="advert-holder">
+              <div class="advert-a"><!--Advert-A--></div>
+            </div>
+            <div class="advert-holder">
+              <div class="advert-b"><!--Advert-B--></div>
+            </div>
+          </div>
+          <div class="sub-users mt-3">
+            <img src="../../svg/share-alt.svg" data-toggle="modal" data-target="#share-modal" id="share-icon">
+          </div>
+        </div>
+
+        <div class="campaign-dates">
+        </div>
+        <div class="row mb-4">
+          <div class="col-4">
+          <button class="btn btn-lg btn-block control-btn">Pause</button>
+          </div>
+          <div class="col-4">
+            <button class="btn btn-lg btn-block control-btn">Extend</button>
+          </div>
+          <div class="col-4">
+            <button class="btn btn-lg btn-block control-btn">Modify</button>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <a name="Performance"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Performance</h2>
+                <div class="d-flex justify-content-center chart-contain">
+	                <div style="width: 50%;" class="mobile-chart">
+	                	<canvas id="campaign-chart-1"></canvas>
+	                </div>
+	                <div style="width: 20%;" class="mobile-chart">
+	                	<canvas id="campaign-chart-2"></canvas>
+	                </div>
+	                <div style="width: 20%;" class="mobile-chart">
+	                	<canvas id="campaign-chart-3"></canvas>
+	                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body d-flex justify-content-center">
+                <div class="performance-download">
+                  <div class="plate-count">
+                    506
+                  </div>
+                  <div class="plate-title mb-1">
+                    LICENSE PLATES
+                  </div>
+                  <button class="btn btn-outline-dark">Download</button>
+                </div>
+                <div class="performance-download">
+                  <div class="plate-count">
+                    1327
+                  </div>
+                  <div class="plate-title mb-1">
+                    MOBILE DEVICES
+                  </div>
+                  <button class="btn btn-outline-dark">Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <a name="Location"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Location</h2>
+
+                <select id="type" class="custom-select custom-select-lg">
+                  <option value="Circle">Circle</option>
+                  <option value="Polygon">Geofence</option>
+                </select>
+                <div style='width:100%;height:40vw' id='map'></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- We are not doing this section for now
+        <div class="row mb-4">
+          <a name="Controls"></a>
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Controls</h2>
+
+                <div class="button-group">
+                  <button class="btn btn-primary">Pause</button>
+                  <button class="btn btn-primary">Extend</button>
+                </div>
+                <input type="range" class="form-control-range mt-4" name="focus"><label for="focus">focus</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        -->
+        <div class="row mb-4 creatives-wrapper">
+          <a name="creatives"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Add Creatives</h2>
+                <div class="card-body">
+                  <div class="row no-gutters">
+                    <div class="engine-holder">
+                      <div id="engine"></div>
+                    </div>
+                  </div>
+                  <div class="row no-gutters controls">
+                    <div class="col-6">
+                      <div class="btn-group" role="group" aria-label="Basic example">
+                        <button type="button" class="rewind btn btn-dark">
+                          <i class="fas fa-backward"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="float-right">
+                        <div class="btn-group ratios" role="group" style='margin-bottom:0.5rem;margin-right:1rem'>
+                          <button type="button" class="btn btn-dark">3:2</button>
+                          <button type="button" class="btn btn-dark">16:9</button>
+                          <button type="button" class="btn btn-dark active">Car</button>
+                        </div>
+                        <label for="image-upload" class="btn btn-dark">
+                          <i class="fas fa-plus-square"></i> Image/Video
+                        </label>
+                        <input id="image-upload" multiple class="form-control-file" type="file" name="ad-asset" accept="image/*,video/*">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row justify-content-md-center preview-collection">
+                    <div class="preview-holder-3-2 col-4">
+                      <h4>3:2</h4>
+                      <div class="assets"></div>
+                    </div>
+                    <div class="preview-holder-16-9 col-4">
+                      <h4>16:9</h4>
+                      <div class="assets"></div>
+                    </div>
+                    <div class="preview-holder-car col-4">
+                      <h4>Car</h4>
+                      <div class="assets"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!--
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Automatic creation</h2>
+                <div class="card-body">
+                  <div class="row no-gutters">
+                    <div class="col-lg-12" style=height:20vw;background:yellow>
+                    </div>
+                    Pause/Play
+                  </div>
+
+                  Log in with instagram
+
+                  Show images
+
+                  Select images
+
+                  Confirm
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        -->
+
+
+        <div class="row mb-4">
+          <a name="Budget"></a>
+          <div class="col-lg-12">
+            <div class="card" id="campaign-budget">
+              <div class="card-body">
+                <h2 class="card-title">Duration/Budget</h2>
+                  <div class="form-group row" id="budget-nums">
+                    <label for="budget" class="col-2 col-form-label">Budget:</label>
+                    <input type="number" class="col-2 form-control" placeholder="$ / Month" id="budget">
+                  </div>
+                <div id="schedule"></div>
+                <div class="card-text">
+                  <div class="form-group row" id="budget-nums">
+                    <label for="start-date" class="col-2 col-form-label">Start Date:</label>
+                    <input type="date" class="col-4 form-control" placeholder="Start Date" id="start-date">
+                    <label for="end-date" class="col-2 col-form-label">End Date:</label>
+                    <input type="date" class="col-4 form-control" placeholder="End Date" id="end-date">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <a name="Summary"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title">Summary</h2>
+                <div class="card-text">
+                  <div id='summary'>
+                  CPM:
+                  <div class="row no-gutters mb-2" id="cpm"> </div>
+                  Estimated Impressions:
+                  <div class="row no-gutters mb-2" id="impressions"> </div>
+                  Guaranteed Hours
+                  <div class="row no-gutters mb-2" id="hours"> </div>
+                  Price
+                  <div class="row no-gutters mb-2" id="price"> </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4 p-manager">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="card-text">
+                  <button type="button" class="btn btn-primary btn-lg">Update Campaign</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <a name="Billing"></a>
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="card-title mb-3">Billing & Invoices</h2>
+                <b class="black">Balance <span class="amount">$577.92</span></b>
+                <div class="table-responsive billing-table mt-4">
+                  <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                      <tr>
+                        <th style="font-weight: 600" scope="col">id</th>
+                        <th style="font-weight: 600" scope="col">date</th>
+                        <th style="font-weight: 600" scope="col">cost</th>
+                        <th style="font-weight: 600" scope="col">paid</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="screen-table-body">
+                      <tr>
+                        <td>4</td>
+                        <td>9/22/2019</td>
+                        <td>$894.15</td>
+                        <td class="center"><input type="checkbox" checked></td>
+                        <td class="center"><button class="btn btn-primary rounded-btn">download</button></td>
+                      </tr>
+                      <tr>
+                        <td>15</td>
+                        <td>10/1/2019</td>
+                        <td>$577.92</td>
+                        <td class="center"><input type="checkbox"></td>
+                        <td class="center"><button class="btn btn-primary rounded-btn">download</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script
+    src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="../../js/jquery.easing.min.js"></script>
+<script src="http://adcast/api/me.js"></script>
+    <script src="../../js/sb-admin-2.min.js"></script>
+    <script src="../../js/jquery.dataTables.min.js"></script>
+    <script src="../../js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+    <script src="./../../js/jquery.schedule.min.js"></script>
+	  <script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
+    <script src="../sharedLogic.js"></script>
+    <script src="/map.js?1"></script>
+    <script src="/engine.js"></script>
+    <script src="/formBuilder.js"></script>
+    <script src="../../menu.js"></script>
+    <script src="./index.js"></script>
+    <script src="./charts.js"></script>
+    </body>
+</html>
+
