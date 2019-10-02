@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block topbar %}
+<span class="top-bar-right ml-4 mt-2">
+  <div class="vertical-flex">
+    <span class="company-name">Screens</span>
+  </div>
+  <div class="vertical-flex">
+  </div>
+</span>
+{% endblock %}
+{% block content %}
+<style>
+  #content-wrapper span { color: #000 }
+  .id,.version { font-family: monospace }
+  .edit { color: #999; cursor: pointer }
+  .last { text-align: right }
+  em { color: #555 }
+  .table td {padding: .75rem .2rem; }
+  td.edit { white-space: nowrap; }
+  .modal-body span {
+    min-width: 5rem; 
+    display: inline-block;
+    vertical-align: top;
+  }
+  .edit:hover { color: #000 }
+  #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none;}
+  .left {
+    color: #858796;
+  }
+  .right {
+    color: black;
+  }
+</style>
+<div class="container-fluid model-list">
+  <h4 id="screen-count"></h4>
+  <div class="row mb-4">
+    <div class="col-lg-12 d-flex justify-content-center">
+      <div id="map" style="width: 100%; height: 30vw"></div>
+    </div>
+  </div>
+  <div class="row mb-4">
+    <div class="col-lg-12 d-flex justify-content-center">
+      <div class="card" style="width: 28%">
+        <div class="card-body">
+          <select name="time-period" class="custom-select">
+            <option value="3-months" selected>Last 3 Months</option>
+            <option value="30-days">Last 30 Days</option>
+            <option value="7-days">Last 7 Days</option>
+          </select>
+          <div class="d-flex flex-column justify-content-around mt-4" style="height: 70%"> 
+            <div class="d-flex justify-content-between">
+              <div class="left">Revenue Total</div>
+              <div class="right">$512,287 <span class="up-right"><i class="fas fa-arrow-up"></i></i> 3%</span></div>
+            </div>
+            <div class="d-flex justify-content-between">
+              <div class="left">Per Screen</div>
+              <div class="right">$10,341 <span class="down-right"><i class="fas fa-arrow-down"></i></i> 1%</span></div>
+            </div>
+            <div class="d-flex justify-content-between">
+              <div class="left">Impressions Total</div>
+              <div class="right">1,511,513 <span class="up-right"><i class="fas fa-arrow-up"></i></i>2%</span></div>
+            </div>
+            <div class="d-flex justify-content-between">
+              <div class="left">Per Screen</div>
+              <div class="right">74,302 <span class="down-right"><i class="fas fa-arrow-down"></i></i> 4%</span></div>
+            </div>
+            <div class="d-flex justify-content-between">
+              <div class="left">Best Performance</div>
+              <div class="right">#13</div>
+            </div>
+            <div class="d-flex justify-content-between">
+              <div class="left">Worst Performance:</div>
+              <div class="right">#101</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-center chart-contain">
+            <div class="mobile-chart">
+            	<canvas id="screen-chart-1"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="content-wrapper" class="d-flex flex-column">
+    <h3>
+      <div class="alert alert-primary" id="notice" role="alert"></div>
+    </h3>
+    <div class="d-flex justify-content-flex-start">
+      <input type="text" placeholder="Search Screens" class="form-control col-md-3">
+      <button class="btn btn-primary">Search</button>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0" style="font-family: monospace">
+        <thead>
+          <tr>
+            <th style="font-weight: 600" scope="col">uid (last 4)</th>
+            <th style="font-weight: 600" scope="col">uptime</th>
+            <th style="font-weight: 600" scope="col">location</th>
+            <th style="font-weight: 600" scope="col">phone</th>
+          </tr>
+        </thead>
+        <tbody id="screen-table-body">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block additionalScripts %}
+  <script src="{{ url_for('static', filename='js/screensIndexCharts.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/screensIndex.js') }}"></script>
+{% endblock %}
