@@ -1,47 +1,5 @@
 {% extends "base.html" %}
-{% block topbar %}
-<span class="top-bar-right ml-4 mt-2">
-  <div class="vertical-flex">
-    <span class="company-name">Brands</span>
-  </div>
-  <div class="vertical-flex">
-    <a href="/brands/create" class="new-campaign-btn p-manager">New Brand</a>
-  </div>
-</span>
-{% endblock %}
-{% block content %}
-<style>
-  #content-wrapper span { color: #000 }
-  .id,.version { font-family: monospace }
-  .last { text-align: right }
-  .table td {padding: .75rem .2rem; }
-  td.edit { white-space: nowrap; }
-  .modal-body span {
-    min-width: 5rem; 
-    display: inline-block;
-    vertical-align: top;
-  }
-  .edit:hover { color: #000 }
-  #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
-</style>
-<div class="container-fluid model-list">
-  <div class="alert alert-primary" id="notice" role="alert"></div>
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-  </div>
-  <div id="content-wrapper" class="d-flex flex-column">
-    <h3>
-      <div class="alert alert-primary" id="notice" role="alert"></div>
-    </h3>
-
-    <div class="table-responsive">
-      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
-        <thead id="table-head"> </thead>
-        <tbody id="table-body"> </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-{% endblock %}
-{% block additionalScripts %}
-<script src="{{ url_for('static', filename='js/brandsIndex.js') }}"></script>
-{% endblock %}
+{% set name = "Brand" %}    
+{% set title = "brand" %}    
+{% set js_file_path = "js/brandsIndex.js" %}
+{% include "assetIndex.html" %}
