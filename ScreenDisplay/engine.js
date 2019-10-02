@@ -146,13 +146,6 @@ var Engine = function(opts){
     },
   };
 
-  function makeBox(row) {
-    if(!_box[row]) {
-      _box[row] = document.createElement("div");
-      _box[row].className = row;
-      return _box[row];
-    }
-  }
 
   function dbg(what) {
     if(!_box.debug) { return; }
@@ -160,6 +153,13 @@ var Engine = function(opts){
     _box.debug.scrollTo(0,_box.debug.scrollHeight);
   }
 
+  function makeBox(row) {
+    if(!_box[row]) {
+      _box[row] = document.createElement("div");
+      _box[row].className = row + _key;
+      return _box[row];
+    }
+  }
   function layout() {
     //
     // <div class=top>
@@ -224,17 +224,7 @@ var Engine = function(opts){
           e.target.style.width = '100%';
         } else {
           e.target.style.height = '100%';
-        }/*
-          var maxHeight = _res.target.width * e.target.height / e.target.width;
-          e.target.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
-          e.target.style.width = _res.target.width + "px";
-          //console.log(_res.target.width, e.target.height, e.target.width, e.target.src);
-        } else { 
-          var maxWidth = _res.target.height * e.target.width / e.target.height;
-          e.target.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
-          e.target.style.height = _res.target.height + "px";
         }
-        */
       }
       asset.active = true;
       obj.active = true;
@@ -245,7 +235,22 @@ var Engine = function(opts){
     // TODO: per asset custom duration 
     asset.duration = asset.duration || _res.duration;
     obj.duration += asset.duration;
-    asset.run = _passthru;
+    asset.run = function(cb) {
+      console.log("HERE");
+      var container = _res.container.getBoundingClientRect();
+      var parentratio = container.width/container.height;
+      var ratio = img.width / img.height;
+      if(parentratio > ratio) {
+        img.style.width = '100%';
+        img.style.height = 'auto';
+      } else {
+        img.style.width = 'auto';
+        img.style.height = '100%';
+      }
+      if(cb) {
+        cb();
+      }
+    }
     asset.pause = asset.rewind = asset.play = _nop;
     asset.dom = img;
     asset.type = 'image';
@@ -606,7 +611,7 @@ var Engine = function(opts){
     show: {
       weather: function(cloud, temp) {
         _box.widget.innerHTML = [
-          "<div class='app weather cloudy'>", 
+          "<div class='app weather-xA8tAY4YSBmn2RTQqnnXXw cloudy'>", 
           "<img src=/cloudy_" + cloud + ".svg>",
           temp + "&deg;",
           "</div>"
@@ -654,6 +659,8 @@ var Engine = function(opts){
       }
     },
     ticker: function(feed) {
+      var amount =_res.slowCPU ? 3 : 1.4,
+          delay = _res.slowCPU ? 70 : 30;
       if(arguments.length === 0) {
         return;
       }
@@ -663,18 +670,18 @@ var Engine = function(opts){
         clearInterval(Widget._ticker);
         Widget._ticker = setInterval(function(){
           var before = _box.ticker.scrollLeft;
-          _box.ticker.scrollLeft += 1.4
+          _box.ticker.scrollLeft += amount;
           if (_box.ticker.scrollLeft === before) {
             clearInterval(Widget._ticker);
             scroll();
           }
-        }, 30);
+        }, delay);
       }
       Widget.updateView('ticker', feed);
       if(feed) {
         _box.ticker.style.display = 'block';
         if(feed.map) {
-          _box.ticker.innerHTML = "<div class=ticker-content>" + 
+          _box.ticker.innerHTML = "<div class=ticker-content-xA8tAY4YSBmn2RTQqnnXXw>" + 
             Widget.shuffle(feed).map(row => `<span>${row}</span>`) + "</div>";
         }
 
@@ -722,7 +729,7 @@ var Engine = function(opts){
         dom  = obj.dom,
         goal = obj.goal,
         time = obj.duration || 7500,
-        period = 1000 / (_res.slowCPU ? 14 : 30),
+        period = 1000 / (_res.slowCPU ? 14 : 40),
         rounds = time / period,
         step = goal / rounds,
         ix = 0;
@@ -733,7 +740,7 @@ var Engine = function(opts){
         if (ix++ >= rounds) {
           clearInterval(scrollIval);
         }
-        dom.style[ anchor ] = -(ix * step) + "px";
+        dom.style[ anchor ] = -(Math.min(ix * step, goal)) + "px";
       }, period);
     }
     p.style.marginTop = p.style.marginLeft = 0;
@@ -743,10 +750,10 @@ var Engine = function(opts){
         el = p.getBoundingClientRect(),
         box = p.parentNode.getBoundingClientRect();
 
-      if(box.height < p.height) {
+      if(box.height < p.height * .8) {
         opts.goal = p.height - box.height;
         scroll(opts, 'vertical');
-      } else if (box.width < p.width) {
+      } else if (box.width < p.width * .8) {
         opts.goal = p.width - box.width;
         scroll(opts, 'horizontal');
       }
@@ -1014,7 +1021,6 @@ var Engine = function(opts){
     },
     Pause: function() {
       _res.pause = !_res.pause;
-      console.log("Clearing setTimeout for the next asset");
       clearTimeout(_stHandleMap.nextAsset.handle);
       _current.shown.pause();
     },
@@ -1066,7 +1072,6 @@ var Engine = function(opts){
       nextJob();
     },
     on: function(what, cb) {
-      console.log('>> on ' + what);
       if(_res.data[what]) {
         cb(_res.data[what]);
       } else { 
