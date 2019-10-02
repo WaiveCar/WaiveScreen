@@ -20,15 +20,19 @@
   <style>
   </style>
   <body id="page-top">
+    {% if not exclude_top_bar %}
     <div class="menu-btn mt-1 top-bar">
       <div class="top-bar-left" onclick="toggleMenu()">
         <img src="{{ url_for('static', filename='assets/adcast.svg') }}">
       </div>
        {% block topbar %}{% endblock %}
     </div>
-    <div id="wrapper" class="offset-top">
+    {% endif %}
+    <div id="wrapper" class="{{'offset-top' if not exclude_offset }}">
+      {% if not exclude_top_bar %}
       <div id="menu">
       </div>
+      {% endif %}
       {% block content %}{% endblock %}
     </div>  
     <script

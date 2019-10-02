@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% set exclude_top_bar = True %}    
+{% set exclude_offset = True %}    
+
+{% block content %}
+<style>
+  #content-wrapper span { color: #000 }
+  .id,.version { font-family: monospace }
+  .edit { color: #999; cursor: pointer }
+  .last { text-align: right }
+  .table td {padding: .75rem .2rem; }
+  td.edit { white-space: nowrap; }
+  .modal-body span {
+    min-width: 5rem; 
+    display: inline-block;
+    vertical-align: top;
+  }
+  .edit:hover { color: #000 }
+  #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
+  .btn, .form-control {
+    border-radius: 0!important;
+  }
+  .btn:hover {
+    background-color: black;
+  }
+  .logo-holder {
+    margin-bottom: 5rem;
+  }
+</style>
+<div class="container-fluid d-flex flex-column justify-content-center" style="height: 90vh">
+  <div class="d-flex justify-content-center logo-holder">
+    <img src="{{ url_for('static', filename='assets/adcast.svg') }}" style="max-width: 10rem">
+  </div>
+  <div class="row d-flex justify-content-center">
+    <form method=post action=http://adcast/api/signup?next=/brands>
+      <div class="form-fields">
+      </div>
+      <div class="d-flex justify-content-center">
+        <button type="submit" class="btn btn-outline-dark">Sign up</button>
+      </div>
+      <Br/> <center> <a href="/signin">Sign In</a></center>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block additionalScripts %}
+<script src="{{ url_for('static', filename='js/signup.js') }}"></script>
+{% endblock %}
