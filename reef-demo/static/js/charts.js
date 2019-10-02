@@ -96,7 +96,7 @@ function chart1() {
   ctx.canvas.width = 1000;
   ctx.canvas.height = 300;
 
-  var color = Chart.helpers.color;
+  var color = window.chartColors.yellow;
   var cfg = {
     type: 'bar',
     data: {

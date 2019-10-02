@@ -1,4 +1,14 @@
 {% extends "base.html" %}
+{% block topbar %}
+<span class="top-bar-right ml-4 mt-2">
+  <div class="vertical-flex p-manager">
+    <span class="company-name">Campaigns</span>
+  </div>
+  <div class="vertical-flex p-manager">
+    <a href="/campaigns/create" class="new-campaign-btn">New Campaign</a>
+  </div>
+</span>
+{% endblock %}
 {% block content %}
   <style>
     form { float: right }

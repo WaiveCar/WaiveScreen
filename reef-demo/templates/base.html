@@ -22,10 +22,9 @@
   <body id="page-top">
     <div class="menu-btn mt-1 top-bar">
       <div class="top-bar-left" onclick="toggleMenu()">
-        <img src="/assets/adcast.svg">
+        <img src="{{ url_for('static', filename='assets/adcast.svg') }}">
       </div>
-      <span class="top-bar-right ml-4 mt-2">
-      </span>
+       {% block topbar %}{% endblock %}
     </div>
     <div id="wrapper" class="offset-top">
       <div id="menu">
@@ -43,12 +42,14 @@
     <script src="/js/sb-admin-2.min.js"></script>
     <script src="/js/jquery.dataTables.min.js"></script>
     <script src="/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+	  <script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
     <script src="/js/jquery.schedule.min.js"></script>
     <script src="/js/map.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-	  <script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
     <script src="/js/formBuilder.js"></script>
     <script src="/js/menu.js"></script>
     <script src="/js/engine.js"></script>
