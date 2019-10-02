@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block topbar %}
+<span class="top-bar-right ml-4 mt-2">
+  <div class="vertical-flex">
+    <span class="company-name head">New {{title}}</span>
+  </div>
+  <div class="vertical-flex">
+  </div>
+</span>
+{% endblock %}
+{% block content %}
+<style>
+  #content-wrapper span { color: #000 }
+  .id,.version { font-family: monospace }
+  .edit { color: #999; cursor: pointer }
+  .last { text-align: right }
+  em { color: #555 }
+  .table td {padding: .75rem .2rem; }
+  td.edit { white-space: nowrap; }
+  .modal-body span {
+    min-width: 5rem; 
+    display: inline-block;
+    vertical-align: top;
+  }
+  .edit:hover { color: #000 }
+  #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
+  .vertical-flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+</style>
+<div class="container-fluid">
+  <div id="content-wrapper" class="d-flex flex-column">
+    <h3>
+      <div class="alert alert-primary" id="notice" role="alert"></div>
+    </h3>
+
+    <form id=createForm method=post>
+      Loading...
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block additionalScripts %}
+<script>
+  window.onload = function(){
+    doit('{{name}}', {
+      fields: { role: ['Manager', 'Admin'] },
+      fillNhide: ['organization_id', 'brand_id', 'role']
+    });
+  }
+</script>
+{% endblock %}

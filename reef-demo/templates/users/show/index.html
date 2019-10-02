@@ -1,32 +1,5 @@
 {% extends "base.html" %}
-{% block topbar %}
-<span class="top-bar-right ml-4 mt-2">
-</span>
-{% endblock %}
-{% block content %}
-<style>
-  #content-wrapper span { color: #000 }
-  .id,.version { font-family: monospace }
-  .edit { color: #999; cursor: pointer }
-  .last { text-align: right }
-  em { color: #555 }
-  .table td {padding: .75rem .2rem; }
-  td.edit { white-space: nowrap; }
-  .modal-body span {
-    min-width: 5rem; 
-    display: inline-block;
-    vertical-align: top;
-  }
-  .edit:hover { color: #000 }
-  #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
-</style>
-<div class="container-fluid">
-  <div class="alert alert-primary" id="notice" role="alert"></div>
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800" id="brand-title"></h1>
-  </div>
-</div>
-{% endblock %}
-{% block additionalScripts %}
-<script src="{{ url_for('static', filename='js/usersShow.js') }}"></script>
-{% endblock %}
+{% set name = "user" %}    
+{% set title = "Users" %}    
+{% set js_file_path = "js/usersShow.js" %}
+{% include "assetShow.html" %}
