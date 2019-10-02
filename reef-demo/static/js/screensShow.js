@@ -4,11 +4,10 @@ function renderScreen(screen) {
   fetch(`https://geocode.xyz/${screen.lat},${screen.lng}?geoit=json`)
     .then(resp => resp.json())
     .then(json => {
-      console.log(json);
       const details = document.querySelector('.screen-details');
       details.innerHTML = `
         <div class="d-flex justify-content-between mt-4">
-          <img src="/screen_image.jpg"> 
+          <img src="/static/assets/screen_image.jpg" }}> 
           <div class="screen-details-text"> 
             <div class="d-flex">
               <div class="left col-5">
@@ -52,7 +51,7 @@ function renderScreen(screen) {
               </div>
             </div>
             <div>
-              <img src="/busy_times.png">
+              <img src="/static/assets/busy_times.png" }}>
             </div>
           </div>
         </div>
