@@ -30,6 +30,7 @@
     <div id="wrapper" class="offset-top">
       <div id="menu">
       </div>
+      {% block content %}{% endblock %}
     </div>  
     <script
     src="https://code.jquery.com/jquery-3.4.1.min.js"
@@ -47,9 +48,11 @@
     <script src="/js/jquery.schedule.min.js"></script>
     <script src="/js/map.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	  <script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
     <script src="/js/formBuilder.js"></script>
     <script src="/js/menu.js"></script>
     <script src="/js/engine.js"></script>
+    {% block additionalScripts %}{% endblock %}
     </body>
 </html>
 

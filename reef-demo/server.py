@@ -1,11 +1,11 @@
 from flask import Flask, send_from_directory, render_template
 import os
 
-app = Flask(__name__, static_folder='./')
+app = Flask(__name__)
 
-@app.route('/')
-def serve(route_path=None):
-  return render_template('base.html')
+@app.route('/<path:path>')
+def serve(path):
+    return render_template(path + '/index.html')
 
 if __name__ == '__main__':
   app.run()
