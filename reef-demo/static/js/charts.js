@@ -103,9 +103,7 @@ function chart1() {
       datasets: [
         {
           label: 'Total Campaign Impression Count',
-          backgroundColor: color(window.chartColors.yellow)
-            .alpha(0.5)
-            .rgbString(),
+          backgroundColor: window.chartColors.yellow,
           borderColor: window.chartColors.yellow,
           data: data,
           type: 'line',
