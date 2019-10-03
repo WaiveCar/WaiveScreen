@@ -2,3 +2,8 @@
 {% set title = "Organization" %}    
 {% set js_file_path = "/js/organizationsIndex.js" %}
 {% include "assetIndex.html" %}
+{% block additionalScripts %}
+<script>
+  tableIt('organizations');
+</script>
+{% endblock %}

@@ -1,4 +1,8 @@
 {% set name = "brand" %}    
 {% set title = "Brand" %}    
-{% set js_file_path = "/js/brandsIndex.js" %}
 {% include "assetIndex.html" %}
+{% block additionalScripts %}
+<script>
+  tableIt('brands', {perms: {organization_id: 'admin', balance: 'admin'}});
+</script>
+{% endblock %}

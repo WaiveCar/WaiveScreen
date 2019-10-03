@@ -2,3 +2,8 @@
 {% set title = "User" %}    
 {% set js_file_path = "/js/usersIndex.js" %}
 {% include "assetIndex.html" %}
+{% block additionalScripts %}
+<script>
+  tableIt('users');
+</script>
+{% endblock %}
