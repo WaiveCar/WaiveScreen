@@ -28,26 +28,33 @@ then
   echo "Unable to install the temp ssh key for access to the Raspberry Pi" && exit 1
 fi
 
-${SSH} 'echo "force_turbo=1" >> /boot/firmware/config.txt'
-${SSH} reboot
+#${SSH} 'echo "force_turbo=1" >> /boot/firmware/config.txt'
+#${SSH} reboot
 
-sleep 30
+#sleep 30
 
 ${SCP} ${DIR}/../../Linux/fai-config/files/home/.ssh/{config,github} ${RPI}:.ssh/
 ${SSH} << EOF
 chmod 0600 .ssh/github
-dd if=/dev/zero of=/swapfile bs=1024 count=1048576
-chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
-echo "/swapfile       none    swap sw 0 0" >> /etc/fstab
+#dd if=/dev/zero of=/swapfile bs=1024 count=1048576
+#chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+#echo "/swapfile       none    swap sw 0 0" >> /etc/fstab
 apt update && apt dist-upgrade -y && apt install -y rsync fai-client git gpg sudo python3-pip
 git clone git@github.com:WaiveCar/WaiveScreen.git
 cd WaiveScreen && git checkout 202-raspbian-install && cd ..
 mkdir -p /srv/fai/config
-sed -i '/^\(pandas\|opencv\|numpy\)/d' WaiveScreen/ScreenDaemon/requirements.txt
+#sed -i '/^\(pandas\|opencv\|numpy\)/d' WaiveScreen/ScreenDaemon/requirements.txt
 NONET=1 WaiveScreen/tools/server/syncer.sh pip
 fai -v -N -c DEBIAN -s file:///srv/fai/config softupdate
 systemctl disable location-daemon hostapd isc-dhcp-server
 EOF
+
+# compile Notion on Raspbian
+# apt install build-essential lua5.1 liblua5.1-0-dev libx11-dev libxext-dev libsm-dev gettext libxinerama-dev libxrandr-dev libxft-dev
+# git clone git clone https://github.com/raboof/notion
+# cd notion
+# make
+# make install
 
 # Cleanup after we're done
 #${SSH} << EOF

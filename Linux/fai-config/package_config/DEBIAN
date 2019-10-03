@@ -85,8 +85,12 @@ policykit-1
 xosd-bin
 unattended-upgrades
 
-# Raspberry Pi
+# Raspberry Pi - Debian
 firmware-linux-nonfree
+
+# Raspberry Pi - Raspbian
+chromium-browser
+xserver-xorg-video-fbturbo
 
 PACKAGES install NONFREE
 # you may want these non-free kernel drivers
