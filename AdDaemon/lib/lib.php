@@ -756,19 +756,6 @@ function upload_s3($file) {
   return $name;
 }
 
-function guarded_show($what) {
-  global $SCHEMA;
-  $clause = [];
-  if($user = getUser()) {
-    foreach(['org_id','brand_id'] as $limit) {
-      if(isset($SCHEMA[$what][$limit]) && !empty($user[$limit])) {
-        $clause[$limit] = $user[$limit];
-      }
-    }
-  }
-  return show($what, $clause);
-}
-
 function show($what, $clause = []) {
   global $SCHEMA;
   $me = me();
