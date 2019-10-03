@@ -1,5 +1,5 @@
 var tableIt = (function() {
-  var _map = {}, wordMap = {org: 'organization'};
+  var _map = {};
 
   function id2name(what){
     if(_map[what]) {
@@ -12,7 +12,7 @@ var tableIt = (function() {
       $(`td.${what}_id`).each(function(ix, el) {
         var myid = el.innerHTML;
         if(myid !== "null") {
-          el.innerHTML = `<a href='/${what}/show/?id=${myid}'>${_map[myid].name}</a>`;
+          el.innerHTML = `<a data=blah href='/${what}s/show/?id=${myid}'>${_map[myid].name}</a>`;
         } else {
           el.innerHTML = "&mdash;";
         }
@@ -28,7 +28,6 @@ var tableIt = (function() {
     var pre = 'http://adcast/';
 
     $.getJSON(`${pre}/api/${table}`, function(res) {
-      console.log(res);
       
       if(res.length === 0) {
         let singular = table.slice(0,-1);
