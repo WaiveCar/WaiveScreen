@@ -17,13 +17,3 @@
   </div>
 </div>
 {% endblock %}
-{% block additionalScripts %}
-<script>
-  window.onload = function(){
-    doit('{{name}}', {
-      fields: { role: ['Manager', 'Admin'] },
-      fillNhide: ['organization_id', 'brand_id', 'role']
-    });
-  }
-</script>
-{% endblock %}

@@ -1,4 +1,13 @@
-{% extends "base.html" %}
 {% set name = "brand" %}    
 {% set title = "Brand" %}    
 {% include "assetCreate.html" %}
+{% block additionalScripts %}
+<script>
+  window.onload = function(){
+    doit('brand', {
+      fillNhide: ['organization_id'],
+      hide: ['balance']
+    });
+  }
+</script>
+{% endblock %}
