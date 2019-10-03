@@ -15,9 +15,16 @@ def serve(path):
   elif os.path.exists("{}/{}".format(ROOT, path)):
     return send_from_directory(ROOT, path)
 
+  elif os.path.exists("{}/{}/index.html".format(ROOT, path)):
+    return send_from_directory(ROOT, path + "/index.html")
+
   else:
     logging.warning("Can't find {}/{}".format(ROOT,path))
     return "not found"
+
+@app.route('/')
+def root():
+  return serve('/')
 
 if __name__ == '__main__':
   app.run()
