@@ -1,4 +1,13 @@
-{% extends "base.html" %}
 {% set name = "user" %}    
 {% set title = "User" %}    
 {% include "assetCreate.html" %}
+{% block additionalScripts %}
+<script>
+  window.onload = function(){
+    doit('user', {
+      fields: { role: ['Manager', 'Admin'] },
+      fillNhide: ['organization_id', 'brand_id', 'role']
+    });
+  }
+</script>
+{% endblock %}
