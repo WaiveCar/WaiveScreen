@@ -4,69 +4,69 @@
 </span>
 {% endblock %}
 {% block content %}
-  <style>
-    #content-wrapper span { color: #000 }
-    .id,.version { font-family: monospace }
-    .edit { color: #999; cursor: pointer }
-    .last { text-align: right }
-    em { color: #555 }
-    .table td {padding: .75rem .2rem; }
-    td.edit { white-space: nowrap; }
-    .modal-body span {
-      min-width: 5rem; 
-      display: inline-block;
-      vertical-align: top;
-    }
-    .edit:hover { color: #000 }
-    #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
-    .editor {
-      display: none;
-    }
-    .show {
-      display: block;
-    }
-    .editor {
-      display: none;
-    }
-    #schedule {
-      height: 340px;
-    }
-    .center {
-      text-align: center;
-    }
-    .budget {
-      width: 11rem;
-    }
-    #content-wrapper span { color: #000 }
-    #image-upload { display: none }
-    .id,.version { font-family: monospace }
-    .edit { color: #999; cursor: pointer }
-    .last { text-align: right }
-    em { color: #555 }
-    .table td {padding: .75rem .2rem; }
-    td.edit { white-space: nowrap; }
-    .modal-body span {
-      min-width: 5rem; 
-      display: inline-block;
-      vertical-align: top;
-    }
-    .edit:hover { color: #000 }
-    #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
-    .editor {
-      display: none;
-    }
-    .show {
-      display: block;
-    }
-    #schedule {
-      height: 340px;
-    }
-    .remove-asset {
-      position:absolute;
-      right:0;
-      z-index:1
-    }
-    #engine { overflow: hidden; background: black }
+<style>
+#content-wrapper span { color: #000 }
+.id,.version { font-family: monospace }
+.edit { color: #999; cursor: pointer }
+.last { text-align: right }
+em { color: #555 }
+.table td {padding: .75rem .2rem; }
+td.edit { white-space: nowrap; }
+.modal-body span {
+  min-width: 5rem; 
+  display: inline-block;
+  vertical-align: top;
+}
+.edit:hover { color: #000 }
+#notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
+.editor {
+  display: none;
+}
+.show {
+  display: block;
+}
+.editor {
+  display: none;
+}
+#schedule {
+  height: 340px;
+}
+.center {
+  text-align: center;
+}
+.budget {
+  width: 11rem;
+}
+#content-wrapper span { color: #000 }
+#image-upload { display: none }
+.id,.version { font-family: monospace }
+.edit { color: #999; cursor: pointer }
+.last { text-align: right }
+em { color: #555 }
+.table td {padding: .75rem .2rem; }
+td.edit { white-space: nowrap; }
+.modal-body span {
+  min-width: 5rem; 
+  display: inline-block;
+  vertical-align: top;
+}
+.edit:hover { color: #000 }
+#notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
+.editor {
+  display: none;
+}
+.show {
+  display: block;
+}
+#schedule {
+  height: 340px;
+}
+.remove-asset {
+  position:absolute;
+  right:0;
+  z-index:1
+}
+#engine { overflow: hidden; background: black }
 
 .screen {
   background: black;
@@ -98,7 +98,7 @@
   flex-direction: column;
   overflow: hidden;
 }
-  </style>
+</style>
 <div class="container-fluid">
   <div id="campaign-preview">
   </div>
@@ -115,7 +115,7 @@
       </div>
     </div>
     <div class="sub-users mt-3">
-      <img src="{{ url_for('static', filename='assets/share-alt.svg') }}" data-toggle="modal" data-target="#share-modal" id="share-icon">
+      <img src="assets/share-alt.svg" data-toggle="modal" data-target="#share-modal" id="share-icon">
     </div>
   </div>
 
@@ -419,7 +419,7 @@
     </div>
 {% endblock %}
 {% block additionalScripts %}
-  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/sharedLogic.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/campaignsShow.js') }}"></script>
+  <script src="/js/campaignCharts.js"></script>
+  <script src="/js/sharedLogic.js"></script>
+  <script src="/js/campaignsShow.js"></script>
 {% endblock %}
