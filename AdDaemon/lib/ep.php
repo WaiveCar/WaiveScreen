@@ -28,15 +28,12 @@ try {
     jemit(doSuccess('uploaded'));
   } else if($func == 'me.css') {
     emit_css();
-    exit;
   } else if($func == 'me.js') {
     emit_js();
-    exit;
-  } else if($func == 'location') {
-    echo(file_get_contents('http://basic.waivecar.com/location.php?' . http_build_query($all)) );
-    exit;
   } else if($func == 'me') {
     jemit(doSuccess($_SESSION));
+  } else if($func == 'location') {
+    echo(file_get_contents('http://basic.waivecar.com/location.php?' . http_build_query($all)) );
   } else if($func == 'feed') {
     jemit(json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . "./reef-demo/APIWidget/widgetfiles/parsed_widget_data.json")));
   } else if($func == 'instagram') {
@@ -50,11 +47,9 @@ try {
       ], 'POST');
       $_SESSION['instagram'] = $token;
       header('Location: /campaigns/create');
-      exit;
     } else if(isset($all['logout'])) {
       unset( $_SESSION['instagram'] );
       header('Location: /campaigns/create');
-      exit;
     } else if(isset($all['info'])) {
       $token = aget($_SESSION, 'instagram.access_token');
       if($token) {
@@ -120,6 +115,9 @@ try {
       'res' => false,
       'data' => "$func not found"
     ]);
+  } else {
+    error_log("$func called, does not exist");
+    jemit(doError("$func not found"));
   }
 } catch(Exception $ex) {
   jemit([
@@ -127,6 +125,3 @@ try {
     'data' => $ex
   ]);
 }
-
-error_log("$func called, does not exist");
-jemit(doError("$func not found"));
