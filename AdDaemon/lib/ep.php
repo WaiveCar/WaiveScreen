@@ -91,7 +91,6 @@ try {
       $action = 'create';
     }
     post_return($action($table, $all));
-
   }
   else if(array_search($func, [
     'active_campaigns', 
