@@ -203,7 +203,7 @@ function log_screen_changes($old, $new) {
         'value' => db_string($new[$delta])
       ]);
       if($delta == 'features'){
-        slack_alert_feature_change($compare_before, $compare_after, $old['uid']);
+        slack_alert_feature_change($old, $new);
       }
     }
   }
@@ -774,10 +774,30 @@ function upload_s3($file) {
   return $name;
 }
 
-function slack_alert_feature_change($old_txt, $new_txt, $uid) {
+function feature_diff_recurse($a1, $a2, $key_prepend='') {
+  $r = [];
+  foreach($a1 as $k => $v) {
+    if(is_array($v)) {
+      $tmp_r = feature_diff_recurse($a1[$k], $a2[$k], sprintf("%s%s,", $key_prepend, $k));
+      $r = array_merge($r, $tmp_r);
+    }
+    else if(!array_key_exists($k, $a2)) {
+      $r[] = sprintf("*%s%s*: %s", $key_prepend, $k, $a1[$k]);
+    }
+    else if($a1[$k] !== $a2[$k]) {
+      $r[] = sprintf("*%s%s*: %s -> %s", $key_prepend, $k, $a2[$k], $a1[$k]);
+    }
+  }
+  return $r;
+}
+
+function slack_alert_feature_change($old, $new) {
+  $old_f = json_decode($old['features'], true);
+  $new_f = json_decode($new['features'], true);
+  $diff_txt = feature_diff_recurse($new_f, $old_f);
   $slack_url = 'https://hooks.slack.com/services/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';
   $msg = [
-    'text' => "*Feature change on $uid:*\n`$old_txt` - *Old*\n`$new_txt` - *New*"
+    'text' => sprintf("*Feature changes on %s:*\n>%s", $old['uid'], implode("\n>", $diff_txt))
   ];
   curldo($slack_url, $msg, 'POST', ['json' => True]);
 }
