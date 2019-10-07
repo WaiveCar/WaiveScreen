@@ -434,12 +434,6 @@ function tasks() {
   return show('task');
 }
 
-function orgs() {
-  return show('org');
-}
-function layouts() {
-  return show('layout');
-}
 function attributions() {
   return show('attribution');
 }
@@ -604,20 +598,27 @@ function sow($payload) {
       error_log("Couldn't update campaign");
     }
   }
-  // error_log(json_encode($uniqueCampaignList));
   
-  $active = active_campaigns($screen);
-  //error_log(json_encode($active));
-  // If we didn't get lat/lng from the sensor then we just 
-  // fallback to the default
-  if(!$payload['lat']) {
-    $nearby_campaigns = [];//$active;
-  } else {
-    // right now we are being realllly stupid.
-    $nearby_campaigns = array_filter($active, function($campaign) use ($payload) {
+  // --------
+  // New Task Assignment
+  // --------
+
+  // If we are told to run specific campaigns
+  // then we do that.
+  $campaignList = campaigns_for_screen($screen);
+
+  // If we have no campaigns to show then we 
+  // start with all active campaigns.
+  if(empty($campaignList) && $payload['lat']) {
+    // If we didn't get lat/lng from the sensor then we just 
+    // fallback to the default
+    $test = [floatval($payload['lng']), floatval($payload['lat'])];
+    $campaignList = array_filter(active_campaigns(), function($campaign) use ($test) {
       if(!empty($campaign['shape_list'])) {
-        $test = [floatval($payload['lng']), floatval($payload['lat'])];
         $isMatch = false;
+        // This is important because if we have a polygon definition
+        // then we actually don't want to show the ad outside that 
+        // polygon.
         foreach($campaign['shape_list'] as $polygon) {
           if($polygon[0] === 'Polygon') {
             $isMatch |= inside_polygon($test, $polygon[1]); 
@@ -625,32 +626,16 @@ function sow($payload) {
             $isMatch |= distance($test, $polygon[1]) < $polygon[2];
           }
           if($isMatch) {
-            break;
+            return true;
           }
         }
-        if($isMatch) {
-          return true;
-        }
-        // This is important because if we have a polygon definition
-        // then we actually don't want to show the ad outside that 
-        // polygon.
-        return false;
       }
-      /*
-      if(isset($payload['lat'])) {
-        // under 1.5km
-        return distance($campaign, $payload) < ($campaign['radius'] * 100);
-      } 
-       */
-      // essentially this is for debugging
-      return false;//true;
     });
-    // error_log(json_encode($nearby_campaigns));
+    // so if we have existing outstanding jobs with the
+    // screen id and campaign then we can just re-use them.
   }
-
-  // so if we have existing outstanding jobs with the
-  // screen id and campaign then we can just re-use them.
   $server_response = task_inject($screen, ['res' => true]);
+
   $server_response['data'] = array_map(function($campaign) use ($screen) {
     $jobList = find_unfinished_job($campaign['id'], $screen['id']);
     //error_log(json_encode($jobList));
@@ -667,7 +652,7 @@ function sow($payload) {
         return inject_priority($job_res, $screen, $campaign);
       }
     }
-  }, $nearby_campaigns);
+  }, $campaignList);
   //error_log(json_encode($server_response));
   
   return $server_response; 
@@ -802,19 +787,6 @@ function slack_alert_feature_change($old, $new) {
   curldo($slack_url, $msg, 'POST', ['json' => True]);
 }
 
-function guarded_show($what) {
-  global $SCHEMA;
-  $clause = [];
-  if($user = getUser()) {
-    foreach(['org_id','brand_id'] as $limit) {
-      if(isset($SCHEMA[$what][$limit]) && !empty($user[$limit])) {
-        $clause[$limit] = $user[$limit];
-      }
-    }
-  }
-  return show($what, $clause);
-}
-
 function show($what, $clause = []) {
   global $SCHEMA;
   $me = me();
@@ -849,7 +821,11 @@ function make_infinite($campaign_id) {
   ]);
 }
 
-function active_campaigns($screen) {
+function campaigns_for_screen($screen) {
+  return show('screen_campaign', ['screen_id' => $screen['id']]);
+}
+
+function active_campaigns() {
   //  end_time > current_timestamp     and 
   return show('campaign', "where 
     active = 1                       and 

@@ -360,7 +360,7 @@ $SCHEMA = [
     'created_at'=> 'datetime default current_timestamp',
   ],
 
-  # this is a normalized system. Dunno if it's a good idea
+  # This is a normalized system. Dunno if it's a good idea
   # becaue most of thetime this will return no results. Maybe
   # keeping a counter in a screen definition of "has_campaigns"
   # and then when they are purged from this list that gets updated.
