@@ -202,6 +202,9 @@ function log_screen_changes($old, $new) {
         'old' => db_string($old[$delta]),
         'value' => db_string($new[$delta])
       ]);
+      if($delta == 'features'){
+        slack_alert_feature_change($compare_before, $compare_after, $old['uid']);
+      }
     }
   }
 }
@@ -769,6 +772,14 @@ function upload_s3($file) {
   }
   // see https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-s3-2006-03-01.html#putobject
   return $name;
+}
+
+function slack_alert_feature_change($old_txt, $new_txt, $uid) {
+  $slack_url = 'https://hooks.slack.com/services/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';
+  $msg = [
+    'text' => "*Feature change on $uid:*\n`$old_txt` - *Old*\n`$new_txt` - *New*"
+  ];
+  curldo($slack_url, $msg, 'POST', ['json' => True]);
 }
 
 function guarded_show($what) {
