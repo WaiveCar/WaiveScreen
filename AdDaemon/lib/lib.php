@@ -780,7 +780,7 @@ function slack_alert_feature_change($old, $new) {
   $old_f = json_decode($old['features'], true);
   $new_f = json_decode($new['features'], true);
   $diff_txt = feature_diff_recurse($new_f, $old_f);
-  $slack_url = 'https://hooks.slack.com/services/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';
+  $slack_url = 'https://hooks.slack.com/services/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';
   $msg = [
     'text' => sprintf("*Feature changes on %s:*\n>%s", $old['uid'], implode("\n>", $diff_txt))
   ];
