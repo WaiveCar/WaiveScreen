@@ -622,73 +622,71 @@ function sow($payload) {
   return $server_response; 
 }
 
-if(!function_exists('curl_do')) {
-  function curldo($url, $params = false, $verb = false, $opts = []) {
-    if($verb === false) {
-      $verb = 'GET';
-      // this is a problem
-    }
-    $verb = strtoupper($verb);
+function curldo($url, $params = false, $verb = false, $opts = []) {
+  if($verb === false) {
+    $verb = 'GET';
+    // this is a problem
+  }
+  $verb = strtoupper($verb);
 
-    $ch = curl_init();
+  $ch = curl_init();
 
-    $header = [];
-    if(isset($_SESSION['token']) && strlen($_SESSION['token']) > 2) {
-      $header[] = "Authorization: ${_SESSION['token']}";
-    }
-      
-    if($verb !== 'GET') {
-      if(!isset($opts['isFile'])) {
-        if(!$params) {
-          $params = [];
-        }
-        if(isset($opts['json'])) {
-          $params = json_encode($params);
-          $header[] = 'Content-Type: application/json';
-        } else {
-          $params = http_build_query($params);
-        }
-      } else {
-        $header[] = 'Content-Type: multipart/form-data';
-      }
-      curl_setopt($ch, CURLOPT_POSTFIELDS, $params);  
-      // $header[] = 'Content-Length: ' . strlen($data_string);
-    }
-
-    if($verb === 'POST') {
-      curl_setopt($ch, CURLOPT_POST,1);
-    }
-
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);  
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-    $res = curl_exec($ch);
+  $header = [];
+  if(isset($_SESSION['token']) && strlen($_SESSION['token']) > 2) {
+    $header[] = "Authorization: ${_SESSION['token']}";
+  }
     
-    //if(isset($opts['log'])) {
-      $tolog = json_encode([
-          'verb' => $verb,
-          'header' => $header,
-          'url' => $url,
-          'params' => $params,
-          'res' => $res
-      ]);
-      //var_dump(['>>>', curl_getinfo ($ch), json_decode($tolog, true)]);
-
-      error_log($tolog);
-    //}
-
-    if(isset($opts['raw'])) {
-      return $res;
+  if($verb !== 'GET') {
+    if(!isset($opts['isFile'])) {
+      if(!$params) {
+        $params = [];
+      }
+      if(isset($opts['json'])) {
+        $params = json_encode($params);
+        $header[] = 'Content-Type: application/json';
+      } else {
+        $params = http_build_query($params);
+      }
+    } else {
+      $header[] = 'Content-Type: multipart/form-data';
     }
-    $resJSON = @json_decode($res, true);
-    if($resJSON) {
-      return $resJSON;
-    }
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $params);  
+    // $header[] = 'Content-Length: ' . strlen($data_string);
+  }
+
+  if($verb === 'POST') {
+    curl_setopt($ch, CURLOPT_POST,1);
+  }
+
+  curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+  curl_setopt($ch, CURLOPT_URL, $url);
+  curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);  
+  curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+  $res = curl_exec($ch);
+  
+  //if(isset($opts['log'])) {
+    $tolog = json_encode([
+        'verb' => $verb,
+        'header' => $header,
+        'url' => $url,
+        'params' => $params,
+        'res' => $res
+    ]);
+    //var_dump(['>>>', curl_getinfo ($ch), json_decode($tolog, true)]);
+
+    error_log($tolog);
+  //}
+
+  if(isset($opts['raw'])) {
     return $res;
   }
+  $resJSON = @json_decode($res, true);
+  if($resJSON) {
+    return $resJSON;
+  }
+  return $res;
 }
 
 function upload_s3($file) {
@@ -787,9 +785,7 @@ function create($table, $payload) {
       $parts = explode(' ', $typeRaw);
       $type = $parts[0];
       if($k === 'password') {
-        $orig = $v;
         $v = password_hash($v, PASSWORD_BCRYPT);
-        error_log("<$orig> -> <$v>");
       }
       if($type == 'text') {
         $payload[$k] = db_string($v);
