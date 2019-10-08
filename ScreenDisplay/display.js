@@ -28,7 +28,7 @@ function toggleWidget(what) {
 
 window.onload = function init() {
   self.ads = Engine({
-    slowCPU: true,
+    //slowCPU: true,
     server: 'http://localhost:4096/'
   });
 
