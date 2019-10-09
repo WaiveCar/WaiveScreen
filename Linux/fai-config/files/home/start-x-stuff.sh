@@ -71,3 +71,4 @@ ssh_hole
 sms_cleanup
 first_run
 upgrade_scripts
+camera_daemon
