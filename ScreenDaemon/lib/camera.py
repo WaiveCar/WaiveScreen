@@ -314,6 +314,24 @@ class Camera():
   capture_res = property(capture_res, capture_res)
   output_scaling = property(output_scaling, output_scaling)
 
+def prune_capture_directory():
+  """ Remove old video files from our capture directory to keep our disk
+      usage under a specified amount. """
+  max_bytes = 20e+9  # 20 GB
+  used_bytes = 0
+  vid_files = []
+  for f_name in os.listdir(OUT_DIR):
+    f = os.path.join(OUT_DIR, f_name)
+    if os.path.isfile(f):
+      used_bytes += os.path.getsize(f)
+      vid_files.append( (f, os.path.getsize(f), os.path.getmtime(f) ) )
+  vid_files.sort(key=lambda x: x[2], reverse=True)
+  while used_bytes > max_bytes:
+    f = vid_files.pop()
+    logging.info('Pruning file: {}'.format(f[0]))
+    os.remove(f[0])
+    used_bytes -= f[1]
+
 def can_capture_on_all(cams):
   """ Check if we can capture a frame on all cameras at the same time. """
   for cam in cams:

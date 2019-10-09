@@ -2,4 +2,5 @@
 
 from lib.camera import *
 
+prune_capture_directory()
 record_all()
