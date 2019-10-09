@@ -7,16 +7,15 @@ import cv2
 import numpy as np
 from . import lib
 
-OUT_DIR='/home/adorno/camera_recordings'
-try:
-  os.mkdir(OUT_DIR)
-except:
-  pass
 
 log_format = '%(asctime)s %(levelname)s:%(message)s'
 level = logging.DEBUG if lib.DEBUG else logging.INFO
 logging.basicConfig(filename='{}/camera.log'.format(lib.LOG), format=log_format, level=level)
-#logging.basicConfig(format=log_format, level=logging.DEBUG)
+
+OUT_DIR = os.environ.get('VID', '/var/capture')
+if not os.path.exists(OUT_DIR):
+  os.system('/usr/bin/sudo /bin/mkdir -p {}'.format(OUT_DIR))
+  os.system('/usr/bin/sudo /bin/chmod 0777 {}'.format(OUT_DIR))
 
 CAM_NUMS = ( 0, 2, 4, 6 )
 CAPTURE_RESOLUTIONS = { 480: (640,480), 
