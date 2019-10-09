@@ -92,6 +92,10 @@ function missing($what, $list) {
   }
 }
 
+function find_missing($obj, $fieldList) {
+  return array_diff($fieldList, array_keys($obj));
+}
+
 function inside_polygon($test_point, $points) {
   $p0 = end($points);
   $ctr = 0;
@@ -167,11 +171,6 @@ function find_unfinished_job($campaignId, $screenId) {
   ]);
 }
 
-
-function find_missing($obj, $fieldList) {
-  return array_diff($fieldList, array_keys($obj));
-}
-
 function log_screen_changes($old, $new) {
   // When certain values change we should log that
   // they change.
@@ -202,6 +201,9 @@ function log_screen_changes($old, $new) {
         'old' => db_string($old[$delta]),
         'value' => db_string($new[$delta])
       ]);
+      if($delta == 'features'){
+        slack_alert_feature_change($old, $new);
+      }
     }
   }
 }
@@ -427,14 +429,6 @@ function task_master($screen) {
 //
 // ----
 
-function tasks() {
-  return show('task');
-}
-
-function attributions() {
-  return show('attribution');
-}
-
 function schema($what) {
   global $SCHEMA;
   $table = aget($what, 'table');
@@ -508,33 +502,6 @@ function inject_priority($job, $screen, $campaign) {
   return $job;
 }
 
-function create($table, $payload) {
-  // TODO: whitelist the tables
-  global $SCHEMA;
-  foreach($payload as $k => $v) {
-    $typeRaw = aget($SCHEMA, "$table.$k");
-    if($typeRaw) {
-      $parts = explode(' ', $typeRaw);
-      $type = $parts[0];
-      if($k === 'password') {
-        $orig = $v;
-        $v = password_hash($v, PASSWORD_BCRYPT);
-        error_log("<$orig> -> <$v>");
-      }
-      if($type == 'text') {
-        $payload[$k] = db_string($v);
-      }
-      if(empty($payload[$k])) {
-        unset($payload[$k]);
-      }
-    } else {
-      unset($payload[$k]);
-    }
-  }
-
-  return db_insert($table, $payload);
-}
-
 function sow($payload) {
   global $SCHEMA;
   //error_log(json_encode($payload));
@@ -602,7 +569,7 @@ function sow($payload) {
 
   // If we are told to run specific campaigns
   // then we do that.
-  $campaignList = campaigns_for_screen($screen);
+  $campaignList = show('screen_campaign', ['screen_id' => $screen['id']]);
 
   // If we have no campaigns to show then we 
   // start with all active campaigns.
@@ -655,73 +622,71 @@ function sow($payload) {
   return $server_response; 
 }
 
-if(!function_exists('curl_do')) {
-  function curldo($url, $params = false, $verb = false, $opts = []) {
-    if($verb === false) {
-      $verb = 'GET';
-      // this is a problem
-    }
-    $verb = strtoupper($verb);
+function curldo($url, $params = false, $verb = false, $opts = []) {
+  if($verb === false) {
+    $verb = 'GET';
+    // this is a problem
+  }
+  $verb = strtoupper($verb);
 
-    $ch = curl_init();
+  $ch = curl_init();
 
-    $header = [];
-    if(isset($_SESSION['token']) && strlen($_SESSION['token']) > 2) {
-      $header[] = "Authorization: ${_SESSION['token']}";
-    }
-      
-    if($verb !== 'GET') {
-      if(!isset($opts['isFile'])) {
-        if(!$params) {
-          $params = [];
-        }
-        if(isset($opts['json'])) {
-          $params = json_encode($params);
-          $header[] = 'Content-Type: application/json';
-        } else {
-          $params = http_build_query($params);
-        }
-      } else {
-        $header[] = 'Content-Type: multipart/form-data';
-      }
-      curl_setopt($ch, CURLOPT_POSTFIELDS, $params);  
-      // $header[] = 'Content-Length: ' . strlen($data_string);
-    }
-
-    if($verb === 'POST') {
-      curl_setopt($ch, CURLOPT_POST,1);
-    }
-
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);  
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-    $res = curl_exec($ch);
+  $header = [];
+  if(isset($_SESSION['token']) && strlen($_SESSION['token']) > 2) {
+    $header[] = "Authorization: ${_SESSION['token']}";
+  }
     
-    //if(isset($opts['log'])) {
-      $tolog = json_encode([
-          'verb' => $verb,
-          'header' => $header,
-          'url' => $url,
-          'params' => $params,
-          'res' => $res
-      ]);
-      //var_dump(['>>>', curl_getinfo ($ch), json_decode($tolog, true)]);
-
-      error_log($tolog);
-    //}
-
-    if(isset($opts['raw'])) {
-      return $res;
+  if($verb !== 'GET') {
+    if(!isset($opts['isFile'])) {
+      if(!$params) {
+        $params = [];
+      }
+      if(isset($opts['json'])) {
+        $params = json_encode($params);
+        $header[] = 'Content-Type: application/json';
+      } else {
+        $params = http_build_query($params);
+      }
+    } else {
+      $header[] = 'Content-Type: multipart/form-data';
     }
-    $resJSON = @json_decode($res, true);
-    if($resJSON) {
-      return $resJSON;
-    }
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $params);  
+    // $header[] = 'Content-Length: ' . strlen($data_string);
+  }
+
+  if($verb === 'POST') {
+    curl_setopt($ch, CURLOPT_POST,1);
+  }
+
+  curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+  curl_setopt($ch, CURLOPT_URL, $url);
+  curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);  
+  curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+  $res = curl_exec($ch);
+  
+  //if(isset($opts['log'])) {
+    $tolog = json_encode([
+        'verb' => $verb,
+        'header' => $header,
+        'url' => $url,
+        'params' => $params,
+        'res' => $res
+    ]);
+    //var_dump(['>>>', curl_getinfo ($ch), json_decode($tolog, true)]);
+
+    error_log($tolog);
+  //}
+
+  if(isset($opts['raw'])) {
     return $res;
   }
+  $resJSON = @json_decode($res, true);
+  if($resJSON) {
+    return $resJSON;
+  }
+  return $res;
 }
 
 function upload_s3($file) {
@@ -756,6 +721,34 @@ function upload_s3($file) {
   return $name;
 }
 
+function feature_diff_recurse($a1, $a2, $key_prepend='') {
+  $r = [];
+  foreach($a1 as $k => $v) {
+    if(is_array($v)) {
+      $tmp_r = feature_diff_recurse($a1[$k], $a2[$k], sprintf("%s%s,", $key_prepend, $k));
+      $r = array_merge($r, $tmp_r);
+    }
+    else if(!array_key_exists($k, $a2)) {
+      $r[] = sprintf("*%s%s*: %s", $key_prepend, $k, $a1[$k]);
+    }
+    else if($a1[$k] !== $a2[$k]) {
+      $r[] = sprintf("*%s%s*: %s -> %s", $key_prepend, $k, $a2[$k], $a1[$k]);
+    }
+  }
+  return $r;
+}
+
+function slack_alert_feature_change($old, $new) {
+  $old_f = json_decode($old['features'], true);
+  $new_f = json_decode($new['features'], true);
+  $diff_txt = feature_diff_recurse($new_f, $old_f);
+  $slack_url = 'https://hooks.slack.com/services/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';
+  $msg = [
+    'text' => sprintf("*Feature changes on %s:*\n>%s", $old['uid'], implode("\n>", $diff_txt))
+  ];
+  curldo($slack_url, $msg, 'POST', ['json' => True]);
+}
+
 function show($what, $clause = []) {
   global $SCHEMA;
   $me = me();
@@ -783,15 +776,37 @@ function show($what, $clause = []) {
   return db_all("select * from $what $clause", $what);
 }
 
+function create($table, $payload) {
+  // TODO: whitelist the tables
+  global $SCHEMA;
+  foreach($payload as $k => $v) {
+    $typeRaw = aget($SCHEMA, "$table.$k");
+    if($typeRaw) {
+      $parts = explode(' ', $typeRaw);
+      $type = $parts[0];
+      if($k === 'password') {
+        $v = password_hash($v, PASSWORD_BCRYPT);
+      }
+      if($type == 'text') {
+        $payload[$k] = db_string($v);
+      }
+      if(empty($payload[$k])) {
+        unset($payload[$k]);
+      }
+    } else {
+      unset($payload[$k]);
+    }
+  }
+
+  return db_insert($table, $payload);
+}
+
+
 function make_infinite($campaign_id) {
   db_update('campaign', $campaign_id, [
     'duration_seconds' => pow(2,31),
     'end_time' => '2100-01-01 00:00:00'
   ]);
-}
-
-function campaigns_for_screen($screen) {
-  return show('screen_campaign', ['screen_id' => $screen['id']]);
 }
 
 function active_campaigns() {
@@ -967,6 +982,7 @@ function getUser() {
     return Get::user($_SESSION['user_id']);
   }
 }
+
 function emit_js() {
   $params = [
     'admin' => false,
