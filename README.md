@@ -55,6 +55,13 @@ The SCREEN parts:
       * Stops hostapd and isc-dhcp-server (freeing up the wifi interface)
       * Scans for APs and submits the results to the MLS geolocation service
     * Saves current location information to the kv db.  ( Lat, Lng, location_accuracy, location_source, location_time, gps_gpgga )
+  * Camera daemon
+    * Started by start-x-stuff.sh after everything else.
+    * Prunes the old videos in capture directory (/var/capture) to keep disk usage under 20 GB.
+    * Records on all cameras to a 2x2 grid while adjusting the exposure/brightness to give the best image.
+    * Videos are stored in the capture directory
+      * The file timestamp indicates the start time of the recording.
+      * They are 10 minutes in length.
 
 The SERVER parts:
 
