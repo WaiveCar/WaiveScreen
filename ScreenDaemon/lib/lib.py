@@ -47,6 +47,7 @@ SANITYCHECK = os.environ.get('SANITYCHECK')
 NOMODEM = os.environ.get('NOMODEM')
 DEBUG = os.environ.get('DEBUG')
 DISPLAY = os.environ.get('DISPLAY')
+BRANCH = os.environ.get('BRANCH')
 SERVER_URL = "http://{}/api".format(os.environ.get('SERVER') or 'waivescreen.com')
 
 GPS_DEVICE_ACCURACY = 5.0 # Assumed, but not verified
