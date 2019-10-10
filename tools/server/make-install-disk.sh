@@ -25,13 +25,14 @@ die() {
 ddcmd() {
   local size=$(stat -c %s $1)
   echo "sudo dd if=$1 of=$2 bs=1M"
-  [[ -z "$NODISK" ]] && echo $now $(udevadm info --name=$disk | grep SERIAL=) $1 >> $repo/log.txt
+  [[ -z "$NODISK" ]] && echo $now $(udevadm info --name=$2 | grep SERIAL=) $1 >> $repo/log.txt
   exit
 }
 
 if [[ -z "$NODISK" ]]; then
   [[ $# -lt 1 ]] && die "You need to pass a disk dev entry to install to such as /dev/sdb"
   disk=$1
+  [[ $disk == "release" ]] && disk=/dev/sdb
   [[ -b $disk ]] || die "Woops, $disk isn't a disk"
   [[ $(stat -c %T $disk) -eq 11 ]] && die "Woah, $disk is a PARTITION. I need the whole disk."
   if [[ $# -gt 1 ]]; then
@@ -41,6 +42,13 @@ if [[ -z "$NODISK" ]]; then
   fi
 
   sudo fdisk -l $disk
+
+  if [[ $1 == "release" ]]; then
+    touse=$(ls -tr $repo*release* | tail -1)
+    echo "using $touse"
+    eval $(ddcmd $touse $disk)
+    exit
+  fi
 
   if [[ -n "$ONLYDISK" ]]; then
     eval $(ddcmd $(ls -tr1 $HOME/installs/Wai*| tail -1) $disk) 
