@@ -90,6 +90,28 @@ if len(sys.argv) > 1:
     dumpfailure()
 
 else:
+  import inspect
+  import types
   print("I need an argument")
-  [print(" {}".format(x)) for x in sorted(list(set(dir(lib)) - set(dir())))]
+  for family in ['lib','arduino','db']:
+    print("\n{}.".format(family))
+    obj = globals()[family]
+    for x in sorted(list(set(dir(obj)) - set(dir()))):
+      ptr = getattr(obj, x)
+      if not isinstance(ptr, types.ModuleType):
+        if callable(ptr): 
+          try:
+            klass = inspect.signature(ptr)
+          except:
+            continue
+        elif type(ptr) in [str, float, int, bool, dict] or ptr is None: 
+          text = str(ptr)
+          if len(text) > 70:
+            text = text[:70] + "\u2026"
+          klass = "\x1b[1m{}\x1b[0m".format(text)
+        else:
+          klass = str(ptr.__class__).split("'")[1]
+
+        print("  {:23} {}".format(x, klass))
+
   sys.exit(-1)

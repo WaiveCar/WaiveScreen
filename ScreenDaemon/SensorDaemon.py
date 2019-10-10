@@ -15,7 +15,6 @@ from datetime import datetime
 
 FREQUENCY = 0.1 if 'FREQUENCY' not in os.environ else os.environ['FREQUENCY']
 WINDOW_SIZE = int(12.0 / FREQUENCY)
-DEVELOP = os.environ.get('DEVELOP')
 
 # If all the sensor deltas reach this percentage
 # (multiplied by 100) from the baseline, then we
@@ -131,40 +130,39 @@ while True:
       first = False
       db.kv_set('arduino_seen', 1)
 
-    if not DEVELOP:
-      # Put data in if we have it
-      location = lib.get_latlng()
+    # Put data in if we have it
+    location = lib.get_latlng()
 
-      try:
-        if location and not _autobright_set:
-          _autobright_set = True
-          arduino.set_autobright()
+    try:
+      if location and not _autobright_set:
+        _autobright_set = True
+        arduino.set_autobright()
 
-      except:
-        pass
+    except:
+      pass
 
-      all = {**location, **sensor, 'run': run}
+    all = {**location, **sensor, 'run': run}
 
 
-      window.append(all.get('Voltage'))
-      if len(window) > WINDOW_SIZE * 1.2:
-        window = window[-WINDOW_SIZE:]
+    window.append(all.get('Voltage'))
+    if len(window) > WINDOW_SIZE * 1.2:
+      window = window[-WINDOW_SIZE:]
 
-      try:
-        avg = float(sum(window)) / len(window)
+    try:
+      avg = float(sum(window)) / len(window)
 
-      except:
-        avg = 0
+    except:
+      avg = 0
 
-      if is_significant(all):
-        lib.sensor_store(all)
+    if is_significant(all):
+      lib.sensor_store(all)
 
-      # If we need to go into/get out of a low power mode
-      # We also need to make sure that we are looking at a nice
-      # window of time. Let's not make it the window_size just
-      # in case our tidiness algorithm breaks.
-      if sensor and len(window) > WINDOW_SIZE * 0.8:
-        arduino.pm_if_needed(avg, all.get('Voltage'))
+    # If we need to go into/get out of a low power mode
+    # We also need to make sure that we are looking at a nice
+    # window of time. Let's not make it the window_size just
+    # in case our tidiness algorithm breaks.
+    if sensor and len(window) > WINDOW_SIZE * 0.8 and lib.BRANCH != 'release':
+      arduino.pm_if_needed(avg, all.get('Voltage'))
 
     # Now you'd think that we just sleep on the frequency, that'd be wrong.
     # Thanks, try again. Instead we need to use the baseline time from start

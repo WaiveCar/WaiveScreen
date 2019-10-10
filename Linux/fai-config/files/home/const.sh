@@ -19,7 +19,7 @@ export ROOTHOME=/root
 export VID=/var/capture
 export SMSDIR=/var/log/sms 
 
-[[ $USER != 'root' ]] && SUDO=/usr/bin/sudo
+[[ $USER != 'root' ]] && SUDO="/usr/bin/sudo -E"
 
 # Local overrides to the above 
 [[ -e $DEST/overrides ]] && . $DEST/overrides

@@ -86,6 +86,7 @@ selfie() {
   local opts=''
   local num=0
 
+  down camera_daemon
   pycall calibrate_cameras
   for i in $( seq 0 2 6 ); do
     $SUDO $FFMPEG -f v4l2 -video_size 1280x720 -i /dev/video$i -vframes 1 $CACHE/$now-$i.jpg 
@@ -106,6 +107,7 @@ selfie() {
   res=$(eval curl -sX POST $opts "$SERVER/selfie.php?pre=$now")
   [[ -n "$1" ]] && sms $sender "This just happened: $res. More cool stuff coming soon ;-)"
   echo $res
+  camera_daemon
 }
 
 sms() {
@@ -437,6 +439,12 @@ sensor_daemon() {
   down sensor_daemon
   $SUDO $BASE/ScreenDaemon/SensorDaemon.py &
   set_event sensor_daemon
+}
+
+camera_daemon() {
+  down camera_daemon
+  $BASE/ScreenDaemon/CameraDaemon.py &
+  set_event camera_daemon
 }
 
 # This is used during the installation - don't touch it!
