@@ -92,7 +92,6 @@ if len(sys.argv) > 1:
 else:
   import inspect
   import types
-  print("I need an argument")
   for family in ['lib','arduino','db']:
     print("\n{}.".format(family))
     obj = globals()[family]
