@@ -9,7 +9,7 @@ import math
 import sys
 import time
 from lib.wifi_location import wifi_location, wifi_scan_shutdown, wifi_last_submission
-from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict, DEBUG, set_logger
+from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict, DEBUG, set_logger, system_uptime
 import lib.db as db
 
 if DEBUG:
@@ -142,10 +142,6 @@ def location_source(set_it=False):
     db.kv_set('location_source', set_it)
   else:
     return db.kv_get('location_source')
-
-def system_uptime():
-  with open('/proc/uptime', 'r') as f:
-    return float(f.readline().split(' ')[0])
 
 def location_loop():
   """
