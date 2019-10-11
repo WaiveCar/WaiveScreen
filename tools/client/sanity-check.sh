@@ -88,6 +88,7 @@ elif dcall sess_get modem; then
   date >> /tmp/sanity-check
   check_online && check_ssh_hole
   pycall lib.ping
+  pycall lib.update_uptime_log
   check_screen_daemon
   check_sensor_daemon
   check_screen_display

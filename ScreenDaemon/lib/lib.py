@@ -849,6 +849,21 @@ def get_timezone():
   else:
     return None
 
+def system_uptime():
+  with open('/proc/uptime', 'r') as f:
+    return float(f.readline().split(' ')[0])
+
+def create_uptime_log():
+  bootcount = db.get_bootcount()
+  uptime = system_uptime()
+  history_id = db.insert('history', {'kind': 'boot_uptime', 'value': bootcount, 'extra': uptime})
+  if history_id:
+    db.run("update history set created_at = datetime('now', '-%d seconds') where id = %d" % (uptime, history_id))
+
+def update_uptime_log():
+  bootcount = db.get_bootcount()
+  db.update('history', {'kind': 'boot_uptime', 'value': bootcount}, {'extra': system_uptime()})
+
 def get_wifi_location():
   return wifi_location()
 
