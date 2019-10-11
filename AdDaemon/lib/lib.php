@@ -352,9 +352,9 @@ function ping($payload) {
   }
 
   if($_SERVER['SERVER_NAME'] !== 'waivescreen.com') {
-    error_log(" -> forwarding request");
     $res = curldo('http://waivescreen.com/api/ping', $payload, ['verb' => 'post', 'json' => true]);
     $obj['port'] = aget($res, 'screen.port');
+    error_log(" ${screen['port']} -> ${obj['port']} : forwarding request");
   }
 
   $obj['pings'] = intval($screen['pings']) + 1;
@@ -668,7 +668,7 @@ function curldo($url, $params = false, $opts = []) {
 
   $res = curl_exec($ch);
   
-  //if(isset($opts['log'])) {
+  if(isset($opts['log'])) {
     $tolog = json_encode([
       'verb' => $verb,
       'header' => $header,
@@ -679,7 +679,7 @@ function curldo($url, $params = false, $opts = []) {
     //var_dump(['>>>', curl_getinfo ($ch), json_decode($tolog, true)]);
 
     error_log($tolog);
-  //}
+  }
 
   if(isset($opts['raw'])) {
     return $res;
