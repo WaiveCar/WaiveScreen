@@ -114,9 +114,7 @@ try {
       'res' => false,
       'data' => "$func not found"
     ]);
-  } else {
     error_log("$func called, does not exist");
-    jemit(doError("$func not found"));
   }
 } catch(Exception $ex) {
   jemit([
