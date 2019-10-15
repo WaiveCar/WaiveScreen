@@ -154,7 +154,7 @@ text_loop() {
 
   while true; do
     if [[ -z "$foundModem" ]]; then
-      if ! sess_get modem; then
+      if ! sess_get simok; then
         sleep 10
         continue
       fi
@@ -347,6 +347,7 @@ EPERL
   if ping -c 1 -i 0.3 $SERVER; then
     _info "$SERVER found" 
     get_number
+    pycall db.sess_set simok,1 
   else
     _warn "$SERVER unresolvable!"
 
