@@ -70,6 +70,10 @@ $RULES = [
 //  have 0 or more campaigns
 //
  
+//
+// users have 0 or 1 contacts
+// campaigns have 0 or 1 contacts
+//
 $SCHEMA = [
   'screen' => [
     'id'          => 'integer primary key autoincrement', 
@@ -170,17 +174,33 @@ $SCHEMA = [
     'created_at' => 'datetime default current_timestamp',
   ],
 
+  // there's a more generic way to do this that
+  // we should totally implement when the time comes.
+  'contact' => [
+    'id'         => 'integer primary key autoincrement',
+    'name'       => 'text',
+    'twitter'    => 'text',
+    'instagram'  => 'text',
+    'facebook'   => 'text',
+    'email'      => 'text',
+    'website'    => 'text',
+    'phone'      => 'text',
+    'location'   => 'text',
+    'lat'        => 'float',
+    'lng'        => 'float'
+  ],
+
   'user' => [
     'id'         => 'integer primary key autoincrement',
     'name'       => 'text',
     'password'   => 'text',
     'image'      => 'text',
-    'email'      => 'text',
+    'contact_id' => 'integer',
+    'auto_approve' => 'boolean default false',
     'title'      => 'text',
     'organization_id'     => 'integer',
     'brand_id'   => 'integer',
     'role'       => 'text', // either admin/manager/viewer
-    'phone'      => 'text',
     'created_at' => 'datetime default current_timestamp',
   ],
 
@@ -213,6 +233,7 @@ $SCHEMA = [
     'id'          => 'integer primary key autoincrement',
     'title'       => 'text',
     'ref_id'      => 'text',
+    'contact_id'  => 'integer',
     'brand_id'    => 'integer',
     'organization_id'    => 'integer',
     'order_id'    => 'integer',
