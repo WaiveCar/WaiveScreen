@@ -18,14 +18,14 @@ else:
   set_logger('/var/log/screen/locationdaemon.log')
 
 # location_loop sleep time - applies to GPS polling
-SLEEP_TIME = 10
+SLEEP_TIME = 5
 
 # extra time to wait if we're using the wifi location service
 # We don't want to spam MLS and hit their 100,000 daily request limit
 if DEBUG:
   MIN_WIFI_INTERVAL = 60
 else:
-  MIN_WIFI_INTERVAL = 600
+  MIN_WIFI_INTERVAL = 300
 
 class Haversine:
   """
@@ -104,7 +104,7 @@ def get_location_from_gps():
 def sanity_check(location):
   last_location_time = db.kv_get('location_time', use_cache=True)
   if last_location_time is None:
-    logging.info('Last location time not saved in kv db (This should only happen ONCE)')
+    logging.warning('Last location time not saved in kv db (This should only happen ONCE)')
     return True
   time_diff = time.time() - float(last_location_time)
   if time_diff > 60 * 10:  # More than 10 minutes
@@ -113,11 +113,11 @@ def sanity_check(location):
   last_lat = db.kv_get('Lat', use_cache=True)
   last_lng = db.kv_get('Lng', use_cache=True)
   if last_lat is None or last_lng is None:
-    logging.info('Last location not in kv db. (This should only happen ONCE)')
+    logging.warning('Last location not in kv db. (This should only happen ONCE)')
     return True
   dist = Haversine([float(last_lng), float(last_lat)], [float(location['Lng']), float(location['Lat'])])
   miles_per_second = dist.miles / time_diff
-  logging.info('Calculated speed: {} miles/second, {} miles/hour'.format(miles_per_second, miles_per_second * (60 * 60)))
+  logging.debug('Calculated speed: {} miles/second, {} miles/hour'.format(miles_per_second, miles_per_second * (60 * 60)))
   logging.debug('last_lat:{} last_lng:{} lat:{} lng:{} dist.meters:{} dist.miles:{} time_diff:{}'.format(float(last_lat), \
                 float(last_lng), float(location['Lat']), float(location['Lng']), dist.meters, dist.miles, time_diff))
   if miles_per_second > 150.0 / (60 * 60):  # Faster than 150 mph
@@ -137,7 +137,7 @@ def save_location(location):
   if not sanity_check(location):
     logging.warning('New location failed sanity_check: {}'.format(location))
     return False
-  logging.info("Saving location: lat:{} lng:{} accuracy:{} utc:{} source:{}".format(location['Lat'], location['Lng'], location.get('accuracy'), location.get('Utc'), location_source()))
+  logging.debug("Saving location: lat:{} lng:{} accuracy:{} utc:{} source:{}".format(location['Lat'], location['Lng'], location.get('accuracy'), location.get('Utc'), location_source()))
   db.kv_set('Lat', location['Lat'])
   db.kv_set('Lng', location['Lng'])
   db.kv_set('location_time', int(time.time()))

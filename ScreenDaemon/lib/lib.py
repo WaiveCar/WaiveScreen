@@ -279,7 +279,7 @@ def update_gps_xtra_data():
   return False
 
 
-def get_gp_dict(nmea_string, gp_name, field_names):
+def _get_gp_dict(nmea_string, gp_name, field_names):
   """ Parse the NMEA string from the GPS and return a Dict
   of the GP??? keys => values """
   gp_dict = {}
@@ -291,8 +291,16 @@ def get_gp_dict(nmea_string, gp_name, field_names):
   return gp_dict
 
 
+def get_gpgga_dict(nmea_string):
+  return _get_gp_dict(nmea_string, 'GPGGA', GPGGA_FIELD_NAMES)
+
+
+def get_gpvtg_dict(nmea_string):
+  return _get_gp_dict(nmea_string, 'GPVTG', GPVTG_FIELD_NAMES)
+
+
 def gps_accuracy(nmea_string):
-  gpgga = get_gp_dict(nmea_string, 'GPGGA', GPGGA_FIELD_NAMES)
+  gpgga = get_gpgga_dict(nmea_string)
   hdop = gpgga.get('hdop')
   if hdop:
     try:
@@ -321,7 +329,7 @@ def get_gps(all_fields=False):
           'accuracy': gps_accuracy(nmea_string)
         }
         if all_fields:
-          gpvtg = get_gp_dict(nmea_string, 'GPVTG', GPVTG_FIELD_NAMES)
+          gpvtg = get_gpvtg_dict(nmea_string)
           location_dict.update( {
             'Utc': gps['utc-time'],
             'Nmea': nmea_string,
