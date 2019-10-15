@@ -122,6 +122,16 @@ _SCHEMA = {
     ('Lng', 'float default null'),
     ('run', 'integer default null'),
     ('created_at', 'datetime default current_timestamp'),
+  ],
+  'location' : [
+    ('id', 'integer primary key autoincrement'),
+    ('lat', 'float default null'),
+    ('lng', 'float default null'),
+    ('accuracy', 'float default null'),
+    ('speed', 'float default null'),
+    ('heading', 'float default null'),
+    ('source', 'text default null'),
+    ('time', 'datetime default current_timestamp'),
   ]
 }
 
