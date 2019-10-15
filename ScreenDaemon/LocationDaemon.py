@@ -127,6 +127,13 @@ def sanity_check(location):
 
 def save_location(location):
   """ Save current location info to the database """
+  db.insert( 'location', {
+      'lat': location['Lat'],
+      'lng': location['Lng'],
+      'accuracy': location.get('accuracy', ''),
+      'speed': location.get('speed', ''),
+      'heading': location.get('heading', ''),
+      'source': location_source() })
   if not sanity_check(location):
     logging.warning('New location failed sanity_check: {}'.format(location))
     return False
