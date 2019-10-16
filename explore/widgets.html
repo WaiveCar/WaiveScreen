@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+<link href="engine.css" rel="stylesheet">
+<style>
+body{margin:0 }
+#container { height: 100vh }
+#main { height: 100% }
+.engine-xA8tAY4YSBmn2RTQqnnXXw .container-xA8tAY4YSBmn2RTQqnnXXw {
+  align-items: flex-start;
+}
+</style>
+</head>
+<body>
+  <div id=container>
+    <div id=main>
+    </div>
+  </div>
+</body>
+</html>
+<script src=engine.js></script>
+<script>
+  fetch(new Request("/api/feed"))
+  .then(res => res.json())
+  .then(data =>{
+    self.d = data;
+    e.Widget.ticker(data.reuters.feed.map(r => r.title)); 
+    e.Widget.app(data.forecast.feed[0]); 
+    console.log(data);
+  })
+var e = Engine({
+  container: document.getElementById("main")});
+e.AddJob({url: ['asset4.png', 'asset3.jpg', 'asset2.jpg','asset1.png']});
+e.Start();
+e.Widget.time(true);
+</script>
+
+
