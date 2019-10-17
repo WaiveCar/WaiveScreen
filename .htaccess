@@ -8,11 +8,11 @@ RewriteRule ^$ MadisonAve/static/index.html
 RewriteRule "map.js.map" "Admin/dist/map.js.map" [L]
 RewriteRule "^api/(.*)$" "AdDaemon/lib/ep.php?_VxiXw3BaQ4WAQClBoAsNTg_func=$1&%{QUERY_STRING}" [L]
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule "js/(.*)$" "MadisonAve/static/js/$1" [L]
+RewriteRule "js/(.*)$" "Products/MadisonAve/static/js/$1" [L]
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule "css/(.*)$" "MadisonAve/static/css/$1" [L]
-RewriteRule "webfonts/(.*)$" "MadisonAve/static/webfonts/$1" [L]
-RewriteRule "gallery/(.*)$" "MadisonAve/static/gallery.php?id=$1" [L]
+RewriteRule "css/(.*)$" "Products/MadisonAve/static/css/$1" [L]
+RewriteRule "webfonts/(.*)$" "Products/MadisonAve/static/webfonts/$1" [L]
+RewriteRule "gallery/(.*)$" "Products/MadisonAve/static/gallery.php?id=$1" [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule "admin/(.*)/(.*)$" "Admin/$1.php?id=$2&%{QUERY_STRING}" [L]
 RewriteCond %{REQUEST_FILENAME} !-f
