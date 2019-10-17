@@ -1002,7 +1002,7 @@ function ignition_status($payload) {
   }
 
   if($uid) {
-    return db_update('screen', ['uid' => $uid], [
+    return db_update('screen', ['uid' => db_string($uid)], [
       'ignition_state' => db_string($state ? 'on' : 'off'),
       'ignition_time' => 'current_timestamp'
     ]);
