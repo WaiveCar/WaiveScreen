@@ -980,7 +980,7 @@ function campaign_update($data, $fileList, $user = false) {
 }
 
 function ignition_status($payload) {
-  $car = aget($payload, 'car');
+  $car = aget($payload, 'name');
 
   if(isset($payload['ignitionOn'])) {
     $state = $payload['ignitionOn'];
@@ -991,7 +991,7 @@ function ignition_status($payload) {
   if($car) {
     $res = (db_connect())->querySingle("select * from screen where car like $car");
   } else {
-    return error_log("Unable to find 'car' in payload: " . json_encode($payload));
+    return error_log("Unable to find 'name' in payload: " . json_encode($payload));
   }
 
   if($res) {
