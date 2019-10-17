@@ -867,6 +867,16 @@ def system_uptime():
   with open('/proc/uptime', 'r') as f:
     return float(f.readline().split(' ')[0])
 
+def get_dpms_state(hdmi_port='both'):
+  if hdmi_port == 'both':
+    return ( get_dpms_state(1), get_dpms_state(2) )
+  else:
+    try:
+      with open('/sys/class/drm/card0/card0-HDMI-A-{}/dpms'.format(hdmi_port), 'r') as f:
+        return f.read().strip()
+    except:
+      return False
+
 def create_uptime_log():
   bootcount = db.get_bootcount()
   uptime = system_uptime()
