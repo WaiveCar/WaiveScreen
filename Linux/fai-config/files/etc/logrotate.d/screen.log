@@ -11,3 +11,16 @@
 	compress
 }
 
+/var/log/screen/*.csv
+{
+	su adorno adorno
+	rotate 26
+	weekly
+	missingok
+	dateext
+	dateformat -%Y%m%d
+	notifempty
+	delaycompress
+	compress
+}
+
