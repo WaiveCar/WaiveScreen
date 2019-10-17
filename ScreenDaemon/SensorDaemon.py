@@ -7,6 +7,7 @@ import sys
 
 import csv
 import os
+import shutil
 import time
 import pprint
 from datetime import datetime
@@ -50,6 +51,7 @@ def open_csv_writer(filename, fieldnames):
   file is empty, we write the header row at the top.  If the file
   already exists, we trim the end of any incomplete writes. """
   csvfile = open(filename, 'a+', buffering=1, newline='')
+  shutil.chown(filename, lib.USER, lib.USER)
   file_pos = csvfile.tell()
   if file_pos > 0:
     # We check the end of existing files for incomplete lines or binary junk
