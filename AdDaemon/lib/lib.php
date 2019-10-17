@@ -755,7 +755,7 @@ function show($what, $clause = []) {
   global $SCHEMA;
   $me = me();
   $where = [];
-  error_log(json_encode($_SESSION));
+  //error_log(json_encode($_SESSION));
   if($me) {
     $schema = $SCHEMA[$what];
     if($me['organization_id'] && isset($schema['organization_id'])) {

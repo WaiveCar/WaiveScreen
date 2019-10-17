@@ -585,7 +585,7 @@ function db_clean($kv) {
   $db = db_connect();
   foreach($kv as $k => $v) {
     if(is_array($v)) {
-      error_log(json_encode([$k, $v]));
+      //error_log(json_encode([$k, $v]));
     } else {
       $res[$db->escapeString($k)] = $db->escapeString($v);
     }
