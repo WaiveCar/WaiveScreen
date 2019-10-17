@@ -35,7 +35,8 @@ avg = 0
 _arduinoConnectionDown = False
 
 SIXDOF_FIELDS = ['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y', 'Gyro_z', 'Pitch', 'Roll', 'Yaw']
-POWERTEMP_FIELDS = ['Time', 'Voltage', 'Current', 'Temp']
+POWERTEMP_FIELDS = ['Time', 'Voltage', 'Current', 'Temp', 'Fan', 'Light']
+FIELDS_TO_ROUND = {'Time': 2, 'Pitch': 3, 'Roll': 3, 'Yaw': 3, 'Voltage': 2, 'Current': 2, 'Temp': 2}
 
 if lib.DEBUG:
   lib.set_logger(sys.stderr)
@@ -61,6 +62,10 @@ def open_csv_writer(filename, fieldnames):
   if file_pos == 0:
     writer.writeheader()
   return writer
+
+def round_fields(d):
+  for k, v in FIELDS_TO_ROUND.items():
+    d[k] = round(d[k], v)
 
 
 run = db.kv_get('runcount')
@@ -118,16 +123,17 @@ while True:
       avg = 0
 
 
-    sixdof_writer.writerow(all)
-    if ix % POWERTEMP_PERIOD == 0:
-      powertemp_writer.writerow(all)
-
     # If we need to go into/get out of a low power mode
     # We also need to make sure that we are looking at a nice
     # window of time. Let's not make it the window_size just
     # in case our tidiness algorithm breaks.
     if sensor and len(window) > WINDOW_SIZE * 0.8 and lib.BRANCH != 'release':
       arduino.pm_if_needed(avg, all.get('Voltage'))
+
+    round_fields(all)
+    sixdof_writer.writerow(all)
+    if ix % POWERTEMP_PERIOD == 0:
+      powertemp_writer.writerow(all)
 
     # Now you'd think that we just sleep on the frequency, that'd be wrong.
     # Thanks, try again. Instead we need to use the baseline time from start
