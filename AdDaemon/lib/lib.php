@@ -989,7 +989,7 @@ function ignition_status($payload) {
   }
 
   if($car) {
-    $res = (db_connect())->querySingle("select * from screen where car like $car");
+    $res = (db_connect())->querySingle("select * from screen where car like '$car'");
   } else {
     return error_log("Unable to find 'name' in payload: " . json_encode($payload));
   }
