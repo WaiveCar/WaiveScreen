@@ -36,7 +36,7 @@ avg = 0
 _arduinoConnectionDown = False
 
 SIXDOF_FIELDS = ['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y', 'Gyro_z', 'Pitch', 'Roll', 'Yaw']
-POWERTEMP_FIELDS = ['Time', 'Voltage', 'Current', 'Temp', 'Fan', 'Light']
+POWERTEMP_FIELDS = ['Time', 'Voltage', 'Current', 'Temp', 'Fan', 'Light', 'DPMS1', 'DPMS2']
 FIELDS_TO_ROUND = {'Time': 2, 'Pitch': 3, 'Roll': 3, 'Yaw': 3, 'Voltage': 2, 'Current': 2, 'Temp': 2}
 
 if lib.DEBUG:
@@ -129,12 +129,13 @@ while True:
     # We also need to make sure that we are looking at a nice
     # window of time. Let's not make it the window_size just
     # in case our tidiness algorithm breaks.
-    if sensor and len(window) > WINDOW_SIZE * 0.8 and lib.BRANCH != 'release':
+    if sensor and len(window) > WINDOW_SIZE * 0.8 and lib.BRANCH not in ['release', 'master']:
       arduino.pm_if_needed(avg, all.get('Voltage'))
 
     round_fields(all)
     sixdof_writer.writerow(all)
     if ix % POWERTEMP_PERIOD == 0:
+      all['DPMS1'], all['DPMS2'] = lib.get_dpms_state()
       powertemp_writer.writerow(all)
 
     # Now you'd think that we just sleep on the frequency, that'd be wrong.
