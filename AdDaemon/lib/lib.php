@@ -989,7 +989,8 @@ function ignition_status($payload) {
   }
 
   if($car) {
-    $res = (db_connect())->querySingle("select * from screen where car like '$car'");
+    $qstr = "select * from screen where car like '$car'";
+    $res = (db_connect())->querySingle($qstr);
   } else {
     return error_log("Unable to find 'name' in payload: " . json_encode($payload));
   }
@@ -1006,7 +1007,7 @@ function ignition_status($payload) {
       'ignition_time' => 'current_timestamp'
     ]);
   } else {
-    return error_log("Could not find a uid in the result of ignition_status for $car");
+    return error_log("Could not find a uid in the result of ignition_status for $car: ($qstr) " . json_encode($res) );
   }
 }
 
