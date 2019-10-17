@@ -979,6 +979,37 @@ function campaign_update($data, $fileList, $user = false) {
   return $campaign_id;
 }
 
+function ignition_status($payload) {
+  $car = aget($payload, 'car');
+
+  if(isset($payload['ignitionOn'])) {
+    $state = $payload['ignitionOn'];
+  } else {
+    return error_log("Unable to find 'ignitionOn' in payload: " . json_encode($payload));
+  }
+
+  if($car) {
+    $res = (db_connect())->querySingle("select * from screen where car like $car");
+  } else {
+    return error_log("Unable to find 'car' in payload: " . json_encode($payload));
+  }
+
+  if($res) {
+    $uid = aget($res, 'uid');
+  } else {
+    return error_log("Unable to find screen for $car");
+  }
+
+  if($uid) {
+    return db_update('screen', ['uid' => $uid], [
+      'ignition_state' => $state ? 'on' : 'off',
+      'ignition_time' => 'current_timestamp'
+    ]);
+  } else {
+    return error_log("Could not find a uid in the result of ignition_status for $car");
+  }
+}
+
 function getUser() {
   if(isset($_SESSION['user_id'])) {
     return Get::user($_SESSION['user_id']);

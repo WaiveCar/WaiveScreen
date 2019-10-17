@@ -115,7 +115,10 @@ $SCHEMA = [
     'first_seen'  => 'datetime', 
     'last_task'   => 'integer default 0',
     'last_loc'    => 'datetime',
-    'last_seen'   => 'datetime'
+    'last_seen'   => 'datetime',
+
+    'ignition_state' => 'text',
+    'ignition_time' => 'datetime'
   ],
 
   'place' => [
