@@ -67,7 +67,7 @@ def open_csv_writer(filename, fieldnames):
 
 def round_fields(d):
   for k, v in FIELDS_TO_ROUND.items():
-    d[k] = round(d[k], v)
+    d[k] = round(d.get(k, 0), v)
 
 
 run = db.kv_get('runcount')
@@ -129,8 +129,9 @@ while True:
     # We also need to make sure that we are looking at a nice
     # window of time. Let's not make it the window_size just
     # in case our tidiness algorithm breaks.
-    if sensor and len(window) > WINDOW_SIZE * 0.8 and lib.BRANCH not in ['release', 'master']:
-      arduino.pm_if_needed(avg, all.get('Voltage'))
+# TODO: add the below back in before pull request
+#    if sensor and len(window) > WINDOW_SIZE * 0.8 and lib.BRANCH != 'release':
+#      arduino.pm_if_needed(avg, all.get('Voltage'))
 
     round_fields(all)
     sixdof_writer.writerow(all)
