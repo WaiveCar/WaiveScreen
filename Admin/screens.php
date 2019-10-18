@@ -40,6 +40,11 @@ for($ix = 0; $ix < count($screenList); $ix++){
     $screenList[$ix]['loc_sec'] = 99999999999;
     $screenList[$ix]['diff_loc'] = '<em>never</em>';
   }
+  if(isset($screenList[$ix]['ignition_time'])) {
+    $screenList['expected'] = strtotime($screenList[$ix]['ignition_time']) - strtotime($screenList[$ix]['last_seen']);
+  }
+  $id = $screenList[$ix]['id'];
+  $screenList[$ix]['id'] = substr($id, 0, 4) . '&hellip;' . substr($id, -4);
 }
 
 //$tagList = db_all("select name from tag");
@@ -68,6 +73,7 @@ $fieldList = [
   'port' => 'port',
   'version' => 'version',
   'uptime' => 'uptime',
+  'expected' => 'expected',
   'last' => 'last_local',
   'first' => 'first_local'
 ];
