@@ -41,10 +41,12 @@ for($ix = 0; $ix < count($screenList); $ix++){
     $screenList[$ix]['diff_loc'] = '<em>never</em>';
   }
   if(isset($screenList[$ix]['ignition_time'])) {
-    $screenList['expected'] = strtotime($screenList[$ix]['ignition_time']) - strtotime($screenList[$ix]['last_seen']);
+    $screenList[$ix]['expected_hour'] = (strtotime($screenList[$ix]['ignition_time']) - strtotime($screenList[$ix]['last_seen'])) / 60 / 60;
+    $screenList[$ix]['expected'] = round( abs($screenList[$ix]['expected_hour']) );
   }
-  $id = $screenList[$ix]['id'];
-  $screenList[$ix]['id'] = substr($id, 0, 4) . '&hellip;' . substr($id, -4);
+  
+  $id = $screenList[$ix]['uid'];
+  $screenList[$ix]['shortid'] = substr($id, 0, 4) . '&hellip;' . substr($id, -4);
 }
 
 //$tagList = db_all("select name from tag");
@@ -130,7 +132,7 @@ function split($str) {
     .table td {padding: .75rem .2rem; }
     td.edit { white-space: nowrap; }
     .modal-body span {
-      min-width: 5rem; 
+      min-width: 7rem; 
       display: inline-block;
       vertical-align: top;
     }
@@ -162,10 +164,11 @@ function split($str) {
           </tr>
         </thead>
         <tbody>
-        <? foreach($screenList as $screen) { ?>
+        <? foreach($screenList as $screen) {
+ ?>
           <tr>
             <td>
-              <a href="#<?=$screen['id']?>" onclick='edit("<?=$screen['id']?>")' class=id><?= split($screen['uid']) ?></a>
+              <a href="#<?=$screen['id']?>" onclick='edit("<?=$screen['id']?>")' class=id><?= $screen['shortid'] ?></a>
             </td>
             <td>
               <select onchange=change(<?=$screen['id']?>,'project',this)>
@@ -240,7 +243,7 @@ function split($str) {
 
   </div>
     <script>
-    var Data=<?=json_encode($screenList);?>
+    var Data=<?=json_encode($screenList)?>,now='<?= date("Y-m-d H:i:s")?>';
     </script>
   <script
     src="https://code.jquery.com/jquery-3.4.1.min.js"

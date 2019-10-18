@@ -94,9 +94,13 @@ function remove() {
 
 function edit(id) {
   var screen = get(id);
-  var keylist = ['imei','pings','last_task'];
-  var out = keylist.map(row => `<span>${row}</span><span>${JSON.stringify(screen[row]).replace(/\"/g,'')}</span>`);
+  var keylist = ['last_seen','ignition_time','ignition_state','expected_hour','imei','pings','last_task'];
+  var out = keylist.map(row => screen[row] ? 
+    `<span>${row}</span><span>${JSON.stringify(screen[row]).replace(/\"/g,'')}</span>`:
+    `<span>${row}</span><span>&mdash;</span>`
+  );
   out.push(`<span>features</span><span>${obj2span(screen.features)}</span>`); 
+  out.unshift(`<span>Now</span><span>${now}</span>`); 
   
   _screen = screen;
 
