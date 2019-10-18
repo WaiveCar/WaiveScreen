@@ -2,7 +2,7 @@
 {
 	su adorno adorno
 	rotate 120
-	daily
+	weekly
 	missingok
 	dateext
 	dateformat -%Y%m%d
