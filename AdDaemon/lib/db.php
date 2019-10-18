@@ -393,10 +393,19 @@ $SCHEMA = [
   # that word I just used, would avoid the extra query for no 
   # results problem
   'screen_campaign' => [
-    'id' => 'integer primary key autoincrement',
-    'screen_id' => 'integer',
+    'id'          => 'integer primary key autoincrement',
+    'screen_id'   => 'integer',
     'campaign_id' => 'integer',
-    'created_at'=> 'datetime default current_timestamp',
+    'created_at'  => 'datetime default current_timestamp',
+  ],
+
+  'location_history' => [
+    'id'          => 'integer primary key autoincrement',
+    'job_id'      => 'integer',
+    'screen_id'   => 'integer',
+    'lat'         => 'float default null',
+    'lng'         => 'float default null',
+    'created_at'  => 'datetime default current_timestamp',
   ],
 
   // This is going to be a monstrosity really and will
@@ -407,8 +416,8 @@ $SCHEMA = [
     // this is duplicate but honestly I'm thinking this
     // will be a common request - let's not make it expensive
     'screen_id' => 'integer',
-    'lat' => 'float default null',
-    'lng' => 'float default null',
+    'lat'       => 'float default null',
+    'lng'       => 'float default null',
     'created_at' => 'datetime',
 
     // The rest here is kind of a copy and paste for now.
