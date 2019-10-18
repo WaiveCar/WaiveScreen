@@ -42,9 +42,6 @@ def success(what):
 def failure(what):
   return res({ 'res': False, 'data': what })
 
-def get_location():
-  return lib.sensor_last()
-
 @_app.route('/default')
 def default():
   attempted_ping = False
@@ -91,7 +88,6 @@ def sow(work = False):
   # lib.ping_if_needed()
 
   # The first thing we get is the last known location.
-  sensor = lib.sensor_last()
   payload = {
     'uid': lib.get_uuid(),
     'lat': db.kv_get('Lat'),
@@ -118,8 +114,8 @@ def sow(work = False):
       for i in range(len(jobList)):
         job = jobList[i]
 
-        sensorList = [dict(x) for x in db.range('sensor', job['start_time'], job['end_time'])]
-        job['sensor'] = sensorList
+        locationList = [dict(x) for x in db.range('location', job['start_time'], job['end_time'])]
+        job['location'] = locationList
 
         # start_time and end_time are javascript epochs
         # so they are in millisecond

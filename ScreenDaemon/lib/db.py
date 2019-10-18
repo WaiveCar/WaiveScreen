@@ -131,7 +131,7 @@ _SCHEMA = {
     ('speed', 'float default null'),
     ('heading', 'float default null'),
     ('source', 'text default null'),
-    ('time', 'datetime default current_timestamp'),
+    ('created_at', 'datetime default current_timestamp'),
   ]
 }
 
