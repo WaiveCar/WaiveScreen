@@ -137,6 +137,7 @@ function split($str) {
     }
     .edit:hover { color: #000 }
     #notice { position: absolute; top:0; left:0; width: 100%; z-index: 100;display:none}
+    .btn.disabled,.btn-primary.disabled { background: #aaa !important }
   </style>
   <body id="page-top">
   <div id="wrapper">
