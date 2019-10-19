@@ -2,7 +2,7 @@
 include('../AdDaemon/lib/lib.php');
 include('lib.php');
 
-$screenList = get('screens', ['removed' => 0, 'active' => 1]);
+$screenList = get('screens', ['active' => 1]);
 $addrList = get_addressList(array_map(function($row) { 
   if($row['lat'] && $row['lng']) {
     return [$row['lat'],$row['lng']]; 
@@ -70,8 +70,7 @@ $fieldList = [
   'car' => 'car',
   'serial' => 'serial',
   'location' => 'addr',
-  'updated' => 'diff_loc',
-  'phone' => 'phone',
+  'removed' => 'removed',
   'port' => 'port',
   'version' => 'version',
   'uptime' => 'uptime',
@@ -234,7 +233,8 @@ function split($str) {
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-danger btn-sm mr-auto" onclick=remove()>Remove Screen</button>
+            <button type="button" class="btn btn-danger btn-sm mr-auto" id="remove" onclick=remove()>Remove Screen</button>
+            <button type="button" class="btn btn-primary btn-sm mr-auto" id="unremove" onclick=unremove()>Unremove Screen</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>

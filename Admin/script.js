@@ -83,6 +83,14 @@ function obj2span(obj) {
   return '<div>' + out.join('</div><div>') + '</div>';
 }
 
+function unremove() {
+  if(confirm(`Are you sure you want to unremove ${_screen.uid}?`)) {
+    post('screens', {id: _screen.id, removed: false}, res => {
+      show({data: 'Updated screen'}, 1000);
+    });
+    $("#editModal").modal('hide');
+  }
+}
 function remove() {
   if(confirm(`Are you sure you want to remove ${_screen.uid}?`)) {
     post('screens', {id: _screen.id, removed: true }, res => {
@@ -94,7 +102,7 @@ function remove() {
 
 function edit(id) {
   var screen = get(id);
-  var keylist = ['last_seen','ignition_time','ignition_state','expected_hour','imei','pings','last_task'];
+  var keylist = ['last_seen','ignition_time','ignition_state','expected_hour','phone','imei','pings','last_task'];
   var out = keylist.map(row => screen[row] ? 
     `<span>${row}</span><span>${JSON.stringify(screen[row]).replace(/\"/g,'')}</span>`:
     `<span>${row}</span><span>&mdash;</span>`
@@ -104,6 +112,17 @@ function edit(id) {
   
   _screen = screen;
 
+  if(screen.removed) {
+    document.getElementById('remove').setAttribute('disabled');
+    document.getElementById('unremove').removeAttribute('disabled');
+    $("#remove").addClass('disabled');
+    $("#unremove").delClass('disabled');
+  } else {
+    document.getElementById('remove').removeAttribute('disabled');
+    document.getElementById('unremove').setAttribute('disabled');
+    $("#remove").delClass('disabled');
+    $("#unremove").addClass('disabled');
+  }
   $("#editModal .modal-body").html('<div>' + out.join('</div><div>') + '</div>');
   $("#ModalLabel").html(screen.uid);
   $("#editModal").modal();
