@@ -111,17 +111,21 @@ function edit(id) {
   out.unshift(`<span>Now</span><span>${now}</span>`); 
   
   _screen = screen;
+  var remove =  document.getElementById('remove');
+  var unremove =  document.getElementById('unremove');
 
   if(screen.removed) {
-    document.getElementById('remove').setAttribute('disabled','');
-    document.getElementById('unremove').removeAttribute('disabled');
-    $("#remove").addClass('disabled');
-    $("#unremove").delClass('disabled');
+    remove.setAttribute('disabled','');
+    remove.classList.add('disabled');
+
+    unremove.removeAttribute('disabled');
+    unremove.classList.remove('disabled');
   } else {
-    document.getElementById('remove').removeAttribute('disabled');
-    document.getElementById('unremove').setAttribute('disabled','');
-    $("#remove").delClass('disabled');
-    $("#unremove").addClass('disabled');
+    remove.removeAttribute('disabled');
+    remove.classList.remove('disabled');
+
+    unremove.setAttribute('disabled','');
+    unremove.classList.add('disabled');
   }
   $("#editModal .modal-body").html('<div>' + out.join('</div><div>') + '</div>');
   $("#ModalLabel").html(screen.uid);
