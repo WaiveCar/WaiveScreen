@@ -70,7 +70,6 @@ $fieldList = [
   'car' => 'car',
   'serial' => 'serial',
   'location' => 'addr',
-  'removed' => 'removed',
   'port' => 'port',
   'version' => 'version',
   'uptime' => 'uptime',
@@ -130,6 +129,7 @@ function split($str) {
     em { color: #555 }
     .table td {padding: .75rem .2rem; }
     td.edit { white-space: nowrap; }
+    .removed { opacity: 0.5;background:#ddd }
     .modal-body span {
       min-width: 7rem; 
       display: inline-block;
@@ -164,8 +164,13 @@ function split($str) {
         </thead>
         <tbody>
         <? foreach($screenList as $screen) {
+          if($screen['removed']) {
+            $klass = ' class="removed"';
+          } else {
+            $klass = '';
+          }
  ?>
-          <tr>
+          <tr<?=$klass?>>
             <td>
               <a href="#<?=$screen['id']?>" onclick='edit("<?=$screen['id']?>")' class=id><?= $screen['shortid'] ?></a>
             </td>

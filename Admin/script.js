@@ -113,13 +113,13 @@ function edit(id) {
   _screen = screen;
 
   if(screen.removed) {
-    document.getElementById('remove').setAttribute('disabled');
+    document.getElementById('remove').setAttribute('disabled','');
     document.getElementById('unremove').removeAttribute('disabled');
     $("#remove").addClass('disabled');
     $("#unremove").delClass('disabled');
   } else {
     document.getElementById('remove').removeAttribute('disabled');
-    document.getElementById('unremove').setAttribute('disabled');
+    document.getElementById('unremove').setAttribute('disabled','');
     $("#remove").delClass('disabled');
     $("#unremove").addClass('disabled');
   }
