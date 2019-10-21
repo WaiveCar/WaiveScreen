@@ -720,6 +720,7 @@ _upgrade_post() {
   add_history upgrade "$version"
 
   upgrade_scripts
+  update_arduino
   stack_restart 
   _info "Now on $version"
 }

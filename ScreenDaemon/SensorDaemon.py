@@ -129,6 +129,7 @@ while True:
       logging.info("Got first arduino read")
       first = False
       db.kv_set('arduino_seen', 1)
+      db.kv_set('arduino_version', sensor.get('Sw_version'))
 
     # Put data in if we have it
     location = lib.get_latlng()

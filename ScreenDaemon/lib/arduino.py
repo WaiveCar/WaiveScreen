@@ -422,8 +422,15 @@ def arduino_read():
   gyro_z = -1 * (0xFFFF - gyro_z) if gyro_z > 0x8000 else gyro_z
   fan_speed = ord(_arduino.read())
   backlight_value = ord(_arduino.read())
+  try:
+    sw_version = bytes.decode(_arduino.read(8))
+  except:
+    # On older firmware versions, we will read the 0xff start of the next frame
+    # We catch that and set the version to unknown.
+    sw_version = 'unknown'
   received_dict = {
     #'Arduino_time': time_ms,
+    'Sw_version': sw_version,
     'Light': backlight_value,
     'Fan': fan_speed,
     'Temp': temp_c,

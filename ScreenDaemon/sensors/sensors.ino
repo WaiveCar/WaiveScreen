@@ -20,7 +20,7 @@ int
 
   fanSpeed = 150, 
 
-  backlightValue = 0.35 * 255;
+  backlightValue = 0.2 * 255;
 
 #define THERMISTORPIN A0
 #define VOLTAGEPIN A1
@@ -28,9 +28,8 @@ int
 #define NUMSAMPLES 100
 
 bool autofan = true;
-bool cpu_on = true;
+bool cpu_on = false;
 bool ide_debug = false;
-bool seenCpu = false;
 
 int j=0; // used to make sure the fan comes back on.
 int backlight_adjust = 1; // used to lower current draw at low voltage to save the battery
@@ -429,6 +428,8 @@ void loop() {
     Serial.write(lowByte(accel_t_gyro.value.z_gyro));
     Serial.write(fanSpeed);
     Serial.write(backlightValue);
+    // Write Version to serial.  Will be datecode of git commit: [YYYYMMDD]
+    Serial.write(VERSION);
   }
 
   if(ide_debug){
