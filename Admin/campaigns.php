@@ -46,7 +46,10 @@ $height = $width * 675 / 1920;
         <div class="container-fluid">
           <div class="alert alert-primary" id="notice" role="alert"></div>
             <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Campaigns</h1>
+            <h1 class="h3 mb-0 text-gray-800">Active Campaigns</h1>
+            <h1 class="h3 mb-0 text-gray-800">Pending Campaigns</h1>
+            <h1 class="h3 mb-0 text-gray-800">Completed Campaigns</h1>
+            <h1 class="h3 mb-0 text-gray-800">Rejected Campaigns</h1>
             <a onclick="create_campaign()" href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> New</a>
           </div>
           <div class='row'>
@@ -69,8 +72,7 @@ $height = $width * 675 / 1920;
                   Start: <?= $campaign['start_time'] ?><br>
                   End: <?= $campaign['end_time'] ?>
                 <? } else { ?>
-                  <h4>Default advertisement
-                  </h4>
+                  <h4>Default advertisement</h4>
                 <? } ?>
 
                 <p class="card-text"></p>
