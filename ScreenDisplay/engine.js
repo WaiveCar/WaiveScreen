@@ -41,6 +41,7 @@ var Engine = function(opts){
     // This is the actual breakdown of the content on
     // the screen into different partitions
     _box = {},
+    _start = new Date(),
     _last = false,
     _uniq = 0,
     _last_uniq = false,
@@ -52,7 +53,6 @@ var Engine = function(opts){
     _nop = function(){},
     _passthru = function(cb){cb()},
     _isNetUp = true,
-    _start = new Date(),
     _stHandleMap = {},
     _key = '-xA8tAY4YSBmn2RTQqnnXXw',
     _ = {
@@ -162,6 +162,26 @@ var Engine = function(opts){
 
   function isString(obj) { 
     return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
+  }
+
+ // a little fisher yates to start the day
+ function shuffle(array) {
+   var currentIndex = array.length;
+   var temporaryValue, randomIndex;
+
+   // While there remain elements to shuffle...
+   while (0 !== currentIndex) {
+     // Pick a remaining element...
+     randomIndex = Math.floor(Math.random() * currentIndex);
+     currentIndex -= 1;
+
+     // And swap it with the current element.
+     temporaryValue = array[currentIndex];
+     array[currentIndex] = array[randomIndex];
+     array[randomIndex] = temporaryValue;
+   }
+
+   return array;
   }
 
   function event(what, data) {
@@ -572,26 +592,6 @@ var Engine = function(opts){
   }
 
   var Widget = {
-    // a little fisher yates to start the day
-    shuffle: function (array) {
-     var currentIndex = array.length;
-     var temporaryValue, randomIndex;
-
-     // While there remain elements to shuffle...
-     while (0 !== currentIndex) {
-       // Pick a remaining element...
-       randomIndex = Math.floor(Math.random() * currentIndex);
-       currentIndex -= 1;
-
-       // And swap it with the current element.
-       temporaryValue = array[currentIndex];
-       array[currentIndex] = array[randomIndex];
-       array[randomIndex] = temporaryValue;
-     }
-
-     return array;
-
-    },
     doTime: function() {
       var now = new Date();
       _box.time.innerHTML = [
@@ -675,7 +675,7 @@ var Engine = function(opts){
         _box.ticker.style.display = 'block';
         if(feed.map) {
           _box.ticker.innerHTML = "<div class=ticker-content-xA8tAY4YSBmn2RTQqnnXXw>" + 
-            Widget.shuffle(feed).map(row => `<span>${row}</span>`) + "</div>";
+            shuffle(feed).map(row => `<span>${row}</span>`) + "</div>";
         }
 
         scroll();
@@ -975,9 +975,6 @@ var Engine = function(opts){
   // variables start with lower case letters,
   // function start with upper case.
   return Object.assign(_res, {
-    Get: function(what) {
-      return _[what];
-    },
     Play: function() {
       _res.pause = false;
       if(_.current) {
@@ -1016,8 +1013,9 @@ var Engine = function(opts){
     },
 
     Debug: function() {
-      _.debug = true;
       var div = makeBox('debug');
+      _.debug = true;
+
       if(div) {
         _box.top.appendChild(div);
       }
@@ -1029,10 +1027,6 @@ var Engine = function(opts){
         box: _box
       };
     }, 
-    Scrub: function(relative_time) {
-      if(relative_time < 0) {
-      }
-    },
     Start: function(){
       // Try to initially contact the server
       sow();
