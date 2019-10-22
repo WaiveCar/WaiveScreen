@@ -162,26 +162,22 @@ var Engine = function(opts){
       return _box[row];
     }
   }
-  function layout() {
-    //
-    // <div class=top>
-    //   <div class=widget></div>
-    //   <div class=ad></div>
-    // </div>
-    // <div class=bottom>
-    //   <div class=time></div>
-    //   <div class=ticker></div>
-    // </div>
-    //
-    ["top","ad","widget","bottom","time","ticker"].forEach(makeBox);
-    // this ordering is correct...trust me.
-    _box.top.appendChild(_box.widget);
-    _box.top.appendChild(_box.ad);
-    _box.bottom.appendChild(_box.time);
-    _box.bottom.appendChild(_box.ticker);
-    _res.container.appendChild(_box.top);
-    _res.container.appendChild(_box.bottom);
-    _res.container.classList.add('engine' + _key);
+
+  function _timeout(fn, timeout, name, override) {
+    var handle = override ? fn : setTimeout(fn, timeout);
+    _stHandleMap[name] = {
+      ts: new Date(), 
+      handle: handle,
+      timeout: timeout
+    };
+    return handle;
+  }
+
+  function clearAllTimeouts() {
+    for(var name in _stHandleMap) {
+      clearTimeout(_stHandleMap[name].handle);
+      delete _stHandleMap[name];
+    }
   }
 
   function cleanTimeout(what, dur) {
@@ -212,6 +208,28 @@ var Engine = function(opts){
     console.log("Making " + obj.url + " inactive");
   }
 
+  function layout() {
+    //
+    // <div class=top>
+    //   <div class=widget></div>
+    //   <div class=ad></div>
+    // </div>
+    // <div class=bottom>
+    //   <div class=time></div>
+    //   <div class=ticker></div>
+    // </div>
+    //
+    ["top","ad","widget","bottom","time","ticker"].forEach(makeBox);
+    // this ordering is correct...trust me.
+    _box.top.appendChild(_box.widget);
+    _box.top.appendChild(_box.ad);
+    _box.bottom.appendChild(_box.time);
+    _box.bottom.appendChild(_box.ticker);
+    _res.container.appendChild(_box.top);
+    _res.container.appendChild(_box.bottom);
+    _res.container.classList.add('engine' + _key);
+  }
+
   function image(asset, obj) {
     var img = document.createElement('img');
     img.onerror = function(e) {
@@ -238,7 +256,6 @@ var Engine = function(opts){
     asset.duration = asset.duration || _res.duration;
     obj.duration += asset.duration;
     asset.run = function(cb) {
-      console.log("HERE");
       var container = _res.container.getBoundingClientRect();
       var parentratio = container.width/container.height;
       var ratio = img.width / img.height;
@@ -386,14 +403,14 @@ var Engine = function(opts){
       mylock = false;
     });
 
-    var m = ["emptied","ended","loadeddata","play","playing","progress","seeked","seeking","pause"];
-    for(var ix = 0; ix < m.length; ix++) {
-      (function(row) {
-        vid.addEventListener(row, function() {
-          dbg(' > ' + row + ' ' + JSON.stringify(Array.prototype.slice.call(arguments))); 
-        });
-      })(m[ix]);
-    }
+    // var m = ["emptied","ended","loadeddata","play","playing","progress","seeked","seeking","pause"];
+    // for(var ix = 0; ix < m.length; ix++) {
+    //  (function(row) {
+    //    vid.addEventListener(row, function() {
+    //      dbg(' > ' + row + ' ' + JSON.stringify(Array.prototype.slice.call(arguments))); 
+    //    });
+    //  })(m[ix]);
+    // }
 
     asset.type = 'video';
     return asset;
@@ -696,24 +713,6 @@ var Engine = function(opts){
     },
   };
 
-  function _timeout(fn, timeout, name, override) {
-    var handle = override ? fn : setTimeout(fn, timeout);
-    _stHandleMap[name] = {
-      ts: new Date(), 
-      handle: handle,
-      timeout: timeout
-    };
-    return handle;
-  }
-
-  function clearAllTimeouts() {
-    for(var name in _stHandleMap) {
-      clearTimeout(_stHandleMap[name].handle);
-      delete _stHandleMap[name];
-    }
-  }
-
-
   function setAssetDuration(what, index, amount) {
     // Update the total aggregate to reflect the new amount
     what.duration -= (what.duration - amount);
@@ -811,9 +810,7 @@ var Engine = function(opts){
     } 
 
     _current.shown = _current.assetList[_current.position];
-    dbg("run {");
     _current.shown.run( function() {
-      dbg("appendChild {");
       if(_res.slowCPU && prev) {
         _box.ad.removeChild(prev);
       }
@@ -821,9 +818,7 @@ var Engine = function(opts){
       if(_current.shown.type == 'image') {
         scrollIfNeeded();
       }
-      dbg("} appendChild");
     });
-    dbg("} run")
 
     if(_current.shown.uniq != _last_uniq) {
       // This is NEEDED because by the time 
@@ -843,9 +838,7 @@ var Engine = function(opts){
           //dbg("} removeChild");
           // we don't have to worry about the re-pointing
           // because we aren't in the timeout
-          dbg("rewind {");
           _current.shown.rewind();
-          dbg("} rewind");
         }
         doFade = true;
       }
