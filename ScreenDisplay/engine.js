@@ -1,17 +1,3 @@
-// This code, written in 2019, is designed to run on say, I dunno, IE 10 or so (2012)
-// so ES6/ECMA2015 things are off the table for now. A few modern things are ok, 
-// like Array.forEach, dom.classList, etc, but things like {[a]: 1, ...b} are probably not.
-//
-// If you're reading this and it's like 2022 or something, then go ahead and reconsider it,
-// it'll probably be fine by then.
-//
-// Also it's worth noting that the instagram ad basically discards any notion of compatibility
-// and uses css animations, css calc, the vw/vh units and a bunch of other fancy modern css3 
-// stuff - doing that with a bunch of javascript setIntervals was a waste of time ... I really
-// don't care that much - people will be viewing that on a smartphone and those usually aren't
-// crufty old crap browsers.
-
-
 // 2 mutually exclusive ways to timeline:
 //
 // be stupid and have the timeline feed the next job - this makes scrubbing hard
@@ -22,20 +8,8 @@
 //   * A "discard future" option will fix the latency issue
 //
 var Engine = function(opts){
-  // Support {
-
-  // Edge 12 FF 34 (2015)
-  var merge = Object.assign || function (a,b) {
-    for(var k in b) {
-      a[k] = b[k];
-    }
-    return a;
-  }
-  // } End of support.
-
-
   var 
-    _res = merge({
+    _res = Object.assign({
       // This is what the ads attach to
       container: document.body,
 
@@ -451,7 +425,7 @@ var Engine = function(opts){
   //  duration - how long the asset should be displayed.
   //
   function makeJob(obj) {
-    obj = merge({
+    obj = Object.assign({
       downweight: 1,
       completed_seconds: 0,
       // We need multi-asset support on a per-job
@@ -502,7 +476,7 @@ var Engine = function(opts){
     }
 
     // This places in things like the goal
-    _res.db[job.campaign_id] = merge(
+    _res.db[job.campaign_id] = Object.assign(
       _res.db[job.campaign_id], job
     );
 
@@ -1000,7 +974,7 @@ var Engine = function(opts){
   // The convention we'll be using is that
   // variables start with lower case letters,
   // function start with upper case.
-  return merge(_res, {
+  return Object.assign(_res, {
     Get: function(what) {
       return _[what];
     },
@@ -1087,7 +1061,7 @@ var Engine = function(opts){
       job = makeJob(obj || {});
       // this allows someone to set say,
       // the priority to a high number
-      _res.db[job.id] = merge(job, params);
+      _res.db[job.id] = Object.assign(job, params);
       return _res.db[job.id];
     }
   });
