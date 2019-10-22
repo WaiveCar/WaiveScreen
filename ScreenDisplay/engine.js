@@ -63,9 +63,6 @@ var Engine = function(opts){
       data: {},
 
       NextJob: false,
-
-      _debug: false,
-
     }, opts || {}),
     // This is the actual breakdown of the content on
     // the screen into different partitions
@@ -74,22 +71,25 @@ var Engine = function(opts){
     _uniq = 0,
     _last_uniq = false,
     _last_container = false,
-    _current = false,
+    _last_sow = [+_start, +_start],
     _playCount = 0,
-    _job_id = 0,
+    _jobId = 0,
     _downweight = 0.7,
-    _firstRun = false,
     _nop = function(){},
     _passthru = function(cb){cb()},
     _isNetUp = true,
     _start = new Date(),
     _stHandleMap = {},
     _key = '-xA8tAY4YSBmn2RTQqnnXXw',
-    _last_sow = [+_start, +_start],
     _ = {
+      debug: false,
+      current: false,
+      firstRun: false,
+      fallback: false,
       maxPriority: 0,
-    },
-    _fallback;
+    };
+
+  _res._ = _;
 
   if(_res.dynamicSize) {
     _res.target.width = _res.container.clientWidth;
@@ -163,7 +163,7 @@ var Engine = function(opts){
     }
   }
 
-  function _timeout(fn, timeout, name, override) {
+  var _timeout = _res.Timeout = function(fn, timeout, name, override) {
     var handle = override ? fn : setTimeout(fn, timeout);
     _stHandleMap[name] = {
       ts: new Date(), 
@@ -462,7 +462,7 @@ var Engine = function(opts){
       // assets included in this job.
       duration: 0,
       assetList: [],
-      id: _job_id++,
+      id: _jobId++,
     }, obj);
     
     if( ! ('url' in obj) && ('asset' in obj) ) {
@@ -713,7 +713,7 @@ var Engine = function(opts){
     },
   };
 
-  function setAssetDuration(what, index, amount) {
+  var setAssetDuration = _res.SetAssetDuration = function(what, index, amount) {
     // Update the total aggregate to reflect the new amount
     what.duration -= (what.duration - amount);
 
@@ -867,7 +867,7 @@ var Engine = function(opts){
     _timeout(nextAsset, Math.max(timeoutDuration, 1000), 'nextAsset');
   }
 
-  function setNextJob(job) {
+  var setNextJob = _res.SetNextJob = function (job) {
     _current = job;
     _current.downweight *= _downweight;
     _current.position = 0;
@@ -912,47 +912,47 @@ var Engine = function(opts){
     _.maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0));
 
     var 
+      row, accum = 0,
       activeList = Object.values(_res.db).filter(row => row.active && row.duration),// && row.filter === maxPriority),
 
       // Here's the range of numbers, calculated by looking at all the remaining things we have to satisfy
       range = activeList.reduce( (a,b) => a + b.downweight * (b.goal - b.completed_seconds), 0),
 
-      row, accum = 0,
       // We do this "dice roll" to see 
       breakpoint = Math.random() * range;
 
-    if(_res._debug) {
+    if(_.debug) {
       console.log({active: activeList, db:_res.db, range: range, priority: _.maxPriority});
     }
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
-      if(_res.server && _res._debug) {
+      if(_res.server && _.debug) {
         console.log("Range < 0, using fallback");
       }
 
-      if(!_fallback) {
+      if(!_.fallback) {
         // woops what do we do now?! 
         // I guess we just try this again?!
         return _timeout(_res.NextJob, 1500, 'nextJob');
       }
 
-      setNextJob(_fallback);
+      setNextJob(_.fallback);
 
-      if(!_firstRun && activeList.length == 0 && Object.values(_res.db) > 1) {
+      if(!_.firstRun && activeList.length == 0 && Object.values(_res.db) > 1) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
-        setAssetDuration(_current, 0, 0.2);
+        setAssetDuration(_.current, 0, 0.2);
       } else {
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
         // this out to some significant number
-        setAssetDuration(_current, 0, _res.duration);
+        setAssetDuration(_.current, 0, _res.duration);
       }
 
     } else {
       // This is needed for the end case.
-      _firstRun = true;
-      _current = false;
+      _.firstRun = true;
+      _.current = false;
       for(row of activeList) {
 
         accum += row.downweight * (row.goal - row.completed_seconds);
@@ -961,7 +961,7 @@ var Engine = function(opts){
           break;
         }
       }
-      if(!_current) {
+      if(!_.current) {
         setNextJob(row);
       }
     }
@@ -974,7 +974,7 @@ var Engine = function(opts){
     if(force || (!_res.fallback && !url)) {
       // If we have a server we can get it from there
       get('/default', function(res) {
-        _fallback = makeJob(res.data.campaign);
+        _.fallback = makeJob(res.data.campaign);
         _res.system = res.data.system;
         event('system', _res.system);
         _timeout(function() {
@@ -986,7 +986,7 @@ var Engine = function(opts){
 
     } else {
       _res.fallback = _res.fallback || url;
-      _fallback = makeJob({url: _res.fallback, duration: .1});
+      _.fallback = makeJob({url: _res.fallback, duration: .1});
     }
   }
 
@@ -1006,8 +1006,8 @@ var Engine = function(opts){
     },
     Play: function() {
       _res.pause = false;
-      if(_current) {
-        _current.shown.play();
+      if(_.current) {
+        _.current.shown.play();
         nextAsset();
       } else {
         _res.NextJob();
@@ -1016,7 +1016,7 @@ var Engine = function(opts){
     Pause: function() {
       _res.pause = !_res.pause;
       clearTimeout(_stHandleMap.nextAsset.handle);
-      _current.shown.pause();
+      _.current.shown.pause();
     },
 
     PlayNow: function(job, doNotModify) {
@@ -1042,14 +1042,14 @@ var Engine = function(opts){
     },
 
     Debug: function() {
-      _res._debug = true;
+      _.debug = true;
       var div = makeBox('debug');
       if(div) {
         _box.top.appendChild(div);
       }
 
       return {
-        current: _current,
+        current: _.current,
         last: _last,
         isNetUp: _isNetUp,
         box: _box
