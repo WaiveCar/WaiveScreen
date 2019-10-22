@@ -188,9 +188,7 @@ var Engine = function(opts){
     //console.log('>> trigger ' + what);
     _res.data[what] = data;
     if(_res.listeners[what]) {
-      _res.listeners[what].forEach(function(cb) {
-        cb(data);
-      });
+      _res.listeners[what].forEach(cb => cb(data))
     }
   }
 
@@ -468,12 +466,12 @@ var Engine = function(opts){
     }
 
     if( obj.url ) {
-      obj.assetList = obj.url.map(function(row) { return urlToAsset(row, obj); });
+      obj.assetList = obj.url.map(row => urlToAsset(row, obj));
     }
 
     obj.remove = function(what) {
-      obj.assetList = obj.assetList.filter(function(row) { return row.uniq != what.uniq });
-      obj.duration = obj.assetList.reduce(function(a,b) { return a + b.duration }, 0);
+      obj.assetList = obj.assetList.filter(row => row.uniq != what.uniq );
+      obj.duration = obj.assetList.reduce((a,b) => { a + b.duration }, 0);
     }
 
     obj.append = function(what) {
@@ -581,9 +579,7 @@ var Engine = function(opts){
     post('sow', payload, function(res) {
       if(res.res) {
         _res.db = {};
-        res.data.forEach(function(row) {
-          addJob(row);
-        })
+        res.data.forEach(row => addJob(row));
       }
       if(cb) {
         cb();
@@ -1060,11 +1056,5 @@ var Engine = function(opts){
     }
   });
 };
-
-Engine.all = function(what) {
-  Engine.list.forEach(function(row) {
-    row[what]();
-  });
-}
 
 Engine.list = [];
