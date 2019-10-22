@@ -62,6 +62,8 @@ var Engine = function(opts){
       listeners: {},
       data: {},
 
+      NextJob: false,
+
       _debug: false,
 
     }, opts || {}),
@@ -760,9 +762,9 @@ var Engine = function(opts){
     }, _current.shown.duration * .15 * 1000);
   }
 
-  // Jobs have assets. nextJob chooses a job to run and then asks nextAsset
+  // Jobs have assets. NextJob chooses a job to run and then asks nextAsset
   // to do that work ... when nextAsset has no more assets for a particular job
-  // it calls nextJob again.
+  // it calls NextJob again.
   function nextAsset() {
     var prev;
     var timeoutDuration = 0;
@@ -805,7 +807,7 @@ var Engine = function(opts){
     // choose the next job.
     if(_current.position === _current.assetList.length) {
       event('jobEnded', _current);
-      return nextJob();
+      return _res.NextJob();
     } 
 
     _current.shown = _current.assetList[_current.position];
@@ -887,7 +889,7 @@ var Engine = function(opts){
     return job;
   }
 
-  function nextJob() {
+  _res.NextJob = _res.NextJob || function () {
     // We note something we call "breaks" which designate which asset to show.
     // This is a composite of what remains - this is two pass, eh, kill me.
     //
@@ -938,7 +940,7 @@ var Engine = function(opts){
       if(!_fallback) {
         // woops what do we do now?! 
         // I guess we just try this again?!
-        return _timeout(nextJob, 1500, 'nextJob');
+        return _timeout(_res.NextJob, 1500, 'nextJob');
       }
 
       setNextJob(_fallback);
@@ -1015,7 +1017,7 @@ var Engine = function(opts){
         _current.shown.play();
         nextAsset();
       } else {
-        nextJob();
+        _res.NextJob();
       }
     },
     Pause: function() {
@@ -1068,7 +1070,7 @@ var Engine = function(opts){
       // Try to initially contact the server
       sow();
       _res.SetFallback();
-      nextJob();
+      _res.NextJob();
     },
     on: function(what, cb) {
       if(_res.data[what]) {
