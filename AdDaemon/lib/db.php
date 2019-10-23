@@ -266,21 +266,15 @@ $SCHEMA = [
 
     'start_minute'=> 'integer default null',
     'end_minute'  => 'integer default null',
-    'approved'    => 'boolean default false',
-    'active'      => 'boolean default false',
+    'is_active'   => 'boolean default false',
+    'is_approved' => 'boolean default false',
     'is_default'  => 'boolean default false',
+
     'priority'    => 'integer default 0',
     'impression_count' => 'integer',
 
     'start_time'  => 'datetime default current_timestamp',
     'end_time'    => 'datetime'
-  ],
-
-  'kv' => [
-    'id'         => 'integer primary key autoincrement',
-    'key'        => 'text',
-    'value'      => 'text',
-    'created_at' => 'datetime default current_timestamp',
   ],
 
   'job' => [
