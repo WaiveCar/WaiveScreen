@@ -727,7 +727,13 @@ function feature_diff_recurse($a1, $a2, $key_prepend='') {
   $r = [];
   foreach($a1 as $k => $v) {
     if(is_array($v)) {
-      $tmp_r = feature_diff_recurse($a1[$k], $a2[$k], sprintf("%s%s,", $key_prepend, $k));
+      if(array_key_exists($k, $a2)) {
+        $tmp_a2 = $a2[$k];
+      }
+      else {
+        $tmp_a2 = array();
+      }
+      $tmp_r = feature_diff_recurse($a1[$k], $tmp_a2, sprintf("%s%s,", $key_prepend, $k));
       $r = array_merge($r, $tmp_r);
     }
     else if(!array_key_exists($k, $a2)) {
