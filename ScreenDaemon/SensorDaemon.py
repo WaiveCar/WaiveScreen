@@ -114,8 +114,8 @@ while True:
       raise Exception('arduino_read() returned no data')
     elif _arduinoConnectionDown:
       _arduinoConnectionDown = False
-      # We could wake the screen up here, but I'm assuming the pm_if_needed call below will do the right thing
       logging.info('Connection to arduino reestablished')
+      arduino.do_awake()
 
     n += 1
     if n % 8 == 0:
