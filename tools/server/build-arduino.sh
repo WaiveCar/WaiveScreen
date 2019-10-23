@@ -17,4 +17,5 @@ version=$(git log -1 --date=short --pretty=format:%ad | sed 's/-//g')
 sed "s/__VERSION__/$version/g" $SRC/sensors.ino > $MIDDLE/sensors.ino
 arduino --pref build.path=$BUILD --verify $MIDDLE/sensors.ino
 cp -puv $BUILD/sensors.ino.hex $DIR/../client
+echo $version > $DIR/../client/sensors.ino.version
 
