@@ -313,9 +313,7 @@ var Engine = function(opts){
       var playPromise = vid.play();
 
       if (playPromise !== undefined) {
-        playPromise.then(function(e) {
-          //console.log(new Date() - _start, count, asset.url + " promise succeeded", e);
-        })
+        playPromise.then(_nop)
         .catch(function(e) {
           // console.log(new Date() - now);
           // console.log(new Date() - _start, "setting " + asset.url + " to unplayable", e);
@@ -353,7 +351,7 @@ var Engine = function(opts){
       if(asset.duration < 0.8) {
         asset.cycles = Math.ceil(1/asset.duration); 
         vid.setAttribute('loop', true);
-        console.log(asset.url + " is " + asset.duration + "s. Looping " + asset.cycles + " times");
+        // console.log(asset.url + " is " + asset.duration + "s. Looping " + asset.cycles + " times");
         asset.duration *= asset.cycles;
       }
       vid.muted = true;
@@ -975,10 +973,9 @@ var Engine = function(opts){
       _res.pause = false;
       if(_.current) {
         _.current.shown.play();
-        nextAsset();
-      } else {
-        _res.NextJob();
-      }
+        return nextAsset();
+      } 
+      _res.NextJob();
     },
     Pause: function() {
       _res.pause = !_res.pause;
@@ -1031,13 +1028,12 @@ var Engine = function(opts){
     },
     on: function(what, cb) {
       if(_res.data[what]) {
-        cb(_res.data[what]);
-      } else { 
-        if(!(what in _res.listeners)) {
-          _res.listeners[what] = [];
-        }
-        _res.listeners[what].push(cb);
+        return cb(_res.data[what]);
+      } 
+      if(!(what in _res.listeners)) {
+        _res.listeners[what] = [];
       }
+      _res.listeners[what].push(cb);
     },
     Widget: Widget,
     SetFallback: setFallback,
