@@ -37,12 +37,7 @@ $RULES = [
     'features' => $JSON,
     'panels' => $JSON,
     'location' => $JSON
-  ],
-  'sensor_history' => [
-    'created_at' => [
-      'pre' => function($v) { return db_string($v); },
-     ]
-   ]
+  ]
 ];
 
 // 
