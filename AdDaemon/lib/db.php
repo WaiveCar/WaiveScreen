@@ -240,6 +240,13 @@ $SCHEMA = [
     'completed_seconds' => 'integer default 0',
     'project'     => 'text default "dev"',
 
+    // 
+    // This is a cheap classification system
+    // for the Oliver project. It'll probably
+    // change.
+    //
+    'topic'       => 'text',
+
     //
     // For now, until we get a geo db system
     // this makes things easily queriable
