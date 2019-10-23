@@ -1,0 +1,9 @@
+#!/bin/bash
+
+upgradepost() {
+  local path=/etc/logrotate.d/screen.log
+  cp -puv Linux/fai-config/files/$path $path
+  chown root.root /etc/logrotate.d/screen.log 
+}
+
+eval $1
