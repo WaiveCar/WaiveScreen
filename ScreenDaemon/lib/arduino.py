@@ -126,7 +126,7 @@ def set_autobright():
   #
   max_bright = db.sess_get('backlight')
   if max_bright is not None:
-    level = min(max_bright, level)
+    level = min(float(max_bright), level)
 
   _log.info('[autobright] Setting to {}'.format(level))
   set_backlight(level)

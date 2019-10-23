@@ -1,17 +1,3 @@
-// This code, written in 2019, is designed to run on say, I dunno, IE 10 or so (2012)
-// so ES6/ECMA2015 things are off the table for now. A few modern things are ok, 
-// like Array.forEach, dom.classList, etc, but things like {[a]: 1, ...b} are probably not.
-//
-// If you're reading this and it's like 2022 or something, then go ahead and reconsider it,
-// it'll probably be fine by then.
-//
-// Also it's worth noting that the instagram ad basically discards any notion of compatibility
-// and uses css animations, css calc, the vw/vh units and a bunch of other fancy modern css3 
-// stuff - doing that with a bunch of javascript setIntervals was a waste of time ... I really
-// don't care that much - people will be viewing that on a smartphone and those usually aren't
-// crufty old crap browsers.
-
-
 // 2 mutually exclusive ways to timeline:
 //
 // be stupid and have the timeline feed the next job - this makes scrubbing hard
@@ -22,20 +8,8 @@
 //   * A "discard future" option will fix the latency issue
 //
 var Engine = function(opts){
-  // Support {
-
-  // Edge 12 FF 34 (2015)
-  var merge = Object.assign || function (a,b) {
-    for(var k in b) {
-      a[k] = b[k];
-    }
-    return a;
-  }
-  // } End of support.
-
-
   var 
-    _res = merge({
+    _res = Object.assign({
       // This is what the ads attach to
       container: document.body,
 
@@ -62,32 +36,34 @@ var Engine = function(opts){
       listeners: {},
       data: {},
 
-      _debug: false,
-
+      NextJob: false,
     }, opts || {}),
     // This is the actual breakdown of the content on
     // the screen into different partitions
     _box = {},
+    _start = new Date(),
     _last = false,
     _uniq = 0,
     _last_uniq = false,
     _last_container = false,
-    _current = false,
+    _last_sow = [+_start, +_start],
     _playCount = 0,
-    _job_id = 0,
+    _jobId = 0,
     _downweight = 0.7,
-    _firstRun = false,
     _nop = function(){},
     _passthru = function(cb){cb()},
     _isNetUp = true,
-    _start = new Date(),
     _stHandleMap = {},
     _key = '-xA8tAY4YSBmn2RTQqnnXXw',
-    _last_sow = [+_start, +_start],
     _ = {
+      debug: false,
+      current: false,
+      firstRun: false,
+      fallback: false,
       maxPriority: 0,
-    },
-    _fallback;
+    };
+
+  _res._ = _;
 
   if(_res.dynamicSize) {
     _res.target.width = _res.container.clientWidth;
@@ -160,6 +136,70 @@ var Engine = function(opts){
       return _box[row];
     }
   }
+
+  var _timeout = _res.Timeout = function(fn, timeout, name, override) {
+    var handle = override ? fn : setTimeout(fn, timeout);
+    _stHandleMap[name] = {
+      ts: new Date(), 
+      handle: handle,
+      timeout: timeout
+    };
+    return handle;
+  }
+
+  function clearAllTimeouts() {
+    for(var name in _stHandleMap) {
+      clearTimeout(_stHandleMap[name].handle);
+      delete _stHandleMap[name];
+    }
+  }
+
+  function cleanTimeout(what, dur) {
+    return setTimeout(function() { 
+      what();
+    }, dur);
+  }
+
+  function isString(obj) { 
+    return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
+  }
+
+ // a little fisher yates to start the day
+ function shuffle(array) {
+   var currentIndex = array.length;
+   var temporaryValue, randomIndex;
+
+   // While there remain elements to shuffle...
+   while (0 !== currentIndex) {
+     // Pick a remaining element...
+     randomIndex = Math.floor(Math.random() * currentIndex);
+     currentIndex -= 1;
+
+     // And swap it with the current element.
+     temporaryValue = array[currentIndex];
+     array[currentIndex] = array[randomIndex];
+     array[randomIndex] = temporaryValue;
+   }
+
+   return array;
+  }
+
+  function event(what, data) {
+    //console.log('>> trigger ' + what);
+    _res.data[what] = data;
+    if(_res.listeners[what]) {
+      _res.listeners[what].forEach(cb => cb(data))
+    }
+  }
+
+  function assetError(obj, e) {
+    // TODO we need to report an improperly loading
+    // asset to our servers somehow so we can remedy
+    // the situation.
+    obj.active = false;
+    console.log("Making " + obj.url + " inactive");
+  }
+
   function layout() {
     //
     // <div class=top>
@@ -180,34 +220,6 @@ var Engine = function(opts){
     _res.container.appendChild(_box.top);
     _res.container.appendChild(_box.bottom);
     _res.container.classList.add('engine' + _key);
-  }
-
-  function cleanTimeout(what, dur) {
-    return setTimeout(function() { 
-      what();
-    }, dur);
-  }
-
-  function isString(obj) { 
-    return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
-  }
-
-  function event(what, data) {
-    //console.log('>> trigger ' + what);
-    _res.data[what] = data;
-    if(_res.listeners[what]) {
-      _res.listeners[what].forEach(function(cb) {
-        cb(data);
-      });
-    }
-  }
-
-  function assetError(obj, e) {
-    // TODO we need to report an improperly loading
-    // asset to our servers somehow so we can remedy
-    // the situation.
-    obj.active = false;
-    console.log("Making " + obj.url + " inactive");
   }
 
   function image(asset, obj) {
@@ -236,7 +248,6 @@ var Engine = function(opts){
     asset.duration = asset.duration || _res.duration;
     obj.duration += asset.duration;
     asset.run = function(cb) {
-      console.log("HERE");
       var container = _res.container.getBoundingClientRect();
       var parentratio = container.width/container.height;
       var ratio = img.width / img.height;
@@ -302,9 +313,7 @@ var Engine = function(opts){
       var playPromise = vid.play();
 
       if (playPromise !== undefined) {
-        playPromise.then(function(e) {
-          //console.log(new Date() - _start, count, asset.url + " promise succeeded", e);
-        })
+        playPromise.then(_nop)
         .catch(function(e) {
           // console.log(new Date() - now);
           // console.log(new Date() - _start, "setting " + asset.url + " to unplayable", e);
@@ -342,7 +351,7 @@ var Engine = function(opts){
       if(asset.duration < 0.8) {
         asset.cycles = Math.ceil(1/asset.duration); 
         vid.setAttribute('loop', true);
-        console.log(asset.url + " is " + asset.duration + "s. Looping " + asset.cycles + " times");
+        // console.log(asset.url + " is " + asset.duration + "s. Looping " + asset.cycles + " times");
         asset.duration *= asset.cycles;
       }
       vid.muted = true;
@@ -384,14 +393,14 @@ var Engine = function(opts){
       mylock = false;
     });
 
-    var m = ["emptied","ended","loadeddata","play","playing","progress","seeked","seeking","pause"];
-    for(var ix = 0; ix < m.length; ix++) {
-      (function(row) {
-        vid.addEventListener(row, function() {
-          dbg(' > ' + row + ' ' + JSON.stringify(Array.prototype.slice.call(arguments))); 
-        });
-      })(m[ix]);
-    }
+    // var m = ["emptied","ended","loadeddata","play","playing","progress","seeked","seeking","pause"];
+    // for(var ix = 0; ix < m.length; ix++) {
+    //  (function(row) {
+    //    vid.addEventListener(row, function() {
+    //      dbg(' > ' + row + ' ' + JSON.stringify(Array.prototype.slice.call(arguments))); 
+    //    });
+    //  })(m[ix]);
+    // }
 
     asset.type = 'video';
     return asset;
@@ -432,7 +441,7 @@ var Engine = function(opts){
   //  duration - how long the asset should be displayed.
   //
   function makeJob(obj) {
-    obj = merge({
+    obj = Object.assign({
       downweight: 1,
       completed_seconds: 0,
       // We need multi-asset support on a per-job
@@ -443,7 +452,7 @@ var Engine = function(opts){
       // assets included in this job.
       duration: 0,
       assetList: [],
-      id: _job_id++,
+      id: _jobId++,
     }, obj);
     
     if( ! ('url' in obj) && ('asset' in obj) ) {
@@ -455,12 +464,12 @@ var Engine = function(opts){
     }
 
     if( obj.url ) {
-      obj.assetList = obj.url.map(function(row) { return urlToAsset(row, obj); });
+      obj.assetList = obj.url.map(row => urlToAsset(row, obj));
     }
 
     obj.remove = function(what) {
-      obj.assetList = obj.assetList.filter(function(row) { return row.uniq != what.uniq });
-      obj.duration = obj.assetList.reduce(function(a,b) { return a + b.duration }, 0);
+      obj.assetList = obj.assetList.filter(row => row.uniq != what.uniq );
+      obj.duration = obj.assetList.reduce((a,b) => { a + b.duration }, 0);
     }
 
     obj.append = function(what) {
@@ -483,7 +492,7 @@ var Engine = function(opts){
     }
 
     // This places in things like the goal
-    _res.db[job.campaign_id] = merge(
+    _res.db[job.campaign_id] = Object.assign(
       _res.db[job.campaign_id], job
     );
 
@@ -568,9 +577,7 @@ var Engine = function(opts){
     post('sow', payload, function(res) {
       if(res.res) {
         _res.db = {};
-        res.data.forEach(function(row) {
-          addJob(row);
-        })
+        res.data.forEach(row => addJob(row));
       }
       if(cb) {
         cb();
@@ -579,26 +586,6 @@ var Engine = function(opts){
   }
 
   var Widget = {
-    // a little fisher yates to start the day
-    shuffle: function (array) {
-     var currentIndex = array.length;
-     var temporaryValue, randomIndex;
-
-     // While there remain elements to shuffle...
-     while (0 !== currentIndex) {
-       // Pick a remaining element...
-       randomIndex = Math.floor(Math.random() * currentIndex);
-       currentIndex -= 1;
-
-       // And swap it with the current element.
-       temporaryValue = array[currentIndex];
-       array[currentIndex] = array[randomIndex];
-       array[randomIndex] = temporaryValue;
-     }
-
-     return array;
-
-    },
     doTime: function() {
       var now = new Date();
       _box.time.innerHTML = [
@@ -682,7 +669,7 @@ var Engine = function(opts){
         _box.ticker.style.display = 'block';
         if(feed.map) {
           _box.ticker.innerHTML = "<div class=ticker-content-xA8tAY4YSBmn2RTQqnnXXw>" + 
-            Widget.shuffle(feed).map(row => `<span>${row}</span>`) + "</div>";
+            shuffle(feed).map(row => `<span>${row}</span>`) + "</div>";
         }
 
         scroll();
@@ -694,25 +681,7 @@ var Engine = function(opts){
     },
   };
 
-  function _timeout(fn, timeout, name, override) {
-    var handle = override ? fn : setTimeout(fn, timeout);
-    _stHandleMap[name] = {
-      ts: new Date(), 
-      handle: handle,
-      timeout: timeout
-    };
-    return handle;
-  }
-
-  function clearAllTimeouts() {
-    for(var name in _stHandleMap) {
-      clearTimeout(_stHandleMap[name].handle);
-      delete _stHandleMap[name];
-    }
-  }
-
-
-  function setAssetDuration(what, index, amount) {
+  var setAssetDuration = _res.SetAssetDuration = function(what, index, amount) {
     // Update the total aggregate to reflect the new amount
     what.duration -= (what.duration - amount);
 
@@ -760,9 +729,9 @@ var Engine = function(opts){
     }, _current.shown.duration * .15 * 1000);
   }
 
-  // Jobs have assets. nextJob chooses a job to run and then asks nextAsset
+  // Jobs have assets. NextJob chooses a job to run and then asks nextAsset
   // to do that work ... when nextAsset has no more assets for a particular job
-  // it calls nextJob again.
+  // it calls NextJob again.
   function nextAsset() {
     var prev;
     var timeoutDuration = 0;
@@ -805,13 +774,11 @@ var Engine = function(opts){
     // choose the next job.
     if(_current.position === _current.assetList.length) {
       event('jobEnded', _current);
-      return nextJob();
+      return _res.NextJob();
     } 
 
     _current.shown = _current.assetList[_current.position];
-    dbg("run {");
     _current.shown.run( function() {
-      dbg("appendChild {");
       if(_res.slowCPU && prev) {
         _box.ad.removeChild(prev);
       }
@@ -819,9 +786,7 @@ var Engine = function(opts){
       if(_current.shown.type == 'image') {
         scrollIfNeeded();
       }
-      dbg("} appendChild");
     });
-    dbg("} run")
 
     if(_current.shown.uniq != _last_uniq) {
       // This is NEEDED because by the time 
@@ -841,9 +806,7 @@ var Engine = function(opts){
           //dbg("} removeChild");
           // we don't have to worry about the re-pointing
           // because we aren't in the timeout
-          dbg("rewind {");
           _current.shown.rewind();
-          dbg("} rewind");
         }
         doFade = true;
       }
@@ -872,7 +835,7 @@ var Engine = function(opts){
     _timeout(nextAsset, Math.max(timeoutDuration, 1000), 'nextAsset');
   }
 
-  function setNextJob(job) {
+  var setNextJob = _res.SetNextJob = function (job) {
     _current = job;
     _current.downweight *= _downweight;
     _current.position = 0;
@@ -887,7 +850,7 @@ var Engine = function(opts){
     return job;
   }
 
-  function nextJob() {
+  _res.NextJob = _res.NextJob || function () {
     // We note something we call "breaks" which designate which asset to show.
     // This is a composite of what remains - this is two pass, eh, kill me.
     //
@@ -917,47 +880,47 @@ var Engine = function(opts){
     _.maxPriority = Math.max.apply(0, Object.values(_res.db).map(row => row.priority || 0));
 
     var 
+      row, accum = 0,
       activeList = Object.values(_res.db).filter(row => row.active && row.duration),// && row.filter === maxPriority),
 
       // Here's the range of numbers, calculated by looking at all the remaining things we have to satisfy
       range = activeList.reduce( (a,b) => a + b.downweight * (b.goal - b.completed_seconds), 0),
 
-      row, accum = 0,
       // We do this "dice roll" to see 
       breakpoint = Math.random() * range;
 
-    if(_res._debug) {
+    if(_.debug) {
       console.log({active: activeList, db:_res.db, range: range, priority: _.maxPriority});
     }
     // If there's nothing we have to show then we fallback to our default asset
     if( range <= 0 ) {
-      if(_res.server && _res._debug) {
+      if(_res.server && _.debug) {
         console.log("Range < 0, using fallback");
       }
 
-      if(!_fallback) {
+      if(!_.fallback) {
         // woops what do we do now?! 
         // I guess we just try this again?!
-        return _timeout(nextJob, 1500, 'nextJob');
+        return _timeout(_res.NextJob, 1500, 'nextJob');
       }
 
-      setNextJob(_fallback);
+      setNextJob(_.fallback);
 
-      if(!_firstRun && activeList.length == 0 && Object.values(_res.db) > 1) {
+      if(!_.firstRun && activeList.length == 0 && Object.values(_res.db) > 1) {
         // If we just haven't loaded the assets then
         // we can cut the duration down
-        setAssetDuration(_current, 0, 0.2);
+        setAssetDuration(_.current, 0, 0.2);
       } else {
         // Otherwise we have satisfied everything and
         // maybe just can't contact the server ... push
         // this out to some significant number
-        setAssetDuration(_current, 0, _res.duration);
+        setAssetDuration(_.current, 0, _res.duration);
       }
 
     } else {
       // This is needed for the end case.
-      _firstRun = true;
-      _current = false;
+      _.firstRun = true;
+      _.current = false;
       for(row of activeList) {
 
         accum += row.downweight * (row.goal - row.completed_seconds);
@@ -966,7 +929,7 @@ var Engine = function(opts){
           break;
         }
       }
-      if(!_current) {
+      if(!_.current) {
         setNextJob(row);
       }
     }
@@ -979,7 +942,7 @@ var Engine = function(opts){
     if(force || (!_res.fallback && !url)) {
       // If we have a server we can get it from there
       get('/default', function(res) {
-        _fallback = makeJob(res.data.campaign);
+        _.fallback = makeJob(res.data.campaign);
         _res.system = res.data.system;
         event('system', _res.system);
         _timeout(function() {
@@ -991,7 +954,7 @@ var Engine = function(opts){
 
     } else {
       _res.fallback = _res.fallback || url;
-      _fallback = makeJob({url: _res.fallback, duration: .1});
+      _.fallback = makeJob({url: _res.fallback, duration: .1});
     }
   }
 
@@ -1005,23 +968,19 @@ var Engine = function(opts){
   // The convention we'll be using is that
   // variables start with lower case letters,
   // function start with upper case.
-  return merge(_res, {
-    Get: function(what) {
-      return _[what];
-    },
+  return Object.assign(_res, {
     Play: function() {
       _res.pause = false;
-      if(_current) {
-        _current.shown.play();
-        nextAsset();
-      } else {
-        nextJob();
-      }
+      if(_.current) {
+        _.current.shown.play();
+        return nextAsset();
+      } 
+      _res.NextJob();
     },
     Pause: function() {
       _res.pause = !_res.pause;
       clearTimeout(_stHandleMap.nextAsset.handle);
-      _current.shown.pause();
+      _.current.shown.pause();
     },
 
     PlayNow: function(job, doNotModify) {
@@ -1047,38 +1006,34 @@ var Engine = function(opts){
     },
 
     Debug: function() {
-      _res._debug = true;
       var div = makeBox('debug');
+      _.debug = true;
+
       if(div) {
         _box.top.appendChild(div);
       }
 
       return {
-        current: _current,
+        current: _.current,
         last: _last,
         isNetUp: _isNetUp,
         box: _box
       };
     }, 
-    Scrub: function(relative_time) {
-      if(relative_time < 0) {
-      }
-    },
     Start: function(){
       // Try to initially contact the server
       sow();
       _res.SetFallback();
-      nextJob();
+      _res.NextJob();
     },
     on: function(what, cb) {
       if(_res.data[what]) {
-        cb(_res.data[what]);
-      } else { 
-        if(!(what in _res.listeners)) {
-          _res.listeners[what] = [];
-        }
-        _res.listeners[what].push(cb);
+        return cb(_res.data[what]);
+      } 
+      if(!(what in _res.listeners)) {
+        _res.listeners[what] = [];
       }
+      _res.listeners[what].push(cb);
     },
     Widget: Widget,
     SetFallback: setFallback,
@@ -1092,16 +1047,10 @@ var Engine = function(opts){
       job = makeJob(obj || {});
       // this allows someone to set say,
       // the priority to a high number
-      _res.db[job.id] = merge(job, params);
+      _res.db[job.id] = Object.assign(job, params);
       return _res.db[job.id];
     }
   });
 };
-
-Engine.all = function(what) {
-  Engine.list.forEach(function(row) {
-    row[what]();
-  });
-}
 
 Engine.list = [];
