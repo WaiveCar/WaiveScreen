@@ -162,8 +162,8 @@ while True:
     # We also need to make sure that we are looking at a nice
     # window of time. Let's not make it the window_size just
     # in case our tidiness algorithm breaks.
-    #if sensor and len(window) > WINDOW_SIZE * 0.8 and lib.BRANCH != 'release':
-    #  arduino.pm_if_needed(avg, all.get('Voltage'))
+    if sensor and len(window) > WINDOW_SIZE * 0.8 and lib.BRANCH != 'release':
+      arduino.pm_if_needed(avg, all.get('Voltage'))
 
     # Now you'd think that we just sleep on the frequency, that'd be wrong.
     # Thanks, try again. Instead we need to use the baseline time from start
