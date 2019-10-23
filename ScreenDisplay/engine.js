@@ -129,14 +129,6 @@ var Engine = function(opts){
     _box.debug.scrollTo(0,_box.debug.scrollHeight);
   }
 
-  function makeBox(row) {
-    if(!_box[row]) {
-      _box[row] = document.createElement("div");
-      _box[row].className = row + _key;
-      return _box[row];
-    }
-  }
-
   var _timeout = _res.Timeout = function(fn, timeout, name, override) {
     var handle = override ? fn : setTimeout(fn, timeout);
     _stHandleMap[name] = {
@@ -198,6 +190,14 @@ var Engine = function(opts){
     // the situation.
     obj.active = false;
     console.log("Making " + obj.url + " inactive");
+  }
+
+  function makeBox(row) {
+    if(!_box[row]) {
+      _box[row] = document.createElement("div");
+      _box[row].className = row + _key;
+      return _box[row];
+    }
   }
 
   function layout() {
