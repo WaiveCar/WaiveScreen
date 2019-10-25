@@ -49,7 +49,6 @@ var Engine = function(opts){
     _last_uniq = false,
     _last_container = false,
     _last_sow = [+_start, +_start],
-    _playCount = 0,
     _jobId = 0,
     _downweight = 0.7,
     _nop = function(){},
@@ -220,9 +219,7 @@ var Engine = function(opts){
         img.style.width = 'auto';
         img.style.height = '100%';
       }
-      if(cb) {
-        cb();
-      }
+      return cb && cb();
     }
     asset.pause = asset.rewind = asset.play = _nop;
     asset.dom = img;
@@ -235,10 +232,7 @@ var Engine = function(opts){
     dom.src = asset.url;
     asset.dom = dom;
     asset.rewind = asset.pause = asset.play = _nop;
-    asset.run = function(cb) {
-      _playCount ++;
-      cb();
-    }
+    asset.run = _passthru;
     asset.active = true;
     asset.duration = asset.duration || 100 * _res.duration;
     obj.duration += asset.duration;
@@ -287,7 +281,6 @@ var Engine = function(opts){
           //asset.active = false;
         });
       }
-      _playCount ++;
     }
 
     vid.ondurationchange = function(e) {
@@ -838,7 +831,7 @@ var Engine = function(opts){
     _timeout(nextAsset, Math.max(timeoutDuration, 1000), 'nextAsset');
   }
 
-  var setNextJob = _res.SetNextJob = function (job) {
+  function setNextJob(job) {
     _current = job;
     _current.downweight *= _downweight;
     _current.position = 0;
@@ -867,6 +860,16 @@ var Engine = function(opts){
     function nextTopic() {
       topicIx = (topicIx + 1) % topicList.length;
       jobIx = 0;
+
+      var activeList = Object.values(_res.db).filter(row => row.active && row.duration),
+        topicList = {};
+
+      activeList.filter(row => row.topic).forEach(row => {
+        if (!topicList[row.topic]) {
+          topicList[row.topic] = [];
+        }
+        topicList[row.topic].push(row);
+      })
     }
 
     function nextJob() {
@@ -890,15 +893,6 @@ var Engine = function(opts){
       // ourselves to having a limited number of topics we
       // can choose from.  
       //
-      var activeList = Object.values(_res.db).filter(row => row.active && row.duration),
-        topicList = {};
-
-      activeList.filter(row => row.topic).forEach(row => {
-        if (!topicList[row.topic]) {
-          topicList[row.topic] = [];
-        }
-        topicList[row.topic].push(row);
-      })
 
       if(jobIx === current.length) {
         nextTopic();
@@ -907,7 +901,9 @@ var Engine = function(opts){
 
     function enable() {
       // this enables the top category and swaps out the nextJob with us
-
+      _res.nextJob = nextJob;
+      nextTopic();
+      sow.strategy = forgetAndReplace;
     }
 
     return { nextJob, enable, disable };
@@ -963,9 +959,6 @@ var Engine = function(opts){
         }
         // If there's nothing we have to show then we fallback to our default asset
         if( range <= 0 ) {
-          if(_res.server && _.debug) {
-            console.log("Range < 0, using fallback");
-          }
 
           if(!_.fallback) {
             // woops what do we do now?! 
@@ -1060,7 +1053,6 @@ var Engine = function(opts){
     },
 
     PlayNow: function(job, doNotModify) {
-      // clear any pending timers
       clearAllTimeouts();
 
       // we set all the assets to active in the job regardless
