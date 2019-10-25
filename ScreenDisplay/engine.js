@@ -852,27 +852,14 @@ var Engine = function(opts){
   };
 
   Strategy.Oliver = (function( ) {
-    var topicList = [],
+    var topicMap = {},
+      topicList = [],
       current = false,
       jobIx = 0,
+      doReplace = true,
       topicIx = 0;
 
     function nextTopic() {
-      topicIx = (topicIx + 1) % topicList.length;
-      jobIx = 0;
-
-      var activeList = Object.values(_res.db).filter(row => row.active && row.duration),
-        topicList = {};
-
-      activeList.filter(row => row.topic).forEach(row => {
-        if (!topicList[row.topic]) {
-          topicList[row.topic] = [];
-        }
-        topicList[row.topic].push(row);
-      })
-    }
-
-    function nextJob() {
       //
       // Essentially we gather all the active jobs, then we group
       // them by "topic" which is a field in the campaign.
@@ -894,8 +881,52 @@ var Engine = function(opts){
       // can choose from.  
       //
 
+      var activeList = Object.values(_res.db).filter(row => row.active && row.duration);
+
+      activeList.filter(row => row.topic).forEach(row => {
+        if (!topicMap[row.topic]) {
+          topicMap[row.topic] = [];
+        }
+        topicMap[row.topic].push(row);
+      });
+
+      topicList = Object.keys(topicMap);
+
+      topicIx = (topicIx + 1) % topicList.length;
+      jobIx = 0;
+
+      current = topicList[topicIx];
+    }
+
+    function nextJob() {
+      
       if(jobIx === current.length) {
         nextTopic();
+      }
+      //
+      // We are assuming a bunch here. essentially that we
+      // have hit the nextTopic to assign a current pointer 
+      // and that our sequential revisiting will handle our
+      // mechanics correctly.
+      //
+      setNextJob( current[jobIx] );
+      jobIx++;
+
+      //
+      // We'll go to the next topic at the end of showing
+      // our ad. However, we need to make sure that we have
+      // flagged our sow strategy to replace before we 
+      // go into our timeout.
+      // 
+      if(jobIx === current.length) {
+        doReplace = true;
+      }
+    }
+
+    function forgetAndReplaceWhenFlagged() {
+      if(doReplace) {
+        doReplace = false;
+        forgetAndReplace();
       }
     }
 
@@ -903,10 +934,10 @@ var Engine = function(opts){
       // this enables the top category and swaps out the nextJob with us
       _res.nextJob = nextJob;
       nextTopic();
-      sow.strategy = forgetAndReplace;
+      sow.strategy = forgetAndReplaceWhenFlagged;
     }
 
-    return { nextJob, enable, disable };
+    return { nextJob, enable };
   })();
 
   Strategy.Freeform = (function() {
