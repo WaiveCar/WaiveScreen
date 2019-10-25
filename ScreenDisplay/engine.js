@@ -30,6 +30,8 @@ var Engine = function(opts){
       pause: false,
 
       slowCPU: false,
+      doScroll: true,
+      doOliver: true,
 
       target: { width: 1920, height: 675 },
 
@@ -42,7 +44,6 @@ var Engine = function(opts){
     // the screen into different partitions
     _box = {},
     _start = new Date(),
-    _last = false,
     _uniq = 0,
     _last_uniq = false,
     _last_container = false,
@@ -52,11 +53,12 @@ var Engine = function(opts){
     _downweight = 0.7,
     _nop = function(){},
     _passthru = function(cb){cb()},
-    _isNetUp = true,
     _stHandleMap = {},
     _key = '-xA8tAY4YSBmn2RTQqnnXXw',
     _ = {
       debug: false,
+      last: false,
+      isNetUp: true,
       current: false,
       firstRun: false,
       fallback: false,
@@ -536,7 +538,7 @@ var Engine = function(opts){
       if(http.readyState == 4) {
         remote.lock[url] = false;
         if( http.status == 200) {
-          _isNetUp = true;
+          _.isNetUp = true;
           var res = JSON.parse(http.responseText);
 
           if(res.res === false) {
@@ -555,7 +557,7 @@ var Engine = function(opts){
         onfail();
       }
       // ehhh ... maybe we just can't contact things?
-      _isNetUp = false;
+      _.isNetUp = false;
       remote.lock[url] = false;
     }
     
@@ -598,9 +600,18 @@ var Engine = function(opts){
   }
   sow.strategy = forgetAndReplace;
 
-  var Oliver = {
-    topicList: [],
-    nextJob: function() {
+  var Oliver = (function( ) {
+    var topicList = [],
+      current = false,
+      jobIx = 0,
+      topicIx = 0;
+
+    function nextTopic() {
+      topicIx = (topicIx + 1) % topicList.length;
+      jobIx = 0;
+    }
+
+    function nextJob() {
       //
       // Essentially we gather all the active jobs, then we group
       // them by "topic" which is a field in the campaign.
@@ -621,8 +632,32 @@ var Engine = function(opts){
       // ourselves to having a limited number of topics we
       // can choose from.  
       //
+      var activeList = Object.values(_res.db).filter(row => row.active && row.duration),
+        topicList = {};
+
+      activeList.filter(row => row.topic).forEach(row => {
+        if (!topicList[row.topic]) {
+          topicList[row.topic] = [];
+        }
+        topicList[row.topic].push(row);
+      })
+
+      if(jobIx === current.length) {
+        nextTopic();
+      }
     }
-  };
+
+    function enable() {
+      // this enables the top category and swaps out the nextJob with us
+
+    }
+
+    return {
+      nextJob: nextJob,
+      enable: enable,
+      disable: disable
+    };
+  })();
 
   var Widget = {
     doTime: function() {
@@ -717,6 +752,9 @@ var Engine = function(opts){
 
   var scrollIval;
   function scrollIfNeeded(){
+    if(!_res.doScroll) { 
+      return;
+    }
     var p = _current.shown.dom;
     function scroll(obj, dim) {
       var 
@@ -775,23 +813,23 @@ var Engine = function(opts){
 
       // If this exists then it'd be set at the last asset
       // previous job.
-      if(_last) {
+      if(_.last) {
         // We can state that we've shown all the assets that
         // we plan to show
-        _last.completed_seconds += _last.duration;
+        _.last.completed_seconds += _.last.duration;
 
         // and report it up to the server
         sow({
           start_time: _last_sow[0],
-          end_time: _last_sow[1],
-          job_id: _last.job_id,
-          campaign_id: _last.campaign_id, 
-          completed_seconds: _last.completed_seconds
+          end_time: _.last_sow[1],
+          job_id: _.last.job_id,
+          campaign_id: _.last.campaign_id, 
+          completed_seconds: _.last.completed_seconds
         });
 
-        if(_last.job_id !== _current.job_id) {
+        if(_.last.job_id !== _current.job_id) {
           // we reset the downweight -- it can come back
-          _last.downweight = 1;
+          _.last.downweight = 1;
         }
       }
     }
@@ -847,7 +885,7 @@ var Engine = function(opts){
     //console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
 
     // These will EQUAL each other EXCEPT when the position is 0.
-    _last = _current;
+    _.last = _current;
 
     // And we increment the position to show the next asset
     // when we come back around
@@ -876,7 +914,7 @@ var Engine = function(opts){
     return job;
   }
 
-  _res.NextJob = _res.NextJob || function () {
+  var nextJob = _res.NextJob || function () {
     // We note something we call "breaks" which designate which asset to show.
     // This is a composite of what remains - this is two pass, eh, kill me.
     //
@@ -1040,8 +1078,6 @@ var Engine = function(opts){
       }
 
       return Object.assign({}, _, {
-        last: _last,
-        isNetUp: _isNetUp,
         box: _box
       });
     }, 
