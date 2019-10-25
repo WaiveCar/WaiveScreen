@@ -720,6 +720,8 @@ _upgrade_post() {
   add_history upgrade "$version"
 
   upgrade_scripts
+  $SUDO systemctl restart location-daemon
+  update_arduino
   stack_restart 
   _info "Now on $version"
 }
@@ -807,16 +809,35 @@ disk_monitor() {
   } &
 }
 
+_avrdude() {
+    $BASE/tools/client/avrdude -C$BASE/tools/client/avrdude.conf \
+      -v -patmega328p -carduino -P/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0 -b57600 -D \
+      $*
+}
+
 update_arduino() {
-  down sensor_daemon
+  local my_arduino_version=$(pycall kv_get arduino_version)
+  local new_arduino_version=$(< ${BASE}/tools/client/sensors.ino.version)
 
-  $BASE/tools/client/avrdude -C$BASE/tools/client/avrdude.conf \
-    -v -patmega328p -carduino -P/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0 -b57600 -D \
-    -Uflash:w:$BASE/tools/client/sensors.ino.hex:i
+  if [[ "${my_arduino_version}" != "${new_arduino_version}" ]]; then
+    local sensors_backup=/tmp/sensors_backup.ino.hex
+    _info "Updating arduino"
+    down sensor_daemon
 
-  _info "Updating arduino"
+    # Backup existing image
+    _avrdude -Uflash:r:${sensors_backup}:i
 
-  sensor_daemon
+    # Flash new image
+    _avrdude -Uflash:w:$BASE/tools/client/sensors.ino.hex:i
+
+    # Test new image
+    if [[ -z "$(pycall arduino_read)" ]]; then
+      _error "New Arduino image FAILED.  Rolling back to previous version"
+      _avrdude -Uflash:w:${sensors_backup}:i
+    fi
+
+    sensor_daemon
+  fi
 }
 
 stack_down() {

@@ -39,11 +39,9 @@ check_sensor_daemon() {
   if ! pgrep -if sensordaemon > /dev/null; then
     doit sensor_daemon not-running
   else
-    last_read=$(sqlite3 $DB 'select created_at from sensor order by id desc limit 1;')
-    db_delta=$(perl -e "use Date::Parse;print time() - str2time('$last_read');")
-    # BUGBUG NOTE: If we change the minimum sensor heartbeat to be over 90 seconds
-    # this will make the sensor daemon go wacky
-    (( $db_delta > 180 )) && doit sensor_daemon database-check
+    if (( $(date +%s) - $(date +%s -r ${LOG}/powertemp.csv) > 120 )); then
+      doit sensor_daemon output-check
+    fi
   fi
 }
 

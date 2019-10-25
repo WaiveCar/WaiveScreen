@@ -5,15 +5,17 @@ import lib.arduino as arduino
 import logging
 import sys
 
+import csv
 import os
+import shutil
 import time
 import pprint
 from datetime import datetime
 
 # Reading interval, so a number such as 0.2
 # would take a reading every 0.2 seconds
-
-FREQUENCY = 0.1 if 'FREQUENCY' not in os.environ else os.environ['FREQUENCY']
+# We sample 6dof data at 25Hz
+FREQUENCY = 0.04 if 'FREQUENCY' not in os.environ else os.environ['FREQUENCY']
 WINDOW_SIZE = int(12.0 / FREQUENCY)
 
 # If all the sensor deltas reach this percentage
@@ -21,21 +23,21 @@ WINDOW_SIZE = int(12.0 / FREQUENCY)
 # call this a "significant event" and store it.
 AGGREGATE_THRESHOLD = 10
 
-# This is the Heartbeat in seconds - we do
-# a reading in this frequency (in seconds) to state that
-# we're still alive.
-HB = 120
-
-PERIOD = HB / FREQUENCY
 START = time.time()
 
+# The frequency at which to sample the Power/Temp sensors in seconds
+POWERTEMP_FREQ = 2.0
+POWERTEMP_PERIOD = POWERTEMP_FREQ / FREQUENCY
+
 _autobright_set = False
-last_reading = False
 ix = 0
-ix_hb = 0
 first = True
 avg = 0
 _arduinoConnectionDown = False
+
+SIXDOF_FIELDS = ['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y', 'Gyro_z', 'Pitch', 'Roll', 'Yaw']
+POWERTEMP_FIELDS = ['Time', 'Voltage', 'Current', 'Temp', 'Fan', 'Light', 'DPMS1', 'DPMS2']
+FIELDS_TO_ROUND = {'Time': 2, 'Pitch': 3, 'Roll': 3, 'Yaw': 3, 'Voltage': 2, 'Current': 2, 'Temp': 2}
 
 if lib.DEBUG:
   lib.set_logger(sys.stderr)
@@ -43,58 +45,29 @@ else:
   #lib.set_logger(sys.stderr)
   lib.set_logger('{}/sensordaemon.log'.format(lib.LOG))
 
-def is_significant(totest):
-  global last_reading, ix, ix_hb
 
-  if not last_reading or ix % PERIOD == 0:
-    if not last_reading:
-      pass
-    else:
-      ix_hb += 1
-      pass
-    last_reading = totest
-    return True
+def open_csv_writer(filename, fieldnames):
+  """ Return a csv.DictWriter for the given filename.  If the
+  file is empty, we write the header row at the top.  If the file
+  already exists, we trim the end of any incomplete writes. """
+  csvfile = open(filename, 'a+', buffering=1, newline='')
+  shutil.chown(filename, lib.USER, lib.USER)
+  file_pos = csvfile.tell()
+  if file_pos > 0:
+    # We check the end of existing files for incomplete lines or binary junk
+    while file_pos > 0 and csvfile.read(1) != '\n':
+      file_pos -= 1
+      csvfile.seek(file_pos)
+    csvfile.truncate(file_pos + 1)
+    csvfile.flush()
+  writer = csv.DictWriter(csvfile, fieldnames=fieldnames, extrasaction='ignore')
+  if file_pos == 0:
+    writer.writeheader()
+  return writer
 
-  # We only update our baseline if we say something is significant
-  # otherwise we could creep along below a threshold without ever
-  # triggering this.
-  deltaMap = {
-    'Temp': 2,
-    'Accel_x': 1000,
-    'Accel_y': 1000,
-    'Accel_z': 1000,
-    'Gyro_x': 150, 
-    'Gyro_y': 200, 
-    'Gyro_z': 150, 
-    'Pitch': 3.0,
-    'Roll': 3.0,
-    'Yaw': 4.5,
-    'Voltage': 0.05,
-    'Current': 0.05,
-    'Lat': 0.01,
-    'Lng': 0.01
-  }
-
-  ttl = 0
-  isFirst = True
-  buffer = []
-  for k,v in deltaMap.items():
-    if k not in last_reading:
-      continue
-
-    if k in totest:
-      diff = abs(last_reading[k] - totest[k])
-      if diff > v:
-        if isFirst:
-            buffer.append('-----')
-            isFirst = False
-        ttl += (diff / v) - 1
-        buffer.append("{:10} {:3.4f} {:.4f} {:4.4f}->{:4.4f}".format(k, ttl, diff/v, last_reading[k], totest[k]))
-
-  if ttl > AGGREGATE_THRESHOLD:
-    logging.debug("\n".join(buffer))
-    last_reading = totest
-    return True
+def round_fields(d):
+  for k, v in FIELDS_TO_ROUND.items():
+    d[k] = round(d.get(k, 0), v)
 
 
 run = db.kv_get('runcount')
@@ -105,7 +78,9 @@ window = []
 if lib.SANITYCHECK:
   sys.exit(0)
 
-n = 0
+sixdof_writer = open_csv_writer('{}/sixdof.csv'.format(lib.LOG), SIXDOF_FIELDS)
+powertemp_writer = open_csv_writer('{}/powertemp.csv'.format(lib.LOG), POWERTEMP_FIELDS)
+
 while True:
   try:
     sensor = arduino.arduino_read()
@@ -115,12 +90,9 @@ while True:
 
     elif _arduinoConnectionDown:
       _arduinoConnectionDown = False
-      # We could wake the screen up here, but I'm assuming the pm_if_needed call below will do the right thing
       logging.info('Connection to arduino reestablished')
+      arduino.do_awake()
 
-    n += 1
-    if n % 8 == 0:
-      logging.info("voltage {:.3f} current {:.3f} avg: {:.3f}".format(sensor['Voltage'], sensor['Current'], avg))
 
     if first:
       # Tell the arduino that we are live.
@@ -129,19 +101,18 @@ while True:
       logging.info("Got first arduino read")
       first = False
       db.kv_set('arduino_seen', 1)
+      db.kv_set('arduino_version', sensor.get('Sw_version'))
 
-    # Put data in if we have it
-    location = lib.get_latlng()
+    if not _autobright_set:
+      location = lib.get_latlng()
+      try:
+        if location:
+          _autobright_set = True
+          arduino.set_autobright()
+      except:
+        pass
 
-    try:
-      if location and not _autobright_set:
-        _autobright_set = True
-        arduino.set_autobright()
-
-    except:
-      pass
-
-    all = {**location, **sensor, 'run': run}
+    all = {**sensor, 'run': run, 'Time': time.time()}
 
 
     window.append(all.get('Voltage'))
@@ -154,15 +125,20 @@ while True:
     except:
       avg = 0
 
-    if is_significant(all):
-      lib.sensor_store(all)
 
     # If we need to go into/get out of a low power mode
     # We also need to make sure that we are looking at a nice
     # window of time. Let's not make it the window_size just
     # in case our tidiness algorithm breaks.
-    if sensor and len(window) > WINDOW_SIZE * 0.8 and lib.BRANCH != 'release':
-      arduino.pm_if_needed(avg, all.get('Voltage'))
+
+    #if sensor and len(window) > WINDOW_SIZE * 0.8 and lib.BRANCH != 'release':
+    #  arduino.pm_if_needed(avg, all.get('Voltage'))
+
+    round_fields(all)
+    sixdof_writer.writerow(all)
+    if ix % POWERTEMP_PERIOD == 0:
+      all['DPMS1'], all['DPMS2'] = lib.get_dpms_state()
+      powertemp_writer.writerow(all)
 
     # Now you'd think that we just sleep on the frequency, that'd be wrong.
     # Thanks, try again. Instead we need to use the baseline time from start

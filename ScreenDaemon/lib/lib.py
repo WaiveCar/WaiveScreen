@@ -59,6 +59,9 @@ GPGGA_FIELD_NAMES = ( 'utc_time', 'latitude', 'ns_indicator',
                       'satellites_used', 'hdop', 'msl_altitude',
                       'units', 'geoid_separation', 'units',
                       'dgps', 'checksum' )
+GPVTG_FIELD_NAMES = ( 'heading_true', 'true', 'heading_magnetic',
+                      'magnetic', 'speed_knots', 'knots',
+                      'speed_kph', 'kph', 'checksum' )
 
 storage_base = '/var/lib/waivescreen/'
 
@@ -276,16 +279,24 @@ def update_gps_xtra_data():
   return False
 
 
-def get_gpgga_dict(nmea_string):
+def _get_gp_dict(nmea_string, gp_name, field_names):
   """ Parse the NMEA string from the GPS and return a Dict
-  of the GPGGA keys => values """
-  gpgga = {}
-  gpgga_start = nmea_string.find('$GPGGA')
-  gpgga_end = nmea_string.find('\r\n', gpgga_start)
-  gpgga_string = nmea_string[gpgga_start:gpgga_end]
-  for k, v in enumerate(gpgga_string.split(',')[1:]):
-    gpgga[GPGGA_FIELD_NAMES[k]] = v
-  return gpgga
+  of the GP??? keys => values """
+  gp_dict = {}
+  gp_start = nmea_string.find('${}'.format(gp_name))
+  gp_end = nmea_string.find('\r\n', gp_start)
+  gp_string = nmea_string[gp_start:gp_end]
+  for k, v in enumerate(gp_string.split(',')[1:]):
+    gp_dict[field_names[k]] = v
+  return gp_dict
+
+
+def get_gpgga_dict(nmea_string):
+  return _get_gp_dict(nmea_string, 'GPGGA', GPGGA_FIELD_NAMES)
+
+
+def get_gpvtg_dict(nmea_string):
+  return _get_gp_dict(nmea_string, 'GPVTG', GPVTG_FIELD_NAMES)
 
 
 def gps_accuracy(nmea_string):
@@ -318,10 +329,13 @@ def get_gps(all_fields=False):
           'accuracy': gps_accuracy(nmea_string)
         }
         if all_fields:
+          gpvtg = get_gpvtg_dict(nmea_string)
           location_dict.update( {
             'Utc': gps['utc-time'],
             'Nmea': nmea_string,
-            '3gpp': location.get(1)
+            '3gpp': location.get(1),
+            'speed': gpvtg.get('speed_kph'),
+            'heading': gpvtg.get('heading_true')
           } )
         return location_dict
     except Exception as ex:
@@ -852,6 +866,16 @@ def get_timezone():
 def system_uptime():
   with open('/proc/uptime', 'r') as f:
     return float(f.readline().split(' ')[0])
+
+def get_dpms_state(hdmi_port='both'):
+  if hdmi_port == 'both':
+    return ( get_dpms_state(1), get_dpms_state(2) )
+  else:
+    try:
+      with open('/sys/class/drm/card0/card0-HDMI-A-{}/dpms'.format(hdmi_port), 'r') as f:
+        return f.read().strip()
+    except:
+      return False
 
 def create_uptime_log():
   bootcount = db.get_bootcount()

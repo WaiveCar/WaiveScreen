@@ -13,8 +13,9 @@ done
 
 # This is a pre-processor step where we inject things into the code base ... in this case
 # our version
-version=$(git describe)-$(git rev-parse --abbrev-ref HEAD)
+version=$(git log -1 --date=short --pretty=format:%ad | sed 's/-//g')
 sed "s/__VERSION__/$version/g" $SRC/sensors.ino > $MIDDLE/sensors.ino
 arduino --pref build.path=$BUILD --verify $MIDDLE/sensors.ino
 cp -puv $BUILD/sensors.ino.hex $DIR/../client
+echo $version > $DIR/../client/sensors.ino.version
 
