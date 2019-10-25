@@ -36,7 +36,7 @@ VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.p
 UUID = False
 
 _pinglock = Lock()
-_reading = 0.7
+#_reading = 0.7
 
 USER = os.environ.get('USER')
 if not USER or USER == 'root':
@@ -360,7 +360,7 @@ def task_response(which, payload):
   })
 
 def task_ingest(data):
-  global _reading
+  #global _reading
   if 'taskList' not in data:
     return
 
@@ -396,12 +396,14 @@ def task_ingest(data):
 
     elif action == 'screenoff':
       db.sess_set('force_sleep')
-      _reading = arduino.do_sleep()
+      #_reading = arduino.do_sleep()
+      arduino.do_sleep()
       task_response(id, True)
 
     elif action == 'screenon':
       db.sess_del('force_sleep')
-      arduino.do_awake(_reading or 0.7)
+      #arduino.do_awake(_reading or 0.7)
+      arduino.do_awake()
       task_response(id, True)
 
     elif action == 'autobright':
@@ -414,15 +416,15 @@ def task_ingest(data):
 
     elif action == 'brightness':
       val = float(args)
-      arduino.set_backlight(val)
-      dcall('set_brightness', val, 'nopy')
+      #arduino.set_backlight(val)
+      #dcall('set_brightness', val, 'nopy')
 
       # This becomes a ceiling until either we
       # call this again, call autobright (above)
       # or reboot
       db.sess_set('backlight', val)
+      arduino.set_autobright()
       task_response(id, True)
-
 
 def get_modem_info():
   global modem_info
