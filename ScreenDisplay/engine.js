@@ -53,6 +53,7 @@ var Engine = function(opts){
     _downweight = 0.7,
     _nop = function(){},
     _passthru = function(cb){cb()},
+    _log = function(){console.log(arguments)},
     _stHandleMap = {},
     _key = '-xA8tAY4YSBmn2RTQqnnXXw',
     _ = {
@@ -136,7 +137,6 @@ var Engine = function(opts){
   }
 
   function event(what, data) {
-    //console.log('>> trigger ' + what);
     _res.data[what] = data;
     if(_res.listeners[what]) {
       _res.listeners[what].forEach(cb => cb(data))
@@ -456,14 +456,11 @@ var Engine = function(opts){
   // TODO: A circular buffer to try and navigate poor network
   // conditions.
   function remote(verb, url, what, onsuccess, onfail) {
-    if(!_res.server) { return; }
-    onfail = onfail || function(a){
-      console.log(a);
-    }
+    onfail = onfail || _log;
     if(!_res.server) {
       onfail();
     }
-    remote.ix = (remote.ix + 1) % remote.size;
+    remote.ix++;
 
     if(remote.lock[url]) {
       console.log("Not connecting, locked on " + remote.lock[url]);
@@ -480,14 +477,14 @@ var Engine = function(opts){
     http.onreadystatechange = function() {
       if(http.readyState == 4) {
         remote.lock[url] = false;
-        if( http.status == 200) {
+        if(http.status == 200) {
           _.isNetUp = true;
           var res = JSON.parse(http.responseText);
 
           if(res.res === false) {
-            onfail(res.data);
+            onfail(res.data, http.responseText);
           } else {
-            onsuccess(res);
+            onsuccess(res, http.responseText);
           }
         } else if(http.status == 500 && onfail) {
           onfail();
@@ -495,7 +492,7 @@ var Engine = function(opts){
       }
     }
 
-    http.onabort = http.onerror = http.ontimeout = function(){
+    http.onabort = http.onerror = http.ontimeout = function() {
       if(onfail) {
         onfail();
       }
@@ -510,6 +507,7 @@ var Engine = function(opts){
     http.send();
   }
   remote.lock = {};
+  remote.ix = 0;
 
   function get(url, onsuccess, onfail) {
     return remote('GET', url, false, onsuccess, onfail);
@@ -517,8 +515,6 @@ var Engine = function(opts){
   function post(url, what, onsuccess, onfail) {
     return remote('POST', url, what, onsuccess, onfail);
   }
-  remote.size = 5000;
-  remote.ix = 0;
 
   function forgetAndReplace(list) {
     _res.db = {};
@@ -853,7 +849,14 @@ var Engine = function(opts){
 
   Strategy.Oliver = (function( ) {
     var topicMap = {},
-      topicList = [],
+      // we can override this when we get the
+      // default.
+      topicList = [
+        {internal: 'event', display: 'event'},
+        {internal: 'help', display: 'help'},
+        {internal: 'service', display: 'service'}
+      ],
+      noTopicList = [],
       current = false,
       jobIx = 0,
       doReplace = true,
@@ -890,7 +893,7 @@ var Engine = function(opts){
         topicMap[row.topic].push(row);
       });
 
-      topicList = Object.keys(topicMap);
+      noTopicList = activeList.filter(row => !row.topic);
 
       topicIx = (topicIx + 1) % topicList.length;
       jobIx = 0;
@@ -937,7 +940,7 @@ var Engine = function(opts){
       sow.strategy = forgetAndReplaceWhenFlagged;
     }
 
-    return { nextJob, enable };
+    return { topicList, nextJob, enable };
   })();
 
   Strategy.Freeform = (function() {
@@ -1033,24 +1036,33 @@ var Engine = function(opts){
   });
 
   function SetFallback (url, force) {
+    _res.fallbackURL = _res.fallbackURL || url;
+
     // We look for a system default
-    if(force || (!_res.fallback && !url)) {
+    if(force || !_res.fallbackURL) {
       // If we have a server we can get it from there
-      get('/default', function(res) {
+      return get('/default', function(res) {
         _.fallback = makeJob(res.data.campaign);
+
+        if(_res.data.topicList) {
+          Strategy.Oliver.topicList = _res.data.topicList;
+        }
         _res.system = res.data.system;
         event('system', _res.system);
-        _timeout(function() {
-          SetFallback(false, true);
-        }, 3 * 60 * 1000, 'setFallback');
+
+        // This is our strategy to look for 
+        // updated default campaigns every 
+        // few minutes (#130)
+        _timeout(() => SetFallback(false, true), 3 * 60 * 1000, 'setFallback');
+
       }, function() { 
-        _timeout(cleanTimeout(SetFallback, _res.duration * 1000), _res.duration * 1000, 'setFallback', true);
+        _timeout(
+          cleanTimeout(SetFallback, _res.duration * 1000), 
+          _res.duration * 1000, 'setFallback', true);
       });
 
-    } else {
-      _res.fallback = _res.fallback || url;
-      _.fallback = makeJob({url: _res.fallback, duration: .1});
-    }
+    } 
+    _.fallback = makeJob({url: _res.fallbackURL, duration: .1});
   }
 
   // A repository of engines
