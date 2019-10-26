@@ -9,6 +9,7 @@ import json
 import sys
 import os
 import atexit
+import termios
 
 _arduino = False
 _first = False
@@ -85,6 +86,11 @@ def get_arduino(stop_on_failure=True):
     _log.debug("Using {}".format(com_port))
 
     try:
+      with open(com_port) as f:
+        attrs = termios.tcgetattr(f)
+        attrs[2] = attrs[2] & ~termios.HUPCL
+        termios.tcsetattr(f, termios.TCSAFLUSH, attrs)
+
       _arduino = serial.Serial(com_port, 115200, timeout=0.1)
       _arduino.is_fake = False
 
