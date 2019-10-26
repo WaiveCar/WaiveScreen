@@ -51,11 +51,11 @@ var Engine = function(opts){
     _last_sow = [+_start, +_start],
     _jobId = 0,
     _downweight = 0.7,
-    _nop = function(){},
-    _passthru = function(cb){cb()},
-    _log = function(){console.log(arguments)},
+    _nop = () => {},
+    _passthru = cb => cb(),
+    _log = () => console.log(arguments),
     _stHandleMap = {},
-    _key = function(name) { return name + '-xA8tAY4YSBmn2RTQqnnXXw'},
+    _key = name => name + '-xA8tAY4YSBmn2RTQqnnXXw',
     _ = {
       debug: false,
       last: false,
@@ -948,7 +948,7 @@ var Engine = function(opts){
       _res.nextJob = nextJob;
       _box.topicList = topicList.map(row => { 
         var dom = document.createElement('div');
-        dom.className = 'topic';
+        dom.className = _key('topic');
         return dom;
       });
       nextTopic();
