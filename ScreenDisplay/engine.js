@@ -153,7 +153,7 @@ var Engine = function(opts){
 
   function layout() {
     //
-    // <div class=topicList></div>
+    // <div class=topicContainer></div>
     // <div class=top>
     //   <div class=widget></div>
     //   <div class=ad></div>
@@ -163,13 +163,13 @@ var Engine = function(opts){
     //   <div class=ticker></div>
     // </div>
     //
-    ["topicList","top","ad","widget","bottom","time","ticker"].forEach(makeBox);
+    ["topicContainer","top","ad","widget","bottom","time","ticker"].forEach(makeBox);
     // this ordering is correct...trust me.
     _box.top.appendChild(_box.widget);
     _box.top.appendChild(_box.ad);
     _box.bottom.appendChild(_box.time);
     _box.bottom.appendChild(_box.ticker);
-    _res.container.appendChild(_box.topicList);
+    _res.container.appendChild(_box.topicContainer);
     _res.container.appendChild(_box.top);
     _res.container.appendChild(_box.bottom);
     _res.container.classList.add('engine' + _key);
@@ -862,6 +862,15 @@ var Engine = function(opts){
       doReplace = true,
       topicIx = 0;
 
+    function render() {
+      // TODO: we can "optimize" this with flags to make sure
+      // we aren't doing extra work. However, this is only done
+      // when we do a nextTopic call which is the aggregate of 
+      // the durations of a topic.
+      _res.container.classList.add('hasTopicList');
+
+    }
+
     function nextTopic() {
       //
       // Essentially we gather all the active jobs, then we group
@@ -936,6 +945,7 @@ var Engine = function(opts){
     function enable() {
       // this enables the top category and swaps out the nextJob with us
       _res.nextJob = nextJob;
+      _box.topic = 
       nextTopic();
       sow.strategy = forgetAndReplaceWhenFlagged;
     }
