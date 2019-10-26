@@ -29,6 +29,10 @@ START = time.time()
 POWERTEMP_FREQ = 2.0
 POWERTEMP_PERIOD = POWERTEMP_FREQ / FREQUENCY
 
+# The frequency at which to check for commands to send to the Arduino
+CMD_QUEUE_FREQ = 1.0
+CMD_QUEUE_PERIOD = CMD_QUEUE_FREQ / FREQUENCY
+
 _autobright_set = False
 ix = 0
 first = True
@@ -96,7 +100,7 @@ while True:
 
     if first:
       # Tell the arduino that we are live.
-      arduino.ping()
+      arduino.send_arduino_ping()
 
       logging.info("Got first arduino read")
       first = False
@@ -139,6 +143,10 @@ while True:
     if ix % POWERTEMP_PERIOD == 0:
       all['DPMS1'], all['DPMS2'] = lib.get_dpms_state()
       powertemp_writer.writerow(all)
+
+    # Check for commands to send to Arduino and process them.
+    if ix % CMD_QUEUE_PERIOD == 0:
+      arduino.process_arduino_queue()
 
     # Now you'd think that we just sleep on the frequency, that'd be wrong.
     # Thanks, try again. Instead we need to use the baseline time from start

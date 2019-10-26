@@ -132,6 +132,11 @@ _SCHEMA = {
     ('heading', 'float default null'),
     ('source', 'text default null'),
     ('created_at', 'datetime default current_timestamp'),
+  ],
+  'arduino_queue' : [
+    ('id', 'integer primary key autoincrement'),
+    ('text', 'text not null'),
+    ('created_at', 'datetime default current_timestamp'),
   ]
 }
 
