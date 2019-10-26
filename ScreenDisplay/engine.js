@@ -55,7 +55,7 @@ var Engine = function(opts){
     _passthru = function(cb){cb()},
     _log = function(){console.log(arguments)},
     _stHandleMap = {},
-    _key = '-xA8tAY4YSBmn2RTQqnnXXw',
+    _key = function(name) { return name + '-xA8tAY4YSBmn2RTQqnnXXw'},
     _ = {
       debug: false,
       last: false,
@@ -85,7 +85,7 @@ var Engine = function(opts){
     obj = obj || _box;
     if(!obj[row]) {
       obj[row] = document.createElement("div");
-      obj[row].className = row + _key;
+      obj[row].className = _key(row);
       return obj[row];
     }
   }
@@ -173,7 +173,7 @@ var Engine = function(opts){
     _res.container.appendChild(_box.topicContainer);
     _res.container.appendChild(_box.top);
     _res.container.appendChild(_box.bottom);
-    _res.container.classList.add('engine' + _key);
+    _res.container.classList.add(_key('engine'));
   }
 
   _res.SetAssetDuration = function(what, index, amount) {
@@ -374,7 +374,7 @@ var Engine = function(opts){
   function urlToAsset(url, obj) {
     var container = document.createElement('div');
     var asset = isString(url) ? {url: url} : url;
-    container.classList.add('container' + _key);
+    container.classList.add(_key('container'));
 
     if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
       asset = image(asset, obj);
@@ -788,9 +788,9 @@ var Engine = function(opts){
       prev = _last_container;
       if(prev) {
         if(!_res.slowCPU) {
-          prev.classList.add('fadeOut' + _key);
+          prev.classList.add(_key('fadeOut'));
           _timeout(function() {
-            prev.classList.remove('fadeOut' + _key);
+            prev.classList.remove(_key('fadeOut'));
             _box.ad.removeChild(prev);
           }, _res.fadeMs, 'assetFade');
         } else {
@@ -808,7 +808,7 @@ var Engine = function(opts){
     _last_container = _current.shown.container;
 
     if(!_res.slowCPU) {
-      _current.shown.container.classList[doFade ? 'add' : 'remove' ]('fadeIn' + _key );
+      _current.shown.container.classList[doFade ? 'add' : 'remove' ](_key('fadeIn'));
     }
 
     //console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
@@ -947,6 +947,10 @@ var Engine = function(opts){
       // this enables the top category and swaps out the nextJob with us
       _res.nextJob = nextJob;
       _box.topicList = topicList.map(row => { 
+        var dom = document.createElement('div');
+        dom.className = 'topic';
+        return dom;
+      });
       nextTopic();
       sow.strategy = forgetAndReplaceWhenFlagged;
     }
