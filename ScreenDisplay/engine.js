@@ -81,11 +81,12 @@ var Engine = function(opts){
     _box.debug.scrollTo(0,_box.debug.scrollHeight);
   }
 
-  function makeBox(row) {
-    if(!_box[row]) {
-      _box[row] = document.createElement("div");
-      _box[row].className = row + _key;
-      return _box[row];
+  function makeBox(row, obj) {
+    obj = obj || _box;
+    if(!obj[row]) {
+      obj[row] = document.createElement("div");
+      obj[row].className = row + _key;
+      return obj[row];
     }
   }
 
@@ -945,7 +946,7 @@ var Engine = function(opts){
     function enable() {
       // this enables the top category and swaps out the nextJob with us
       _res.nextJob = nextJob;
-      _box.topic = 
+      _box.topicList = topicList.map(row => { 
       nextTopic();
       sow.strategy = forgetAndReplaceWhenFlagged;
     }
