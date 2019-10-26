@@ -869,7 +869,8 @@ var Engine = function(opts){
       // when we do a nextTopic call which is the aggregate of 
       // the durations of a topic.
       _res.container.classList.add('hasTopicList');
-
+      // make only the active topicList
+      _box.topicList.forEach((row,ix) => row.classList['remove','add'][+(ix === topicIx)](_key('active'));
     }
 
     function nextTopic() {
@@ -943,19 +944,32 @@ var Engine = function(opts){
       }
     }
 
+    function newTopic() {
+      var dom = document.createElement('div');
+      dom.className = _key('topic');
+      _box.topicContainer.appendChild(dom);
+      return dom;
+    }
+
     function enable() {
       // this enables the top category and swaps out the nextJob with us
       _res.nextJob = nextJob;
-      _box.topicList = topicList.map(row => { 
-        var dom = document.createElement('div');
-        dom.className = _key('topic');
-        return dom;
-      });
+      _box.topicList = [];
+      setTopicList(topicList);
       nextTopic();
       sow.strategy = forgetAndReplaceWhenFlagged;
     }
 
-    return { topicList, nextJob, enable };
+    function setTopicList(list) {
+      for(var ix = _box.topicList.length; ix < list.length; ix++) {
+        _box.topicList.push(newTopic());
+      }
+      topicList = list;
+      topicList.forEach((row, ix) => _box.topicList[ix].innerHTML = row.display);
+      render();
+    }
+
+    return { setTopicList, nextJob, enable };
   })();
 
   Strategy.Freeform = (function() {
@@ -1060,7 +1074,7 @@ var Engine = function(opts){
         _.fallback = makeJob(res.data.campaign);
 
         if(_res.data.topicList) {
-          Strategy.Oliver.topicList = _res.data.topicList;
+          Strategy.Oliver.setTopicList(_res.data.topicList);
         }
         _res.system = res.data.system;
         event('system', _res.system);
