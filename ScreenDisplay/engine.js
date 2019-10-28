@@ -529,7 +529,7 @@ var Engine = function(opts){
       // This has to be somehow optional because
       // it's not always applicable
       if(res.res) {
-        sow.strategry(res.data);
+        sow.strategy(res.data);
       }
       return cb && cb();
     });
@@ -916,7 +916,7 @@ var Engine = function(opts){
       // it's kinda the server's responsibility to
       // make sure there's default campaigns for each
       // of these.
-      current = topicMap[topicList[ix].internal];
+      current = topicMap[topicList[topicIx].internal];
 
       render();
       nextJob();
@@ -963,7 +963,7 @@ var Engine = function(opts){
 
     function enable() {
       // This enables the top category and swaps out the nextJob with us
-      _res.nextJob = nextJob;
+      _res.NextJob = nextJob;
       _box.topicList = [];
       setTopicList([
         {internal: 'event', display: 'event'},
