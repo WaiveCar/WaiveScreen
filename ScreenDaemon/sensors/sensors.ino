@@ -473,13 +473,13 @@ void loop() {
 //    cpu_on = true;
 //  }
 //
-//  if (voltage < 12.5 & cpu_on == true) {
+//  if (voltage < 12.5 && cpu_on == true) {
 //    backlight_adjust = 0;
 //  } else {
 //    backlight_adjust = 1;
 //  }
   if(ide_debug) Serial.print("one");
-  if (voltage < 13.0 & current < 2.0){
+  if (voltage < 13.0 && current < 2.0){
     delay(1000);
   }
   if(ide_debug) Serial.print("two");
@@ -532,13 +532,13 @@ void loop() {
     }
     else if (selector == 0x11) {
       // turn cpu on or off
-      if (setting == 0xff & cpu_on == false) {
+      if (setting == 0xff && cpu_on == false) {
         digitalWrite(resetPin, HIGH);
         delay (100);
         digitalWrite(resetPin, LOW);
         cpu_on = true;
         
-      } else if (setting == 0x00 & cpu_on == true) {
+      } else if (setting == 0x00 && cpu_on == true) {
         digitalWrite(resetPin, HIGH);
         delay (100);
         digitalWrite(resetPin, LOW);
