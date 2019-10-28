@@ -1,12 +1,3 @@
-// 2 mutually exclusive ways to timeline:
-//
-// be stupid and have the timeline feed the next job - this makes scrubbing hard
-//   * Any scrubbing solution will involve moving an offset around a datastructure with
-//     computed timestamps ... that makes it a timeline.
-//
-// be entirely timeline based and have the next job put something on the timeline - this creates latency problems.
-//   * A "discard future" option will fix the latency issue
-//
 var Engine = function(opts){
   var 
     _res = Object.assign({
@@ -279,7 +270,6 @@ var Engine = function(opts){
       if (playPromise !== undefined) {
         playPromise.then(_nop)
         .catch(function(e) {
-          // console.log(new Date() - now);
           // console.log(new Date() - _start, "setting " + asset.url + " to unplayable", e);
           console.log(e.message, e.name);
           if(new Date() - now < 100) {
