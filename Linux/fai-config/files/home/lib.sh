@@ -239,14 +239,16 @@ set_brightness() {
   local level=$1
   local nopy=$2
 
-  local shift=$(perl -e "print .5 * $level + .5")
-  local revlevel=$(perl -e "print .7 * $level + .3")
+  if [[ -z "$nopy" ]]; then
+    pycall arduino.set_backlight $level
+  else
+    local shift=$(perl -e "print .5 * $level + .5")
+    local revlevel=$(perl -e "print .7 * $level + .3")
 
-  [[ -z "$nopy" ]] && pycall arduino.set_backlight $level
-
-  for display in HDMI-1 HDMI-2; do
-    DISPLAY=:0 xrandr --output $display --gamma 1:1:$shift --brightness $revlevel
-  done
+    for display in HDMI-1 HDMI-2; do
+      DISPLAY=:0 xrandr --output $display --gamma 1:1:$shift --brightness $revlevel
+    done
+  fi
 }
 
 enable_gps() {
