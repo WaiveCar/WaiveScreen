@@ -859,7 +859,7 @@ var Engine = function(opts){
       if(topicList[topicIx].internal) {
         _res.container.classList.add('hasTopicList');
         // make only the active topicList
-        _box.topicList.forEach((row, ix) => row.classList['remove','add'][+(ix === topicIx)](_key('active')));
+        _box.topicList.forEach((row, ix) => row.classList[ix === topicIx ? 'add' : 'remove'](_key('active')));
       } else {
         _res.container.classList.remove('hasTopicList');
       }
