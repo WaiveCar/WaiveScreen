@@ -923,6 +923,7 @@ var Engine = function(opts){
     }
 
     function nextJob() {
+      console.log(topicMap, current, jobIx, topicList);
       
       if(jobIx === current.length) {
         nextTopic();
@@ -947,10 +948,10 @@ var Engine = function(opts){
       }
     }
 
-    function forgetAndReplaceWhenFlagged() {
+    function forgetAndReplaceWhenFlagged(list) {
       if(doReplace) {
         doReplace = false;
-        forgetAndReplace();
+        forgetAndReplace(list);
       }
     }
 
