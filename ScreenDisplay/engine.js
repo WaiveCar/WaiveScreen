@@ -841,7 +841,7 @@ var Engine = function(opts){
   }
 
   Strategy.set = function(what) {
-    Stragegy.current = what;
+    Strategy.current = what;
     Strategy[what].enable();
   };
 
