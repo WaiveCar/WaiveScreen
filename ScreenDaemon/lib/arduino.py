@@ -137,7 +137,6 @@ def set_autobright():
 
   _log.info('[autobright] Setting to {}'.format(level))
   set_backlight(level)
-  dcall('set_brightness', level, 'nopy')
 
 def do_awake():
   global _sleeping, _changeTime, _baseline, _baselineList
@@ -260,6 +259,7 @@ def _set_backlight(value):
 
   _arduino.write(b'\x10')
   _arduino.write(struct.pack('!B', backlight))
+  dcall('set_brightness', (value / 255.0), 'nopy')
 
 #def send_wakeup_signal():
 #  _arduino = get_arduino()
