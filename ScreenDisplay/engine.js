@@ -81,8 +81,7 @@ var Engine = function(opts){
     _box.debug.scrollTo(0,_box.debug.scrollHeight);
   }
 
-  function makeBox(row, obj) {
-    obj = obj || _box;
+  function makeBox(row, obj = _box) {
     if(!obj[row]) {
       obj[row] = document.createElement("div");
       obj[row].className = _key(row);
@@ -142,6 +141,15 @@ var Engine = function(opts){
     if(_res.listeners[what]) {
       _res.listeners[what].forEach(cb => cb(data))
     }
+  }
+  function on(what, cb) {
+    if(_res.data[what]) {
+      return cb(_res.data[what]);
+    } 
+    if(!(what in _res.listeners)) {
+      _res.listeners[what] = [];
+    }
+    _res.listeners[what].push(cb);
   }
 
   function assetError(obj, e) {
@@ -456,8 +464,7 @@ var Engine = function(opts){
 
   // TODO: A circular buffer to try and navigate poor network
   // conditions.
-  function remote(verb, url, what, onsuccess, onfail) {
-    onfail = onfail || _log;
+  function remote(verb, url, what, onsuccess, onfail = _log) {
     if(!_res.server) {
       onfail();
     }
@@ -852,25 +859,20 @@ var Engine = function(opts){
     var topicMap = {},
       // we can override this when we get the
       // default.
-      topicList = [
-        {internal: 'event', display: 'event'},
-        {internal: 'help', display: 'help'},
-        {internal: 'service', display: 'service'}
-      ],
-      noTopicList = [],
+      topicList = [],
       current = false,
       jobIx = 0,
       doReplace = true,
       topicIx = 0;
 
     function render() {
-      // TODO: we can "optimize" this with flags to make sure
-      // we aren't doing extra work. However, this is only done
-      // when we do a nextTopic call which is the aggregate of 
-      // the durations of a topic.
-      _res.container.classList.add('hasTopicList');
-      // make only the active topicList
-      _box.topicList.forEach((row,ix) => row.classList['remove','add'][+(ix === topicIx)](_key('active'));
+      if(topicList[topicIx].internal) {
+        _res.container.classList.add('hasTopicList');
+        // make only the active topicList
+        _box.topicList.forEach((row, ix) => row.classList['remove','add'][+(ix === topicIx)](_key('active'));
+      } else {
+        _res.container.classList.remove('hasTopicList');
+      }
     }
 
     function nextTopic() {
@@ -897,19 +899,37 @@ var Engine = function(opts){
 
       var activeList = Object.values(_res.db).filter(row => row.active && row.duration);
 
-      activeList.filter(row => row.topic).forEach(row => {
+      //
+      // We need to clear out our local copy of the ads
+      // and repopulate.
+      //
+      topicMap = {};
+
+      activeList.forEach(row => {
         if (!topicMap[row.topic]) {
           topicMap[row.topic] = [];
         }
-        topicMap[row.topic].push(row);
+        //
+        // This may be fairly inefficient since we are remaking
+        // jobs that we may have previously made.
+        //
+        topicMap[row.topic].push(makeJob(row));
       });
-
-      noTopicList = activeList.filter(row => !row.topic);
 
       topicIx = (topicIx + 1) % topicList.length;
       jobIx = 0;
 
-      current = topicList[topicIx];
+      // So we know our topic now, it's topicIx, which is an
+      // integer offset in topicList
+      //
+      // This could be null or empty, fine ... but
+      // it's kinda the server's responsibility to
+      // make sure there's default campaigns for each
+      // of these.
+      current = topicMap[topicList[ix].internal];
+
+      render();
+      nextJob();
     }
 
     function nextJob() {
@@ -952,11 +972,16 @@ var Engine = function(opts){
     }
 
     function enable() {
-      // this enables the top category and swaps out the nextJob with us
+      // This enables the top category and swaps out the nextJob with us
       _res.nextJob = nextJob;
       _box.topicList = [];
-      setTopicList(topicList);
-      nextTopic();
+      setTopicList([
+        {internal: 'event', display: 'event'},
+        {internal: 'help', display: 'help'},
+        {internal: 'service', display: 'service'}
+      ]);
+      // Make sure we don't try anything until we get a default
+      on('system', nextTopic);
       sow.strategy = forgetAndReplaceWhenFlagged;
     }
 
@@ -966,6 +991,7 @@ var Engine = function(opts){
       }
       topicList = list;
       topicList.forEach((row, ix) => _box.topicList[ix].innerHTML = row.display);
+      topicList.push( {internal: null, display: null} );
       render();
     }
 
@@ -1108,7 +1134,7 @@ var Engine = function(opts){
   // variables start with lower case letters,
   // function start with upper case.
   return Object.assign(_res, {
-    Strategy, Widget, SetFallback,
+    Strategy, Widget, SetFallback, on,
 
     Play: function() {
       _res.pause = false;
@@ -1160,15 +1186,6 @@ var Engine = function(opts){
       sow();
       _res.SetFallback();
       _res.NextJob();
-    },
-    on: function(what, cb) {
-      if(_res.data[what]) {
-        return cb(_res.data[what]);
-      } 
-      if(!(what in _res.listeners)) {
-        _res.listeners[what] = [];
-      }
-      _res.listeners[what].push(cb);
     },
     AddJob: function(obj, params) {
       if(isString(obj)) {
