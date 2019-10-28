@@ -72,11 +72,11 @@ var Engine = function(opts){
     _box.debug.scrollTo(0,_box.debug.scrollHeight);
   }
 
-  function makeBox(row, obj = _box) {
-    if(!obj[row]) {
-      obj[row] = document.createElement("div");
-      obj[row].className = _key(row);
-      return obj[row];
+  function makeBox(row) {
+    if(!_box[row]) {
+      _box[row] = document.createElement("div");
+      _box[row].className = _key(row);
+      return _box[row];
     }
   }
 
