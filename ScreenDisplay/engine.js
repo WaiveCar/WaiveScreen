@@ -827,7 +827,9 @@ var Engine = function(opts){
 
   function setNextJob(job) {
     _current = job;
-    _current.downweight *= _downweight;
+    if('downweight' in _current) {
+      _current.downweight *= _downweight;
+    }
     _current.position = 0;
     //console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration);
     //
@@ -923,6 +925,10 @@ var Engine = function(opts){
     }
 
     function nextJob() {
+      if(!current) {
+        // This means we've really fucked up somehow
+        setNextJob(_.fallback);
+      }
       console.log(topicMap, current, jobIx, topicList);
       
       if(jobIx === current.length) {
