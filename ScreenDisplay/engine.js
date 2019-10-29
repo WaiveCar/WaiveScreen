@@ -827,15 +827,10 @@ var Engine = function(opts){
 
   function setNextJob(job) {
     _current = job;
-    if('downweight' in _current) {
+    if(_current) {
       _current.downweight *= _downweight;
+      _current.position = 0;
     }
-    _current.position = 0;
-    //console.log(new Date() - _start, "Showing " + _current.id + " duration " + _current.duration);
-    //
-    // We set the start time of the showing of this ad
-    // so we can cross-correlate the gps from the ScreenDaemon
-    // when we send it off upstream.  We use the system time
     // which is consistent between the two time stores.
     _last_sow[0] = _last_sow[1];
     _last_sow[1] = +new Date();
