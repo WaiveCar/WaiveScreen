@@ -969,9 +969,9 @@ var Engine = function(opts){
       _res.NextJob = nextJob;
       _box.topicList = [];
       setTopicList([
-        {internal: 'event', display: 'event'},
-        {internal: 'help', display: 'help'},
-        {internal: 'service', display: 'service'}
+        {internal: 'event', display: 'Events'},
+        {internal: 'help', display: 'Notices'},
+        {internal: 'service', display: 'Services'}
       ]);
       // Make sure we don't try anything until we get a default
       on('system', nextTopic);

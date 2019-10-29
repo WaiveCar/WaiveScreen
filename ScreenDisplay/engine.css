@@ -36,8 +36,9 @@
 }
 .engine-xA8tAY4YSBmn2RTQqnnXXw .topic-xA8tAY4YSBmn2RTQqnnXXw {
   float: left;
-  background: #555;
-  color: white;
+  background: #eee;
+  color: #555;
+  font-weight: bold;
   height: 100%;
   border-radius: 3vh;
   font-size: 3.5vh;
