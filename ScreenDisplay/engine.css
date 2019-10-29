@@ -30,16 +30,21 @@
 }
 .engine-xA8tAY4YSBmn2RTQqnnXXw .topicContainer-xA8tAY4YSBmn2RTQqnnXXw {
   display: block;
-  height: 10%;
+  height: 8%;
   text-align: left;
+  margin: 1vh;
 }
 .engine-xA8tAY4YSBmn2RTQqnnXXw .topic-xA8tAY4YSBmn2RTQqnnXXw {
   float: left;
-  background: black;
+  background: #555;
   color: white;
   height: 100%;
-  border-radius: 10vw;
-  font-size: 5vh;
+  border-radius: 3vh;
+  font-size: 3.5vh;
+  padding: 0 2vh;
+  margin: 0 2vh 0 0;
+  display: flex;
+  align-items: center;
 }
 .engine-xA8tAY4YSBmn2RTQqnnXXw .top-xA8tAY4YSBmn2RTQqnnXXw {
   height: 100%;
