@@ -134,15 +134,6 @@
   animation-name: enginefadeIn-xA8tAY4YSBmn2RTQqnnXXw;
   animation-duration: 0.4s;
 }
-.engine-xA8tAY4YSBmn2RTQqnnXXw .info-xA8tAY4YSBmn2RTQqnnXXw { 
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  font-size: 9px;
-  color: rgba(100,240,100,0.3);
-  font-family: "Bitstream Charter";
-  z-index: 1000;
-}
 .engine-xA8tAY4YSBmn2RTQqnnXXw .debug-xA8tAY4YSBmn2RTQqnnXXw {
   position: absolute;
   top: 0;
