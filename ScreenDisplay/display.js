@@ -72,5 +72,5 @@ window.onload = function init() {
       console.log(event.data);
     };
   }
-  doIO();
+  doWs();
 }
