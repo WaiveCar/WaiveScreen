@@ -922,7 +922,8 @@ var Engine = function(opts){
     function nextJob() {
       if(!current) {
         // This means we've really fucked up somehow
-        setNextJob(_.fallback);
+        doReplace = true;
+        return setNextJob(_.fallback);
       }
       console.log(topicMap, current, jobIx, topicList);
       
