@@ -39,7 +39,6 @@ var Engine = function(opts){
     _uniq = 0,
     _last_uniq = false,
     _last_container = false,
-    _last_sow = [+_start, +_start],
     _jobId = 0,
     _downweight = 0.7,
     _nop = () => {},
@@ -50,6 +49,7 @@ var Engine = function(opts){
     _ = {
       debug: false,
       last: false,
+      last_sow: [+_start, +_start],
       isNetUp: true,
       current: false,
       firstRun: false,
@@ -746,7 +746,7 @@ var Engine = function(opts){
 
         // and report it up to the server
         sow({
-          start_time: _last_sow[0],
+          start_time: _.last_sow[0],
           end_time: _.last_sow[1],
           job_id: _.last.job_id,
           campaign_id: _.last.campaign_id, 
@@ -832,8 +832,8 @@ var Engine = function(opts){
       _current.position = 0;
     }
     // which is consistent between the two time stores.
-    _last_sow[0] = _last_sow[1];
-    _last_sow[1] = +new Date();
+    _.last_sow[0] = _.last_sow[1];
+    _.last_sow[1] = +new Date();
     return job;
   }
 
