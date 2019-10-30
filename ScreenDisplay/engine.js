@@ -852,13 +852,13 @@ var Engine = function(opts){
       doReplace = true,
       topicIx = 0;
 
-    function render() {
-      if(topicList[topicIx].internal) {
+    function render(forceOff) {
+      if(forceOff || !topicList[topicIx].internal) {
+        _res.container.classList.remove('hasTopicList');
+      } else {
         _res.container.classList.add('hasTopicList');
         // make only the active topicList
         _box.topicList.forEach((row, ix) => row.classList[ix === topicIx ? 'add' : 'remove'](_key('active')));
-      } else {
-        _res.container.classList.remove('hasTopicList');
       }
     }
 
@@ -923,31 +923,35 @@ var Engine = function(opts){
       if(!current) {
         // This means we've really fucked up somehow
         doReplace = true;
-        return setNextJob(_.fallback);
-      }
-      console.log(topicMap, current, jobIx, topicList);
-      
-      if(jobIx === current.length) {
-        nextTopic();
-      }
-      //
-      // We are assuming a bunch here. essentially that we
-      // have hit the nextTopic to assign a current pointer 
-      // and that our sequential revisiting will handle our
-      // mechanics correctly.
-      //
-      setNextJob( current[jobIx] );
-      jobIx++;
+        setNextJob(_.fallback);
+        // Force the topics off for now.
+        render(true);
+      } else {
+        console.log(topicMap, current, jobIx, topicList);
+        
+        if(jobIx === current.length) {
+          nextTopic();
+        }
+        //
+        // We are assuming a bunch here. essentially that we
+        // have hit the nextTopic to assign a current pointer 
+        // and that our sequential revisiting will handle our
+        // mechanics correctly.
+        //
+        setNextJob( current[jobIx] );
+        jobIx++;
 
-      //
-      // We'll go to the next topic at the end of showing
-      // our ad. However, we need to make sure that we have
-      // flagged our sow strategy to replace before we 
-      // go into our timeout.
-      // 
-      if(jobIx === current.length) {
-        doReplace = true;
+        //
+        // We'll go to the next topic at the end of showing
+        // our ad. However, we need to make sure that we have
+        // flagged our sow strategy to replace before we 
+        // go into our timeout.
+        // 
+        if(jobIx === current.length) {
+          doReplace = true;
+        }
       }
+      nextAsset();
     }
 
     function forgetAndReplaceWhenFlagged(list) {
