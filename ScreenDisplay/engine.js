@@ -851,6 +851,7 @@ var Engine = function(opts){
       topicList = [],
       current = false,
       jobIx = 0,
+      activeList = [],
       doReplace = true,
       topicIx = 0;
 
@@ -886,7 +887,7 @@ var Engine = function(opts){
       // can choose from.  
       //
 
-      var activeList = Object.values(_res.db).filter(row => row.active && row.duration);
+      activeList = Object.values(_res.db).filter(row => row.active && row.duration);
 
       //
       // We need to clear out our local copy of the ads
@@ -928,6 +929,7 @@ var Engine = function(opts){
         setNextJob(_.fallback);
         // Force the topics off for now.
         render(true);
+        nextTopic();
       } else {
         console.log(topicMap, current, jobIx, topicList);
         
