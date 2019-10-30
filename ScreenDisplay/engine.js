@@ -840,6 +840,8 @@ var Engine = function(opts){
   Strategy.set = function(what) {
     Strategy.current = what;
     Strategy[what].enable();
+    // Make sure we don't try anything until we get a default
+    on('system', _res.NextJob);
   };
 
   Strategy.Oliver = (function( ) {
@@ -977,8 +979,6 @@ var Engine = function(opts){
         {internal: 'help', display: 'Notices'},
         {internal: 'service', display: 'Services'}
       ]);
-      // Make sure we don't try anything until we get a default
-      on('system', nextTopic);
       sow.strategy = forgetAndReplaceWhenFlagged;
     }
 
@@ -1182,6 +1182,7 @@ var Engine = function(opts){
       // Try to initially contact the server
       sow();
       _res.SetFallback();
+      // This is a race condition, the on(system) should fire this off.
       //_res.NextJob();
     },
     AddJob: function(obj, params) {
