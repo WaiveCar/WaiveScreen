@@ -710,6 +710,39 @@ upgrade_scripts() {
   done
 }
 
+_upgrade_pre() {
+  local usb_repo="${1}"
+  local old_repo="$(readlink -f ${BASE})"
+  local old_repo_link="${DEST}/.WaiveScreen.old"
+  local new_repo_link="${DEST}/.WaiveScreen.new"
+
+  ln -sTf "$(basename ${old_repo})" "${old_repo_link}"
+
+  if [[ -z "${usb_repo}" ]]; then
+    # Fetch the latest info from github and get the
+    # name of the new version of our branch.
+    cd "${old_repo}"
+    git fetch --all
+    local new_repo="${DEST}/.WaiveScreen-$(git describe origin/${BRANCH})"
+
+    # Make a copy of the existing repository
+    # and use that for our upgrade.
+    cp -av "${old_repo}" "${new_repo}"
+  else
+    # Get the name of the new version
+    cd "${usb_repo}"
+    local new_repo="${DEST}/.WaiveScreen-$(git describe)"
+
+    # Move the usb files to the properly named directory
+    mv "${usb_repo}" "${new_repo}"
+    chmod 0755 "${new_repo}"
+  fi
+
+  # Update links
+  ln -sTf "$(basename ${new_repo})" "${new_repo_link}"
+  ln -sTf "$(basename ${new_repo})" "${BASE}"
+}
+
 _upgrade_post() {
   local version=$(get_version)
 
@@ -751,7 +784,9 @@ local_disk() {
     elif [[ -e $package && -z "$2" ]]; then
       _sanityafter
       _info "Found upgrade package - installing"
-      tar xf $package -C $BASE
+      local usb_temp="$(mktemp -d)"
+      tar xf $package -C "${usb_temp}"
+      _upgrade_pre "${usb_temp}"
       $SUDO umount -l $mountpoint
 
       _info "Disk can be removed"
@@ -777,11 +812,12 @@ upgrade() {
   {
     set -x
     _sanityafter
+    _upgrade_pre
     if local_sync; then
       # note: git clean only goes deeper, it doesn't do by default the entire repo
       cd $BASE && git clean -fxd
       $SUDO pip3 install -r $BASE/ScreenDaemon/requirements.txt
-      _upgrade_post
+      dcall _upgrade_post
     else
       _warn "Failed to upgrade"
     fi
