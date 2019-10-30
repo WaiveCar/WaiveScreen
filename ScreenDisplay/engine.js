@@ -762,7 +762,7 @@ var Engine = function(opts){
 
     // If we are at the end then our next function should be to
     // choose the next job.
-    if(_current.position === _current.assetList.length) {
+    if(_current.assetList && _current.position === _current.assetList.length) {
       event('jobEnded', _current);
       return _res.NextJob();
     } 
