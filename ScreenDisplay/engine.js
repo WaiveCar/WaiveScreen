@@ -1182,7 +1182,7 @@ var Engine = function(opts){
       // Try to initially contact the server
       sow();
       _res.SetFallback();
-      _res.NextJob();
+      //_res.NextJob();
     },
     AddJob: function(obj, params) {
       if(isString(obj)) {
