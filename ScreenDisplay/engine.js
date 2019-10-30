@@ -664,7 +664,7 @@ var Engine = function(opts){
         _box.ticker.style.display = 'block';
         if(feed.map) {
           _box.ticker.innerHTML = "<div class=ticker-content-xA8tAY4YSBmn2RTQqnnXXw>" + 
-            shuffle(feed).map(row => `<span>${row}</span>`) + "</div>";
+            shuffle(feed).map(row => "<span>" + row + "</span>") + "</div>";
         }
 
         scroll();
