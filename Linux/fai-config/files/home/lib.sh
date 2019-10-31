@@ -722,7 +722,10 @@ _upgrade_pre() {
     # Fetch the latest info from github and get the
     # name of the new version of our branch.
     cd "${old_repo}"
+    # Files disappear during copy if we don't do this
+    git config --add gc.autoDetach false
     git fetch --all
+    git config --unset gc.autoDetach
     local new_repo="${DEST}/.WaiveScreen-$(git describe origin/${BRANCH})"
 
     # Make a copy of the existing repository
@@ -752,11 +755,11 @@ _upgrade_post() {
   $SUDO apt -y autoremove
 
   pycall db.upgrade
+  update_arduino
   add_history upgrade "$version"
 
   upgrade_scripts
   $SUDO systemctl restart location-daemon
-  update_arduino
   stack_restart 
   _info "Now on $version"
 }
@@ -797,7 +800,8 @@ local_disk() {
 
       _info "Reinstalling base"
       sync_scripts $BASE/Linux/fai-config/files/home/
-      _upgrade_post
+      # This should call the new _upgrade_post function
+      dcall _upgrade_post
     else
       _info "No upgrade found"
       $SUDO umount -l $mountpoint
@@ -817,6 +821,7 @@ upgrade() {
       # note: git clean only goes deeper, it doesn't do by default the entire repo
       cd $BASE && git clean -fxd
       $SUDO pip3 install -r $BASE/ScreenDaemon/requirements.txt
+      # This should call the new _upgrade_post function
       dcall _upgrade_post
     else
       _warn "Failed to upgrade"
@@ -860,6 +865,8 @@ update_arduino() {
   if [[ "${my_arduino_version}" != "${new_arduino_version}" ]]; then
     local sensors_backup=/tmp/sensors_backup.ino.hex
     _info "Updating arduino"
+    _info "Setting nosanity"
+    pycall sess_set nosanity
     down sensor_daemon
 
     # Backup existing image
@@ -873,7 +880,7 @@ update_arduino() {
       _error "New Arduino image FAILED.  Rolling back to previous version"
       _avrdude -Uflash:w:${sensors_backup}:i
     fi
-
+    pycall sess_del nosanity
     sensor_daemon
   fi
 }
