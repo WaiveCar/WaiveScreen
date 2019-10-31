@@ -39,7 +39,6 @@ var Engine = function(opts){
     _uniq = 0,
     _last_uniq = false,
     _last_container = false,
-    _last_sow = [+_start, +_start],
     _jobId = 0,
     _downweight = 0.7,
     _nop = () => {},
@@ -50,6 +49,7 @@ var Engine = function(opts){
     _ = {
       debug: false,
       last: false,
+      last_sow: [+_start, +_start],
       isNetUp: true,
       current: false,
       firstRun: false,
@@ -681,7 +681,7 @@ var Engine = function(opts){
     if(!_res.doScroll) { 
       return;
     }
-    var p = _current.shown.dom;
+    var p = _.current.shown.dom;
     function scroll(obj, dim) {
       var 
         anchor  = dim == 'vertical' ? 'marginTop' : 'marginLeft',
@@ -705,7 +705,7 @@ var Engine = function(opts){
     p.style.marginTop = p.style.marginLeft = 0;
     setTimeout(function(){
       var
-        opts = {dom: p, duration: 0.7 * _current.shown.duration * 1000},
+        opts = {dom: p, duration: 0.7 * _.current.shown.duration * 1000},
         el = p.getBoundingClientRect(),
         box = p.parentNode.getBoundingClientRect();
 
@@ -716,7 +716,7 @@ var Engine = function(opts){
         opts.goal = p.width - box.width;
         scroll(opts, 'horizontal');
       }
-    }, _current.shown.duration * .15 * 1000);
+    }, _.current.shown.duration * .15 * 1000);
   }
 
   // Jobs have assets. NextJob chooses a job to run and then asks nextAsset
@@ -735,7 +735,7 @@ var Engine = function(opts){
     // be transitioning away from a previous job
     //
     // so this is when we do the reporting.
-    if(_current.position === 0) {
+    if(_.current.position === 0) {
 
       // If this exists then it'd be set at the last asset
       // previous job.
@@ -746,14 +746,14 @@ var Engine = function(opts){
 
         // and report it up to the server
         sow({
-          start_time: _last_sow[0],
+          start_time: _.last_sow[0],
           end_time: _.last_sow[1],
           job_id: _.last.job_id,
           campaign_id: _.last.campaign_id, 
           completed_seconds: _.last.completed_seconds
         });
 
-        if(_.last.job_id !== _current.job_id) {
+        if(_.last.job_id !== _.current.job_id) {
           // we reset the downweight -- it can come back
           _.last.downweight = 1;
         }
@@ -762,23 +762,23 @@ var Engine = function(opts){
 
     // If we are at the end then our next function should be to
     // choose the next job.
-    if(_current.position === _current.assetList.length) {
-      event('jobEnded', _current);
+    if(_.current.assetList && _.current.position === _.current.assetList.length) {
+      event('jobEnded', _.current);
       return _res.NextJob();
     } 
 
-    _current.shown = _current.assetList[_current.position];
-    _current.shown.run( function() {
+    _.current.shown = _.current.assetList[_.current.position];
+    _.current.shown.run( function() {
       if(_res.slowCPU && prev) {
         _box.ad.removeChild(prev);
       }
-      _box.ad.appendChild(_current.shown.container);
-      if(_current.shown.type == 'image') {
+      _box.ad.appendChild(_.current.shown.container);
+      if(_.current.shown.type == 'image') {
         scrollIfNeeded();
       }
     });
 
-    if(_current.shown.uniq != _last_uniq) {
+    if(_.current.shown.uniq != _last_uniq) {
       // This is NEEDED because by the time 
       // we come back around, _last.shown will be 
       // redefined.
@@ -796,28 +796,28 @@ var Engine = function(opts){
           //dbg("} removeChild");
           // we don't have to worry about the re-pointing
           // because we aren't in the timeout
-          _current.shown.rewind();
+          _.current.shown.rewind();
         }
         doFade = true;
       }
     }
-    _last_uniq = _current.shown.uniq;
-    _last_container = _current.shown.container;
+    _last_uniq = _.current.shown.uniq;
+    _last_container = _.current.shown.container;
 
     if(!_res.slowCPU) {
-      _current.shown.container.classList[doFade ? 'add' : 'remove' ](_key('fadeIn'));
+      _.current.shown.container.classList[doFade ? 'add' : 'remove' ](_key('fadeIn'));
     }
 
     //console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
 
     // These will EQUAL each other EXCEPT when the position is 0.
-    _.last = _current;
+    _.last = _.current;
 
     // And we increment the position to show the next asset
     // when we come back around
-    _current.position ++;
+    _.current.position ++;
 
-    timeoutDuration = _current.shown.duration * 1000; 
+    timeoutDuration = _.current.shown.duration * 1000; 
     if(!_res.slowCPU) {
       timeoutDuration -= _res.fadeMs / 2;
     }
@@ -826,20 +826,22 @@ var Engine = function(opts){
   }
 
   function setNextJob(job) {
-    _current = job;
-    if(_current) {
-      _current.downweight *= _downweight;
-      _current.position = 0;
+    _.current = job;
+    if(_.current) {
+      _.current.downweight *= _downweight;
+      _.current.position = 0;
     }
     // which is consistent between the two time stores.
-    _last_sow[0] = _last_sow[1];
-    _last_sow[1] = +new Date();
+    _.last_sow[0] = _.last_sow[1];
+    _.last_sow[1] = +new Date();
     return job;
   }
 
   Strategy.set = function(what) {
     Strategy.current = what;
     Strategy[what].enable();
+    // Make sure we don't try anything until we get a default
+    on('system', _res.NextJob);
   };
 
   Strategy.Oliver = (function( ) {
@@ -849,6 +851,7 @@ var Engine = function(opts){
       topicList = [],
       current = false,
       jobIx = 0,
+      activeList = [],
       doReplace = true,
       topicIx = 0;
 
@@ -884,7 +887,7 @@ var Engine = function(opts){
       // can choose from.  
       //
 
-      var activeList = Object.values(_res.db).filter(row => row.active && row.duration);
+      activeList = Object.values(_res.db).filter(row => row.active && row.duration);
 
       //
       // We need to clear out our local copy of the ads
@@ -926,6 +929,7 @@ var Engine = function(opts){
         setNextJob(_.fallback);
         // Force the topics off for now.
         render(true);
+        nextTopic();
       } else {
         console.log(topicMap, current, jobIx, topicList);
         
@@ -977,8 +981,6 @@ var Engine = function(opts){
         {internal: 'help', display: 'Notices'},
         {internal: 'service', display: 'Services'}
       ]);
-      // Make sure we don't try anything until we get a default
-      on('system', nextTopic);
       sow.strategy = forgetAndReplaceWhenFlagged;
     }
 
@@ -1182,7 +1184,8 @@ var Engine = function(opts){
       // Try to initially contact the server
       sow();
       _res.SetFallback();
-      _res.NextJob();
+      // This is a race condition, the on(system) should fire this off.
+      //_res.NextJob();
     },
     AddJob: function(obj, params) {
       if(isString(obj)) {
