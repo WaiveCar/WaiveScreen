@@ -868,6 +868,8 @@ update_arduino() {
     _info "Updating arduino"
     _info "Setting nosanity"
     pycall sess_set nosanity
+    # Give a possibly running sanity check time to finish.
+    sleep 6
     down sensor_daemon
     sleep 2
 
