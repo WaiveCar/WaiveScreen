@@ -871,6 +871,7 @@ update_arduino() {
     # Give a possibly running sanity check time to finish.
     sleep 6
     down sensor_daemon
+    $SUDO pkill -f SensorDaemon
     sleep 2
 
     # Backup existing image
