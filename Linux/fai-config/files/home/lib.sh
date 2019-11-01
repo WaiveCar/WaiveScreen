@@ -864,24 +864,33 @@ update_arduino() {
 
   if [[ "${my_arduino_version}" != "${new_arduino_version}" ]]; then
     local sensors_backup=/tmp/sensors_backup.ino.hex
+    local final_cmds="pycall sess_del nosanity; sensor_daemon"
     _info "Updating arduino"
     _info "Setting nosanity"
     pycall sess_set nosanity
     down sensor_daemon
+    sleep 2
 
     # Backup existing image
-    _avrdude -Uflash:r:${sensors_backup}:i
+    if ! _avrdude -Uflash:r:${sensors_backup}:i ; then
+      _error "Unable to backup Arduino image.  Aborting update."
+      eval $final_cmds
+      return 1
+    fi
 
     # Flash new image
-    _avrdude -Uflash:w:$BASE/tools/client/sensors.ino.hex:i
+    if ! _avrdude -Uflash:w:$BASE/tools/client/sensors.ino.hex:i ; then
+      _error "Unable to flash new Arduino image."
+    fi
 
     # Test new image
     if [[ -z "$(pycall arduino_read)" ]]; then
-      _error "New Arduino image FAILED.  Rolling back to previous version"
-      _avrdude -Uflash:w:${sensors_backup}:i
+      _error "New Arduino image FAILED read test.  Rolling back to previous version"
+      if ! _avrdude -Uflash:w:${sensors_backup}:i ; then
+        _error "Unable to flash previous Arduino image.  We may have borked it.  Call for help."
+      fi
     fi
-    pycall sess_del nosanity
-    sensor_daemon
+    eval $final_cmds
   fi
 }
 
