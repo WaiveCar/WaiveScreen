@@ -793,6 +793,11 @@ local_disk() {
       $SUDO umount -l $mountpoint
 
       _info "Disk can be removed"
+      # Copy the new pip files over so pip_install picks them up
+      local new_pip_dir="${BASE}/Linux/fai-config/files/home/pip"
+      if [[ -e ${new_pip_dir} ]]; then
+        cp -av ${new_pip_dir}/* "${DEST}/pip/"
+      fi
       pip_install
 
       # cleanup the old files
