@@ -929,7 +929,7 @@ var Engine = function(opts){
         setNextJob(_.fallback);
         // Force the topics off for now.
         render(true);
-        nextTopic();
+        // nextAsset is at the bottom
       } else {
         console.log(topicMap, current, jobIx, topicList);
         
