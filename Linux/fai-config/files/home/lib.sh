@@ -514,6 +514,7 @@ _screen_display_single() {
   [[ -e $app ]] || die "Can't find $app. Exiting"
 
   _as_user chromium --kiosk \
+    --check-for-update-interval=2147483647 \
     --incognito \
     --disable-translate --disable-features=TranslateUI \
     --fast --fast-start \
