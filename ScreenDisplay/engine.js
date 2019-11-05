@@ -132,7 +132,7 @@ var Engine = function(opts){
     _res.data[what] = data;
     if(_res.listeners[what]) {
       _res.listeners[what].forEach(cb => cb(data))
-      _res.listeners[what] = res.listeners[what].filter(cb => !cb.once);
+      _res.listeners[what] = _res.listeners[what].filter(cb => !cb.once);
     }
   }
   function on(what, cb) {
