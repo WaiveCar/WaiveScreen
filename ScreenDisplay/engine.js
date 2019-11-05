@@ -930,8 +930,10 @@ var Engine = function(opts){
         // This means we've really fucked up somehow
         doReplace = true;
         setNextJob(_.fallback);
+
         // Force the topics off for now.
         render(true);
+
         // nextAsset is at the bottom
       } else {
         console.log(topicMap, current, jobIx, topicList);
