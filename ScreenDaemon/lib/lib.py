@@ -728,9 +728,9 @@ def get_uuid():
 
 def upgrades_to_run():
   upgrade_glob = "{}/Linux/upgrade/*.script".format(ROOT)
-  last_upgrade_script = db.kv_get('last_upgrade')
+  last_upgrade_script = db.kv_get('last_upgrade', default='').split('/')[-1]
   pos = -1
-  upgrade_list = sorted(glob.glob(upgrade_glob))
+  upgrade_list = sorted([s.split('/')[-1] for s in glob.glob(upgrade_glob)])
 
   if len(upgrade_list) == 0:
     logging.warning("Woops, couldn't find anything at {}".format(upgrade_glob))

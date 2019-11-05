@@ -694,6 +694,7 @@ nosanity() {
 upgrade_scripts() {
   for script in $(pycall upgrades_to_run); do
     cd $BASE
+    local upgrade_dir="${BASE}/Linux/upgrade"
     # we do this every time because some upgrades
     # may call for a reboot
     _log "[upgrade-script] $script"
@@ -702,7 +703,7 @@ upgrade_scripts() {
     add_history upgrade,$script
     kv_set last_upgrade,$script
 
-    local res=$($SUDO $script upgradepost)
+    local res=$($SUDO "${upgrade_dir}/$script" upgradepost)
     # If we survived the script and it didn't reboot
     # then we have the pleasure of storing the output
     # of the script, hopefully without issue.
