@@ -701,7 +701,7 @@ _upgrade_pre() {
     cd "${old_repo}"
     # Files disappear during copy if we don't do this
     git config --add gc.autoDetach false
-    git fetch --all
+    git fetch origin ${BRANCH}
     git config --unset gc.autoDetach
     local new_repo="${DEST}/.WaiveScreen-$(git describe origin/${BRANCH})"
 
