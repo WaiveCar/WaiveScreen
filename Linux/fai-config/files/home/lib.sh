@@ -676,7 +676,7 @@ upgrade_scripts() {
     _log "[upgrade-script] $script"
 
     # #153, well the start of it at least.
-    add_history upgrade $script
+    add_history upgrade_script $script
     kv_set last_upgrade,$script
 
     local res="$($SUDO $script upgradepost)"
