@@ -676,14 +676,17 @@ upgrade_scripts() {
     _log "[upgrade-script] $script"
 
     # #153, well the start of it at least.
-    add_history upgrade,$script
+    add_history upgrade $script
     kv_set last_upgrade,$script
 
-    local res=$($SUDO $script upgradepost)
+    local res="$($SUDO $script upgradepost)"
     # If we survived the script and it didn't reboot
     # then we have the pleasure of storing the output
     # of the script, hopefully without issue.
-    sqlite3 $DB "update history set extra='$res' where value='$script' and key='$upgrade'"
+    # REMOVED: This was running into problems with the script output being un-escaped.
+    #sqlite3 $DB "update history set extra='$res' where value='$script' and kind='$upgrade'"
+    _log "${script} output: ${res}"
+
   done
 }
 
