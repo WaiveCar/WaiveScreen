@@ -683,7 +683,7 @@ upgrade_scripts() {
     # If we survived the script and it didn't reboot
     # then we have the pleasure of storing the output
     # of the script, hopefully without issue.
-    sqlite $DB "update history set extra='$res' where value='$script' and key='$upgrade'"
+    sqlite3 $DB "update history set extra='$res' where value='$script' and key='$upgrade'"
   done
 }
 
