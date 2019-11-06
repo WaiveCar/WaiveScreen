@@ -692,6 +692,7 @@ _upgrade_pre() {
   local old_repo="$(readlink -f ${BASE})"
   local old_repo_link="${DEST}/.WaiveScreen.old"
   local new_repo_link="${DEST}/.WaiveScreen.new"
+  local date_string="$(date +%Y%m%d%H%M)"
 
   ln -sTf "$(basename ${old_repo})" "${old_repo_link}"
 
@@ -703,7 +704,7 @@ _upgrade_pre() {
     git config --add gc.autoDetach false
     git fetch origin ${BRANCH}
     git config --unset gc.autoDetach
-    local new_repo="${DEST}/.WaiveScreen-$(git describe origin/${BRANCH})"
+    local new_repo="${DEST}/.WaiveScreen-${date_string}-$(git describe origin/${BRANCH})"
 
     # Make a copy of the existing repository
     # and use that for our upgrade.
@@ -711,7 +712,7 @@ _upgrade_pre() {
   else
     # Get the name of the new version
     cd "${usb_repo}"
-    local new_repo="${DEST}/.WaiveScreen-$(git describe)"
+    local new_repo="${DEST}/.WaiveScreen-${date_string}-$(git describe)"
 
     # Move the usb files to the properly named directory
     mv "${usb_repo}" "${new_repo}"
