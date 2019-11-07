@@ -765,14 +765,7 @@ local_upgrade() {
 
       _info "Disk can be removed"
 
-      # Copy the new pip files over so pip_install picks them up
-      local new_pip_dir="${BASE}/Linux/fai-config/files/home/pip"
-      if [[ -d ${new_pip_dir} ]]; then
-        # So pip doesn't get confused by different versions
-        rm -f "${DEST}/pip"/*
-        cp -av ${new_pip_dir}/* "${DEST}/pip/"
-      fi
-      pip_install
+      DEST="${BASE}/Linux/fai-config/files/home" pip_install
 
       # cleanup the old files
       cd $BASE && git clean -fxd
