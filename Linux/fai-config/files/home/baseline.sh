@@ -35,8 +35,9 @@ local_sync() {
   # We make sure that local changes (there shouldn't be any)
   # get tossed aside and pull down the new code.
   _git stash
-  if _git pull; then
+  if _git fetch --tags --force origin $sha1; then
     _git checkout $sha1
+    _git reset --hard origin/$sha1
 
     # If there's script updates we try to pull those down
     # as well - we can use our pre-existing sync script
