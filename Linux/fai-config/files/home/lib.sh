@@ -700,14 +700,16 @@ upgrade_scripts() {
     _log "[upgrade-script] $script"
 
     # #153, well the start of it at least.
-    add_history upgrade,$script
+    add_history upgrade_script $script
     kv_set last_upgrade,$script
 
     local res=$($SUDO "${upgrade_dir}/$script" upgradepost)
     # If we survived the script and it didn't reboot
     # then we have the pleasure of storing the output
     # of the script, hopefully without issue.
-    sqlite $DB "update history set extra='$res' where value='$script' and key='$upgrade'"
+    # REMOVED: This was running into problems with the script output being un-escaped.
+    #sqlite3 $DB "update history set extra='$res' where value='$script' and kind='$upgrade'"
+    _log "${script} output: ${res}"
   done
 }
 
@@ -716,6 +718,7 @@ _upgrade_pre() {
   local old_repo="$(readlink -f ${BASE})"
   local old_repo_link="${DEST}/.WaiveScreen.old"
   local new_repo_link="${DEST}/.WaiveScreen.new"
+  local date_string="$(date +%Y%m%d%H%M)"
 
   ln -sTf "$(basename ${old_repo})" "${old_repo_link}"
 
@@ -725,9 +728,9 @@ _upgrade_pre() {
     cd "${old_repo}"
     # Files disappear during copy if we don't do this
     git config --add gc.autoDetach false
-    git fetch --all
+    git fetch --force --tags origin ${BRANCH}
     git config --unset gc.autoDetach
-    local new_repo="${DEST}/.WaiveScreen-$(git describe origin/${BRANCH})"
+    local new_repo="${DEST}/.WaiveScreen-${date_string}-$(git describe origin/${BRANCH})"
 
     # Make a copy of the existing repository
     # and use that for our upgrade.
@@ -735,7 +738,7 @@ _upgrade_pre() {
   else
     # Get the name of the new version
     cd "${usb_repo}"
-    local new_repo="${DEST}/.WaiveScreen-$(git describe)"
+    local new_repo="${DEST}/.WaiveScreen-${date_string}-$(git describe)"
 
     # Move the usb files to the properly named directory
     mv "${usb_repo}" "${new_repo}"
@@ -750,7 +753,7 @@ _upgrade_pre() {
 _upgrade_post() {
   local version=$(get_version)
 
-  $SUDO dpkg –configure -a
+  $SUDO dpkg --configure -a
   $SUDO apt install -fy
   perlcall install_list | xargs $SUDO apt -y install
   $SUDO apt -y autoremove
@@ -795,14 +798,7 @@ local_disk() {
 
       _info "Disk can be removed"
 
-      # Copy the new pip files over so pip_install picks them up
-      local new_pip_dir="${BASE}/Linux/fai-config/files/home/pip"
-      if [[ -d ${new_pip_dir} ]]; then
-        # So pip doesn't get confused by different versions
-        rm -f "${DEST}/pip"/*
-        cp -av ${new_pip_dir}/* "${DEST}/pip/"
-      fi
-      pip_install
+      DEST="${BASE}/Linux/fai-config/files/home" pip_install
 
       # cleanup the old files
       cd $BASE && git clean -fxd
