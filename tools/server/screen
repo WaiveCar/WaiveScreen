@@ -1,5 +1,6 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+EP='waivescreen.com/api/screens?removed=0'
 
 die() {
   echo $*
@@ -21,7 +22,7 @@ list() {
   fi
 
   checkfor jq
-  curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq "$qstr"
+  curl -s $EP | tr '[A-Z]' '[a-z]' | jq "$qstr"
 }
 
 resolve() {
@@ -37,7 +38,7 @@ resolve() {
     port=$1
   else
     checkfor jq
-    port=$(curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'${1,,}'") | .port')
+    port=$(curl -s $EP | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'${1,,}'") | .port')
     [[ -z "$port" ]] && die "Woops, $1 wasn't found."
   fi
 }
