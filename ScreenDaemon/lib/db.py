@@ -197,6 +197,26 @@ def update(table, where_dict, set_dict):
   except:
     logging.warning("Unable to update a record {}|{}|{}".format(qstr, ', '.join([str(x) for x in set_values]), ', '.join([str(x) for x in where_values])))
 
+def _find(table, where_dict):
+  shared_keys, where_values = _parse(table, where_dict)
+  where_string = ' and '.join(["{}=?".format(key) for key in shared_keys])
+
+  qstr = 'select * from {} where {}'.format(table, where_string)
+
+  try:
+    return run(qstr, where_values)
+
+  except:
+    logging.warning("Unable to find a record {}|{}".format(qstr, ', '.join([str(x) for x in where_values])))
+
+def findOne(table, where_dict):
+  res = _find(table, where_dict)
+  return process(res.fetchone(), table, 'post')
+
+def find(table, where_dict):
+  res = _find(table, where_dict)
+  return process([record for record in res.fetchall()], table, 'post')
+
 def upsert(table, data):
   qstr, key_list, values = _insert(table, data)
   update_list = ["{}=?".format(key) for key in key_list]

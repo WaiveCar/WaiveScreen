@@ -6,7 +6,7 @@
 [[ $BRANCH == "release" ]] && sudo rmmod usbhid || sudo modprobe usbhid
 
 # Create an boot_uptime entry in the db history table.
-pycall lib.create_uptime_log
+pycall lib.update_uptime_log
 
 export DISPLAY=$1
 

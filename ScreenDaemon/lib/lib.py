@@ -879,16 +879,22 @@ def get_dpms_state(hdmi_port='both'):
     except:
       return False
 
-def create_uptime_log():
-  bootcount = db.get_bootcount()
-  uptime = system_uptime()
-  history_id = db.insert('history', {'kind': 'boot_uptime', 'value': bootcount, 'extra': uptime})
-  if history_id:
-    db.run("update history set created_at = datetime('now', '-%d seconds') where id = %d" % (uptime, history_id))
-
 def update_uptime_log():
   bootcount = db.get_bootcount()
-  db.update('history', {'kind': 'boot_uptime', 'value': bootcount}, {'extra': system_uptime()})
+  uptime = system_uptime()
+
+  record = db.findOne('history', {'kind': 'boot_uptime', 'value': bootcount})
+
+  if not record:
+    db.insert('history', {
+      'created_at': "datetime('now', '-%d seconds')" % uptime,
+      'kind': 'boot_uptime', 
+      'value': bootcount, 
+      'extra': uptime
+    })
+
+  else:
+    db.update('history', {'kind': 'boot_uptime', 'value': bootcount}, {'extra': uptime})
 
 def get_wifi_location():
   return wifi_location()
