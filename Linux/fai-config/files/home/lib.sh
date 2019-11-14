@@ -695,20 +695,60 @@ nosanity() {
 upgrade_scripts() {
   for script in $(pycall upgrades_to_run); do
     cd $BASE
+    local upgrade_dir="${BASE}/Linux/upgrade"
     # we do this every time because some upgrades
     # may call for a reboot
     _log "[upgrade-script] $script"
 
     # #153, well the start of it at least.
-    add_history upgrade,$script
+    add_history upgrade_script $script
     kv_set last_upgrade,$script
 
-    local res=$($SUDO $script upgradepost)
+    local res=$($SUDO "${upgrade_dir}/$script" upgradepost)
     # If we survived the script and it didn't reboot
     # then we have the pleasure of storing the output
     # of the script, hopefully without issue.
-    sqlite $DB "update history set extra='$res' where value='$script' and key='$upgrade'"
+    # REMOVED: This was running into problems with the script output being un-escaped.
+    #sqlite3 $DB "update history set extra='$res' where value='$script' and kind='$upgrade'"
+    _log "${script} output: ${res}"
   done
+}
+
+_upgrade_pre() {
+  local usb_repo="${1}"
+  local old_repo="$(readlink -f ${BASE})"
+  local old_repo_link="${DEST}/.WaiveScreen.old"
+  local new_repo_link="${DEST}/.WaiveScreen.new"
+  local date_string="$(date +%Y%m%d%H%M)"
+
+  ln -sTf "$(basename ${old_repo})" "${old_repo_link}"
+
+  if [[ -z "${usb_repo}" ]]; then
+    # Fetch the latest info from github and get the
+    # name of the new version of our branch.
+    cd "${old_repo}"
+    # Files disappear during copy if we don't do this
+    git config --add gc.autoDetach false
+    git fetch --force --tags origin ${BRANCH}
+    git config --unset gc.autoDetach
+    local new_repo="${DEST}/.WaiveScreen-${date_string}-$(git describe origin/${BRANCH})"
+
+    # Make a copy of the existing repository
+    # and use that for our upgrade.
+    cp -av "${old_repo}" "${new_repo}"
+  else
+    # Get the name of the new version
+    cd "${usb_repo}"
+    local new_repo="${DEST}/.WaiveScreen-${date_string}-$(git describe)"
+
+    # Move the usb files to the properly named directory
+    mv "${usb_repo}" "${new_repo}"
+    chmod 0755 "${new_repo}"
+  fi
+
+  # Update links
+  ln -sTf "$(basename ${new_repo})" "${new_repo_link}"
+  ln -sTf "$(basename ${new_repo})" "${BASE}"
 }
 
 _upgrade_post() {
@@ -720,11 +760,11 @@ _upgrade_post() {
   $SUDO apt -y autoremove
 
   pycall db.upgrade
+  update_arduino
   add_history upgrade "$version"
 
   upgrade_scripts
   $SUDO systemctl restart location-daemon
-  update_arduino
   stack_restart 
   _info "Now on $version"
 }
@@ -752,18 +792,22 @@ local_disk() {
     elif [[ -e $package && -z "$2" ]]; then
       _sanityafter
       _info "Found upgrade package - installing"
-      tar xf $package -C $BASE
+      local usb_temp="$(mktemp -d)"
+      tar xf $package -C "${usb_temp}"
+      _upgrade_pre "${usb_temp}"
       $SUDO umount -l $mountpoint
 
       _info "Disk can be removed"
-      pip_install
+
+      DEST="${BASE}/Linux/fai-config/files/home" pip_install
 
       # cleanup the old files
       cd $BASE && git clean -fxd
 
       _info "Reinstalling base"
       sync_scripts $BASE/Linux/fai-config/files/home/
-      _upgrade_post
+      # This should call the new _upgrade_post function
+      dcall _upgrade_post
     else
       _info "No upgrade found"
       $SUDO umount -l $mountpoint
@@ -778,11 +822,13 @@ upgrade() {
   {
     set -x
     _sanityafter
+    _upgrade_pre
     if local_sync; then
       # note: git clean only goes deeper, it doesn't do by default the entire repo
       cd $BASE && git clean -fxd
       $SUDO pip3 install -r $BASE/ScreenDaemon/requirements.txt
-      _upgrade_post
+      # This should call the new _upgrade_post function
+      dcall _upgrade_post
     else
       _warn "Failed to upgrade"
     fi
@@ -824,22 +870,36 @@ update_arduino() {
 
   if [[ "${my_arduino_version}" != "${new_arduino_version}" ]]; then
     local sensors_backup=/tmp/sensors_backup.ino.hex
+    local final_cmds="pycall sess_del nosanity; sensor_daemon"
     _info "Updating arduino"
+    _info "Setting nosanity"
+    pycall sess_set nosanity
+    # Give a possibly running sanity check time to finish.
+    sleep 6
     down sensor_daemon
+    $SUDO pkill -f SensorDaemon
+    sleep 2
 
     # Backup existing image
-    _avrdude -Uflash:r:${sensors_backup}:i
+    if ! _avrdude -Uflash:r:${sensors_backup}:i ; then
+      _error "Unable to backup Arduino image.  Aborting update."
+      eval $final_cmds
+      return 1
+    fi
 
     # Flash new image
-    _avrdude -Uflash:w:$BASE/tools/client/sensors.ino.hex:i
+    if ! _avrdude -Uflash:w:$BASE/tools/client/sensors.ino.hex:i ; then
+      _error "Unable to flash new Arduino image."
+    fi
 
     # Test new image
     if [[ -z "$(pycall arduino_read)" ]]; then
-      _error "New Arduino image FAILED.  Rolling back to previous version"
-      _avrdude -Uflash:w:${sensors_backup}:i
+      _error "New Arduino image FAILED read test.  Rolling back to previous version"
+      if ! _avrdude -Uflash:w:${sensors_backup}:i ; then
+        _error "Unable to flash previous Arduino image.  We may have borked it.  Call for help."
+      fi
     fi
-
-    sensor_daemon
+    eval $final_cmds
   fi
 }
 
