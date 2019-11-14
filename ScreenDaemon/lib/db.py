@@ -201,7 +201,11 @@ def _find(table, where_dict, fields):
   shared_keys, where_values = _parse(table, where_dict)
   where_string = ' and '.join(["{}=?".format(key) for key in shared_keys])
 
-  qstr = 'select {} from {} where {} order by id desc'.format(fields, table, where_string)
+  # The where string could be empty
+  if len(where_string) > 0:
+    where_string = "where {}".format(where_string)
+
+  qstr = 'select {} from {} {} order by id desc'.format(fields, table, where_string)
 
   try:
     return run(qstr, where_values)
@@ -209,11 +213,11 @@ def _find(table, where_dict, fields):
   except:
     logging.warning("Unable to find a record {}|{}".format(qstr, ', '.join([str(x) for x in where_values])))
 
-def findOne(table, where_dict, fields='*'):
+def findOne(table, where_dict = {}, fields='*'):
   res = _find(table, where_dict, fields)
   return list(process(res.fetchone(), table, 'post'))
 
-def find(table, where_dict, fields='*'):
+def find(table, where_dict = {}, fields='*'):
   res = _find(table, where_dict, fields)
   return process([record for record in res.fetchall()], table, 'post')
 
