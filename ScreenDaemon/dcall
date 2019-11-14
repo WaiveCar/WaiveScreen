@@ -12,6 +12,8 @@ import sys
 import operator
 
 DEBUG = os.environ.get('DEBUG')
+# Setting this flag will show a stacktrace of an error
+# as opposed to the normal, terse output of a single line.
 CRASH = os.environ.get('CRASH')
 
 lib.set_logger(sys.stderr)
