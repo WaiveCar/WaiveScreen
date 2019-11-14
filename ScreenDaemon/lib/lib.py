@@ -634,9 +634,13 @@ def ping():
   if not _pinglock.acquire(False):
     return True
 
+  bootcount = db.get_bootcount()
+
   payload = {
     'uid': get_uuid(),
     'uptime': get_uptime(),
+    'last_uptime': db.findOne('history', {'kind': 'boot_uptime', 'value': bootcount - 1}),
+    'bootcount': bootcount,
     'version': VERSION,
     'last_task': db.kv_get('last_task') or 0,
     'features': feature_detect(),
