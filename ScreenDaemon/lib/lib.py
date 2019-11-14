@@ -16,7 +16,7 @@ import time
 from urllib.parse import quote
 from threading import Lock
 from pprint import pprint
-from datetime import datetime
+from datetime import datetime, timedelta
 from .wifi_location import wifi_location
 
 #
@@ -887,7 +887,7 @@ def update_uptime_log():
 
   if not record:
     db.insert('history', {
-      'created_at': "datetime('now', '-%d seconds')" % uptime,
+      'created_at': datetime.now() - timedelta(seconds=uptime),
       'kind': 'boot_uptime', 
       'value': bootcount, 
       'extra': uptime
