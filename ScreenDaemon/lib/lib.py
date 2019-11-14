@@ -634,7 +634,7 @@ def ping():
   if not _pinglock.acquire(False):
     return True
 
-  bootcount = db.get_bootcount()
+  bootcount = int(db.get_bootcount())
 
   payload = {
     'uid': get_uuid(),
