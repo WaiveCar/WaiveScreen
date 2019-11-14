@@ -645,6 +645,7 @@ def ping():
     'last_task': db.kv_get('last_task') or 0,
     'last_task_result': db.findOne('command_history', fields='ref_id, response, created_at'),
     'features': feature_detect(),
+    'pings': db.sess_incr('ping_count'),
     'modem': get_modem_info(),
     'location': get_location(),
   }
