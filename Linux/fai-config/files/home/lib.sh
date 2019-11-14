@@ -392,6 +392,7 @@ ssh_hole() {
   # I think this is causing problems. Either the event pattern works or it doesn't.
   # (( $(pgrep -cf dcall\ ssh_hole ) > 1 )) && die "ssh_hole already running" info
 
+  ssh-keygen -f "$DEST/.ssh/known_hosts" -R "reflect.waivescreen.com"
   {
     while true; do
       local port=$(kv_get port)
@@ -673,15 +674,63 @@ upgrade_scripts() {
     # we do this every time because some upgrades
     # may call for a reboot
     _log "[upgrade-script] $script"
+
+    # #153, well the start of it at least.
+    add_history upgrade_script $script
     kv_set last_upgrade,$script
-    $SUDO $script upgradepost
+
+    local res="$($SUDO $script upgradepost)"
+    # If we survived the script and it didn't reboot
+    # then we have the pleasure of storing the output
+    # of the script, hopefully without issue.
+    # REMOVED: This was running into problems with the script output being un-escaped.
+    #sqlite3 $DB "update history set extra='$res' where value='$script' and kind='$upgrade'"
+    _log "${script} output: ${res}"
+
   done
+}
+
+_upgrade_pre() {
+  local usb_repo="${1}"
+  local old_repo="$(readlink -f ${BASE})"
+  local old_repo_link="${DEST}/.WaiveScreen.old"
+  local new_repo_link="${DEST}/.WaiveScreen.new"
+  local date_string="$(date +%Y%m%d%H%M)"
+
+  ln -sTf "$(basename ${old_repo})" "${old_repo_link}"
+
+  if [[ -z "${usb_repo}" ]]; then
+    # Fetch the latest info from github and get the
+    # name of the new version of our branch.
+    cd "${old_repo}"
+    # Files disappear during copy if we don't do this
+    git config --add gc.autoDetach false
+    git fetch --force --tags origin ${BRANCH}
+    git config --unset gc.autoDetach
+    local new_repo="${DEST}/.WaiveScreen-${date_string}-$(git describe origin/${BRANCH})"
+
+    # Make a copy of the existing repository
+    # and use that for our upgrade.
+    cp -av "${old_repo}" "${new_repo}"
+  else
+    # Get the name of the new version
+    cd "${usb_repo}"
+    local new_repo="${DEST}/.WaiveScreen-${date_string}-$(git describe)"
+
+    # Move the usb files to the properly named directory
+    mv "${usb_repo}" "${new_repo}"
+    chmod 0755 "${new_repo}"
+  fi
+
+  # Update links
+  ln -sTf "$(basename ${new_repo})" "${new_repo_link}"
+  ln -sTf "$(basename ${new_repo})" "${BASE}"
 }
 
 _upgrade_post() {
   local version=$(get_version)
 
-  $SUDO dpkg –configure -a
+  $SUDO dpkg --configure -a
   $SUDO apt install -fy
   perlcall install_list | xargs $SUDO apt -y install
   $SUDO apt -y autoremove
@@ -709,18 +758,22 @@ local_upgrade() {
     if [[ -e $package ]]; then
       _sanityafter
       _info "Found upgrade package - installing"
-      tar xf $package -C $BASE
+      local usb_temp="$(mktemp -d)"
+      tar xf $package -C "${usb_temp}"
+      _upgrade_pre "${usb_temp}"
       $SUDO umount -l $mountpoint
 
       _info "Disk can be removed"
-      pip_install
+
+      DEST="${BASE}/Linux/fai-config/files/home" pip_install
 
       # cleanup the old files
       cd $BASE && git clean -fxd
 
       _info "Reinstalling base"
       sync_scripts $BASE/Linux/fai-config/files/home/
-      _upgrade_post
+      # This should call the new _upgrade_post function
+      dcall _upgrade_post
     else
       _info "No upgrade found"
       $SUDO umount -l $mountpoint
@@ -735,11 +788,13 @@ upgrade() {
   {
     set -x
     _sanityafter
+    _upgrade_pre
     if local_sync; then
       # note: git clean only goes deeper, it doesn't do by default the entire repo
       cd $BASE && git clean -fxd
       $SUDO pip3 install -r $BASE/ScreenDaemon/requirements.txt
-      _upgrade_post
+      # This should call the new _upgrade_post function
+      dcall _upgrade_post
     else
       _warn "Failed to upgrade"
     fi
