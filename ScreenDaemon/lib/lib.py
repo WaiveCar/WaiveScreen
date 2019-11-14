@@ -639,7 +639,7 @@ def ping():
   payload = {
     'uid': get_uuid(),
     'uptime': get_uptime(),
-    'last_uptime': db.findOne('history', {'kind': 'boot_uptime', 'value': bootcount - 1}),
+    'last_uptime': db.findOne('history', {'kind': 'boot_uptime', 'value': bootcount - 1}, 'extra, created_at'),
     'bootcount': bootcount,
     'version': VERSION,
     'last_task': db.kv_get('last_task') or 0,
