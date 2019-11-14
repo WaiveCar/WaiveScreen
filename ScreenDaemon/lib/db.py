@@ -215,7 +215,9 @@ def _find(table, where_dict, fields):
 
 def findOne(table, where_dict = {}, fields='*'):
   res = _find(table, where_dict, fields)
-  return list(process(res.fetchone(), table, 'post'))
+  rowList = process(res.fetchone(), table, 'post')
+  if rowList:
+    return list(rowList)
 
 def find(table, where_dict = {}, fields='*'):
   res = _find(table, where_dict, fields)
