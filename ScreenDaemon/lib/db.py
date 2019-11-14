@@ -201,7 +201,7 @@ def _find(table, where_dict):
   shared_keys, where_values = _parse(table, where_dict)
   where_string = ' and '.join(["{}=?".format(key) for key in shared_keys])
 
-  qstr = 'select * from {} where {}'.format(table, where_string)
+  qstr = 'select * from {} where {} order by id desc'.format(table, where_string)
 
   try:
     return run(qstr, where_values)
