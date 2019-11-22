@@ -39,7 +39,7 @@ check_sensor_daemon() {
   if ! pgrep -if sensordaemon > /dev/null; then
     doit sensor_daemon not-running
   else
-    if (( $(date +%s) - $(date +%s -r ${LOG}/powertemp.csv) > 120 )); then
+    if [[ ! -e ${LOG}/powertemp.csv ]] || (( $(date +%s) - $(date +%s -r ${LOG}/powertemp.csv) > 120 )); then
       doit sensor_daemon output-check
     fi
   fi
