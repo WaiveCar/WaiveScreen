@@ -904,18 +904,18 @@ update_arduino() {
 }
 
 stack_down() {
-  for i in screen_daemon screen_display sensor_daemon; do
+  for i in screen_daemon screen_display sensor_daemon camera_daemon; do
     $DEST/dcall down $i
   done
 
   # This stuff shouldn't be needed but right now it is.
-  echo chromium start-x-stuff SensorDaemon ScreenDaemon | xargs -n 1 $SUDO pkill -f 
+  echo chromium start-x-stuff SensorDaemon ScreenDaemon CameraDaemon | xargs -n 1 $SUDO pkill -f
 }
 
 # This permits us to use a potentially new way
 # of starting up the tools
 stack_up() {
-  for i in screen_display sensor_daemon screen_daemon disk_monitor; do
+  for i in screen_display sensor_daemon screen_daemon disk_monitor camera_daemon; do
     $DEST/dcall $i &
   done
 }

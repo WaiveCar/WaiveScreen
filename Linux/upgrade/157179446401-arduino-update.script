@@ -1,8 +1,0 @@
-#!/bin/bash
-
-upgradepost() {
-  su - adorno dcall pycall sess_del backlight
-  su - adorno dcall update_arduino
-}
-
-eval $1
