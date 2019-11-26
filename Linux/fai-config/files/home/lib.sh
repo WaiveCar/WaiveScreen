@@ -721,6 +721,15 @@ _upgrade_pre() {
   local new_repo_link="${DEST}/.WaiveScreen.new"
   local date_string="$(date +%Y%m%d%H%M)"
 
+  # Remove old versions if they're there
+  if [[ -L "${old_repo_link}" ]]; then
+    local old_old_repo="$(readlink -f ${old_repo_link})"
+    if [[ -d "${old_old_repo}" ]] && [[ "${old_old_repo}" != "${old_repo}" ]] && [[ "${DEST}" = "$(dirname ${old_old_repo})" ]]; then
+      _log "Removing old install directory: ${old_old_repo}"
+      $SUDO rm -rf "${old_old_repo}"
+    fi
+  fi
+
   ln -sTf "$(basename ${old_repo})" "${old_repo_link}"
 
   if [[ -z "${usb_repo}" ]]; then
