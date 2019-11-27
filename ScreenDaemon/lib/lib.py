@@ -426,6 +426,16 @@ def task_ingest(data):
       arduino.set_autobright()
       task_response(id, True)
 
+    elif action == 'driving_upgrade':
+      # By default driving_upgrade will trigger above 95 km/h unless a different
+      # value is passed as an arg
+      logging.info('driving_upgrade requested.')
+      current_version = dcall('get_version').strip()
+      db.kv_set('driving_upgrade', current_version)
+      if args.isdigit():
+        db.kv_set('driving_upgrade_speed', int(args))
+      task_response(id, current_version)
+
 def get_modem_info():
   global modem_info
 
