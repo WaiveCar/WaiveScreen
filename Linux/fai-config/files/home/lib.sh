@@ -721,6 +721,15 @@ _upgrade_pre() {
   local new_repo_link="${DEST}/.WaiveScreen.new"
   local date_string="$(date +%Y%m%d%H%M)"
 
+  # Remove old versions if they're there
+  if [[ -L "${old_repo_link}" ]]; then
+    local old_old_repo="$(readlink -f ${old_repo_link})"
+    if [[ -d "${old_old_repo}" ]] && [[ "${old_old_repo}" != "${old_repo}" ]] && [[ "${DEST}" = "$(dirname ${old_old_repo})" ]]; then
+      _log "Removing old install directory: ${old_old_repo}"
+      $SUDO rm -rf "${old_old_repo}"
+    fi
+  fi
+
   ln -sTf "$(basename ${old_repo})" "${old_repo_link}"
 
   if [[ -z "${usb_repo}" ]]; then
@@ -818,6 +827,10 @@ local_disk() {
 }
 
 upgrade() {
+  if [[ -n "$(kv_get driving_upgrade)" ]]; then
+    _error "Can NOT upgrade while driving_upgrade is queued."
+    return 1
+  fi
   _info "Upgrading... Please wait"
   {
     set -x
@@ -833,6 +846,43 @@ upgrade() {
       _warn "Failed to upgrade"
     fi
   } |& $SUDO tee -a /var/log/upgrade.log &
+}
+
+driving_upgrade() {
+  # Wait 2 minutes so there's a good chance the system is stable.
+  sleep 120
+	local speed_count=0
+  local speed=0
+  local upgrade_speed="$(kv_get driving_upgrade_speed)"
+  upgrade_speed="${upgrade_speed:-95}"
+  while sleep 1; do
+    speed="$(mmcli -m 0 --location-get | grep GPVTG | cut -d ',' -f 8 | cut -d '.' -f 1)"
+    if [[ ${speed} -gt ${upgrade_speed} ]]; then
+      ((++speed_count))
+      if [[ $speed_count -eq 5 ]]; then
+        _log "driving_upgrade: Hit target speed of ${upgrade_speed} km/h. Starting upgrade."
+        kv_unset driving_upgrade
+        kv_unset driving_upgrade_speed
+        upgrade
+        break
+      fi
+    else
+      speed_count=0
+    fi
+  done
+}
+
+driving_upgrade_check() {
+  if [[ -n "$(kv_get driving_upgrade)" ]]; then
+    if [[ "$(get_version)" == "$(kv_get driving_upgrade)" ]]; then
+      _log "driving_upgrade_check: starting driving_upgrade"
+      driving_upgrade &
+    else
+      _log "driving_upgrade_check: Upgrade already happened (must have been over USB)."
+      kv_unset driving_upgrade
+      kv_unset upgrade_speed
+    fi
+  fi
 }
 
 debug() {
