@@ -197,9 +197,15 @@ var Engine = function(opts){
         var parentratio = container.width/container.height;
         var ratio = e.target.width / e.target.height;
         if(parentratio > ratio) {
-          e.target.style.width = '100%';
+          var maxHeight = _res.target.width * e.target.height / e.target.width;
+          e.target.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
+          e.target.style.width = _res.target.width + "px";
+          //e.target.style.width = '100%';
         } else {
-          e.target.style.height = '100%';
+          var maxWidth = _res.target.height * e.target.width / e.target.height;
+          e.target.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
+          e.target.style.height = _res.target.height + "px";
+          //e.target.style.height = '100%';
         }
       }
       asset.active = true;
