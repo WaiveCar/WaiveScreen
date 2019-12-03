@@ -221,6 +221,10 @@ var Engine = function(opts){
       var container = _res.container.getBoundingClientRect();
       var parentratio = container.width/container.height;
       var ratio = img.width / img.height;
+      /*
+       * commented out because dynamic widgets aren't needed
+       * for project oliver (2019-12-02)
+       *
       if(parentratio > ratio) {
         img.style.width = '100%';
         img.style.height = 'auto';
@@ -228,6 +232,7 @@ var Engine = function(opts){
         img.style.width = 'auto';
         img.style.height = '100%';
       }
+      */
       return cb && cb();
     }
     asset.pause = asset.rewind = asset.play = _nop;
