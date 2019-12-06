@@ -3,7 +3,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MM="mmcli -m 0"
 FFMPEG="ffmpeg -loglevel panic -nostats -hide_banner -y -an"
-SQLITE3="sqlite3 -cmd '.timeout 500'"
 
 . $DIR/const.sh
 . $DIR/baseline.sh
@@ -19,6 +18,10 @@ _mkdir $EV
 die() {
   [[ "$2" == "info" ]] && _info "$1" || _error "$1"
   exit
+}
+
+_sqlite3() {
+  sqlite3 -cmd '.timeout 500' "$@"
 }
 
 show_locks() {
@@ -42,19 +45,19 @@ ENDL
 }
 
 kv_get() {
-  $SQLITE3 $DB "select value from kv where key='$1'"
+  _sqlite3 $DB "select value from kv where key='$1'"
   [[ $? == 5 ]] && show_locks | grep -Ev "^(\(gdb|Reading symbols|done.)" >> $LOG/messages.log
 }
 
 # This _does not_ echo, it only returns whether the flag is set or not
 sess_get() {
-  local val=$($SQLITE3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )")
+  local val=$(_sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )")
   # echo $val
   [[ -n "$val" ]] && return 0 || return 1
 }
 
 kv_unset() {
-  $SQLITE3 $DB "delete from kv where key='$1'"
+  _sqlite3 $DB "delete from kv where key='$1'"
 }
 
 kv_set() {
@@ -64,11 +67,11 @@ kv_set() {
 kv_incr() {
   local curval=$(kv_get $1)
   if [[ -z "$curval" ]]; then 
-    $SQLITE3 $DB "insert into kv(key, value) values('$1',0)" &
+    _sqlite3 $DB "insert into kv(key, value) values('$1',0)" &
     echo 0
   else
     curval=$(( curval + 1 ))
-    $SQLITE3 $DB "update kv set value=$curval where key='$1'";
+    _sqlite3 $DB "update kv set value=$curval where key='$1'";
     [[ $? == 5 ]] && show_locks >> $LOG/messages.log
     echo $curval
   fi
@@ -78,7 +81,7 @@ add_history() {
   local kind=$1
   local value=$2
   local extra=$3
-  $SQLITE3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
+  _sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
 }
 
 list() {
@@ -499,7 +502,7 @@ get_state() {
   $SUDO cp /var/log/daemon.log $path
   $SUDO chmod 0666 $path/daemon.log
 
-  $SQLITE3 $DB .dump > $path/backup.sql
+  _sqlite3 $DB .dump > $path/backup.sql
 
   get_version > $path/version 
 
