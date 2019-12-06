@@ -20,8 +20,22 @@ die() {
   exit
 }
 
+show_locks() {
+  local base=$( dirname $DB )
+  lsof +d $base
+  for pid in $(lsof +d $base | grep -v bash | awk ' { print $2 } ' | grep -v PID | sort | uniq); do
+    echo "*************************\n$pid"
+    gdb -q /usr/bin/python3 << ENDL
+      attach $pid
+      py-locals
+      py-bt
+ENDL
+  done
+}
+
 kv_get() {
   sqlite3 $DB "select value from kv where key='$1'"
+  #if [[ $? == 5 ]]; then
 }
 
 # This _does not_ echo, it only returns whether the flag is set or not
