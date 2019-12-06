@@ -65,6 +65,7 @@ kv_incr() {
   else
     curval=$(( curval + 1 ))
     sqlite3 $DB "update kv set value=$curval where key='$1'";
+    [[ $? == 5 ]] && show_locks >> $LOG/messages.log
     echo $curval
   fi
 }
