@@ -361,6 +361,8 @@ def connect(db_file=None):
   if id in _instance:
     return _instance[id] 
 
+  timeout = float(os.environ.get('SQLTIMEOUTMS') or "5000.0") / 1000.0
+
   if 'DB' in os.environ:
     default_db = os.environ['DB']
     logging.debug("Using {} as the DB as specified in the DB shell env variable")
@@ -384,7 +386,7 @@ def connect(db_file=None):
   if not os.path.exists(db_file):
     sys.stderr.write("Info: Creating db file %s\n" % db_file)
 
-  conn = sqlite3.connect(db_file)
+  conn = sqlite3.connect(db_file, timeout=timeout)
   conn.row_factory = sqlite3.Row
 
   if 'DEBUG' in os.environ:

@@ -21,7 +21,7 @@ die() {
 }
 
 _sqlite3() {
-  sqlite3 -cmd '.timeout 500' "$@"
+  sqlite3 -cmd ".timeout $SQLTIMEOUTMS" "$@"
 }
 
 show_locks() {
