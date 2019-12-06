@@ -73,6 +73,8 @@ def round_fields(d):
   for k, v in FIELDS_TO_ROUND.items():
     d[k] = round(d.get(k, 0), v)
 
+class ArduinoError(Exception):
+  pass
 
 run = db.kv_get('runcount')
 window = []
@@ -90,7 +92,7 @@ while True:
     sensor = arduino.arduino_read()
 
     if not sensor:
-      raise Exception('arduino_read() returned no data')
+      raise ArduinoError('arduino_read() returned no data')
 
     elif _arduinoConnectionDown:
       _arduinoConnectionDown = False
@@ -162,7 +164,7 @@ while True:
 
   # We are unable to communicate with the arduino.  We will assume that the screen is on
   # at max brightness and shutdown the screen immediately.
-  except Exception as ex:
+  except ArduinoError as ex:
     if not _arduinoConnectionDown:
       logging.error('Arduino communication down: {}'.format(ex))
       _arduinoConnectionDown = True
