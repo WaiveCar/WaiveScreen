@@ -33,13 +33,16 @@ show_locks() {
       attach $pid
       py-locals
       py-bt
+      bt
+      detach
+      quit
 ENDL
   done
 }
 
 kv_get() {
   sqlite3 $DB "select value from kv where key='$1'"
-  [[ $? == 5 ]] && show_locks >> $LOG/messages.log
+  [[ $? == 5 ]] && show_locks | grep -Ev "^(\(gdb|Reading symbols|done.)" >> $LOG/messages.log
 }
 
 # This _does not_ echo, it only returns whether the flag is set or not
