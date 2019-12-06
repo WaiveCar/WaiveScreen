@@ -215,13 +215,16 @@ def _find(table, where_dict, fields):
 
 def findOne(table, where_dict = {}, fields='*'):
   res = _find(table, where_dict, fields)
-  rowList = process(res.fetchone(), table, 'post')
+
+  if res is not None:
+    rowList = process(res.fetchone(), table, 'post')
   if rowList:
     return list(rowList)
 
 def find(table, where_dict = {}, fields='*'):
   res = _find(table, where_dict, fields)
-  return process([record for record in res.fetchall()], table, 'post')
+  if res is not None:
+    return process([record for record in res.fetchall()], table, 'post')
 
 def upsert(table, data):
   qstr, key_list, values = _insert(table, data)
