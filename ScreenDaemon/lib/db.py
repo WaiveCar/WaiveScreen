@@ -218,8 +218,8 @@ def findOne(table, where_dict = {}, fields='*'):
 
   if res is not None:
     rowList = process(res.fetchone(), table, 'post')
-  if rowList:
-    return list(rowList)
+    if rowList:
+      return list(rowList)
 
 def find(table, where_dict = {}, fields='*'):
   res = _find(table, where_dict, fields)
