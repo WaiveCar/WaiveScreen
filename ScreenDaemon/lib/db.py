@@ -177,8 +177,8 @@ def insert(table, data):
     res, last = run(qstr, values, with_last = True)
     return last
 
-  except:
-    logging.warning("Unable to insert a record {} {}".format(qstr, json.dumps(values)))
+  except Exception as exc:
+    logging.warning("Unable to insert a record {} {} ({})".format(qstr, json.dumps(values), exc))
 
   
 def update(table, where_dict, set_dict):
@@ -605,7 +605,8 @@ def run(query, args=None, with_last=False, db=None):
       raise Exception("0 rows")
 
   except Exception as exc:
-    logging.info(query)
+    logging.info("{} {}".format(query, exc))
+    logging.info("desc:{} in_transaction:{}".format(db['c'].description, db['conn'].in_transaction))
     raise exc
 
   finally:
