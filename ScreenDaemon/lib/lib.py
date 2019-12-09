@@ -178,6 +178,8 @@ def get_message(dbus_path):
       else:
         message = fn['Text']
 
+    db.add_history('sms', fn['Number'], message.encode('utf-8'))
+
     print("type={};sender={};message='{}';dbuspath={}".format(klass, fn['Number'], base64.b64encode(message.encode('utf-8')).decode(), proxy))
 
 
@@ -216,8 +218,8 @@ def catchall_signal_handler(*args, **kwargs):
   GLib.MainLoop.quit(_loop)
 
 def next_sms():
-  global _bus
-  global _loop
+  global _bus, _loop
+
   from gi.repository import GLib
   import dbus.mainloop.glib
   myloop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -344,11 +346,15 @@ def get_gps(all_fields=False):
   return {}
 
 
-def add_history(kind, value):
+def add_history(kind, value, extra = None):
   # This is kind of what we want..
   #if kind not in ['upgrade', 'feature', 'state']:
   #
-  return db.insert('history', { 'kind': kind, 'value': value })
+  opts = { 'kind': kind, 'value': value }
+  if extra is not None:
+    opts['extra'] = extra
+
+  return db.insert('history', opts)
 
 def task_response(which, payload):
   db.update('command_history', {'ref_id': which}, {'response': payload})

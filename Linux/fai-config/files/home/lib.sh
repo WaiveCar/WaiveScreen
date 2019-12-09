@@ -164,7 +164,7 @@ sms_cleanup() {
     # Try to make sure we aren't overwriting
     while [[ -e $SMSDIR/$num ]]; do
       num=$( kv_incr sms )
-      sleep 0.01
+      sleep 0.02
     done
 
     $MM -s $i > $SMSDIR/$num
