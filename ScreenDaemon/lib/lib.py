@@ -177,7 +177,7 @@ def get_message(dbus_path):
         db.kv_set('number', message)
 
       else:
-        prev_sms_list = db.find('history', {type: 'sms', value: number})
+        prev_sms_list = db.find('history', {'type': 'sms', 'value': number})
         ident_count = 0
         message = fn['Text']
         if prev_sms_list:
