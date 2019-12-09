@@ -190,7 +190,7 @@ def get_message(dbus_path):
             klass = 'ignore'
 
 
-    db.add_history('sms', number, message)
+    add_history('sms', number, message)
 
     print("type={};sender={};message='{}';dbuspath={}".format(klass, number, base64.b64encode(message.encode('utf-8')).decode(), proxy))
 
