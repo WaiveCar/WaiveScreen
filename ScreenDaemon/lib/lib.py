@@ -146,6 +146,7 @@ def get_message(dbus_path):
   ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
   fn = ifaceone.GetAll('org.freedesktop.ModemManager1.Sms')
   message = ''
+  number = fn['Number'] 
 
   # pprint(json.dumps(fn))
   if fn['PduType'] == 2:
@@ -176,11 +177,22 @@ def get_message(dbus_path):
         db.kv_set('number', message)
 
       else:
+        prev_sms_list = db.find('history', {type: 'sms', value: number})
+        ident_count = 0
         message = fn['Text']
+        if prev_sms_list:
+          max_ident = 3
+          for prev in prev_sms_list:
+            ident_count += prev['extra'] == message
 
-    db.add_history('sms', fn['Number'], message.encode('utf-8'))
+          if ident_count > max_ident:
+            logging.warning("Found {} identical messages of '{}' from {}, ignoring.".format(ident_count, message, number))
+            klass = 'ignore'
 
-    print("type={};sender={};message='{}';dbuspath={}".format(klass, fn['Number'], base64.b64encode(message.encode('utf-8')).decode(), proxy))
+
+    db.add_history('sms', number, message)
+
+    print("type={};sender={};message='{}';dbuspath={}".format(klass, number, base64.b64encode(message.encode('utf-8')).decode(), proxy))
 
 
 def set_logger(logpath):
