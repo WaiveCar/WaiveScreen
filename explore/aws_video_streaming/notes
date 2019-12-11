@@ -1,0 +1,20 @@
+AWS:
+Credentials can go into overrides.  Nick has them.
+
+DASH Viewer:
+http://reference.dashif.org/dash.js/latest/samples/dash-if-reference-player/index.html
+
+
+# Streaming start
+ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 15 -i /dev/video8 -vcodec mpeg2video -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 rtp://44.228.138.42:5000
+
+# Fisheye correction
+-vf "lenscorrection=cx=0.5:cy=0.5:k1=-0.227:k2=-0.022"
+
+# Streaming AVC
+ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 15 -i /dev/video8 -vf "lenscorrection=cx=0.5:cy=0.5:k1=-0.227:k2=-0.022" -preset ultrafast -tune zerolatency -maxrate 5000k -profile:v main -level 3.1 -pix_fmt yuv420p -c:v libx264 -x264opts "keyint=60:no-scenecut" -maxrate 1M -bufsize 2M -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 rtp://44.228.138.42:5000
+
+ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 15 -i /dev/video8 -vf "lenscorrection=cx=0.5:cy=0.5:k1=-0.227:k2=-0.022" -vf scale=-1:720 -preset ultrafast -tune zerolatency -profile:v main -level 3.1 -pix_fmt yuv420p -c:v libx264 -x264opts "keyint=60:no-scenecut" -maxrate 1.5M -bufsize 3M -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 rtp://44.228.138.42:5000
+
+# 12/9
+ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -i /dev/video8 -vf scale=-1:720 -preset ultrafast -tune zerolatency -profile:v main -level 3.1 -pix_fmt yuv420p -c:v libx264 -x264opts "keyint=60:no-scenecut" -maxrate 2M -bufsize 4M -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 rtp://44.228.188.123:5000

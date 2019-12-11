@@ -450,6 +450,12 @@ camera_daemon() {
   set_event camera_daemon
 }
 
+ces_live_stream() {
+  down ces_live_stream
+  $BASE/explore/aws_video_streaming/ces_video_stream.sh &
+  set_event ces_live_stream
+}
+
 # This is used during the installation - don't touch it!
 # {
 pip_install() {

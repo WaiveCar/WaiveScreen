@@ -1,0 +1,271 @@
+{
+  "name": "waive_ces_test-v2",
+  "id": "5987969",
+  "arn": "arn:aws:medialive:us-west-2:952011950100:channel:5987969",
+  "inputAttachments": [
+    {
+      "inputId": "557022",
+      "inputAttachmentName": "akaso_test_cam",
+      "inputSettings": {
+        "sourceEndBehavior": "CONTINUE",
+        "inputFilter": "AUTO",
+        "filterStrength": 1,
+        "deblockFilter": "DISABLED",
+        "denoiseFilter": "DISABLED",
+        "audioSelectors": [],
+        "captionSelectors": []
+      }
+    }
+  ],
+  "state": "IDLE",
+  "pipelinesRunningCount": 0,
+  "destinations": [
+    {
+      "id": "6wwcqg",
+      "settings": [],
+      "mediaPackageSettings": [
+        {
+          "channelId": "waive_ces_test"
+        }
+      ]
+    }
+  ],
+  "egressEndpoints": [
+    {
+      "sourceIp": "52.43.136.171"
+    }
+  ],
+  "encoderSettings": {
+    "audioDescriptions": [],
+    "captionDescriptions": [],
+    "outputGroups": [
+      {
+        "outputGroupSettings": {
+          "mediaPackageGroupSettings": {
+            "destination": {
+              "destinationRefId": "6wwcqg"
+            }
+          }
+        },
+        "name": "waive_ces_test-v2",
+        "outputs": [
+          {
+            "outputSettings": {
+              "mediaPackageOutputSettings": {}
+            },
+            "outputName": "960_540",
+            "videoDescriptionName": "video_960_540",
+            "audioDescriptionNames": [],
+            "captionDescriptionNames": []
+          },
+          {
+            "outputSettings": {
+              "mediaPackageOutputSettings": {}
+            },
+            "outputName": "1280_720",
+            "videoDescriptionName": "video_1280_720",
+            "audioDescriptionNames": [],
+            "captionDescriptionNames": []
+          },
+          {
+            "outputSettings": {
+              "mediaPackageOutputSettings": {}
+            },
+            "outputName": "1920_1080",
+            "videoDescriptionName": "video_1920_1080",
+            "audioDescriptionNames": [],
+            "captionDescriptionNames": []
+          },
+          {
+            "outputSettings": {
+              "mediaPackageOutputSettings": {}
+            },
+            "outputName": "640_360",
+            "videoDescriptionName": "video_640_360",
+            "audioDescriptionNames": [],
+            "captionDescriptionNames": []
+          }
+        ]
+      }
+    ],
+    "timecodeConfig": {
+      "source": "SYSTEMCLOCK"
+    },
+    "videoDescriptions": [
+      {
+        "codecSettings": {
+          "h264Settings": {
+            "afdSignaling": "NONE",
+            "colorMetadata": "INSERT",
+            "adaptiveQuantization": "HIGH",
+            "bitrate": 600000,
+            "entropyEncoding": "CABAC",
+            "flickerAq": "ENABLED",
+            "framerateControl": "SPECIFIED",
+            "framerateNumerator": 30000,
+            "framerateDenominator": 1001,
+            "gopBReference": "ENABLED",
+            "gopClosedCadence": 1,
+            "gopNumBFrames": 3,
+            "gopSize": 60,
+            "gopSizeUnits": "FRAMES",
+            "subgopLength": "FIXED",
+            "scanType": "PROGRESSIVE",
+            "level": "H264_LEVEL_3",
+            "lookAheadRateControl": "HIGH",
+            "maxBitrate": 800000,
+            "numRefFrames": 1,
+            "parControl": "SPECIFIED",
+            "profile": "MAIN",
+            "rateControlMode": "QVBR",
+            "qvbrQualityLevel": 7,
+            "syntax": "DEFAULT",
+            "sceneChangeDetect": "ENABLED",
+            "spatialAq": "ENABLED",
+            "temporalAq": "ENABLED",
+            "timecodeInsertion": "DISABLED"
+          }
+        },
+        "height": 360,
+        "name": "video_640_360",
+        "respondToAfd": "NONE",
+        "sharpness": 50,
+        "scalingBehavior": "DEFAULT",
+        "width": 640
+      },
+      {
+        "codecSettings": {
+          "h264Settings": {
+            "afdSignaling": "NONE",
+            "colorMetadata": "INSERT",
+            "adaptiveQuantization": "HIGH",
+            "bitrate": 1800000,
+            "entropyEncoding": "CABAC",
+            "flickerAq": "ENABLED",
+            "framerateControl": "SPECIFIED",
+            "framerateNumerator": 30000,
+            "framerateDenominator": 1001,
+            "gopBReference": "ENABLED",
+            "gopClosedCadence": 1,
+            "gopNumBFrames": 3,
+            "gopSize": 60,
+            "gopSizeUnits": "FRAMES",
+            "subgopLength": "FIXED",
+            "scanType": "PROGRESSIVE",
+            "level": "H264_LEVEL_4_1",
+            "lookAheadRateControl": "HIGH",
+            "maxBitrate": 2200000,
+            "numRefFrames": 1,
+            "parControl": "SPECIFIED",
+            "profile": "HIGH",
+            "rateControlMode": "QVBR",
+            "qvbrQualityLevel": 7,
+            "syntax": "DEFAULT",
+            "sceneChangeDetect": "ENABLED",
+            "spatialAq": "ENABLED",
+            "temporalAq": "ENABLED",
+            "timecodeInsertion": "DISABLED"
+          }
+        },
+        "height": 540,
+        "name": "video_960_540",
+        "respondToAfd": "NONE",
+        "sharpness": 50,
+        "scalingBehavior": "DEFAULT",
+        "width": 960
+      },
+      {
+        "codecSettings": {
+          "h264Settings": {
+            "afdSignaling": "NONE",
+            "colorMetadata": "INSERT",
+            "adaptiveQuantization": "HIGH",
+            "bitrate": 2500000,
+            "entropyEncoding": "CABAC",
+            "flickerAq": "ENABLED",
+            "framerateControl": "SPECIFIED",
+            "framerateNumerator": 30000,
+            "framerateDenominator": 1001,
+            "gopBReference": "ENABLED",
+            "gopClosedCadence": 1,
+            "gopNumBFrames": 3,
+            "gopSize": 60,
+            "gopSizeUnits": "FRAMES",
+            "subgopLength": "FIXED",
+            "scanType": "PROGRESSIVE",
+            "level": "H264_LEVEL_4_1",
+            "lookAheadRateControl": "HIGH",
+            "maxBitrate": 3000000,
+            "numRefFrames": 1,
+            "parControl": "SPECIFIED",
+            "profile": "HIGH",
+            "rateControlMode": "QVBR",
+            "qvbrQualityLevel": 7,
+            "syntax": "DEFAULT",
+            "sceneChangeDetect": "ENABLED",
+            "spatialAq": "ENABLED",
+            "temporalAq": "ENABLED",
+            "timecodeInsertion": "DISABLED"
+          }
+        },
+        "height": 720,
+        "name": "video_1280_720",
+        "respondToAfd": "NONE",
+        "sharpness": 50,
+        "scalingBehavior": "DEFAULT",
+        "width": 1280
+      },
+      {
+        "codecSettings": {
+          "h264Settings": {
+            "afdSignaling": "NONE",
+            "colorMetadata": "INSERT",
+            "adaptiveQuantization": "HIGH",
+            "bitrate": 3500000,
+            "entropyEncoding": "CABAC",
+            "flickerAq": "ENABLED",
+            "framerateControl": "SPECIFIED",
+            "framerateNumerator": 30000,
+            "framerateDenominator": 1001,
+            "gopBReference": "DISABLED",
+            "gopClosedCadence": 1,
+            "gopNumBFrames": 1,
+            "gopSize": 60,
+            "gopSizeUnits": "FRAMES",
+            "subgopLength": "FIXED",
+            "scanType": "PROGRESSIVE",
+            "level": "H264_LEVEL_4_1",
+            "lookAheadRateControl": "HIGH",
+            "maxBitrate": 5000000,
+            "numRefFrames": 1,
+            "parControl": "SPECIFIED",
+            "profile": "HIGH",
+            "rateControlMode": "QVBR",
+            "qvbrQualityLevel": 7,
+            "syntax": "DEFAULT",
+            "sceneChangeDetect": "ENABLED",
+            "spatialAq": "ENABLED",
+            "temporalAq": "ENABLED",
+            "timecodeInsertion": "DISABLED"
+          }
+        },
+        "height": 1080,
+        "name": "video_1920_1080",
+        "respondToAfd": "NONE",
+        "sharpness": 50,
+        "scalingBehavior": "DEFAULT",
+        "width": 1920
+      }
+    ]
+  },
+  "roleArn": "arn:aws:iam::952011950100:role/MediaLiveAccessRole",
+  "inputSpecification": {
+    "codec": "AVC",
+    "resolution": "HD",
+    "maximumBitrate": "MAX_10_MBPS"
+  },
+  "logLevel": "DISABLED",
+  "tags": {},
+  "channelClass": "SINGLE_PIPELINE",
+  "pipelineDetails": []
+}
