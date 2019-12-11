@@ -87,6 +87,9 @@ policykit-1
 xosd-bin
 unattended-upgrades
 
+# used for CES streaming
+jq
+
 PACKAGES install NONFREE
 # you may want these non-free kernel drivers
 firmware-bnx2 firmware-bnx2x firmware-realtek
