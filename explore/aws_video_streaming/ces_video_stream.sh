@@ -10,7 +10,10 @@ SECURITY_ID="$(aws medialive describe-input --input-id ${INPUT_ID} | jq -r '.Sec
 
 _ffmpeg_stream() {
   _info "Starting CES Stream..."
-  ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -i "${CES_CAPTURE_DEVICE}" -vf scale=-1:720 -preset ultrafast -tune zerolatency -profile:v main -level 3.1 -pix_fmt yuv420p -c:v libx264 -x264opts "keyint=60:no-scenecut" -maxrate 2.5M -bufsize 5M -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 "$@"
+  ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -i "${CES_CAPTURE_DEVICE}" -vf scale=-1:720 -preset ultrafast -tune zerolatency -profile:v main -level 3.1 -pix_fmt yuv420p -c:v libx264 -x264opts "keyint=60:no-scenecut" -maxrate 2.5M -bufsize 5M -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 "$@" &
+  local f_pid=$!
+  set_event ces_live_stream $f_pid
+  wait $f_pid
 }
 
 whitelist_my_ip() {
@@ -25,7 +28,7 @@ start_ces_video_stream() {
     for URL in $(aws medialive describe-input --input-id 557022 | jq -r '.Destinations[].Url'); do
       _ffmpeg_stream "${URL}"
     done
-    sleep 30
+    sleep 60
   done
 }
 

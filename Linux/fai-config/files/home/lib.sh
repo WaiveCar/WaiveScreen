@@ -479,7 +479,7 @@ camera_daemon() {
 ces_live_stream() {
   down ces_live_stream
   $BASE/explore/aws_video_streaming/ces_video_stream.sh &
-  set_event ces_live_stream
+  set_wrap ces_live_stream
 }
 
 # This is used during the installation - don't touch it!
@@ -610,6 +610,7 @@ running() {
 down() {
   cd $EV
 
+  local pidfile
   _log down $1
   for pidfile in $1; do
     # kill the wrapper first
