@@ -273,7 +273,9 @@ def post(url, payload):
    'User-Agent': get_uuid()
   }
   logging.info("{} {}".format(url, json.dumps(payload)))
-  return requests.post(urlify(url), verify=False, headers=headers, json=payload)
+  response = requests.post(urlify(url), verify=False, headers=headers, json=payload)
+  logging.debug(response.text)
+  return response
 
 def update_gps_xtra_data():
   """ Download the GPS's Xtra assistance data and inject it into the gps. """
