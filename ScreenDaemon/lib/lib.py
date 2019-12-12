@@ -566,6 +566,7 @@ def asset_cache(check, only_filename=False, announce=False):
         dcall("_bigtext", "Getting {}".format(announce))
 
       r = requests.get(asset, allow_redirects=True)
+      logging.debug("Downloaded {} ({}b)".format(asset, r.content.length))
 
       # If we are dealing with html we should also cache the assets
       # inside the html file.
