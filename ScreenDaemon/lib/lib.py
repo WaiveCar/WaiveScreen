@@ -674,7 +674,7 @@ def ping():
     'last_task': db.kv_get('last_task') or 0,
     'last_task_result': db.findOne('command_history', fields='ref_id, response, created_at'),
     'features': feature_detect(),
-    'pings': db.sess_incr('ping_count'),
+    'ping_count': db.sess_incr('ping_count'),
     'modem': get_modem_info(),
     'location': get_location(),
   }
@@ -699,6 +699,18 @@ def ping():
         for key in ['port','model','project','car','serial']:
           if key in screen:
             db.kv_set(key, screen[key])
+
+        for key in ['bootcount','ping_count']:
+          if key in screen:
+            server_value = int(screen[key])
+            my_value = int(db.kv_get(key) or 0)
+            #
+            # We want to accommodate for off-by-1 errors ... in fact, we only care if it looks like
+            # it's clearly a different value ... this is in the case of a re-install.
+            #
+            if server_value > (3 + my_value):
+              logging.warning("The server thinks my {} is {}, while I think it's {}. I'm using the server's value.".format(key, server_value, my_value))
+              db.kv_set(key, server_value)
   
         db.kv_set('default', default.get('id'))
   
