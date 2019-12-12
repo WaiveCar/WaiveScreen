@@ -28,6 +28,10 @@ _PROCESSOR = {
   }
 }
 
+_PRAGMA = [
+  ('journal_mode', 'wal')
+]
+
 _SCHEMA = {
   'queue': [
     ('id', 'integer primary key autoincrement'),
@@ -246,6 +250,19 @@ def upsert(table, data):
 def upgrade():
   my_set = __builtins__['set']
   db = connect()
+
+  if '_PRAGMA' in globals():
+    for name, value in _PRAGMA:
+      existing_value = db['c'].execute('pragma {}'.format(name)).fetchone()
+
+      try:
+        if existing_value[0].lower() != value:
+          logging.info("Changing {} from {} to {}".format(name, existing_value[0], value))
+          db['c'].execute('pragma {} = {}'.format(name, value))
+
+      except Exception as ex:
+        logging.warning("Failed to query or change pragma {} to {}: {}".format(name, value, ex))
+
 
   for table, schema in list(_SCHEMA.items()):
     existing_schema = db['c'].execute('pragma table_info(%s)' % table).fetchall()
