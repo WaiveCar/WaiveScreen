@@ -177,7 +177,7 @@ def get_message(dbus_path):
         db.kv_set('number', message)
 
       else:
-        prev_sms_list = db.find('history', {type: 'sms', value: number})
+        prev_sms_list = db.find('history', {'type': 'sms', 'value': number})
         ident_count = 0
         message = fn['Text']
         if prev_sms_list:
@@ -190,7 +190,7 @@ def get_message(dbus_path):
             klass = 'ignore'
 
 
-    db.add_history('sms', number, message)
+    add_history('sms', number, message)
 
     print("type={};sender={};message='{}';dbuspath={}".format(klass, number, base64.b64encode(message.encode('utf-8')).decode(), proxy))
 
@@ -899,6 +899,14 @@ def get_timezone():
   else:
     return None
 
+def modem_usage():
+  """ Return the network traffic transfer totals for the modem in bytes """
+  bytes_total = 0
+  for bytes_path in glob.glob('/sys/class/net/ww[pa]*/statistics/??_bytes'):
+    with open(bytes_path, 'r') as bytes_file:
+      bytes_total += int(bytes_file.read())
+  return bytes_total
+
 def system_uptime():
   with open('/proc/uptime', 'r') as f:
     return float(f.readline().split(' ')[0])
@@ -912,6 +920,22 @@ def get_dpms_state(hdmi_port='both'):
         return f.read().strip()
     except:
       return False
+
+def update_modem_usage_log():
+  bootcount = db.get_bootcount()
+  modem_bytes = modem_usage()
+
+  record = db.findOne('history', {'kind': 'modem_usage', 'value': bootcount})
+
+  if not record:
+    db.insert('history', {
+      'kind': 'modem_usage',
+      'value': bootcount,
+      'extra': modem_bytes
+    })
+
+  else:
+    db.update('history', {'kind': 'modem_usage', 'value': bootcount}, {'extra': modem_bytes})
 
 def update_uptime_log():
   bootcount = db.get_bootcount()

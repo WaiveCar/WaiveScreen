@@ -604,6 +604,7 @@ running() {
 down() {
   cd $EV
 
+  local pidfile
   _log down $1
   for pidfile in $1; do
     # kill the wrapper first
