@@ -20,16 +20,44 @@ die() {
   exit
 }
 
-kv_get() {
-  sqlite3 $DB "select value from kv where key='$1'"
+_sqlite3() {
+  sqlite3 -cmd ".timeout $SQLTIMEOUTMS" "$@"
 }
 
+show_locks() {
+  local base=$( dirname $DB )
+  lsof +d $base
+
+  for pid in $(lsof +d $base | grep -v bash | awk ' { print $2 } ' | grep -v PID | sort | uniq); do
+    echo
+    echo $pid
+    echo
+
+    gdb -q /usr/bin/python3 << ENDL
+      attach $pid
+      py-locals
+      py-bt
+      bt
+      detach
+      quit
+ENDL
+  done
+}
+
+kv_get() {
+  _sqlite3 $DB "select value from kv where key='$1'"
+  [[ $? == 5 ]] && show_locks | grep -Ev "^(\(gdb|Reading symbols|done.)" >> $LOG/messages.log
+}
+
+# This _does not_ echo, it only returns whether the flag is set or not
 sess_get() {
-  sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )"
+  local val=$(_sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )")
+  # echo $val
+  [[ -n "$val" ]] && return 0 || return 1
 }
 
 kv_unset() {
-  sqlite3 $DB "delete from kv where key='$1'"
+  _sqlite3 $DB "delete from kv where key='$1'"
 }
 
 kv_set() {
@@ -39,13 +67,21 @@ kv_set() {
 kv_incr() {
   local curval=$(kv_get $1)
   if [[ -z "$curval" ]]; then 
-    sqlite3 $DB "insert into kv(key, value) values('$1',0)" &
+    _sqlite3 $DB "insert into kv(key, value) values('$1',0)" &
     echo 0
   else
     curval=$(( curval + 1 ))
-    sqlite3 $DB "update kv set value=$curval where key='$1'";
+    _sqlite3 $DB "update kv set value=$curval where key='$1'";
+    [[ $? == 5 ]] && show_locks >> $LOG/messages.log
     echo $curval
   fi
+}
+
+add_history() {
+  local kind=$1
+  local value=$2
+  local extra=$3
+  _sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
 }
 
 list() {
@@ -68,6 +104,7 @@ _bigtext() {
     middle="cat"
   fi
   echo "$*" | $middle | aosd_cat -p 4 -n "DejaVu Sans 72" -R white -f 1500 -u 1200 -o 1500 -d 30 -b 216 -B black &
+  echo "$*" | $middle
 }
 
 selfie() {
@@ -75,6 +112,8 @@ selfie() {
   local opts=''
   local num=0
 
+  down camera_daemon
+  pycall calibrate_cameras
   for i in $( seq 0 2 6 ); do
     $SUDO $FFMPEG -f v4l2 -video_size 1280x720 -i /dev/video$i -vframes 1 $CACHE/$now-$i.jpg 
   done
@@ -94,6 +133,7 @@ selfie() {
   res=$(eval curl -sX POST $opts "$SERVER/selfie.php?pre=$now")
   [[ -n "$1" ]] && sms $sender "This just happened: $res. More cool stuff coming soon ;-)"
   echo $res
+  camera_daemon
 }
 
 sms() {
@@ -124,13 +164,14 @@ sms_cleanup() {
     # Try to make sure we aren't overwriting
     while [[ -e $SMSDIR/$num ]]; do
       num=$( kv_incr sms )
-      sleep 0.01
+      sleep 0.02
     done
 
     $MM -s $i > $SMSDIR/$num
     grep -i "class: 1" $SMSDIR/$num > /dev/null && $MM -s $i --create-file-with-data=$SMSDIR/${num}.raw 
     $SUDO $MM --messaging-delete-sms=$i
   done
+  pycall sess_set cleanup,1
 }
 
 text_loop() {
@@ -139,7 +180,7 @@ text_loop() {
 
   while true; do
     if [[ -z "$foundModem" ]]; then
-      if [[ -z "$(sess_get modem)" ]]; then
+      if ! sess_get simok; then
         sleep 10
         continue
       fi
@@ -154,9 +195,11 @@ text_loop() {
       if [[ "$type" == "recv" ]]; then
         if [[ -n "$message" ]]; then
           sms_cleanup $dbuspath
+          local text=$(echo "$message" | base64 -d)
+          ws_browser "sms,$text"
           selfie $sender &
           sleep 2
-          B64=1 _bigtext $message
+          #local as_text=$(B64=1 _bigtext $message)
         else
           # Wait a while for the image to come in
           sleep 1.5
@@ -214,7 +257,7 @@ set_wrap() {
 
 set_event() {
   pid=${2:-$!}
-  [[ -e $EV/$1 ]] || _info Event:$1
+  [[ -e $EV/$1 ]] || _info $1
   echo -n $pid | $SUDO tee $EV/$1
 }
 
@@ -222,14 +265,16 @@ set_brightness() {
   local level=$1
   local nopy=$2
 
-  local shift=$(perl -e "print .5 * $level + .5")
-  local revlevel=$(perl -e "print .7 * $level + .3")
+  if [[ -z "$nopy" ]]; then
+    pycall arduino.set_backlight $level
+  else
+    local shift=$(perl -e "print .5 * $level + .5")
+    local revlevel=$(perl -e "print .7 * $level + .3")
 
-  [[ -z "$nopy" ]] && pycall arduino.set_backlight $level
-
-  for display in HDMI-1 HDMI-2; do
-    DISPLAY=:0 xrandr --output $display --gamma 1:1:$shift --brightness $revlevel
-  done
+    for display in HDMI-1 HDMI-2; do
+      DISPLAY=:0 xrandr --output $display --gamma 1:1:$shift --brightness $revlevel
+    done
+  fi
 }
 
 enable_gps() {
@@ -239,13 +284,6 @@ enable_gps() {
     --location-enable-gps-raw \
     --location-enable-3gpp \
     --location-disable-agps
-}
-
-add_history() {
-  local kind=$1
-  local value=$2
-  local extra=$3
-  sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
 }
 
 get_number() {
@@ -337,6 +375,7 @@ EPERL
   if ping -c 1 -i 0.3 $SERVER; then
     _info "$SERVER found" 
     get_number
+    pycall db.sess_set simok,1 
   else
     _warn "$SERVER unresolvable!"
 
@@ -431,6 +470,12 @@ sensor_daemon() {
   set_event sensor_daemon
 }
 
+camera_daemon() {
+  down camera_daemon
+  $BASE/ScreenDaemon/CameraDaemon.py &
+  set_event camera_daemon
+}
+
 # This is used during the installation - don't touch it!
 # {
 pip_install() {
@@ -457,7 +502,7 @@ get_state() {
   $SUDO cp /var/log/daemon.log $path
   $SUDO chmod 0666 $path/daemon.log
 
-  sqlite3 $DB .dump > $path/backup.sql
+  _sqlite3 $DB .dump > $path/backup.sql
 
   get_version > $path/version 
 
@@ -488,21 +533,6 @@ get_uuid() {
   cat $UUIDfile
 }
 
-wait_for() {
-  path=${2:-$EV}/$1
-
-  if [[ ! -e "$path" ]]; then
-    echo `date +%R:%S` WAIT $1
-    until [[ -e "$path" ]]; do
-      sleep 0.5
-    done
-
-    # Give it a little bit after the file exists to
-    # avoid unforseen race conditions
-    sleep 0.05
-  fi
-}
-
 _screen_display_single() {
   export DISPLAY=${DISPLAY:-:0}
   local app=$BASE/ScreenDisplay/display.html 
@@ -510,6 +540,7 @@ _screen_display_single() {
   [[ -e $app ]] || die "Can't find $app. Exiting"
 
   _as_user chromium --kiosk \
+    --check-for-update-interval=2147483647 \
     --incognito \
     --disable-translate --disable-features=TranslateUI \
     --fast --fast-start \
@@ -537,6 +568,21 @@ screen_display() {
   set_wrap screen_display $pid
 }
 
+wait_for() {
+  path=${2:-$EV}/$1
+
+  if [[ ! -e "$path" ]]; then
+    echo `date +%R:%S` WAIT $1
+    until [[ -e "$path" ]]; do
+      sleep 0.5
+    done
+
+    # Give it a little bit after the file exists to
+    # avoid unforseen race conditions
+    sleep 0.05
+  fi
+}
+
 running() {
   cd $EV
   for pidfile in $( ls ); do
@@ -558,6 +604,7 @@ running() {
 down() {
   cd $EV
 
+  local pidfile
   _log down $1
   for pidfile in $1; do
     # kill the wrapper first
@@ -668,9 +715,14 @@ _sanityafter() {
   ( sleep $delay; $SUDO $BASE/tools/client/sanity-check.sh ) &
 }
 
+nosanity() {
+  pycall sess_set nosanity
+}
+
 upgrade_scripts() {
   for script in $(pycall upgrades_to_run); do
     cd $BASE
+    local upgrade_dir="${BASE}/Linux/upgrade"
     # we do this every time because some upgrades
     # may call for a reboot
     _log "[upgrade-script] $script"
@@ -679,14 +731,13 @@ upgrade_scripts() {
     add_history upgrade_script $script
     kv_set last_upgrade,$script
 
-    local res="$($SUDO $script upgradepost)"
+    local res=$($SUDO "${upgrade_dir}/$script" upgradepost)
     # If we survived the script and it didn't reboot
     # then we have the pleasure of storing the output
     # of the script, hopefully without issue.
     # REMOVED: This was running into problems with the script output being un-escaped.
     #sqlite3 $DB "update history set extra='$res' where value='$script' and kind='$upgrade'"
     _log "${script} output: ${res}"
-
   done
 }
 
@@ -696,6 +747,15 @@ _upgrade_pre() {
   local old_repo_link="${DEST}/.WaiveScreen.old"
   local new_repo_link="${DEST}/.WaiveScreen.new"
   local date_string="$(date +%Y%m%d%H%M)"
+
+  # Remove old versions if they're there
+  if [[ -L "${old_repo_link}" ]]; then
+    local old_old_repo="$(readlink -f ${old_repo_link})"
+    if [[ -d "${old_old_repo}" ]] && [[ "${old_old_repo}" != "${old_repo}" ]] && [[ "${DEST}" = "$(dirname ${old_old_repo})" ]]; then
+      _log "Removing old install directory: ${old_old_repo}"
+      $SUDO rm -rf "${old_old_repo}"
+    fi
+  fi
 
   ln -sTf "$(basename ${old_repo})" "${old_repo_link}"
 
@@ -736,26 +796,36 @@ _upgrade_post() {
   $SUDO apt -y autoremove
 
   pycall db.upgrade
+  update_arduino
   add_history upgrade "$version"
 
   upgrade_scripts
+  $SUDO systemctl restart location-daemon
   stack_restart 
   _info "Now on $version"
 }
 
+ws_browser() {
+  curl -sX POST --data "$*" localhost:4096/browser
+}
+
 # This is for upgrading over USB
-local_upgrade() {
+local_disk() {
   local dev=$1
   local mountpoint='/tmp/upgrade'
   local package=$mountpoint/upgrade.package
 
-  _log "[upgrade] usb"
   _mkdir $mountpoint
 
   $SUDO umount $mountpoint >& /dev/null
 
   if $SUDO mount $dev $mountpoint; then
-    if [[ -e $package ]]; then
+    if [[ -e $mountpoint/voHCPtpJS9izQxt3QtaDAQ_make_keyboard_work ]]; then
+      $SUDO modprobe usbhid
+      pycall db.sess_set keyboard_allowed,1 
+      _info "Keyboards are now enabled"
+
+    elif [[ -e $package && -z "$2" ]]; then
       _sanityafter
       _info "Found upgrade package - installing"
       local usb_temp="$(mktemp -d)"
@@ -784,6 +854,10 @@ local_upgrade() {
 }
 
 upgrade() {
+  if [[ -n "$(kv_get driving_upgrade)" ]]; then
+    _error "Can NOT upgrade while driving_upgrade is queued."
+    return 1
+  fi
   _info "Upgrading... Please wait"
   {
     set -x
@@ -801,13 +875,50 @@ upgrade() {
   } |& $SUDO tee -a /var/log/upgrade.log &
 }
 
+driving_upgrade() {
+  # Wait 2 minutes so there's a good chance the system is stable.
+  sleep 120
+	local speed_count=0
+  local speed=0
+  local upgrade_speed="$(kv_get driving_upgrade_speed)"
+  upgrade_speed="${upgrade_speed:-95}"
+  while sleep 1; do
+    speed="$(mmcli -m 0 --location-get | grep GPVTG | cut -d ',' -f 8 | cut -d '.' -f 1)"
+    if [[ ${speed} -gt ${upgrade_speed} ]]; then
+      ((++speed_count))
+      if [[ $speed_count -eq 5 ]]; then
+        _log "driving_upgrade: Hit target speed of ${upgrade_speed} km/h. Starting upgrade."
+        kv_unset driving_upgrade
+        kv_unset driving_upgrade_speed
+        upgrade
+        break
+      fi
+    else
+      speed_count=0
+    fi
+  done
+}
+
+driving_upgrade_check() {
+  if [[ -n "$(kv_get driving_upgrade)" ]]; then
+    if [[ "$(get_version)" == "$(kv_get driving_upgrade)" ]]; then
+      _log "driving_upgrade_check: starting driving_upgrade"
+      driving_upgrade &
+    else
+      _log "driving_upgrade_check: Upgrade already happened (must have been over USB)."
+      kv_unset driving_upgrade
+      kv_unset upgrade_speed
+    fi
+  fi
+}
+
 debug() {
   down sensor_daemon
   DEBUG=1 $SUDO $BASE/ScreenDaemon/SensorDaemon.py 
 }
 
 make_patch() {
-  cp -puv $DEST/* $DEST/.* $BASE/Linux/fai-config/files/home
+  cp -pu $DEST/* $DEST/.* $BASE/Linux/fai-config/files/home
   cd $BASE
   git diff origin/$BRANCH > /tmp/patch
   [[ -s /tmp/patch ]] && curl -sX POST -F "f0=@/tmp/patch" "$SERVER/patch.php" || echo "No changes"
@@ -818,25 +929,70 @@ disk_monitor() {
   {
     while true; do
       local disk=$(pycall lib.disk_monitor)
-      [[ -n "$disk" ]] && local_upgrade $disk
+      [[ -n "$disk" ]] && local_disk $disk
       sleep 3
     done
   } &
 }
 
+_avrdude() {
+    $BASE/tools/client/avrdude -C$BASE/tools/client/avrdude.conf \
+      -v -patmega328p -carduino -P/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0 -b57600 -D \
+      $*
+}
+
+update_arduino() {
+  local my_arduino_version=$(pycall kv_get arduino_version)
+  local new_arduino_version=$(< ${BASE}/tools/client/sensors.ino.version)
+
+  if [[ "${my_arduino_version}" != "${new_arduino_version}" ]]; then
+    local sensors_backup=/tmp/sensors_backup.ino.hex
+    local final_cmds="pycall sess_del nosanity; sensor_daemon"
+    _info "Updating arduino"
+    _info "Setting nosanity"
+    pycall sess_set nosanity
+    # Give a possibly running sanity check time to finish.
+    sleep 6
+    down sensor_daemon
+    $SUDO pkill -f SensorDaemon
+    sleep 2
+
+    # Backup existing image
+    if ! _avrdude -Uflash:r:${sensors_backup}:i ; then
+      _error "Unable to backup Arduino image.  Aborting update."
+      eval $final_cmds
+      return 1
+    fi
+
+    # Flash new image
+    if ! _avrdude -Uflash:w:$BASE/tools/client/sensors.ino.hex:i ; then
+      _error "Unable to flash new Arduino image."
+    fi
+
+    # Test new image
+    if [[ -z "$(pycall arduino_read)" ]]; then
+      _error "New Arduino image FAILED read test.  Rolling back to previous version"
+      if ! _avrdude -Uflash:w:${sensors_backup}:i ; then
+        _error "Unable to flash previous Arduino image.  We may have borked it.  Call for help."
+      fi
+    fi
+    eval $final_cmds
+  fi
+}
+
 stack_down() {
-  for i in screen_daemon screen_display sensor_daemon; do
+  for i in screen_daemon screen_display sensor_daemon camera_daemon; do
     $DEST/dcall down $i
   done
 
   # This stuff shouldn't be needed but right now it is.
-  echo chromium start-x-stuff SensorDaemon ScreenDaemon | xargs -n 1 $SUDO pkill -f 
+  echo chromium start-x-stuff SensorDaemon ScreenDaemon CameraDaemon | xargs -n 1 $SUDO pkill -f
 }
 
 # This permits us to use a potentially new way
 # of starting up the tools
 stack_up() {
-  for i in screen_display sensor_daemon screen_daemon disk_monitor; do
+  for i in screen_display sensor_daemon screen_daemon disk_monitor camera_daemon; do
     $DEST/dcall $i &
   done
 }

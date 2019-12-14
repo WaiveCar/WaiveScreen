@@ -28,6 +28,10 @@ _PROCESSOR = {
   }
 }
 
+_PRAGMA = [
+  ('journal_mode', 'wal')
+]
+
 _SCHEMA = {
   'queue': [
     ('id', 'integer primary key autoincrement'),
@@ -122,6 +126,21 @@ _SCHEMA = {
     ('Lng', 'float default null'),
     ('run', 'integer default null'),
     ('created_at', 'datetime default current_timestamp'),
+  ],
+  'location' : [
+    ('id', 'integer primary key autoincrement'),
+    ('lat', 'float default null'),
+    ('lng', 'float default null'),
+    ('accuracy', 'float default null'),
+    ('speed', 'float default null'),
+    ('heading', 'float default null'),
+    ('source', 'text default null'),
+    ('created_at', 'datetime default current_timestamp'),
+  ],
+  'arduino_queue' : [
+    ('id', 'integer primary key autoincrement'),
+    ('text', 'text not null'),
+    ('created_at', 'datetime default current_timestamp'),
   ]
 }
 
@@ -162,8 +181,8 @@ def insert(table, data):
     res, last = run(qstr, values, with_last = True)
     return last
 
-  except:
-    logging.warning("Unable to insert a record {} {}".format(qstr, json.dumps(values)))
+  except Exception as exc:
+    logging.warning("Unable to insert a record {} {} ({})".format(qstr, json.dumps(values), exc))
 
   
 def update(table, where_dict, set_dict):
@@ -181,6 +200,35 @@ def update(table, where_dict, set_dict):
 
   except:
     logging.warning("Unable to update a record {}|{}|{}".format(qstr, ', '.join([str(x) for x in set_values]), ', '.join([str(x) for x in where_values])))
+
+def _find(table, where_dict, fields):
+  shared_keys, where_values = _parse(table, where_dict)
+  where_string = ' and '.join(["{}=?".format(key) for key in shared_keys])
+
+  # The where string could be empty
+  if len(where_string) > 0:
+    where_string = "where {}".format(where_string)
+
+  qstr = 'select {} from {} {} order by id desc'.format(fields, table, where_string)
+
+  try:
+    return run(qstr, where_values)
+
+  except:
+    logging.warning("Unable to find a record {}|{}".format(qstr, ', '.join([str(x) for x in where_values])))
+
+def findOne(table, where_dict = {}, fields='*'):
+  res = _find(table, where_dict, fields)
+
+  if res is not None:
+    rowList = process(res.fetchone(), table, 'post')
+    if rowList:
+      return list(rowList)
+
+def find(table, where_dict = {}, fields='*'):
+  res = _find(table, where_dict, fields)
+  if res is not None:
+    return process([record for record in res.fetchall()], table, 'post')
 
 def upsert(table, data):
   qstr, key_list, values = _insert(table, data)
@@ -202,6 +250,19 @@ def upsert(table, data):
 def upgrade():
   my_set = __builtins__['set']
   db = connect()
+
+  if '_PRAGMA' in globals():
+    for name, value in _PRAGMA:
+      existing_value = db['c'].execute('pragma {}'.format(name)).fetchone()
+
+      try:
+        if existing_value[0].lower() != value:
+          logging.info("Changing {} from {} to {}".format(name, existing_value[0], value))
+          db['c'].execute('pragma {} = {}'.format(name, value))
+
+      except Exception as ex:
+        logging.warning("Failed to query or change pragma {} to {}: {}".format(name, value, ex))
+
 
   for table, schema in list(_SCHEMA.items()):
     existing_schema = db['c'].execute('pragma table_info(%s)' % table).fetchall()
@@ -320,6 +381,8 @@ def connect(db_file=None):
   if id in _instance:
     return _instance[id] 
 
+  timeout = float(os.environ.get('SQLTIMEOUTMS') or "5000.0") / 1000.0
+
   if 'DB' in os.environ:
     default_db = os.environ['DB']
     logging.debug("Using {} as the DB as specified in the DB shell env variable")
@@ -343,7 +406,7 @@ def connect(db_file=None):
   if not os.path.exists(db_file):
     sys.stderr.write("Info: Creating db file %s\n" % db_file)
 
-  conn = sqlite3.connect(db_file)
+  conn = sqlite3.connect(db_file, timeout=timeout)
   conn.row_factory = sqlite3.Row
 
   if 'DEBUG' in os.environ:
@@ -423,25 +486,27 @@ def kv_set(key, value = None, bootcount = None):
   global _params
 
   try:
-    if value is None:
-      res = run('delete from kv where key = ?', (key, ))
-      
+    # Let's just do two calls. Nobody else is accessing it right here I think
+    # this is atomic enough.
+    if key in _params:
+      res = [_params[key]]
     else:
-      # Let's just do two calls. Nobody else is accessing it right here I think
-      # this is atomic enough.
-      if key in _params:
-        res = [_params[key]]
-      else:
-        res = run('select value from kv where key = ?', (key, )).fetchone()
+      res = run('select value from kv where key = ?', (key, )).fetchone()
 
-      if not res:
-        run('insert into kv (key, value) values(?, ?)', (key, value))
+    # We only run the delete sql if the value exists. Otherwise
+    # it throws a cryptic exception.
+    if value is None:
+      if res:
+        res = run('delete from kv where key = ?', (key, ))
 
-      elif res[0] != str(value):
-        run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
+    elif not res:
+      run('insert into kv (key, value) values(?, ?)', (key, value))
 
-      if bootcount:
-        run('update kv set bootcount = ? where key = ?', (bootcount, key))
+    elif res[0] != str(value):
+      run('update kv set updated_at = current_timestamp, value = ? where key = ?', (value, key))
+
+    if bootcount:
+      run('update kv set bootcount = ? where key = ?', (bootcount, key))
 
   except Exception as ex:
     logging.warning("Couldn't set {} to {}: {}".format(key, value, ex))
@@ -557,7 +622,8 @@ def run(query, args=None, with_last=False, db=None):
       raise Exception("0 rows")
 
   except Exception as exc:
-    logging.info(query)
+    logging.info("{} {}".format(query, exc))
+    logging.info("desc:{} in_transaction:{}".format(db['c'].description, db['conn'].in_transaction))
     raise exc
 
   finally:

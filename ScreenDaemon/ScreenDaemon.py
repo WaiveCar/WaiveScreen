@@ -1,7 +1,13 @@
 #!/usr/bin/python3
 
+#from aiohttp import web
+#import aiohttp_cors
+#import aiohttp
+
+from flask_socketio import SocketIO, emit
 from flask import Flask, request, Response, jsonify
 from flask_cors import CORS
+
 import json
 import urllib
 import lib.lib as lib
@@ -19,12 +25,16 @@ from pdb import set_trace as bp
 
 
 _reading = False
-app = Flask(__name__)
+_app = Flask(__name__)
+#_conn = None
+#_app = web.Application()
+#_cors = aiohttp_cors.setup(_app)
+CORS(_app)
 DTFORMAT = '%Y-%m-%d %H:%M:%S.%f'
-CORS(app)
 
 def res(what):
   return jsonify(what)
+  #return web.json_response(what)
 
 def success(what):
   return res({ 'res': True, 'data': what })
@@ -32,10 +42,7 @@ def success(what):
 def failure(what):
   return res({ 'res': False, 'data': what })
 
-def get_location():
-  return lib.sensor_last()
-
-@app.route('/default')
+@_app.route('/default')
 def default():
   attempted_ping = False
   campaign = False
@@ -67,8 +74,8 @@ def default():
     'system': db.kv_get()
   })
 
-@app.route('/sow', methods=['GET', 'POST'])
-def next_ad(work = False):
+@_app.route('/sow', methods=['GET', 'POST'])
+def sow(work = False):
   """
   For now we are going to do a stupid pass-through to the remote server
   and then just kinda return stuff. Keeping track of our own things 
@@ -81,7 +88,6 @@ def next_ad(work = False):
   # lib.ping_if_needed()
 
   # The first thing we get is the last known location.
-  sensor = lib.sensor_last()
   payload = {
     'uid': lib.get_uuid(),
     'lat': db.kv_get('Lat'),
@@ -98,6 +104,7 @@ def next_ad(work = False):
 
     if power != 'sleep':
       jobList = request.get_json()
+      # jobList = json.loads(await request.text())
 
       if type(jobList) is not list:
         jobList = [ jobList ]
@@ -107,8 +114,8 @@ def next_ad(work = False):
       for i in range(len(jobList)):
         job = jobList[i]
 
-        sensorList = [dict(x) for x in db.range('sensor', job['start_time'], job['end_time'])]
-        job['sensor'] = sensorList
+        locationList = [dict(x) for x in db.range('location', job['start_time'], job['end_time'])]
+        job['location'] = locationList
 
         # start_time and end_time are javascript epochs
         # so they are in millisecond
@@ -183,13 +190,73 @@ def next_ad(work = False):
   else:
     return failure('Error: {}'.format(err))
 
+@_app.route('/browser')
+def browser(request):
+  text = request.get_text()
+
+  parts = text.split(',')
+  func = parts[0]
+  args = ','.join(parts[1:])
+
+  # todo: connection detection
+  #if _conn is not None:
+  if args[0] == '@':
+    playlist = []
+    for user in args.split(','):
+
+      user = user.strip()
+
+      if user[0] == '@':
+        insta = user[1:]
+      else:
+        insta = user
+
+      playlist.append(lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(insta), only_filename=True, announce="@{}".format(insta)))
+
+    payload = {'action': 'playnow', 'args': playlist}
+  
+  elif "http" in args:
+    payload = {'action': 'playnow', 'args': args}
+
+  else:
+    payload = {'action': 'text', 'args': args}
+
+  socketio.emit(payload['action'], payload['args'])
+  #await _conn.send_str(json.dumps(payload))
+
+  return success(payload)
+
 if __name__ == '__main__':
 
   db.kv_set('version', lib.VERSION)
-  lib.set_logger('/var/log/screen/screendaemon.log')
+  lib.set_logger('{}/screendaemon.log'.format(lib.LOG))
 
   if lib.SANITYCHECK:
     sys.exit(0)
 
   db.incr('runcount')
-  app.run(port=4096)
+  _app.run(port=4096)
+
+  """
+  # There may be a more reasonable way to do this but as of now
+  # this is the simplest code I could write. 
+  for method, route, handler in [
+      ['GET', '/default', default], 
+      ['POST', '/browser', browser], 
+      ['GET', '/ws', ws],
+      ['POST', '/sow', sow]]:
+
+    # Apparently you need to define a "resource"
+    resource = _cors.add(_app.router.add_resource(route))
+    route = _cors.add(
+      # Then add a route here, as opposed to the regular way
+      # as documented in aiohttp
+      resource.add_route(method, handler), {
+        # localhost sends over its origin as the string "null". This
+        # was determined through tcpdump
+        'null': aiohttp_cors.ResourceOptions(expose_headers="*", allow_headers="*")
+      }
+    )
+
+  web.run_app(_app, port=4096)
+  """

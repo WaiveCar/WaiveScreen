@@ -1,0 +1,15 @@
+#!/bin/bash
+
+_as_adorno() {
+  su adorno -c "$*"
+}
+
+upgradepost() {
+  cd /home/adorno/WaiveScreen
+  _as_adorno git fetch --prune origin
+  git for-each-ref --format="delete %(refname)" | egrep -v 'refs/(remotes|tags|heads/release)' | _as_adorno git update-ref --stdin
+  _as_adorno git reflog expire --expire=now --all
+  _as_adorno git gc --prune=now
+}
+
+eval $1

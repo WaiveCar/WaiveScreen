@@ -1,5 +1,6 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+EP='waivescreen.com/api/screens?removed=0'
 
 die() {
   echo $*
@@ -21,11 +22,10 @@ list() {
   fi
 
   checkfor jq
-  curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq "$qstr"
+  curl -s $EP | tr '[A-Z]' '[a-z]' | jq "$qstr"
 }
 
-connect() {
-  local key
+resolve() {
   local keypath=$DIR/../../Linux/keys/ScreenAccess 
 
   if [[ ! -e $keypath ]]; then
@@ -38,12 +38,31 @@ connect() {
     port=$1
   else
     checkfor jq
-    port=$(curl -s waivescreen.com/api/screens | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'${1,,}'") | .port')
+    port=$(curl -s $EP | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'${1,,}'") | .port')
+    [[ -z "$port" ]] && die "Woops, $1 wasn't found."
   fi
+}
 
-  # ssh-keygen -f "/home/chris/.ssh/known_hosts" -R "[reflect.waivescreen.com]:$port"
+connect() {
+  resolve $1
   set -x
-  ssh -C -oStrictHostKeyChecking=no $key adorno@reflect.waivescreen.com -p $port
+  ssh -C -oStrictHostKeyChecking=no $key -p $port adorno@reflect.waivescreen.com
+
+  exit
+}
+
+pull() {
+  resolve $1
+  local=${3:-.}
+  set -x
+  scp -C -oStrictHostKeyChecking=no $key -P $port adorno@reflect.waivescreen.com:$2 $local
+
+  exit
+}
+copy() {
+  resolve $1
+  set -x
+  scp -C -oStrictHostKeyChecking=no $key -P $port $2 adorno@reflect.waivescreen.com:$3
 
   exit
 }
@@ -95,6 +114,8 @@ for i in $*; do
       ;;
     state) state $2; exit 0;;
     connect) connect $2 ;;
+    copy) copy $2 "$3" $4 ;;
+    pull) pull $2 "$3" $4 ;;
     sync|reload) reload ;;
     on) on.js ;;
     off) off.js ;;

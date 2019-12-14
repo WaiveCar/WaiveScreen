@@ -7,6 +7,7 @@ node_modules
 vendor
 tools/package-lock.json
 ScreenDisplay/assets/
+ScreenDaemon/middle/
 power-history
 Linux/keys/ScreenAccess
 Linux/fai-config/files/home/pip/*.whl

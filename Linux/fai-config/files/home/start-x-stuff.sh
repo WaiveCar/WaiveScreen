@@ -2,6 +2,12 @@
 
 . lib.sh
 
+# The keyboard disabler
+[[ $BRANCH == "release" ]] && sudo rmmod usbhid || sudo modprobe usbhid
+
+# Create an boot_uptime entry in the db history table.
+pycall lib.update_uptime_log
+
 export DISPLAY=$1
 
 # Force a UUID update if needed
@@ -34,6 +40,13 @@ disk_monitor
 NOMODEM=1 pycall arduino.set_autobright
 
 #
+# We need to wait a bit (see above) for the 
+# usb to "settle" since it doesn't register
+# when first starting X
+#
+[[ $BRANCH == "release" && -e /dev/sdb1 ]] && local_disk /dev/sdb1 noupgrade
+
+#
 # This delay is rather important because the
 # wwan modem loads asynchronously and if we 
 # try to do things with it before it's up 
@@ -61,3 +74,5 @@ ssh_hole
 sms_cleanup
 first_run
 upgrade_scripts
+camera_daemon
+driving_upgrade_check

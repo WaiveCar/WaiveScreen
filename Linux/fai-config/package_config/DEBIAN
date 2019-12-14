@@ -33,6 +33,9 @@ curl
 sudo
 locate
 vim
+
+# For flashing arduino
+libusb-0.1-4
 #powertop
 
 # wireless stuff
@@ -40,6 +43,8 @@ iw
 wpasupplicant
 
 libtimedate-perl
+
+gdb python3-dbg
 
 # and ble
 firmware-atheros

@@ -6,21 +6,35 @@
 // version 1.1 (12.5.18) updated to account for current sense board options.
 
 
-#include<Wire.h>
+#include <Wire.h>
 #include <math.h>
-int fanPin = 9;    // fans connected to digital pin 5
-int backlightPin = 6; // screen adj connected to digital pin 6 through amp
-int resetPin = 4;
-int fanSpeed = 150, backlightValue = 220;
+
+int 
+  // fans connected to digital pin 5
+  fanPin = 9,
+
+  // screen adj connected to digital pin 6 through amp
+  backlightPin = 6,
+
+  resetPin = 4,
+
+  fanSpeed = 150, 
+
+  backlightValue = 0.2 * 255;
+
 #define THERMISTORPIN A0
 #define VOLTAGEPIN A1
 #define CURRENTPIN A2
 #define NUMSAMPLES 100
+
 bool autofan = true;
-bool cpu_on = true;
+bool cpu_on = false;
 bool ide_debug = false;
+
 int j=0; // used to make sure the fan comes back on.
 int backlight_adjust = 1; // used to lower current draw at low voltage to save the battery
+
+const char VERSION[]="__VERSION__";
 
 // Sensor name is MPU-6050
 // Declaring Relevant Register names 
@@ -88,6 +102,23 @@ typedef union accel_t_gyro_union
     int16_t z_gyro;
   } value;
 };
+
+//
+// Doing this as a "correct and proper" packet
+// system is more work then I want to do right 
+// now
+/*
+typedef struct packet_ {
+  const uint16_t header = 0xffff;
+  uint8_t   type;
+  uint16_t  len;
+} packet;
+
+typedef struct packet_response_ {
+  packet header;
+  uint8_t payload[128] = {0};
+} packet_response;
+*/
 
 // Use the following global variables and access functions to help store the overall
 // rotation angle of the sensor
@@ -253,6 +284,12 @@ void setup() {
 
 }
 
+void header(uint8_t type, uint16_t length) {
+  Serial.write(0xFF);
+  Serial.write(type);
+  Serial.write(length);
+}
+
 void loop() {
   if(ide_debug) Serial.print("four");
   int error;
@@ -345,6 +382,19 @@ void loop() {
     }
   }   
 
+  // Response:
+  //
+  //  | HH HH | TT | LL LL | [ data ] |
+  //
+  //  HH is the header, currently 0xFFFF
+  //  TT is the type of response
+  //  LLLL is an LSB length in bytes after the LLLL
+  //  
+  //  This allows for us to "future proof" the
+  //  system up to 256 types of packets up to
+  //  64K long in data payloads (not that we'd need it)
+  
+
   // set the fan and backlight each loop
   analogWrite(backlightPin, backlightValue);
   analogWrite(fanPin, fanSpeed);
@@ -352,6 +402,7 @@ void loop() {
   if(!ide_debug) {
     // Send the data over the serial bus
     // write header (1B), generic 0xFF 
+    // header(0x01);
     Serial.write(0xFF);
     // write time
     Serial.write(timeBuf, 4);
@@ -377,6 +428,8 @@ void loop() {
     Serial.write(lowByte(accel_t_gyro.value.z_gyro));
     Serial.write(fanSpeed);
     Serial.write(backlightValue);
+    // Write Version to serial.  Will be datecode of git commit: [YYYYMMDD]
+    Serial.write(VERSION);
   }
 
   if(ide_debug){
@@ -420,25 +473,51 @@ void loop() {
 //    cpu_on = true;
 //  }
 //
-//  if (voltage < 12.5 & cpu_on == true) {
+//  if (voltage < 12.5 && cpu_on == true) {
 //    backlight_adjust = 0;
 //  } else {
 //    backlight_adjust = 1;
 //  }
   if(ide_debug) Serial.print("one");
-  if (voltage < 13.0 & current < 2.0){
+  if (voltage < 13.0 && current < 2.0){
     delay(1000);
   }
   if(ide_debug) Serial.print("two");
   // check if there has been serial signal received (min 2 bytes)
+  //
+  // **********
+  // INPUT LOOP
+  // **********
+  //
   if(Serial.available() > 1) {
+
     delay(10);
+
     // selector is first byte, options: 0x01 for fanSpeed, 0x10 for display brightness (generic)
     int selector = Serial.read();
+
     // setting is second byte, max 255
     int setting = Serial.read();
     delay(10);
-    if (selector == 0x01){
+
+    // Packets coming from the CPU are 2 bytes. 
+    // Here's the format:
+    //
+    // 01 01  Autofan
+    // 01 xx  Fan to xx
+    //
+    // 02 NA  Get version (#187)
+    // 03 NA  Boot ping (#192)
+    //
+    // 10 xx  Backlight to xx
+    // 11 ff  Cpu on
+    // 11 00  Cpu off
+    //
+
+    if (selector == 0x03) {
+      cpu_on = true;
+    } 
+    else if (selector == 0x01) {
       // set fan speed, min viable setting for 8x fans is 102/255 (40% duty cycle)
       if (setting == 0x01){
         autofan = true;
@@ -447,23 +526,23 @@ void loop() {
         autofan = false;
       }
     }
-    else if (selector == 0x10){
+    else if (selector == 0x10) {
       // set display brightness
       backlightValue = setting;
     }
-    else if (selector == 0x11){
+    else if (selector == 0x11) {
       // turn cpu on or off
-      if (setting == 0xff & cpu_on == false) {
+      if (setting == 0xff && cpu_on == false) {
         digitalWrite(resetPin, HIGH);
         delay (100);
         digitalWrite(resetPin, LOW);
-        cpu_on == true;
+        cpu_on = true;
         
-      } else if (setting == 0x00 & cpu_on == true) {
+      } else if (setting == 0x00 && cpu_on == true) {
         digitalWrite(resetPin, HIGH);
         delay (100);
         digitalWrite(resetPin, LOW);
-        cpu_on == false;
+        cpu_on = false;
       }
       
     }
