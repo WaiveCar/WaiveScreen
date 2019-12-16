@@ -796,9 +796,9 @@ _upgrade_post() {
   $SUDO apt -y autoremove
 
   pycall db.upgrade
-  update_arduino
   add_history upgrade "$version"
 
+  update_arduino
   upgrade_scripts
   $SUDO systemctl restart location-daemon
   stack_restart 
@@ -946,13 +946,15 @@ update_arduino() {
   local new_arduino_version=$(< ${BASE}/tools/client/sensors.ino.version)
 
   if [[ "${my_arduino_version}" != "${new_arduino_version}" ]]; then
-    local sensors_backup=/tmp/sensors_backup.ino.hex
-    local final_cmds="pycall sess_del nosanity; sensor_daemon"
-    _info "Updating arduino"
     _info "Setting nosanity"
     pycall sess_set nosanity
+    local sensors_backup=/tmp/sensors_backup.ino.hex
+    local final_cmds="pycall sess_del nosanity; sensor_daemon"
     # Give a possibly running sanity check time to finish.
-    sleep 6
+    # and make sure the _sanityafter call has run.
+    _info "Updating arduino in 30 seconds.  Please do not turn the car off."
+    sleep 30
+    down sensor_daemon
     down sensor_daemon
     $SUDO pkill -f SensorDaemon
     sleep 2
