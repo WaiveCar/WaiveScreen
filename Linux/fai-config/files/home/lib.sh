@@ -952,7 +952,7 @@ update_arduino() {
     local final_cmds="pycall sess_del nosanity; sensor_daemon"
     # Give a possibly running sanity check time to finish.
     # and make sure the _sanityafter call has run.
-    _info "Updating arduino in 30 seconds.  Please do not turn the car off."
+    _warn "Updating arduino in 30 seconds.  Please do not turn the car off."
     sleep 30
     down sensor_daemon
     down sensor_daemon
