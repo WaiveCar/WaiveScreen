@@ -465,6 +465,8 @@ screen_daemon() {
 }
 
 sensor_daemon() {
+  _log "sensor_daemon called from: ${FUNCNAME[@]}"
+  _log "sensor_daemon called by: $(caller)"
   down sensor_daemon
   $SUDO $BASE/ScreenDaemon/SensorDaemon.py &
   set_event sensor_daemon
