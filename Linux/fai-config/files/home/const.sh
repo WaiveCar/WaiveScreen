@@ -4,6 +4,7 @@ export WHO=adorno
 export DEST=/home/$WHO
 export BASE=$DEST/WaiveScreen
 
+export SQLTIMEOUTMS=500
 export SERVER=waivescreen.com
 export BRANCH=release
 export CACHE=/var/cache/assets

@@ -20,19 +20,44 @@ die() {
   exit
 }
 
+_sqlite3() {
+  sqlite3 -cmd ".timeout $SQLTIMEOUTMS" "$@"
+}
+
+show_locks() {
+  local base=$( dirname $DB )
+  lsof +d $base
+
+  for pid in $(lsof +d $base | grep -v bash | awk ' { print $2 } ' | grep -v PID | sort | uniq); do
+    echo
+    echo $pid
+    echo
+
+    gdb -q /usr/bin/python3 << ENDL
+      attach $pid
+      py-locals
+      py-bt
+      bt
+      detach
+      quit
+ENDL
+  done
+}
+
 kv_get() {
-  sqlite3 $DB "select value from kv where key='$1'"
+  _sqlite3 $DB "select value from kv where key='$1'"
+  [[ $? == 5 ]] && show_locks | grep -Ev "^(\(gdb|Reading symbols|done.)" >> $LOG/messages.log
 }
 
 # This _does not_ echo, it only returns whether the flag is set or not
 sess_get() {
-  local val=$(sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )")
+  local val=$(_sqlite3 $DB "select value from kv where key='$1' and bootcount=$(< /etc/bootcount )")
   # echo $val
   [[ -n "$val" ]] && return 0 || return 1
 }
 
 kv_unset() {
-  sqlite3 $DB "delete from kv where key='$1'"
+  _sqlite3 $DB "delete from kv where key='$1'"
 }
 
 kv_set() {
@@ -42,11 +67,12 @@ kv_set() {
 kv_incr() {
   local curval=$(kv_get $1)
   if [[ -z "$curval" ]]; then 
-    sqlite3 $DB "insert into kv(key, value) values('$1',0)" &
+    _sqlite3 $DB "insert into kv(key, value) values('$1',0)" &
     echo 0
   else
     curval=$(( curval + 1 ))
-    sqlite3 $DB "update kv set value=$curval where key='$1'";
+    _sqlite3 $DB "update kv set value=$curval where key='$1'";
+    [[ $? == 5 ]] && show_locks >> $LOG/messages.log
     echo $curval
   fi
 }
@@ -55,7 +81,7 @@ add_history() {
   local kind=$1
   local value=$2
   local extra=$3
-  sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
+  _sqlite3 $DB "insert into history(kind, value, extra) values('$kind','$value','$extra')" 
 }
 
 list() {
@@ -138,7 +164,7 @@ sms_cleanup() {
     # Try to make sure we aren't overwriting
     while [[ -e $SMSDIR/$num ]]; do
       num=$( kv_incr sms )
-      sleep 0.01
+      sleep 0.02
     done
 
     $MM -s $i > $SMSDIR/$num
@@ -239,14 +265,16 @@ set_brightness() {
   local level=$1
   local nopy=$2
 
-  local shift=$(perl -e "print .5 * $level + .5")
-  local revlevel=$(perl -e "print .7 * $level + .3")
+  if [[ -z "$nopy" ]]; then
+    pycall arduino.set_backlight $level
+  else
+    local shift=$(perl -e "print .5 * $level + .5")
+    local revlevel=$(perl -e "print .7 * $level + .3")
 
-  [[ -z "$nopy" ]] && pycall arduino.set_backlight $level
-
-  for display in HDMI-1 HDMI-2; do
-    DISPLAY=:0 xrandr --output $display --gamma 1:1:$shift --brightness $revlevel
-  done
+    for display in HDMI-1 HDMI-2; do
+      DISPLAY=:0 xrandr --output $display --gamma 1:1:$shift --brightness $revlevel
+    done
+  fi
 }
 
 enable_gps() {
@@ -474,7 +502,7 @@ get_state() {
   $SUDO cp /var/log/daemon.log $path
   $SUDO chmod 0666 $path/daemon.log
 
-  sqlite3 $DB .dump > $path/backup.sql
+  _sqlite3 $DB .dump > $path/backup.sql
 
   get_version > $path/version 
 
@@ -512,6 +540,7 @@ _screen_display_single() {
   [[ -e $app ]] || die "Can't find $app. Exiting"
 
   _as_user chromium --kiosk \
+    --check-for-update-interval=2147483647 \
     --incognito \
     --disable-translate --disable-features=TranslateUI \
     --fast --fast-start \
@@ -575,6 +604,7 @@ running() {
 down() {
   cd $EV
 
+  local pidfile
   _log down $1
   for pidfile in $1; do
     # kill the wrapper first
@@ -692,36 +722,85 @@ nosanity() {
 upgrade_scripts() {
   for script in $(pycall upgrades_to_run); do
     cd $BASE
+    local upgrade_dir="${BASE}/Linux/upgrade"
     # we do this every time because some upgrades
     # may call for a reboot
     _log "[upgrade-script] $script"
 
     # #153, well the start of it at least.
-    add_history upgrade,$script
+    add_history upgrade_script $script
     kv_set last_upgrade,$script
 
-    local res=$($SUDO $script upgradepost)
+    local res=$($SUDO "${upgrade_dir}/$script" upgradepost)
     # If we survived the script and it didn't reboot
     # then we have the pleasure of storing the output
     # of the script, hopefully without issue.
-    sqlite $DB "update history set extra='$res' where value='$script' and key='$upgrade'"
+    # REMOVED: This was running into problems with the script output being un-escaped.
+    #sqlite3 $DB "update history set extra='$res' where value='$script' and kind='$upgrade'"
+    _log "${script} output: ${res}"
   done
+}
+
+_upgrade_pre() {
+  local usb_repo="${1}"
+  local old_repo="$(readlink -f ${BASE})"
+  local old_repo_link="${DEST}/.WaiveScreen.old"
+  local new_repo_link="${DEST}/.WaiveScreen.new"
+  local date_string="$(date +%Y%m%d%H%M)"
+
+  # Remove old versions if they're there
+  if [[ -L "${old_repo_link}" ]]; then
+    local old_old_repo="$(readlink -f ${old_repo_link})"
+    if [[ -d "${old_old_repo}" ]] && [[ "${old_old_repo}" != "${old_repo}" ]] && [[ "${DEST}" = "$(dirname ${old_old_repo})" ]]; then
+      _log "Removing old install directory: ${old_old_repo}"
+      $SUDO rm -rf "${old_old_repo}"
+    fi
+  fi
+
+  ln -sTf "$(basename ${old_repo})" "${old_repo_link}"
+
+  if [[ -z "${usb_repo}" ]]; then
+    # Fetch the latest info from github and get the
+    # name of the new version of our branch.
+    cd "${old_repo}"
+    # Files disappear during copy if we don't do this
+    git config --add gc.autoDetach false
+    git fetch --force --tags origin ${BRANCH}
+    git config --unset gc.autoDetach
+    local new_repo="${DEST}/.WaiveScreen-${date_string}-$(git describe origin/${BRANCH})"
+
+    # Make a copy of the existing repository
+    # and use that for our upgrade.
+    cp -av "${old_repo}" "${new_repo}"
+  else
+    # Get the name of the new version
+    cd "${usb_repo}"
+    local new_repo="${DEST}/.WaiveScreen-${date_string}-$(git describe)"
+
+    # Move the usb files to the properly named directory
+    mv "${usb_repo}" "${new_repo}"
+    chmod 0755 "${new_repo}"
+  fi
+
+  # Update links
+  ln -sTf "$(basename ${new_repo})" "${new_repo_link}"
+  ln -sTf "$(basename ${new_repo})" "${BASE}"
 }
 
 _upgrade_post() {
   local version=$(get_version)
 
-  $SUDO dpkg –configure -a
+  $SUDO dpkg --configure -a
   $SUDO apt install -fy
   perlcall install_list | xargs $SUDO apt -y install
   $SUDO apt -y autoremove
 
   pycall db.upgrade
+  update_arduino
   add_history upgrade "$version"
 
   upgrade_scripts
   $SUDO systemctl restart location-daemon
-  update_arduino
   stack_restart 
   _info "Now on $version"
 }
@@ -749,18 +828,22 @@ local_disk() {
     elif [[ -e $package && -z "$2" ]]; then
       _sanityafter
       _info "Found upgrade package - installing"
-      tar xf $package -C $BASE
+      local usb_temp="$(mktemp -d)"
+      tar xf $package -C "${usb_temp}"
+      _upgrade_pre "${usb_temp}"
       $SUDO umount -l $mountpoint
 
       _info "Disk can be removed"
-      pip_install
+
+      DEST="${BASE}/Linux/fai-config/files/home" pip_install
 
       # cleanup the old files
       cd $BASE && git clean -fxd
 
       _info "Reinstalling base"
       sync_scripts $BASE/Linux/fai-config/files/home/
-      _upgrade_post
+      # This should call the new _upgrade_post function
+      dcall _upgrade_post
     else
       _info "No upgrade found"
       $SUDO umount -l $mountpoint
@@ -771,19 +854,62 @@ local_disk() {
 }
 
 upgrade() {
+  if [[ -n "$(kv_get driving_upgrade)" ]]; then
+    _error "Can NOT upgrade while driving_upgrade is queued."
+    return 1
+  fi
   _info "Upgrading... Please wait"
   {
     set -x
     _sanityafter
+    _upgrade_pre
     if local_sync; then
       # note: git clean only goes deeper, it doesn't do by default the entire repo
       cd $BASE && git clean -fxd
       $SUDO pip3 install -r $BASE/ScreenDaemon/requirements.txt
-      _upgrade_post
+      # This should call the new _upgrade_post function
+      dcall _upgrade_post
     else
       _warn "Failed to upgrade"
     fi
   } |& $SUDO tee -a /var/log/upgrade.log &
+}
+
+driving_upgrade() {
+  # Wait 2 minutes so there's a good chance the system is stable.
+  sleep 120
+	local speed_count=0
+  local speed=0
+  local upgrade_speed="$(kv_get driving_upgrade_speed)"
+  upgrade_speed="${upgrade_speed:-95}"
+  while sleep 1; do
+    speed="$(mmcli -m 0 --location-get | grep GPVTG | cut -d ',' -f 8 | cut -d '.' -f 1)"
+    if [[ ${speed} -gt ${upgrade_speed} ]]; then
+      ((++speed_count))
+      if [[ $speed_count -eq 5 ]]; then
+        _log "driving_upgrade: Hit target speed of ${upgrade_speed} km/h. Starting upgrade."
+        kv_unset driving_upgrade
+        kv_unset driving_upgrade_speed
+        upgrade
+        break
+      fi
+    else
+      speed_count=0
+    fi
+  done
+}
+
+driving_upgrade_check() {
+  if [[ -n "$(kv_get driving_upgrade)" ]]; then
+    if [[ "$(get_version)" == "$(kv_get driving_upgrade)" ]]; then
+      _log "driving_upgrade_check: starting driving_upgrade"
+      driving_upgrade &
+    else
+      _log "driving_upgrade_check: Upgrade already happened (must have been over USB)."
+      kv_unset driving_upgrade
+      kv_unset upgrade_speed
+    fi
+  fi
 }
 
 debug() {
@@ -792,7 +918,7 @@ debug() {
 }
 
 make_patch() {
-  cp -puv $DEST/* $DEST/.* $BASE/Linux/fai-config/files/home
+  cp -pu $DEST/* $DEST/.* $BASE/Linux/fai-config/files/home
   cd $BASE
   git diff origin/$BRANCH > /tmp/patch
   [[ -s /tmp/patch ]] && curl -sX POST -F "f0=@/tmp/patch" "$SERVER/patch.php" || echo "No changes"
@@ -821,38 +947,52 @@ update_arduino() {
 
   if [[ "${my_arduino_version}" != "${new_arduino_version}" ]]; then
     local sensors_backup=/tmp/sensors_backup.ino.hex
+    local final_cmds="pycall sess_del nosanity; sensor_daemon"
     _info "Updating arduino"
+    _info "Setting nosanity"
+    pycall sess_set nosanity
+    # Give a possibly running sanity check time to finish.
+    sleep 6
     down sensor_daemon
+    $SUDO pkill -f SensorDaemon
+    sleep 2
 
     # Backup existing image
-    _avrdude -Uflash:r:${sensors_backup}:i
+    if ! _avrdude -Uflash:r:${sensors_backup}:i ; then
+      _error "Unable to backup Arduino image.  Aborting update."
+      eval $final_cmds
+      return 1
+    fi
 
     # Flash new image
-    _avrdude -Uflash:w:$BASE/tools/client/sensors.ino.hex:i
+    if ! _avrdude -Uflash:w:$BASE/tools/client/sensors.ino.hex:i ; then
+      _error "Unable to flash new Arduino image."
+    fi
 
     # Test new image
     if [[ -z "$(pycall arduino_read)" ]]; then
-      _error "New Arduino image FAILED.  Rolling back to previous version"
-      _avrdude -Uflash:w:${sensors_backup}:i
+      _error "New Arduino image FAILED read test.  Rolling back to previous version"
+      if ! _avrdude -Uflash:w:${sensors_backup}:i ; then
+        _error "Unable to flash previous Arduino image.  We may have borked it.  Call for help."
+      fi
     fi
-
-    sensor_daemon
+    eval $final_cmds
   fi
 }
 
 stack_down() {
-  for i in screen_daemon screen_display sensor_daemon; do
+  for i in screen_daemon screen_display sensor_daemon camera_daemon; do
     $DEST/dcall down $i
   done
 
   # This stuff shouldn't be needed but right now it is.
-  echo chromium start-x-stuff SensorDaemon ScreenDaemon | xargs -n 1 $SUDO pkill -f 
+  echo chromium start-x-stuff SensorDaemon ScreenDaemon CameraDaemon | xargs -n 1 $SUDO pkill -f
 }
 
 # This permits us to use a potentially new way
 # of starting up the tools
 stack_up() {
-  for i in screen_display sensor_daemon screen_daemon disk_monitor; do
+  for i in screen_display sensor_daemon screen_daemon disk_monitor camera_daemon; do
     $DEST/dcall $i &
   done
 }

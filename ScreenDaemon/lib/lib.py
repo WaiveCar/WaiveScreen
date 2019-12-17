@@ -16,7 +16,7 @@ import time
 from urllib.parse import quote
 from threading import Lock
 from pprint import pprint
-from datetime import datetime
+from datetime import datetime, timedelta
 from .wifi_location import wifi_location
 
 #
@@ -36,7 +36,7 @@ VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.p
 UUID = False
 
 _pinglock = Lock()
-_reading = 0.7
+#_reading = 0.7
 
 USER = os.environ.get('USER')
 if not USER or USER == 'root':
@@ -146,6 +146,7 @@ def get_message(dbus_path):
   ifaceone = dbus.Interface(smsproxy, 'org.freedesktop.DBus.Properties')
   fn = ifaceone.GetAll('org.freedesktop.ModemManager1.Sms')
   message = ''
+  number = fn['Number'] 
 
   # pprint(json.dumps(fn))
   if fn['PduType'] == 2:
@@ -176,9 +177,22 @@ def get_message(dbus_path):
         db.kv_set('number', message)
 
       else:
+        prev_sms_list = db.find('history', {'type': 'sms', 'value': number})
+        ident_count = 0
         message = fn['Text']
+        if prev_sms_list:
+          max_ident = 3
+          for prev in prev_sms_list:
+            ident_count += prev['extra'] == message
 
-    print("type={};sender={};message='{}';dbuspath={}".format(klass, fn['Number'], base64.b64encode(message.encode('utf-8')).decode(), proxy))
+          if ident_count > max_ident:
+            logging.warning("Found {} identical messages of '{}' from {}, ignoring.".format(ident_count, message, number))
+            klass = 'ignore'
+
+
+    add_history('sms', number, message)
+
+    print("type={};sender={};message='{}';dbuspath={}".format(klass, number, base64.b64encode(message.encode('utf-8')).decode(), proxy))
 
 
 def set_logger(logpath):
@@ -216,8 +230,8 @@ def catchall_signal_handler(*args, **kwargs):
   GLib.MainLoop.quit(_loop)
 
 def next_sms():
-  global _bus
-  global _loop
+  global _bus, _loop
+
   from gi.repository import GLib
   import dbus.mainloop.glib
   myloop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -259,7 +273,9 @@ def post(url, payload):
    'User-Agent': get_uuid()
   }
   logging.info("{} {}".format(url, json.dumps(payload)))
-  return requests.post(urlify(url), verify=False, headers=headers, json=payload)
+  response = requests.post(urlify(url), verify=False, headers=headers, json=payload)
+  logging.debug(response.text)
+  return response
 
 def update_gps_xtra_data():
   """ Download the GPS's Xtra assistance data and inject it into the gps. """
@@ -344,11 +360,15 @@ def get_gps(all_fields=False):
   return {}
 
 
-def add_history(kind, value):
+def add_history(kind, value, extra = None):
   # This is kind of what we want..
   #if kind not in ['upgrade', 'feature', 'state']:
   #
-  return db.insert('history', { 'kind': kind, 'value': value })
+  opts = { 'kind': kind, 'value': value }
+  if extra is not None:
+    opts['extra'] = extra
+
+  return db.insert('history', opts)
 
 def task_response(which, payload):
   db.update('command_history', {'ref_id': which}, {'response': payload})
@@ -360,7 +380,7 @@ def task_response(which, payload):
   })
 
 def task_ingest(data):
-  global _reading
+  #global _reading
   if 'taskList' not in data:
     return
 
@@ -396,12 +416,14 @@ def task_ingest(data):
 
     elif action == 'screenoff':
       db.sess_set('force_sleep')
-      _reading = arduino.do_sleep()
+      #_reading = arduino.do_sleep()
+      arduino.do_sleep()
       task_response(id, True)
 
     elif action == 'screenon':
       db.sess_del('force_sleep')
-      arduino.do_awake(_reading or 0.7)
+      #arduino.do_awake(_reading or 0.7)
+      arduino.do_awake()
       task_response(id, True)
 
     elif action == 'autobright':
@@ -414,15 +436,25 @@ def task_ingest(data):
 
     elif action == 'brightness':
       val = float(args)
-      arduino.set_backlight(val)
-      dcall('set_brightness', val, 'nopy')
+      #arduino.set_backlight(val)
+      #dcall('set_brightness', val, 'nopy')
 
       # This becomes a ceiling until either we
       # call this again, call autobright (above)
       # or reboot
       db.sess_set('backlight', val)
+      arduino.set_autobright()
       task_response(id, True)
 
+    elif action == 'driving_upgrade':
+      # By default driving_upgrade will trigger above 95 km/h unless a different
+      # value is passed as an arg
+      logging.info('driving_upgrade requested.')
+      current_version = dcall('get_version').strip()
+      db.kv_set('driving_upgrade', current_version)
+      if args.isdigit():
+        db.kv_set('driving_upgrade_speed', int(args))
+      task_response(id, current_version)
 
 def get_modem_info():
   global modem_info
@@ -536,6 +568,7 @@ def asset_cache(check, only_filename=False, announce=False):
         dcall("_bigtext", "Getting {}".format(announce))
 
       r = requests.get(asset, allow_redirects=True)
+      logging.debug("Downloaded {} ({}b)".format(asset, len(r.content)))
 
       # If we are dealing with html we should also cache the assets
       # inside the html file.
@@ -632,12 +665,18 @@ def ping():
   if not _pinglock.acquire(False):
     return True
 
+  bootcount = int(db.get_bootcount())
+
   payload = {
     'uid': get_uuid(),
     'uptime': get_uptime(),
+    'last_uptime': db.findOne('history', {'kind': 'boot_uptime', 'value': bootcount - 1}, fields='extra, created_at'),
+    'bootcount': bootcount,
     'version': VERSION,
     'last_task': db.kv_get('last_task') or 0,
+    'last_task_result': db.findOne('command_history', fields='ref_id, response, created_at'),
     'features': feature_detect(),
+    'ping_count': db.sess_incr('ping_count'),
     'modem': get_modem_info(),
     'location': get_location(),
   }
@@ -662,6 +701,18 @@ def ping():
         for key in ['port','model','project','car','serial']:
           if key in screen:
             db.kv_set(key, screen[key])
+
+        for key in ['bootcount','ping_count']:
+          if key in screen:
+            server_value = int(screen[key])
+            my_value = int(db.kv_get(key) or 0)
+            #
+            # We want to accommodate for off-by-1 errors ... in fact, we only care if it looks like
+            # it's clearly a different value ... this is in the case of a re-install.
+            #
+            if server_value > (3 + my_value):
+              logging.warning("The server thinks my {} is {}, while I think it's {}. I'm using the server's value.".format(key, server_value, my_value))
+              db.kv_set(key, server_value)
   
         db.kv_set('default', default.get('id'))
   
@@ -726,9 +777,9 @@ def get_uuid():
 
 def upgrades_to_run():
   upgrade_glob = "{}/Linux/upgrade/*.script".format(ROOT)
-  last_upgrade_script = db.kv_get('last_upgrade')
+  last_upgrade_script = db.kv_get('last_upgrade', default='').split('/')[-1]
   pos = -1
-  upgrade_list = sorted(glob.glob(upgrade_glob))
+  upgrade_list = sorted([s.split('/')[-1] for s in glob.glob(upgrade_glob)])
 
   if len(upgrade_list) == 0:
     logging.warning("Woops, couldn't find anything at {}".format(upgrade_glob))
@@ -863,6 +914,14 @@ def get_timezone():
   else:
     return None
 
+def modem_usage():
+  """ Return the network traffic transfer totals for the modem in bytes """
+  bytes_total = 0
+  for bytes_path in glob.glob('/sys/class/net/ww[pa]*/statistics/??_bytes'):
+    with open(bytes_path, 'r') as bytes_file:
+      bytes_total += int(bytes_file.read())
+  return bytes_total
+
 def system_uptime():
   with open('/proc/uptime', 'r') as f:
     return float(f.readline().split(' ')[0])
@@ -877,16 +936,38 @@ def get_dpms_state(hdmi_port='both'):
     except:
       return False
 
-def create_uptime_log():
+def update_modem_usage_log():
   bootcount = db.get_bootcount()
-  uptime = system_uptime()
-  history_id = db.insert('history', {'kind': 'boot_uptime', 'value': bootcount, 'extra': uptime})
-  if history_id:
-    db.run("update history set created_at = datetime('now', '-%d seconds') where id = %d" % (uptime, history_id))
+  modem_bytes = modem_usage()
+
+  record = db.findOne('history', {'kind': 'modem_usage', 'value': bootcount})
+
+  if not record:
+    db.insert('history', {
+      'kind': 'modem_usage',
+      'value': bootcount,
+      'extra': modem_bytes
+    })
+
+  else:
+    db.update('history', {'kind': 'modem_usage', 'value': bootcount}, {'extra': modem_bytes})
 
 def update_uptime_log():
   bootcount = db.get_bootcount()
-  db.update('history', {'kind': 'boot_uptime', 'value': bootcount}, {'extra': system_uptime()})
+  uptime = system_uptime()
+
+  record = db.findOne('history', {'kind': 'boot_uptime', 'value': bootcount})
+
+  if not record:
+    db.insert('history', {
+      'created_at': datetime.now() - timedelta(seconds=uptime),
+      'kind': 'boot_uptime', 
+      'value': bootcount, 
+      'extra': uptime
+    })
+
+  else:
+    db.update('history', {'kind': 'boot_uptime', 'value': bootcount}, {'extra': uptime})
 
 def get_wifi_location():
   return wifi_location()

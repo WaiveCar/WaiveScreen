@@ -5,9 +5,11 @@ import time
 import math
 import struct
 import binascii
+import json
 import sys
 import os
 import atexit
+import termios
 
 _arduino = False
 _first = False
@@ -84,6 +86,11 @@ def get_arduino(stop_on_failure=True):
     _log.debug("Using {}".format(com_port))
 
     try:
+      with open(com_port) as f:
+        attrs = termios.tcgetattr(f)
+        attrs[2] = attrs[2] & ~termios.HUPCL
+        termios.tcsetattr(f, termios.TCSAFLUSH, attrs)
+
       _arduino = serial.Serial(com_port, 115200, timeout=0.1)
       _arduino.is_fake = False
 
@@ -130,7 +137,6 @@ def set_autobright():
 
   _log.info('[autobright] Setting to {}'.format(level))
   set_backlight(level)
-  dcall('set_brightness', level, 'nopy')
 
 def do_awake():
   global _sleeping, _changeTime, _baseline, _baselineList
@@ -217,7 +223,14 @@ def clear():
   if _arduino:
     _arduino.reset_input_buffer()
 
+
+def send_arduino_ping():
+  get_arduino().write(b'\x03\x00')
+
 def set_fanspeed(value):
+  arduino_queue_add( { 'set': { 'fanspeed': value } } )
+
+def _set_fanspeed(value):
   _arduino = get_arduino()
   if value <= 1: 
     value = round(value * 256)
@@ -227,16 +240,17 @@ def set_fanspeed(value):
   _arduino.write(b'\x01')
   _arduino.write(struct.pack('!B', fan_speed))
 
-
 def set_fanauto():
+  arduino_queue_add( { 'set': { 'fanspeed': 'auto' } } )
+
+def _set_fanauto():
   _arduino = get_arduino()
   _arduino.write(b'\x01\x01')
 
-
-def ping():
-  get_arduino().write(b'\x03\x00')
-
 def set_backlight(value):
+  arduino_queue_add( { 'set': { 'backlight': value } } )
+
+def _set_backlight(value):
   _arduino = get_arduino()
   if value <= 1: 
     value = round(value * 256)
@@ -245,12 +259,56 @@ def set_backlight(value):
 
   _arduino.write(b'\x10')
   _arduino.write(struct.pack('!B', backlight))
+  dcall('set_brightness', (value / 255.0), 'nopy')
 
-  return True
+#def send_wakeup_signal():
+#  _arduino = get_arduino()
+#  _arduino.write(b'\x11\xff')
 
-def send_wakeup_signal():
-  _arduino = get_arduino()
-  _arduino.write(b'\x11\xff')
+def arduino_queue_add(cmd):
+  try:
+    cmd_text = json.dumps(cmd)
+  except TypeError:
+    _log.error('Unable to add cmd to arduino queue: {}'.format(cmd))
+    return False
+  return db.insert('arduino_queue', {'text': cmd_text })
+
+
+def process_arduino_queue():
+  q_list = db.all('arduino_queue')
+  q_list.reverse()
+  processed_ids = []
+  no_dup_params = []
+  for q_item in q_list:
+    processed_ids.append(q_item['id'])
+    try:
+      q_cmd = json.loads(q_item['text'])
+    except:
+      _log.error('Arduino Queue: unable to parse entry {}: {}'.format(q_item['id'], q_item['text']))
+      continue
+    try:
+      for k, v in q_cmd.items():
+        if k == 'set':
+          for param, value in v.items():
+            if param in no_dup_params:
+              continue
+            if param == 'backlight':
+              _set_backlight(float(value))
+              no_dup_params.append(param)
+            elif param == 'fanspeed':
+              if value == 'auto':
+                _set_fanauto()
+              else:
+                _set_fanspeed(float(value))
+              no_dup_params.append(param)
+            else:
+              _log.warning('Arduino Queue: unknown parameter "{}" in entry {}: {}'.format(k, q_item['id'], q_item['text']))
+        else:
+          _log.warning('Arduino Queue: unknown command "{}" in entry {}: {}'.format(k, q_item['id'], q_item['text']))
+    except Exception as ex:
+      _log.error('Arduino Queue: exception processing entry {}: {} - Ex: {}'.format(q_item['id'], q_item['text'], ex))
+  for q_id in processed_ids:
+    db.delete('arduino_queue', q_id)
 
 
 def test_do(ex, delay=1):

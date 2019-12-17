@@ -44,6 +44,8 @@ wpasupplicant
 
 libtimedate-perl
 
+gdb python3-dbg
+
 # and ble
 firmware-atheros
 bluez

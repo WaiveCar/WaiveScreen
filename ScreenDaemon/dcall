@@ -12,6 +12,8 @@ import sys
 import operator
 
 DEBUG = os.environ.get('DEBUG')
+# Setting this flag will show a stacktrace of an error
+# as opposed to the normal, terse output of a single line.
 CRASH = os.environ.get('CRASH')
 
 lib.set_logger(sys.stderr)
@@ -57,7 +59,7 @@ if len(sys.argv) > 1:
 
     for arg_raw in arg_raw_list:
       # Try and see if we have a number here.
-      if re.match('[^\d\.]', arg_raw) and '"' not in arg_raw and arg_raw not in ['False','None','True']:
+      if not re.match('^-?\d*\.?\d+$', arg_raw) and '"' not in arg_raw and arg_raw not in ['False','None','True']:
         arg = '"{}"'.format(arg_raw)
       else:
         arg = arg_raw
