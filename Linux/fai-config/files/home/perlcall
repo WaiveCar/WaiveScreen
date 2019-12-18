@@ -161,6 +161,7 @@ small {
       $ix += 2;
       my $key = $features[$ix];
       my $value = $features[$ix + 1];
+      $value =~ s/ / \| /g;
       print $html "<small>$value</small>";
     }
     print $html "</div>";
