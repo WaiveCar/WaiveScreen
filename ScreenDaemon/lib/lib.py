@@ -273,7 +273,9 @@ def post(url, payload):
    'User-Agent': get_uuid()
   }
   logging.info("{} {}".format(url, json.dumps(payload)))
-  return requests.post(urlify(url), verify=False, headers=headers, json=payload)
+  response = requests.post(urlify(url), verify=False, headers=headers, json=payload)
+  logging.debug(response.text)
+  return response
 
 def update_gps_xtra_data():
   """ Download the GPS's Xtra assistance data and inject it into the gps. """
@@ -566,6 +568,7 @@ def asset_cache(check, only_filename=False, announce=False):
         dcall("_bigtext", "Getting {}".format(announce))
 
       r = requests.get(asset, allow_redirects=True)
+      logging.debug("Downloaded {} ({}b)".format(asset, len(r.content)))
 
       # If we are dealing with html we should also cache the assets
       # inside the html file.
@@ -673,7 +676,7 @@ def ping():
     'last_task': db.kv_get('last_task') or 0,
     'last_task_result': db.findOne('command_history', fields='ref_id, response, created_at'),
     'features': feature_detect(),
-    'pings': db.sess_incr('ping_count'),
+    'ping_count': db.sess_incr('ping_count'),
     'modem': get_modem_info(),
     'location': get_location(),
   }
@@ -698,6 +701,18 @@ def ping():
         for key in ['port','model','project','car','serial']:
           if key in screen:
             db.kv_set(key, screen[key])
+
+        for key in ['bootcount','ping_count']:
+          if key in screen:
+            server_value = int(screen[key])
+            my_value = int(db.kv_get(key) or 0)
+            #
+            # We want to accommodate for off-by-1 errors ... in fact, we only care if it looks like
+            # it's clearly a different value ... this is in the case of a re-install.
+            #
+            if server_value > (3 + my_value):
+              logging.warning("The server thinks my {} is {}, while I think it's {}. I'm using the server's value.".format(key, server_value, my_value))
+              db.kv_set(key, server_value)
   
         db.kv_set('default', default.get('id'))
   
@@ -899,6 +914,14 @@ def get_timezone():
   else:
     return None
 
+def modem_usage():
+  """ Return the network traffic transfer totals for the modem in bytes """
+  bytes_total = 0
+  for bytes_path in glob.glob('/sys/class/net/ww[pa]*/statistics/??_bytes'):
+    with open(bytes_path, 'r') as bytes_file:
+      bytes_total += int(bytes_file.read())
+  return bytes_total
+
 def system_uptime():
   with open('/proc/uptime', 'r') as f:
     return float(f.readline().split(' ')[0])
@@ -912,6 +935,22 @@ def get_dpms_state(hdmi_port='both'):
         return f.read().strip()
     except:
       return False
+
+def update_modem_usage_log():
+  bootcount = db.get_bootcount()
+  modem_bytes = modem_usage()
+
+  record = db.findOne('history', {'kind': 'modem_usage', 'value': bootcount})
+
+  if not record:
+    db.insert('history', {
+      'kind': 'modem_usage',
+      'value': bootcount,
+      'extra': modem_bytes
+    })
+
+  else:
+    db.update('history', {'kind': 'modem_usage', 'value': bootcount}, {'extra': modem_bytes})
 
 def update_uptime_log():
   bootcount = db.get_bootcount()

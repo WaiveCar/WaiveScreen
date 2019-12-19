@@ -146,6 +146,7 @@ while True:
       all['DPMS1'], all['DPMS2'] = lib.get_dpms_state()
       powertemp_writer.writerow(all)
       lib.update_uptime_log()
+      lib.update_modem_usage_log()
 
     # Check for commands to send to Arduino and process them.
     if ix % CMD_QUEUE_PERIOD == 0:

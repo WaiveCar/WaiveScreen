@@ -723,6 +723,10 @@ _sanityafter() {
 
 nosanity() {
   pycall sess_set nosanity
+  if pgrep sanity-check.sh; then
+    _log "nosanity: killing running sanity-check.sh"
+    $SUDO pkill sanity-check.sh
+  fi
 }
 
 upgrade_scripts() {
@@ -802,9 +806,9 @@ _upgrade_post() {
   $SUDO apt -y autoremove
 
   pycall db.upgrade
-  update_arduino
   add_history upgrade "$version"
 
+  update_arduino
   upgrade_scripts
   $SUDO systemctl restart location-daemon
   stack_restart 
@@ -954,13 +958,11 @@ update_arduino() {
   if [[ "${my_arduino_version}" != "${new_arduino_version}" ]]; then
     local sensors_backup=/tmp/sensors_backup.ino.hex
     local final_cmds="pycall sess_del nosanity; sensor_daemon"
-    _info "Updating arduino"
-    _info "Setting nosanity"
-    pycall sess_set nosanity
-    # Give a possibly running sanity check time to finish.
-    sleep 6
+
+    _warn "Updating arduino.  Please do not turn the car off."
+    nosanity
+    sleep 1
     down sensor_daemon
-    $SUDO pkill -f SensorDaemon
     sleep 2
 
     # Backup existing image
