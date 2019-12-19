@@ -89,6 +89,7 @@ unattended-upgrades
 
 # used for CES streaming
 jq
+i965-va-driver
 
 PACKAGES install NONFREE
 # you may want these non-free kernel drivers

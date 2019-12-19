@@ -1,0 +1,8 @@
+#!/bin/bash
+
+upgradepost() {
+  adduser adorno render
+}
+
+
+eval $1
