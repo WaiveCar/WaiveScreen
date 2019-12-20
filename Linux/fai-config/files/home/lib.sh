@@ -882,7 +882,7 @@ upgrade() {
 driving_upgrade() {
   # Wait 2 minutes so there's a good chance the system is stable.
   sleep 120
-	local speed_count=0
+  local speed_count=0
   local speed=0
   local upgrade_speed="$(kv_get driving_upgrade_speed)"
   upgrade_speed="${upgrade_speed:-95}"
