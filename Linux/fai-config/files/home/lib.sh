@@ -829,9 +829,9 @@ local_disk() {
 
   $SUDO umount $mountpoint >& /dev/null
 
-  if $SUDO mount $dev $mountpoint; then
+  if $SUDO mount $dev -o uid=$(id -u $WHO),gid=$(id -g $WHO) $mountpoint; then
     if [[ -e $mountpoint/voHCPtpJS9izQxt3QtaDAQ_make_keyboard_work ]]; then
-      $SUDO modprobe usbhid
+      $SUDO modprobe usbhid hid_apple
       pycall db.sess_set keyboard_allowed,1 
       _info "Keyboards are now enabled"
 
@@ -888,7 +888,7 @@ upgrade() {
 driving_upgrade() {
   # Wait 2 minutes so there's a good chance the system is stable.
   sleep 120
-	local speed_count=0
+  local speed_count=0
   local speed=0
   local upgrade_speed="$(kv_get driving_upgrade_speed)"
   upgrade_speed="${upgrade_speed:-95}"
