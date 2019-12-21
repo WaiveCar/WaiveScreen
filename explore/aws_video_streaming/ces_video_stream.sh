@@ -3,6 +3,7 @@
 . ${HOME}/lib.sh
 
 CES_STREAM_CHANNEL_ID="${CES_STREAM_CHANNEL_ID:-5987969}"
+WATERMARK="${BASE}/explore/aws_video_streaming/watermark.png"
 
 INPUT_ID="$(aws medialive describe-channel --channel-id ${CES_STREAM_CHANNEL_ID} | jq -r '.InputAttachments[0].InputId')"
 SECURITY_ID="$(aws medialive describe-input --input-id ${INPUT_ID} | jq -r '.SecurityGroups[0]')"
@@ -31,7 +32,9 @@ _ffmpeg_stream() {
   # Hardware encoding
   ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -input_format mjpeg \
           -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi \
-          -i "${CES_CAPTURE_DEVICE}" -vf 'scale_vaapi=format=nv12' \
+          -i "${CES_CAPTURE_DEVICE}" -i "${WATERMARK}" \
+          -filter_complex "overlay=x=(main_w-overlay_w):y=(main_h-overlay_h)" \
+          -vf 'scale_vaapi=format=nv12' \
           -c:v h264_vaapi -profile 578 -b:v 2M -maxrate 3M -bufsize 5M \
           -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 "$@" &
   local f_pid=$!
