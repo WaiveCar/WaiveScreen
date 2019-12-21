@@ -5,6 +5,7 @@
 # MIRROR    - Will (re)do the mirroring
 # ONLYDISK  - Only creates a disk
 # NOPIP     - Skip over pip download
+# NOKBD     - Excludes keyboard override magic
 # JUSTDOIT  - Overrides the blocking of only creating release disks
 #
 
@@ -71,7 +72,29 @@ if [ "$MIRROR" -o ! -e $dir ]; then
 fi
 
 echo "Creating a bootable iso named $file"
-sudo fai-cd -m $dir $file
+if [[ -z "$NOKBD" ]]; then
+  # We make a magic file named xorriso which injects
+  # our keyboard override
+  mkdir -p /tmp/bin
+  cat > /tmp/bin/xorriso << ENDL
+#!/bin/bash
+set -x
+for i in \$*; do
+  if [[ \$i =~ /tmp/fai ]] && [[ -d \$i ]]; then
+    echo "Making keyboard unlock file in \$i"
+    touch \$i/voHCPtpJS9izQxt3QtaDAQ_make_keyboard_work
+  fi
+done
+echo /usr/bin/xorriso "\$@"
+/usr/bin/xorriso "\$@"
+ENDL
+  chmod +x /tmp/bin/xorriso
+
+  sudo PATH=/tmp/bin:$PATH fai-cd -m $dir $file
+else 
+  echo "Skipping keyboard override"
+  sudo fai-cd -m $dir $file
+fi
 
 if [[ -z "$NODISK" ]]; then
   [[ -e "$file" ]] || die "$file does not exist, Bailing!"
