@@ -24,3 +24,6 @@ ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -i /dev/video8 -vf scale=
 
 # 12/18 Hardware encoding
 ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -input_format mjpeg -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -i /dev/video8 -vf 'scale_vaapi=format=nv12' -profile:v main -level 3.1 -c:v h264_vaapi -b:v 2.5M -maxrate 5M -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 rtp://44.228.188.123:5000
+
+# 12/19 Hardware encoding
+ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -input_format mjpeg -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -i /dev/video2 -vf 'scale_vaapi=format=nv12' -c:v h264_vaapi -profile 578 -b:v 2.5M -maxrate 3M -bufsize 5M -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 rtp://44.228.188.123:5000
