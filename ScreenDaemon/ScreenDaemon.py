@@ -114,7 +114,7 @@ def sow(work = False):
       for i in range(len(jobList)):
         job = jobList[i]
 
-        locationList = [dict(x) for x in db.range('location', job['start_time'], job['end_time'])]
+        locationList = [dict(x) for x in db.range('location', job['start_time'], job['end_time'], 'lat,lng,created_at')]
         job['location'] = locationList
 
         # start_time and end_time are javascript epochs
