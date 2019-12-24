@@ -114,13 +114,13 @@ def sow(work = False):
       for i in range(len(jobList)):
         job = jobList[i]
 
-        locationList = [dict(x) for x in db.range('location', job['start_time'], job['end_time'], 'round(lat,5) as lat,round(lng,5) as lng,created_at')]
+        locationList = [dict(x) for x in db.range('location', job['start_time'], job['end_time'], 'round(lat,5) as lat,round(lng,5) as lng,created_at as t')]
         job['location'] = locationList
 
         # start_time and end_time are javascript epochs
         # so they are in millisecond
-        job['start_time'] = datetime.datetime.utcfromtimestamp(job['start_time']/1000).strftime(DTFORMAT)
-        job['end_time'] = datetime.datetime.utcfromtimestamp(job['end_time']/1000).strftime(DTFORMAT)
+        #job['start_time'] = datetime.datetime.utcfromtimestamp(job['start_time']/1000).strftime(DTFORMAT)
+        #job['end_time'] = datetime.datetime.utcfromtimestamp(job['end_time']/1000).strftime(DTFORMAT)
 
     payload['power'] = power
     payload['uid'] = lib.get_uuid()

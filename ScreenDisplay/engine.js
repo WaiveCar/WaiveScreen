@@ -761,9 +761,9 @@ var Engine = function(opts){
         sow({
           start_time: _.last_sow[0],
           end_time: _.last_sow[1],
-          job_id: _.last.job_id,
-          campaign_id: _.last.campaign_id, 
-          completed_seconds: _.last.completed_seconds
+          job: _.last.job_id,
+          camp: _.last.campaign_id, 
+          done: _.last.completed_seconds
         });
 
         if(_.last.job_id !== _.current.job_id) {
