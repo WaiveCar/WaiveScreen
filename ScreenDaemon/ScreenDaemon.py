@@ -228,7 +228,7 @@ def browser(request):
 
 if __name__ == '__main__':
 
-  db.kv_set('version', lib.VERSION)
+  db.kv_set('version', lib.get_version())
   lib.set_logger('{}/screendaemon.log'.format(lib.LOG))
 
   if lib.SANITYCHECK:
