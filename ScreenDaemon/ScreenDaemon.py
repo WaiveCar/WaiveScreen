@@ -90,8 +90,8 @@ def sow(work = False):
   # The first thing we get is the last known location.
   payload = {
     'uid': lib.get_uuid(),
-    'lat': db.kv_get('Lat'),
-    'lng': db.kv_get('Lng')
+    'lat': round(float(db.kv_get('Lat')),5),
+    'lng': round(float(db.kv_get('Lng')),5)
   }
 
   db.kv_set('last_sow', int(time.time()))
@@ -124,6 +124,7 @@ def sow(work = False):
 
     payload['power'] = power
     payload['uid'] = lib.get_uuid()
+    logging.warning(payload)
 
   except Exception as ex:
     logging.warning("Error in getting ranges: {}".format(ex))
