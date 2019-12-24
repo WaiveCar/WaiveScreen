@@ -1103,7 +1103,7 @@ var Engine = function(opts){
         nextAsset();
       }
     };
-  });
+  })();
 
   function SetFallback (url, force) {
     _res.fallbackURL = _res.fallbackURL || url;
