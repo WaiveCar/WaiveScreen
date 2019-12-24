@@ -109,8 +109,7 @@ var Engine = function(opts){
 
   // a little fisher yates to start the day
   function shuffle(array) {
-    var currentIndex = array.length;
-    var temporaryValue, randomIndex;
+    var temporaryValue, randomIndex, currentIndex = array.length;
 
     // While there remain elements to shuffle...
     while (0 !== currentIndex) {
@@ -863,8 +862,8 @@ var Engine = function(opts){
       // we can override this when we get the
       // default.
       topicList = [],
-      current = false,
       jobIx = 0,
+      currentTopic = false,
       activeList = [],
       doReplace = true,
       topicIx = 0;
@@ -930,17 +929,20 @@ var Engine = function(opts){
       // it's kinda the server's responsibility to
       // make sure there's default campaigns for each
       // of these.
-      current = topicMap[topicList[topicIx].internal];
+      currentTopic = topicMap[topicList[topicIx].internal];
+      if(!currentTopic) {
+        currentTopic = activeList;
+      }
 
       render();
     }
 
     function nextJob() {
-      if(!current) {
+      if(!currentTopic) {
         nextTopic();
       }
 
-      if(!current) {
+      if(!currentTopic) {
         // This means we've really fucked up somehow
         doReplace = true;
         setNextJob(_.fallback);
@@ -950,9 +952,9 @@ var Engine = function(opts){
 
         // nextAsset is at the bottom
       } else {
-        console.log(topicMap, current, jobIx, topicList);
+        console.log(topicMap, currentTopic, jobIx, topicList);
         
-        if(jobIx === current.length) {
+        if(jobIx === currentTopic.length) {
           nextTopic();
         }
         //
@@ -961,7 +963,7 @@ var Engine = function(opts){
         // and that our sequential revisiting will handle our
         // mechanics correctly.
         //
-        setNextJob( current[jobIx] );
+        setNextJob( currentTopic[jobIx] );
         jobIx++;
 
         //
@@ -970,7 +972,7 @@ var Engine = function(opts){
         // flagged our sow strategy to replace before we 
         // go into our timeout.
         // 
-        if(jobIx === current.length) {
+        if(jobIx === currentTopic.length) {
           doReplace = true;
         }
       }
