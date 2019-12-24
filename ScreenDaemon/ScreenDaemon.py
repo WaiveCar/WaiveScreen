@@ -125,7 +125,8 @@ def sow(work = False):
         #job['start_time'] = datetime.datetime.utcfromtimestamp(job['start_time']/1000).strftime(DTFORMAT)
         #job['end_time'] = datetime.datetime.utcfromtimestamp(job['end_time']/1000).strftime(DTFORMAT)
 
-    payload['power'] = power
+    # We really don't have an "off" anymore
+    #payload['power'] = power
     payload['uid'] = lib.get_uuid()
     logging.warning(payload)
 
