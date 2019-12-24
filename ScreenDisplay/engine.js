@@ -938,11 +938,11 @@ var Engine = function(opts){
     }
 
     function nextJob() {
-      if(!currentTopic) {
+      if(!currentTopic || !currentTopic.length) {
         nextTopic();
       }
 
-      if(!currentTopic) {
+      if(!currentTopic || !currentTopic.length) {
         // This means we've really fucked up somehow
         doReplace = true;
         setNextJob(_.fallback);
