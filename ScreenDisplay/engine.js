@@ -933,10 +933,13 @@ var Engine = function(opts){
       current = topicMap[topicList[topicIx].internal];
 
       render();
-      nextJob();
     }
 
     function nextJob() {
+      if(!current) {
+        nextTopic();
+      }
+
       if(!current) {
         // This means we've really fucked up somehow
         doReplace = true;
