@@ -137,7 +137,7 @@ var Engine = function(opts){
   }
   function on(what, cb) {
     if(_res.data[what]) {
-      return cb(_res.data[what]);
+      return {once:_nop, res:cb(_res.data[what])};
     } 
     if(!(what in _res.listeners)) {
       _res.listeners[what] = [];
@@ -1016,7 +1016,7 @@ var Engine = function(opts){
   Strategy.Freeform = (function() {
     return {
       enable: function() {
-        _res.nextJob = Freeform.nextJob;
+        _res.nextJob = Strategy.Freeform.nextJob;
         sow.strategy = forgetAndReplace;
       },
       nextJob: function () {
@@ -1190,6 +1190,7 @@ var Engine = function(opts){
       var div = makeBox('debug');
       _.debug = true;
 
+      _box.top.style.display="none";
       if(div) {
         _box.top.appendChild(div);
       }
