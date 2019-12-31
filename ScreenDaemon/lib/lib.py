@@ -31,8 +31,6 @@ MYPATH = os.path.dirname(os.path.realpath(__file__))
 # We live in ScreenDaemon/lib so we go up 2
 ROOT = os.path.dirname(os.path.dirname(MYPATH))
 
-os.chdir(MYPATH)
-VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.popen("/usr/bin/git rev-parse --abbrev-ref HEAD").read().strip() )
 UUID = False
 
 _pinglock = Lock()
@@ -76,6 +74,14 @@ modem_ix = 0
 modem_max = 4
 modem_info = {}
 modem_ison = False
+
+_VERSION = False
+def get_version():
+  global _VERSION
+  if not _VERSION:
+    os.chdir(MYPATH)
+    _VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.popen("/usr/bin/git rev-parse --abbrev-ref HEAD").read().strip() )
+  return _VERSION
 
 def get_modem(try_again=False, BUS=False):
   global modem_ison, modem_iface, modem_ix
@@ -672,7 +678,7 @@ def ping():
     'uptime': get_uptime(),
     'last_uptime': db.findOne('history', {'kind': 'boot_uptime', 'value': bootcount - 1}, fields='extra, created_at'),
     'bootcount': bootcount,
-    'version': VERSION,
+    'version': get_version(),
     'last_task': db.kv_get('last_task') or 0,
     'last_task_result': db.findOne('command_history', fields='ref_id, response, created_at'),
     'features': feature_detect(),
