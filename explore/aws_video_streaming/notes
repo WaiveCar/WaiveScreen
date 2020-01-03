@@ -27,3 +27,6 @@ ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -input_format mjpeg -hwac
 
 # 12/19 Hardware encoding
 ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -input_format mjpeg -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -i /dev/video2 -vf 'scale_vaapi=format=nv12' -c:v h264_vaapi -profile 578 -b:v 2.5M -maxrate 3M -bufsize 5M -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 rtp://44.228.188.123:5000
+
+# 12/23 Hardware encoding with compositing (no hardware decoding)
+ffmpeg -y -re -f v4l2 -video_size 1920x1080 -framerate 30 -input_format mjpeg -vaapi_device /dev/dri/renderD128 -i /dev/video8 -i ./watermark.png -filter_complex "overlay=x=(main_w-overlay_w):y=(main_h-overlay_h)[comp];[comp]format=nv12[nv];[nv]hwmap" -c:v h264_vaapi -b:v 1M -maxrate 1M -bufsize 2M ~/tmp/test.mkv

@@ -27,14 +27,11 @@ ffmpeg_hw_encoding_enable() {
 
 _ffmpeg_stream() {
   _info "Starting CES Stream..."
-  # Software encoding
-  #ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -i "${CES_CAPTURE_DEVICE}" -vf scale=-1:720 -preset ultrafast -tune zerolatency -profile:v main -level 3.1 -pix_fmt yuv420p -c:v libx264 -x264opts "keyint=60:no-scenecut" -maxrate 2.5M -bufsize 5M -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 "$@" &
   # Hardware encoding
   ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -input_format mjpeg \
           -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi \
           -i "${CES_CAPTURE_DEVICE}" -i "${WATERMARK}" \
-          -filter_complex "overlay=x=(main_w-overlay_w):y=(main_h-overlay_h)" \
-          -vf 'scale_vaapi=format=nv12' \
+          -filter_complex "overlay=x=(main_w-overlay_w):y=(main_h-overlay_h);[0]scale_vaapi=format=nv12" \
           -c:v h264_vaapi -profile 578 -b:v 2M -maxrate 3M -bufsize 5M \
           -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 "$@" &
   local f_pid=$!
