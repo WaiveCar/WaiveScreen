@@ -315,7 +315,7 @@ var Engine = function(opts){
       asset.active = true;
       // if a video is really short then we force loop it.
       if(asset.duration < 0.8) {
-        asset.cycles = Math.ceil(1/asset.duration); 
+        asset.cycles = Math.ceil(1 / asset.duration); 
         vid.setAttribute('loop', true);
         // console.log(asset.url + " is " + asset.duration + "s. Looping " + asset.cycles + " times");
         asset.duration *= asset.cycles;
