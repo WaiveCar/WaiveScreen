@@ -2,9 +2,9 @@
 
 . ${HOME}/lib.sh
 
-CES_STREAM_CHANNEL_ID="${CES_STREAM_CHANNEL_ID:-5987969}"
 WATERMARK="${BASE}/explore/aws_video_streaming/watermark.png"
 
+CES_STREAM_CHANNEL_ID="$(aws medialive list-channels | jq -r '.Channels[] | select(.Tags | has("ces_booth_stream")).Id')"
 INPUT_ID="$(aws medialive describe-channel --channel-id ${CES_STREAM_CHANNEL_ID} | jq -r '.InputAttachments[0].InputId')"
 SECURITY_ID="$(aws medialive describe-input --input-id ${INPUT_ID} | jq -r '.SecurityGroups[0]')"
 
@@ -18,7 +18,7 @@ set_capture_device() {
     fi
   done
   _warn "Unable to find the camera for streaming. Make sure it's plugged in and turned on"
-  exit 1
+  return 1
 }
 
 ffmpeg_hw_encoding_enable() {
@@ -29,9 +29,9 @@ _ffmpeg_stream() {
   _info "Starting CES Stream..."
   # Hardware encoding
   ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -input_format mjpeg \
-          -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi \
+          -vaapi_device /dev/dri/renderD128 \
           -i "${CES_CAPTURE_DEVICE}" -i "${WATERMARK}" \
-          -filter_complex "overlay=x=(main_w-overlay_w):y=(main_h-overlay_h);[0]scale_vaapi=format=nv12" \
+          -filter_complex "overlay=x=(main_w-overlay_w):y=(main_h-overlay_h)[comp];[comp]format=nv12[nv];[nv]hwmap" \
           -c:v h264_vaapi -profile 578 -b:v 2M -maxrate 3M -bufsize 5M \
           -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 "$@" &
   local f_pid=$!
@@ -47,14 +47,15 @@ whitelist_my_ip() {
 
 start_ces_video_stream() {
   while /bin/true; do
-    whitelist_my_ip
-    for URL in $(aws medialive describe-input --input-id 557022 | jq -r '.Destinations[].Url'); do
-      _ffmpeg_stream "${URL}"
-    done
-    sleep 60
+    if set_capture_device; then
+      whitelist_my_ip
+      for URL in $(aws medialive describe-input --input-id 557022 | jq -r '.Destinations[].Url'); do
+        _ffmpeg_stream "${URL}"
+      done
+    fi
+    sleep 30
   done
 }
 
-set_capture_device
 ffmpeg_hw_encoding_enable
 start_ces_video_stream
