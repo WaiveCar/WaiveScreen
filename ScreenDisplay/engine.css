@@ -61,9 +61,12 @@
 .engine-xA8tAY4YSBmn2RTQqnnXXw.hasBottom .top-xA8tAY4YSBmn2RTQqnnXXw {
   height: 80%;
 }
+/*
+ * Uncomment this when oliver-style topic lists are working properly
 .engine-xA8tAY4YSBmn2RTQqnnXXw.hasTopicList .top-xA8tAY4YSBmn2RTQqnnXXw {
   height: 92%;
 }
+*/
 .engine-xA8tAY4YSBmn2RTQqnnXXw.hasBottom.hasTopicList .top-xA8tAY4YSBmn2RTQqnnXXw {
   height: 72%;
 }

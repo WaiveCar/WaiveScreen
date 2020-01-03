@@ -31,8 +31,6 @@ MYPATH = os.path.dirname(os.path.realpath(__file__))
 # We live in ScreenDaemon/lib so we go up 2
 ROOT = os.path.dirname(os.path.dirname(MYPATH))
 
-os.chdir(MYPATH)
-VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.popen("/usr/bin/git rev-parse --abbrev-ref HEAD").read().strip() )
 UUID = False
 
 _pinglock = Lock()
@@ -76,6 +74,14 @@ modem_ix = 0
 modem_max = 4
 modem_info = {}
 modem_ison = False
+
+_VERSION = False
+def get_version():
+  global _VERSION
+  if not _VERSION:
+    os.chdir(MYPATH)
+    _VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.popen("/usr/bin/git rev-parse --abbrev-ref HEAD").read().strip() )
+  return _VERSION
 
 def get_modem(try_again=False, BUS=False):
   global modem_ison, modem_iface, modem_ix
@@ -549,10 +555,12 @@ def asset_cache(check, only_filename=False, announce=False):
 
 
   res = []
-  for asset in check['asset']:
+  # Moving from asset -> asset_meta (2020-01-02)
+  for row in check['asset_meta']:
     # checksum name (#188)
     # This will also truncate things after a ?, such as
     # image.jpg?uniqid=123...
+    asset = row['url']
     ext = ''
     parts = re.search('(\.\w+)', asset.split('/')[-1])
     if parts:
@@ -626,6 +634,12 @@ def asset_cache(check, only_filename=False, announce=False):
     if only_filename:
       return checksum_name
 
+    # If the asset_meta has a duration then we use it
+    # as an override, otherwise we do whatever happens
+    # above.
+    if row['duration']:
+      duration = row['duration']
+
     # see #154 - we're restructuring this away from a string and
     # into an object - eventually we have to assume that
     # we're getting an object and then just injecting the mime
@@ -672,7 +686,7 @@ def ping():
     'uptime': get_uptime(),
     'last_uptime': db.findOne('history', {'kind': 'boot_uptime', 'value': bootcount - 1}, fields='extra, created_at'),
     'bootcount': bootcount,
-    'version': VERSION,
+    'version': get_version(),
     'last_task': db.kv_get('last_task') or 0,
     'last_task_result': db.findOne('command_history', fields='ref_id, response, created_at'),
     'features': feature_detect(),

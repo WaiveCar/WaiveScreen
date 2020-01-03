@@ -90,8 +90,8 @@ def sow(work = False):
   # The first thing we get is the last known location.
   payload = {
     'uid': lib.get_uuid(),
-    'lat': db.kv_get('Lat'),
-    'lng': db.kv_get('Lng')
+    'lat': round(float(db.kv_get('Lat')),5),
+    'lng': round(float(db.kv_get('Lng')),5)
   }
 
   db.kv_set('last_sow', int(time.time()))
@@ -114,16 +114,21 @@ def sow(work = False):
       for i in range(len(jobList)):
         job = jobList[i]
 
-        locationList = [dict(x) for x in db.range('location', job['start_time'], job['end_time'])]
+        locationList = [dict(x) for x in db.range('location', job['start_time'], job['end_time'], 'round(lat,5) as lat,round(lng,5) as lng,created_at as t')]
         job['location'] = locationList
+
+        for key in ['start_time','end_time']:
+          del job[key]
 
         # start_time and end_time are javascript epochs
         # so they are in millisecond
-        job['start_time'] = datetime.datetime.utcfromtimestamp(job['start_time']/1000).strftime(DTFORMAT)
-        job['end_time'] = datetime.datetime.utcfromtimestamp(job['end_time']/1000).strftime(DTFORMAT)
+        #job['start_time'] = datetime.datetime.utcfromtimestamp(job['start_time']/1000).strftime(DTFORMAT)
+        #job['end_time'] = datetime.datetime.utcfromtimestamp(job['end_time']/1000).strftime(DTFORMAT)
 
-    payload['power'] = power
+    # We really don't have an "off" anymore
+    #payload['power'] = power
     payload['uid'] = lib.get_uuid()
+    logging.warning(payload)
 
   except Exception as ex:
     logging.warning("Error in getting ranges: {}".format(ex))
@@ -228,7 +233,7 @@ def browser(request):
 
 if __name__ == '__main__':
 
-  db.kv_set('version', lib.VERSION)
+  db.kv_set('version', lib.get_version())
   lib.set_logger('{}/screendaemon.log'.format(lib.LOG))
 
   if lib.SANITYCHECK:

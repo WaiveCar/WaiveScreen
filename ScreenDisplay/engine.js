@@ -109,8 +109,7 @@ var Engine = function(opts){
 
   // a little fisher yates to start the day
   function shuffle(array) {
-    var currentIndex = array.length;
-    var temporaryValue, randomIndex;
+    var temporaryValue, randomIndex, currentIndex = array.length;
 
     // While there remain elements to shuffle...
     while (0 !== currentIndex) {
@@ -137,7 +136,7 @@ var Engine = function(opts){
   }
   function on(what, cb) {
     if(_res.data[what]) {
-      return cb(_res.data[what]);
+      return {once:_nop, res:cb(_res.data[what])};
     } 
     if(!(what in _res.listeners)) {
       _res.listeners[what] = [];
@@ -316,7 +315,7 @@ var Engine = function(opts){
       asset.active = true;
       // if a video is really short then we force loop it.
       if(asset.duration < 0.8) {
-        asset.cycles = Math.ceil(1/asset.duration); 
+        asset.cycles = Math.ceil(1 / asset.duration); 
         vid.setAttribute('loop', true);
         // console.log(asset.url + " is " + asset.duration + "s. Looping " + asset.cycles + " times");
         asset.duration *= asset.cycles;
@@ -762,9 +761,9 @@ var Engine = function(opts){
         sow({
           start_time: _.last_sow[0],
           end_time: _.last_sow[1],
-          job_id: _.last.job_id,
-          campaign_id: _.last.campaign_id, 
-          completed_seconds: _.last.completed_seconds
+          job: _.last.job_id,
+          camp: _.last.campaign_id, 
+          done: _.last.completed_seconds
         });
 
         if(_.last.job_id !== _.current.job_id) {
@@ -863,8 +862,8 @@ var Engine = function(opts){
       // we can override this when we get the
       // default.
       topicList = [],
-      current = false,
       jobIx = 0,
+      currentTopic = false,
       activeList = [],
       doReplace = true,
       topicIx = 0;
@@ -930,14 +929,20 @@ var Engine = function(opts){
       // it's kinda the server's responsibility to
       // make sure there's default campaigns for each
       // of these.
-      current = topicMap[topicList[topicIx].internal];
+      currentTopic = topicMap[topicList[topicIx].internal];
+      if(!currentTopic) {
+        currentTopic = activeList;
+      }
 
       render();
-      nextJob();
     }
 
     function nextJob() {
-      if(!current) {
+      if(!currentTopic || !currentTopic.length) {
+        nextTopic();
+      }
+
+      if(!currentTopic || !currentTopic.length) {
         // This means we've really fucked up somehow
         doReplace = true;
         setNextJob(_.fallback);
@@ -947,9 +952,9 @@ var Engine = function(opts){
 
         // nextAsset is at the bottom
       } else {
-        console.log(topicMap, current, jobIx, topicList);
+        console.log(topicMap, currentTopic, jobIx, topicList);
         
-        if(jobIx === current.length) {
+        if(jobIx === currentTopic.length) {
           nextTopic();
         }
         //
@@ -958,7 +963,7 @@ var Engine = function(opts){
         // and that our sequential revisiting will handle our
         // mechanics correctly.
         //
-        setNextJob( current[jobIx] );
+        setNextJob( currentTopic[jobIx] );
         jobIx++;
 
         //
@@ -967,7 +972,7 @@ var Engine = function(opts){
         // flagged our sow strategy to replace before we 
         // go into our timeout.
         // 
-        if(jobIx === current.length) {
+        if(jobIx === currentTopic.length) {
           doReplace = true;
         }
       }
@@ -1016,7 +1021,7 @@ var Engine = function(opts){
   Strategy.Freeform = (function() {
     return {
       enable: function() {
-        _res.nextJob = Freeform.nextJob;
+        _res.nextJob = Strategy.Freeform.nextJob;
         sow.strategy = forgetAndReplace;
       },
       nextJob: function () {
@@ -1103,7 +1108,7 @@ var Engine = function(opts){
         nextAsset();
       }
     };
-  });
+  })();
 
   function SetFallback (url, force) {
     _res.fallbackURL = _res.fallbackURL || url;
@@ -1190,6 +1195,7 @@ var Engine = function(opts){
       var div = makeBox('debug');
       _.debug = true;
 
+      _box.top.style.display="none";
       if(div) {
         _box.top.appendChild(div);
       }
