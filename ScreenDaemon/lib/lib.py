@@ -555,10 +555,12 @@ def asset_cache(check, only_filename=False, announce=False):
 
 
   res = []
-  for asset in check['asset']:
+  # Moving from asset -> asset_meta (2020-01-02)
+  for row in check['asset_meta']:
     # checksum name (#188)
     # This will also truncate things after a ?, such as
     # image.jpg?uniqid=123...
+    asset = row['url']
     ext = ''
     parts = re.search('(\.\w+)', asset.split('/')[-1])
     if parts:
@@ -631,6 +633,12 @@ def asset_cache(check, only_filename=False, announce=False):
 
     if only_filename:
       return checksum_name
+
+    # If the asset_meta has a duration then we use it
+    # as an override, otherwise we do whatever happens
+    # above.
+    if row['duration']:
+      duration = row['duration']
 
     # see #154 - we're restructuring this away from a string and
     # into an object - eventually we have to assume that
