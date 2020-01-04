@@ -154,7 +154,7 @@ def location_source(set_it=False):
 
 def send_location(location):
   payload = { 'uuid': get_uuid(), 'lat': location['Lat'], 'lng': location['Lng'] }
-  post('location', payload)
+  post('eagerlocation', payload)
 
 
 def location_loop():
