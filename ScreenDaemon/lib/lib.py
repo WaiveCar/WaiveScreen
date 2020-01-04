@@ -44,6 +44,7 @@ if not USER or USER == 'root':
 
 SANITYCHECK = os.environ.get('SANITYCHECK')
 NOMODEM = os.environ.get('NOMODEM')
+CRASH = os.environ.get('CRASH')
 DEBUG = os.environ.get('DEBUG')
 DISPLAY = os.environ.get('DISPLAY')
 BRANCH = os.environ.get('BRANCH')
