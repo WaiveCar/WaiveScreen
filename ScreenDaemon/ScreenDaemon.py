@@ -187,6 +187,8 @@ def sow(work = False):
 
     except Exception as ex:
       logging.warning("parsing issues?! {} {}".format(ex, data_raw))
+      if lib.CRASH:
+        raise ex
       return failure({
         'payload': data
       })
