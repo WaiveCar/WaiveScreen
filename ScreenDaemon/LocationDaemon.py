@@ -153,7 +153,7 @@ def location_source(set_it=False):
     return db.kv_get('location_source')
 
 def send_location(location):
-  payload = { 'uuid': get_uuid(), 'lat': location['Lat'], 'lng': location['Lng'] }
+  payload = { 'uid': get_uuid(), 'lat': location['Lat'], 'lng': location['Lng'] }
   post('eagerlocation', payload)
 
 
