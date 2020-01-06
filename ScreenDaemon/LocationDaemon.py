@@ -9,7 +9,7 @@ import math
 import sys
 import time
 from lib.wifi_location import wifi_location, wifi_scan_shutdown, wifi_last_submission
-from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict, DEBUG, set_logger, system_uptime
+from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict, DEBUG, set_logger, system_uptime, get_uuid, post
 import lib.db as db
 
 if DEBUG:
@@ -143,12 +143,19 @@ def save_location(location):
   db.kv_set('location_time', int(time.time()))
   db.kv_set('location_accuracy', location.get('accuracy', ''))
   db.kv_set('gps_gpgga', json.dumps(get_gpgga_dict(location.get('Nmea', ''))))
+  if db.kv_get('send_location') is not None:
+    send_location(location)
 
 def location_source(set_it=False):
   if set_it:
     db.kv_set('location_source', set_it)
   else:
     return db.kv_get('location_source')
+
+def send_location(location):
+  payload = { 'uid': get_uuid(), 'lat': location['Lat'], 'lng': location['Lng'] }
+  post('eagerlocation', payload)
+
 
 def location_loop():
   """

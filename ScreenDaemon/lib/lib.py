@@ -44,6 +44,7 @@ if not USER or USER == 'root':
 
 SANITYCHECK = os.environ.get('SANITYCHECK')
 NOMODEM = os.environ.get('NOMODEM')
+CRASH = os.environ.get('CRASH')
 DEBUG = os.environ.get('DEBUG')
 DISPLAY = os.environ.get('DISPLAY')
 BRANCH = os.environ.get('BRANCH')
@@ -546,7 +547,7 @@ def asset_cache(check, only_filename=False, announce=False):
   import magic
   # Now we have the campaign in the database, yay us I guess
   if type(check) is str:
-    check = { 'asset': [check] }
+    check = { 'asset_meta': [{'url':check, 'nocache': True}] }
 
   path = CACHE
   if not os.path.exists(path):
@@ -560,6 +561,8 @@ def asset_cache(check, only_filename=False, announce=False):
     # checksum name (#188)
     # This will also truncate things after a ?, such as
     # image.jpg?uniqid=123...
+
+    skipcache = True #row.get('nocache')
     asset = row['url']
     ext = ''
     parts = re.search('(\.\w+)', asset.split('/')[-1])
@@ -569,86 +572,89 @@ def asset_cache(check, only_filename=False, announce=False):
     else:
       logging.warning("No extension found for {}".format(asset))
 
-    checksum_name = "{}/{}{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest(), ext)
+    if skipcache:
+      res.append(row)
+    else:
+      checksum_name = "{}/{}{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest(), ext)
 
-    if (not os.path.exists(checksum_name)) or os.path.getsize(checksum_name) == 0:
-      if announce:
-        dcall("_bigtext", "Getting {}".format(announce))
+      if (not os.path.exists(checksum_name)) or os.path.getsize(checksum_name) == 0:
+        if announce:
+          dcall("_bigtext", "Getting {}".format(announce))
 
-      r = requests.get(asset, allow_redirects=True)
-      logging.debug("Downloaded {} ({}b)".format(asset, len(r.content)))
+        r = requests.get(asset, allow_redirects=True)
+        logging.debug("Downloaded {} ({}b)".format(asset, len(r.content)))
 
-      # If we are dealing with html we should also cache the assets
-      # inside the html file.
-      mime = magic.from_buffer(r.content, mime=True)
-      if 'html' in mime:
-        logging.info("parsing html")
-        buf = str.encode(re.sub(r'(src\s*=["\']?)([^"\'>]*)', image_swapper, r.content.decode('utf-8')))
+        # If we are dealing with html we should also cache the assets
+        # inside the html file.
+        mime = magic.from_buffer(r.content, mime=True)
+        if 'html' in mime:
+          logging.info("parsing html")
+          buf = str.encode(re.sub(r'(src\s*=["\']?)([^"\'>]*)', image_swapper, r.content.decode('utf-8')))
+
+        else:
+          buf = r.content
+
+        # 
+        # Since we are serving a file:/// then we don't have to worry
+        # about putting shit in an accessible path ... we have the
+        # whole file system to access.
+        #
+        open(checksum_name, 'wb').write(bytes(buf))
 
       else:
-        buf = r.content
+        # This is equivalent to a "touch" - used for a cache cleaning 
+        # system
+        try:
+          with open(checksum_name, 'a'):
+            os.utime(checksum_name, None)
+        except:
+          pass
 
-      # 
-      # Since we are serving a file:/// then we don't have to worry
-      # about putting shit in an accessible path ... we have the
-      # whole file system to access.
       #
-      open(checksum_name, 'wb').write(bytes(buf))
+      # As it turns out, the browser thinks a file is text/plain unless
+      # the server can give it a content-type or if served locally 
+      # there's extension hinting.
+      #
+      # So what's that mean for us?! If we are looking at text/html
+      # and we don't have an extension then we should either serve it
+      # ourselves (unlikely) or just tack an extension on to it.
+      #
+      # But wait, we can't /just move/ the file otherwise our caching
+      # system above would eat shit each time. So we exploit the fact
+      # that hard drives are big and HTML files are small and we just
+      # copy it over, insulting every programmer who used blood sweat
+      # and tears to cram say 215 bytes to 211 in a bygone era.
+      #
+      mime = magic.from_file(checksum_name, mime=True)
 
-    else:
-      # This is equivalent to a "touch" - used for a cache cleaning 
-      # system
-      try:
-        with open(checksum_name, 'a'):
-          os.utime(checksum_name, None)
-      except:
-        pass
+      duration = 7.5
+      if 'html' in mime and 'html' not in checksum_name:
+        import shutil
+        happybrowser = "{}.html".format(checksum_name)
+        if not os.path.exists(happybrowser):
+          os.symlink(checksum_name, happybrowser)
 
-    #
-    # As it turns out, the browser thinks a file is text/plain unless
-    # the server can give it a content-type or if served locally 
-    # there's extension hinting.
-    #
-    # So what's that mean for us?! If we are looking at text/html
-    # and we don't have an extension then we should either serve it
-    # ourselves (unlikely) or just tack an extension on to it.
-    #
-    # But wait, we can't /just move/ the file otherwise our caching
-    # system above would eat shit each time. So we exploit the fact
-    # that hard drives are big and HTML files are small and we just
-    # copy it over, insulting every programmer who used blood sweat
-    # and tears to cram say 215 bytes to 211 in a bygone era.
-    #
-    mime = magic.from_file(checksum_name, mime=True)
+        checksum_name = happybrowser
+        duration = 150
 
-    duration = 7.5
-    if 'html' in mime and 'html' not in checksum_name:
-      import shutil
-      happybrowser = "{}.html".format(checksum_name)
-      if not os.path.exists(happybrowser):
-        os.symlink(checksum_name, happybrowser)
+      if only_filename:
+        return checksum_name
 
-      checksum_name = happybrowser
-      duration = 150
+      # If the asset_meta has a duration then we use it
+      # as an override, otherwise we do whatever happens
+      # above.
+      if row['duration']:
+        duration = row['duration']
 
-    if only_filename:
-      return checksum_name
-
-    # If the asset_meta has a duration then we use it
-    # as an override, otherwise we do whatever happens
-    # above.
-    if row['duration']:
-      duration = row['duration']
-
-    # see #154 - we're restructuring this away from a string and
-    # into an object - eventually we have to assume that
-    # we're getting an object and then just injecting the mime
-    # type on ... but not yet my sweetie.
-    res.append({
-      'duration': duration,
-      'mime': mime,
-      'url': checksum_name
-    })
+      # see #154 - we're restructuring this away from a string and
+      # into an object - eventually we have to assume that
+      # we're getting an object and then just injecting the mime
+      # type on ... but not yet my sweetie.
+      res.append({
+        'duration': duration,
+        'mime': mime,
+        'url': checksum_name
+      })
 
   check['asset'] = res
   return check
