@@ -25,6 +25,10 @@ _PROCESSOR = {
       'pre': lambda x, row: json.dumps(x),
       'post': lambda x, row: json.loads(x)
     },
+    'asset_meta': {
+      'pre': lambda x, row: json.dumps(x),
+      'post': lambda x, row: json.loads(x)
+    },
   }
 }
 
