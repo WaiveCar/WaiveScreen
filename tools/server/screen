@@ -121,7 +121,7 @@ for i in $*; do
       curl http://waivescreen.com/patchfile > /tmp/patch || die "Can't find waivescreen.com"
       git apply /tmp/patch || die "Can't apply /tmp/patch"
       ;;
-    shot) shot $2 ;;
+    shot) shot $2; exit 0;;
     state) state $2; exit 0;;
     connect) connect $2 ;;
     copy) copy $2 "$3" $4 ;;
