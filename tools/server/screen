@@ -51,6 +51,15 @@ connect() {
   exit
 }
 
+shot() {
+  resolve $1
+  local name=/tmp/shot-$1.jpg
+  set -x
+  ssh -C -oStrictHostKeyChecking=no $key -p $port adorno@reflect.waivescreen.com "import -display :0 -window root -resize 500x $name"
+  scp -C -oStrictHostKeyChecking=no $key -P $port adorno@reflect.waivescreen.com:$name $name
+  display $name
+}
+
 pull() {
   resolve $1
   local=${3:-.}
@@ -112,6 +121,7 @@ for i in $*; do
       curl http://waivescreen.com/patchfile > /tmp/patch || die "Can't find waivescreen.com"
       git apply /tmp/patch || die "Can't apply /tmp/patch"
       ;;
+    shot) shot $2 ;;
     state) state $2; exit 0;;
     connect) connect $2 ;;
     copy) copy $2 "$3" $4 ;;
