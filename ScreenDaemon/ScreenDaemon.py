@@ -128,7 +128,6 @@ def sow(work = False):
     # We really don't have an "off" anymore
     #payload['power'] = power
     payload['uid'] = lib.get_uuid()
-    logging.warning(payload)
 
   except Exception as ex:
     logging.warning("Error in getting ranges: {}".format(ex))
