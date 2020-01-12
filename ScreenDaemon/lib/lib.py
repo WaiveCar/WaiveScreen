@@ -562,7 +562,7 @@ def asset_cache(check, only_filename=False, announce=False):
     # This will also truncate things after a ?, such as
     # image.jpg?uniqid=123...
 
-    skipcache = True #row.get('nocache')
+    skipcache = row.get('nocache') # if it doesn't exist, it will default to false
     asset = row['url']
     ext = ''
     parts = re.search('(\.\w+)', asset.split('/')[-1])
