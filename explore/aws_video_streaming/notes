@@ -30,3 +30,8 @@ ffmpeg -re -f v4l2 -video_size 1920x1080 -framerate 30 -input_format mjpeg -hwac
 
 # 12/23 Hardware encoding with compositing (no hardware decoding)
 ffmpeg -y -re -f v4l2 -video_size 1920x1080 -framerate 30 -input_format mjpeg -vaapi_device /dev/dri/renderD128 -i /dev/video8 -i ./watermark.png -filter_complex "overlay=x=(main_w-overlay_w):y=(main_h-overlay_h)[comp];[comp]format=nv12[nv];[nv]hwmap" -c:v h264_vaapi -b:v 1M -maxrate 1M -bufsize 2M ~/tmp/test.mkv
+
+# 01/03 sw capture of 4 cameras and hw encode and stream
+ffmpeg -y -re -f v4l2 -video_size 640x480 -framerate 30 -input_format mjpeg -vaapi_device /dev/dri/renderD128 -i /dev/video0 -f v4l2 -video_size 640x480 -framerate 30 -input_format mjpeg -i /dev/video2 -f v4l2 -video_size 640x480 -framerate 30 -input_format mjpeg -i /dev/video4 -f v4l2 -video_size 640x480 -framerate 30 -input_format mjpeg -i /dev/video6 -filter_complex "xstack=inputs=4:layout=0_0|0_h0|w0_0|w0_h0[comp];[comp]format=nv12[nv];[nv]hwmap[hw];[hw]scale_vaapi=w=1280:h=720" -c:v h264_vaapi -profile 578 -b:v 1M -maxrate 2M -bufsize 4M -map 0 -f rtp_mpegts -fec prompeg=l=5:d=20 rtp://44.228.188.123:5000
+
+
