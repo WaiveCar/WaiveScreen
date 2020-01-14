@@ -196,8 +196,8 @@ def sow(work = False):
   else:
     return failure('Error: {}'.format(err))
 
-@_app.route('/getLocation')
-def getLocation():
+@_app.route('/saveLocation')
+def saveLocation():
   logging.warning("TODO: Get Location Called")
   return success([])
 
