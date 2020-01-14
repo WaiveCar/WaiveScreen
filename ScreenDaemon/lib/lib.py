@@ -81,8 +81,7 @@ _VERSION = False
 def get_version():
   global _VERSION
   if not _VERSION:
-    os.chdir(MYPATH)
-    _VERSION = "{}-{}".format( os.popen("/usr/bin/git describe").read().strip(), os.popen("/usr/bin/git rev-parse --abbrev-ref HEAD").read().strip() )
+    _VERSION = dcall("get_version").strip()
   return _VERSION
 
 def get_modem(try_again=False, BUS=False):

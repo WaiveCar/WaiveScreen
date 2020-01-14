@@ -20,8 +20,7 @@ rm -fr $DEST/.notion/default-session--* $DEST/.config/chromium/Singleton*
 
 /usr/bin/notion &
 
-version=$(cd $BASE; git describe | awk -F \- ' { print $2"-"$3 } ')
-_warn $(get_uuid) $version 
+_warn $(get_uuid) $(get_version)
 
 # Honestly I don't care if there's some miraculous DNS spoofing. I can't
 # have this fail when I move the host around.
