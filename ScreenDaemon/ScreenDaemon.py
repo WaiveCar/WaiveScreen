@@ -196,6 +196,11 @@ def sow(work = False):
   else:
     return failure('Error: {}'.format(err))
 
+@_app.route('/getLocation')
+def getLocation():
+  logging.warning("TODO: Get Location Called")
+  return success([])
+
 @_app.route('/browser')
 def browser(request):
   text = request.get_text()
