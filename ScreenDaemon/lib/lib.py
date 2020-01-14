@@ -333,6 +333,23 @@ def gps_accuracy(nmea_string):
   else:
     return None
 
+def utc_secs(utc):
+  secs = int(utc[4:6])
+  secs += int(utc[2:4]) * 60
+  secs += int(utc[0:2]) * 3600
+  return secs
+
+def gps_age(gps_secs):
+  """ Return the age (in seconds) of the passed UTC timestamp """
+  if gps_secs is not None:
+    gps_utc_secs = utc_secs(gps_secs)
+    my_utc_secs = utc_secs(time.strftime('%H%M%S'))
+    # The GPS time is a 24-hour clock. If it's bigger than our local time, we probably just ticked over.
+    if my_utc_secs < gps_utc_secs:
+      gps_utc_secs -= 86400
+    return my_utc_secs - gps_utc_secs
+  else:
+    return None
 
 def get_gps(all_fields=False):
   modem = get_modem()
@@ -349,7 +366,8 @@ def get_gps(all_fields=False):
         location_dict = {
           'Lat': gps['latitude'],
           'Lng': gps['longitude'],
-          'accuracy': gps_accuracy(nmea_string)
+          'accuracy': gps_accuracy(nmea_string),
+          'age': gps_age(gps['utc-time'])
         }
         if all_fields:
           gpvtg = get_gpvtg_dict(nmea_string)
@@ -848,6 +866,16 @@ def get_location():
     'gps_gpgga': gpgga
   }
   return location
+
+def get_location_now():
+  """ Try and get the latest location from GPS.  Otherwise return the most recent """
+  l = get_gps()
+  age = l.get('age')
+  if age is not None and age <= 5:
+    l.update( { 'source' : 'gps', 'time': int(time.time()) - age } )
+    return l
+  else:
+    return get_location()
 
 def get_latlng():
   lat = db.kv_get('Lat')

@@ -57,11 +57,6 @@ class Haversine:
     self.miles=self.meters*0.000621371      # output distance in miles
     self.feet=self.miles*5280               # output distance in feet
 
-def utc_secs(utc):
-  secs = int(utc[4:6])
-  secs += int(utc[2:4]) * 60
-  secs += int(utc[0:2]) * 3600
-  return secs
 
 def get_location_from_wifi():
   l = wifi_location()
@@ -78,6 +73,7 @@ def stop_wifi_location_service():
 def get_location_from_gps():
   l = get_gps(True)
   utc = l.get('Utc')
+  age = l.get('age')
   accuracy = l.get('accuracy')
   if utc is None:
     logging.warning('GPS location has no UTC timestamp: {}'.format(l))
@@ -88,18 +84,12 @@ def get_location_from_gps():
   elif float(accuracy) > 500.0:
     logging.warning('Ignoring GPS location with accuracy over 500: {}'.format(l))
     return False
-  gps_secs = utc_secs(utc)
-  my_secs = utc_secs(time.strftime('%H%M%S'))
-  # Catch if the time just ticked over (24 hour clock)
-  if my_secs < SLEEP_TIME and gps_secs > SLEEP_TIME:
-    gps_secs -= 86400
-  logging.debug('Comparing UTC secs: local({}) gps({})'.format(my_secs, gps_secs))
-  if my_secs - gps_secs <= SLEEP_TIME:
-    logging.debug('GPS Location Response: {}'.format(l))
-    return l
-  else:
+  elif age > SLEEP_TIME:
     logging.warning('Ignoring get_gps with stale UTC: {}'.format(l))
     return False
+  else:
+    logging.debug('GPS Location Response: {}'.format(l))
+    return l
 
 def sanity_check(location):
   last_location_time = db.kv_get('location_time', use_cache=True)
