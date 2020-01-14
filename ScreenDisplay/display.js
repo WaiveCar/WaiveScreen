@@ -22,7 +22,7 @@ window.onload = function init() {
   });
 
   ads.on('jobEnded', function() {
-    fetch(`${server}/getLocation`);
+    fetch(`${server}saveLocation`);
   });
 
   ads.Start();
