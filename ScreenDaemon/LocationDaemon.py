@@ -5,11 +5,10 @@
 
 import json
 import logging
-import math
 import sys
 import time
 from lib.wifi_location import wifi_location, wifi_scan_shutdown, wifi_last_submission
-from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict, DEBUG, set_logger, system_uptime, get_uuid, post, save_location, get_location_from_gps, save_location, location_source 
+from lib.lib import get_gps, update_gps_xtra_data, get_gpgga_dict, DEBUG, set_logger, system_uptime, get_uuid, post, save_location, get_location_from_gps, location_source 
 import lib.db as db
 
 if DEBUG:

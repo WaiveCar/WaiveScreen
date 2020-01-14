@@ -13,6 +13,7 @@ import requests
 import subprocess
 import sys
 import time
+import math
 from urllib.parse import quote
 from threading import Lock
 from pprint import pprint
@@ -903,7 +904,9 @@ def save_location_now():
   """ Try and get the latest location from GPS and save it. """
   l = get_location_from_gps()
   if l:
-    save_location(l)
+    return save_location(l)
+  else:
+    return False
 
 def get_latlng():
   lat = db.kv_get('Lat')
@@ -915,23 +918,23 @@ def get_latlng():
 
 def get_location_from_gps(exclude_age=5):
   l = get_gps(True)
+  logging.debug('GPS Location Response: {}'.format(l))
   utc = l.get('Utc')
   age = l.get('age')
   accuracy = l.get('accuracy')
   if utc is None:
-    logging.warning('GPS location has no UTC timestamp: {}'.format(l))
+    logging.warning('GPS location has no UTC timestamp.')
     return False
   elif accuracy is None:
-    logging.warning('GPS location has no accuracy: {}'.format(l))
+    logging.warning('GPS location has no accuracy.')
     return False
   elif float(accuracy) > 500.0:
-    logging.warning('Ignoring GPS location with accuracy over 500: {}'.format(l))
+    logging.warning('Ignoring GPS location with accuracy over 500.')
     return False
   elif age > exclude_age:
-    logging.warning('Ignoring get_gps with stale UTC: {}'.format(l))
+    logging.warning('Ignoring get_gps with stale UTC.')
     return False
   else:
-    logging.debug('GPS Location Response: {}'.format(l))
     return l
 
 def sanity_check(location):
@@ -978,6 +981,7 @@ def save_location(location):
   db.kv_set('gps_gpgga', json.dumps(get_gpgga_dict(location.get('Nmea', ''))))
   if db.kv_get('send_location') is not None:
     send_location(location)
+  return True
 
 def location_source(set_it=False):
   if set_it:
