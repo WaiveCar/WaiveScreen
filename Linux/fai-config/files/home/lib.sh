@@ -256,7 +256,7 @@ set_wrap() {
 }
 
 set_event() {
-  pid=${2:-$!}
+  local pid=${2:-$!}
   [[ -e $EV/$1 ]] || _info $1
   echo -n $pid | $SUDO tee $EV/$1
 }
@@ -455,7 +455,7 @@ ssh_hole() {
     done
   } > /dev/null &
 
-  set_wrap ssh_hole
+  set_wrap $event
 }
 
 screen_daemon() {
