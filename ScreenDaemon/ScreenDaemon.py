@@ -198,8 +198,10 @@ def sow(work = False):
 
 @_app.route('/saveLocation')
 def saveLocation():
-  logging.warning("TODO: Get Location Called")
-  return success([])
+  if lib.save_location_now():
+    return success("GPS Location Saved")
+  else:
+    return failure("GPS Location Unavailable")
 
 @_app.route('/browser')
 def browser(request):

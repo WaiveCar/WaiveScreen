@@ -13,6 +13,7 @@ import requests
 import subprocess
 import sys
 import time
+import math
 from urllib.parse import quote
 from threading import Lock
 from pprint import pprint
@@ -282,6 +283,7 @@ def post(url, payload):
   response = requests.post(urlify(url), verify=False, headers=headers, json=payload)
   logging.debug(response.text)
   return response
+
 
 def update_gps_xtra_data():
   """ Download the GPS's Xtra assistance data and inject it into the gps. """
@@ -850,6 +852,37 @@ def disk_monitor():
       if 'Keyboard' in (str(device.attributes.get('product')) or ''):
         dcall("_info", "Keyboard is disabled")
 
+
+class Haversine:
+  """
+  use the haversine class to calculate the distance between
+  two lon/lat coordnate pairs.
+  output distance available in kilometers, meters, miles, and feet.
+  example usage: Haversine([lon1,lat1],[lon2,lat2]).feet
+
+  Source: https://github.com/nathanrooy/spatial-analysis/blob/master/haversine.py
+  """
+  def __init__(self,coord1,coord2):
+    lon1,lat1=coord1
+    lon2,lat2=coord2
+
+    R=6371000                               # radius of Earth in meters
+    phi_1=math.radians(lat1)
+    phi_2=math.radians(lat2)
+
+    delta_phi=math.radians(lat2-lat1)
+    delta_lambda=math.radians(lon2-lon1)
+
+    a=math.sin(delta_phi/2.0)**2+\
+       math.cos(phi_1)*math.cos(phi_2)*\
+       math.sin(delta_lambda/2.0)**2
+    c=2*math.atan2(math.sqrt(a),math.sqrt(1-a))
+
+    self.meters=R*c                         # output distance in meters
+    self.km=self.meters/1000.0              # output distance in kilometers
+    self.miles=self.meters*0.000621371      # output distance in miles
+    self.feet=self.miles*5280               # output distance in feet
+
 def get_location():
   try:
     gpgga = json.loads(db.kv_get('gps_gpgga'))
@@ -866,15 +899,13 @@ def get_location():
   }
   return location
 
-def get_location_now():
-  """ Try and get the latest location from GPS.  Otherwise return the most recent """
-  l = get_gps()
-  age = l.get('age')
-  if age is not None and age <= 5:
-    l.update( { 'source' : 'gps', 'time': int(time.time()) - age } )
-    return l
+def save_location_now():
+  """ Try and get the latest location from GPS and save it. """
+  l = get_location_from_gps()
+  if l:
+    return save_location(l)
   else:
-    return get_location()
+    return False
 
 def get_latlng():
   lat = db.kv_get('Lat')
@@ -883,6 +914,83 @@ def get_latlng():
     return {}
   else:
     return { 'Lat': float(lat), 'Lng': float(lng) }
+
+def get_location_from_gps(exclude_age=5):
+  l = get_gps(True)
+  logging.debug('GPS Location Response: {}'.format(l))
+  utc = l.get('Utc')
+  age = l.get('age')
+  accuracy = l.get('accuracy')
+  if utc is None:
+    logging.warning('GPS location has no UTC timestamp.')
+    return False
+  elif accuracy is None:
+    logging.warning('GPS location has no accuracy.')
+    return False
+  elif float(accuracy) > 500.0:
+    logging.warning('Ignoring GPS location with accuracy over 500.')
+    return False
+  elif age > exclude_age:
+    logging.warning('Ignoring get_gps with stale UTC.')
+    return False
+  else:
+    return l
+
+def sanity_check(location):
+  last_location_time = db.kv_get('location_time')
+  if last_location_time is None:
+    logging.warning('Last location time not saved in kv db (This should only happen ONCE)')
+    return True
+  time_diff = time.time() - float(last_location_time)
+  if time_diff > 60 * 10:  # More than 10 minutes
+    logging.info('Last location older than 10 minutes.')
+    return True
+  last_lat = db.kv_get('Lat')
+  last_lng = db.kv_get('Lng')
+  if last_lat is None or last_lng is None:
+    logging.warning('Last location not in kv db. (This should only happen ONCE)')
+    return True
+  dist = Haversine([float(last_lng), float(last_lat)], [float(location['Lng']), float(location['Lat'])])
+  miles_per_second = dist.miles / time_diff
+  logging.debug('Calculated speed: {} miles/second, {} miles/hour'.format(miles_per_second, miles_per_second * (60 * 60)))
+  logging.debug('last_lat:{} last_lng:{} lat:{} lng:{} dist.meters:{} dist.miles:{} time_diff:{}'.format(float(last_lat), \
+                float(last_lng), float(location['Lat']), float(location['Lng']), dist.meters, dist.miles, time_diff))
+  if miles_per_second > 150.0 / (60 * 60):  # Faster than 150 mph
+    return False
+  else:
+    return True
+
+def save_location(location):
+  """ Save current location info to the database """
+  if not sanity_check(location):
+    logging.warning('New location failed sanity_check: {}'.format(location))
+    return False
+  db.insert( 'location', {
+      'lat': location['Lat'],
+      'lng': location['Lng'],
+      'accuracy': location.get('accuracy', ''),
+      'speed': location.get('speed', ''),
+      'heading': location.get('heading', ''),
+      'source': location_source() })
+  logging.debug("Saving location: lat:{} lng:{} accuracy:{} utc:{} source:{}".format(location['Lat'], location['Lng'], location.get('accuracy'), location.get('Utc'), location_source()))
+  db.kv_set('Lat', location['Lat'])
+  db.kv_set('Lng', location['Lng'])
+  db.kv_set('location_time', int(time.time()))
+  db.kv_set('location_accuracy', location.get('accuracy', ''))
+  db.kv_set('gps_gpgga', json.dumps(get_gpgga_dict(location.get('Nmea', ''))))
+  if db.kv_get('send_location') is not None:
+    send_location(location)
+  return True
+
+def location_source(set_it=False):
+  if set_it:
+    db.kv_set('location_source', set_it)
+  else:
+    return db.kv_get('location_source')
+
+def send_location(location):
+  payload = { 'uid': get_uuid(), 'lat': location['Lat'], 'lng': location['Lng'] }
+  post('eagerlocation', payload)
 
 def get_brightness_map():
   # Fallback map if we can't get the lat/long from GPS
