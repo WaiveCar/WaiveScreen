@@ -595,7 +595,7 @@ def range(table, start, end, field='*'):
       start /= 1000
       end /= 1000
 
-  query = run("select {} from {} where created_at > datetime(?, 'unixepoch') and created_at < datetime(?, 'unixepoch')".format(field, table), (start, end))
+  query = run("select {} from {} where created_at >= datetime(?, 'unixepoch') and created_at <= datetime(?, 'unixepoch')".format(field, table), (start, end))
   return process([record for record in query.fetchall()], table, 'post')
   #return [[x for x in record] for record in query.fetchall()]
 

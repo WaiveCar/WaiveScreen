@@ -196,6 +196,13 @@ def sow(work = False):
   else:
     return failure('Error: {}'.format(err))
 
+@_app.route('/saveLocation')
+def saveLocation():
+  if lib.save_location_now():
+    return success("GPS Location Saved")
+  else:
+    return failure("GPS Location Unavailable")
+
 @_app.route('/browser')
 def browser(request):
   text = request.get_text()
