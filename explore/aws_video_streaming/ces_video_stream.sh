@@ -40,20 +40,26 @@ _ffmpeg_stream() {
 }
 
 whitelist_my_ip() {
+  export CES_STREAM_CHANNEL_ID="$(aws medialive list-channels | jq -r '.Channels[] | select(.Tags | has("ces_booth_stream")).Id')"
+  export INPUT_ID="$(aws medialive describe-channel --channel-id ${CES_STREAM_CHANNEL_ID} | jq -r '.InputAttachments[0].InputId')"
+  export SECURITY_ID="$(aws medialive describe-input --input-id ${INPUT_ID} | jq -r '.SecurityGroups[0]')"
   MY_PUBLIC_IP="$(curl -s 'https://ipecho.net/plain')"
   _log "Whitelisting IP: ${MY_PUBLIC_IP}"
-  aws medialive update-input-security-group --input-security-group-id ${SECURITY_ID} --whitelist-rules "Cidr=${MY_PUBLIC_IP}/32"
+  #aws medialive update-input-security-group --input-security-group-id ${SECURITY_ID} --whitelist-rules "Cidr=${MY_PUBLIC_IP}/32"
+  aws medialive update-input-security-group --input-security-group-id ${SECURITY_ID} --whitelist-rules "Cidr=${MY_PUBLIC_IP}/24"
 }
 
 start_ces_video_stream() {
   while /bin/true; do
     if set_capture_device; then
       whitelist_my_ip
-      for URL in $(aws medialive describe-input --input-id 557022 | jq -r '.Destinations[].Url'); do
+      for URL in $(aws medialive describe-input --input-id 557022 | jq -r '.Destinations[0].Url'); do
         _ffmpeg_stream "${URL}"
       done
+    else
+      sleep 25
     fi
-    sleep 30
+    sleep 5
   done
 }
 

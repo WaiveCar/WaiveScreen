@@ -48,14 +48,15 @@ check_sensor_daemon() {
 check_screen_display() {
   if ! pgrep chromium > /dev/null; then
     _as_user dcall screen_display not-running
-  else
+  #else
     # we also have to make sure it hasn't just 
     # straight up crashed. Time is in seconds
-    if (( $(date +%s) - $(dcall kv_get last_sow) > 600 )); then
-      dcall down screen_display
-      pkill chromium
-      doit screen_display database-check
-    fi
+    # DISABLED FOR CES - Nick
+    #if (( $(date +%s) - $(dcall kv_get last_sow) > 600 )); then
+    #  dcall down screen_display
+    #  pkill chromium
+    #  doit screen_display database-check
+    #fi
   fi
 }
 

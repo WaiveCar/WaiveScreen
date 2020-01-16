@@ -5,7 +5,7 @@
 #import aiohttp
 
 from flask_socketio import SocketIO, emit
-from flask import Flask, request, Response, jsonify
+from flask import Flask, request, Response, jsonify, send_file
 from flask_cors import CORS
 
 import json
@@ -41,6 +41,22 @@ def success(what):
 
 def failure(what):
   return res({ 'res': False, 'data': what })
+
+@_app.route('/display.html')
+def display_html():
+  return send_file("/home/adorno/WaiveScreen/ScreenDisplay/display.html")
+@_app.route('/display.js')
+def display_js():
+  return send_file("/home/adorno/WaiveScreen/ScreenDisplay/display.js")
+@_app.route('/engine.js')
+def engine_js():
+  return send_file("/home/adorno/WaiveScreen/ScreenDisplay/engine.js")
+@_app.route('/engine.css')
+def engine_css():
+  return send_file("/home/adorno/WaiveScreen/ScreenDisplay/engine.css")
+@_app.route('/socket.io.js')
+def socket_io_js():
+  return send_file("/home/adorno/WaiveScreen/ScreenDisplay/socket.io.js")
 
 @_app.route('/default')
 def default():
