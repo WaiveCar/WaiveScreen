@@ -556,6 +556,8 @@ def asset_cache(check, only_filename=False, announce=False):
 
   res = []
   # Moving from asset -> asset_meta (2020-01-02)
+  logging.warning("CHECK")
+  logging.warning(check)
   for row in check['asset_meta']:
     # checksum name (#188)
     # This will also truncate things after a ?, such as
@@ -731,6 +733,7 @@ def ping():
         db.kv_set('default', default.get('id'))
   
         # We run through it every time, should be fine
+        logging.warning(default)
         default_campaign = asset_cache(default)
         campaign_store(default_campaign)
 

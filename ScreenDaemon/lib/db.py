@@ -70,7 +70,7 @@ _SCHEMA = {
   'campaign': [
     ('id', 'integer primary key autoincrement'),
     ('asset', 'text not null'),
-    ('asset_meta', 'text not null'),
+    ('asset_meta', 'text'),
     ('duration_seconds', 'integer'),
     ('goal_seconds', 'integer'),
     ('completed_seconds', 'integer default 0'),
