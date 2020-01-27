@@ -572,7 +572,7 @@ wait_for() {
   path=${2:-$EV}/$1
 
   if [[ ! -e "$path" ]]; then
-    echo `date +%R:%S` WAIT $1
+    echo $(date +%R:%S) WAIT $1
     until [[ -e "$path" ]]; do
       sleep 0.5
     done
@@ -940,9 +940,9 @@ disk_monitor() {
 }
 
 _avrdude() {
-    $BASE/tools/client/avrdude -C$BASE/tools/client/avrdude.conf \
-      -v -patmega328p -carduino -P/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0 -b57600 -D \
-      $*
+  $BASE/tools/client/avrdude -C$BASE/tools/client/avrdude.conf \
+    -v -patmega328p -carduino -P/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0 -b57600 -D \
+    $*
 }
 
 update_arduino() {
