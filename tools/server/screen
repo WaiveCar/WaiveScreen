@@ -150,6 +150,12 @@ restart() {
   ssh screen "sudo reboot"&
 }
 
+help() {
+  cat "${BASH_SOURCE[0]}" | grep -Po ' [\|\w]+\)' | sort | tr ')' ' ' | sed -E s'/\s+/ /g'
+}
+
+[[ $# = 0 ]] && help
+
 for i in $*; do
   case $1 in
     list) list $2; exit 0 ;;
@@ -173,8 +179,8 @@ for i in $*; do
     off) off.js ;;
     force) $DIR/pcycle.js ;;
     restart|reboot|reset|pcycle) restart ;;
+    help) help ;;
     *) 
-      echo -e "Error: $1\nValid: patch sync|reload list off connect on restart|reboot"
       [[ $# -gt "1" ]] && echo "Exit: Found unknown command. Ending parsing"
       exit
       ;;
