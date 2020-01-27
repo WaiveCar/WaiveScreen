@@ -1,6 +1,5 @@
 #!/bin/bash
 file=$(date +%Y%m%d%H%M).cap
-path=/var/log/netsnoop
-sudo mkdir -p $path
-sudo chmod 0777 $path
+path=$HOME/captures
+mkdir -p $path
 sudo tcpdump -i wwp0s20u1u4i4 -s 65535 -w $path/$file &
