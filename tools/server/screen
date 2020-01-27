@@ -166,7 +166,7 @@ for i in $*; do
     shot) shot $2; exit 0;;
     state) state $2; exit 0;;
     connect) connect $2 ;;
-    copy) copy $2 "$3" $4 ;;
+    push|copy) copy $2 "$3" $4 ;;
     pull) pull $2 "$3" $4 ;;
 
     #
