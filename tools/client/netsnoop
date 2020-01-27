@@ -1,4 +1,6 @@
 #!/bin/bash
+. $HOME/lib.sh
+wait_for net
 file=$(date +%Y%m%d%H%M).cap
 path=$HOME/captures
 mkdir -p $path
