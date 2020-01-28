@@ -1,6 +1,7 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-EP='waivescreen.com/api/screens?removed=0'
+SERVER=${SERVER:-waivescreen.com}
+EP="$SERVER/api/screens?removed=0"
 HOST=reflect.waivescreen.com
 USER=adorno
 KEY=
@@ -24,6 +25,7 @@ print("{:8}| {:6} | {}".format("NAME","UPTIME","VERSION"))
 for row in json.load(urllib.request.urlopen("http://$EP")):
   last_seen = time.mktime(time.gmtime()) - time.mktime(datetime.datetime.strptime(row['last_seen'], '%Y-%m-%d %H:%M:%S').timetuple())
   if last_seen < 330:
+    row['car'] = row['car'] or row['port']
     print("{:8}| {:6} | {}".format(row['car'], row['uptime'], row['version']))
 ENDL
     exit
@@ -114,10 +116,10 @@ copy() {
 
 state() { 
   if [[ -n "$1" ]]; then
-    scp -C waivescreen.com:/var/states/$1 /tmp/
+    scp -C $SERVER:/var/states/$1 /tmp/
     echo /tmp/$1
   else
-    ssh waivescreen.com "ls -ltr /var/states"
+    ssh $SERVER "ls -ltr /var/states"
   fi
 }
 
@@ -160,7 +162,7 @@ for i in $*; do
   case $1 in
     list) list $2; exit 0 ;;
     patch) 
-      curl http://waivescreen.com/patchfile > /tmp/patch || die "Can't find waivescreen.com"
+      curl http://$SERVER/patchfile > /tmp/patch || die "Can't find $SERVER"
       git apply /tmp/patch || die "Can't apply /tmp/patch"
       ;;
     shot) shot $2; exit 0;;
