@@ -126,6 +126,9 @@ def get_modem(try_again=False, BUS=False):
         'location': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Location'),
         'time': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Time')
       }
+      proxy = BUS.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/SIM/{}'.format(ix))
+      modem_iface['sim'] = dbus.Interface(proxy, dbus_interface='org.freedesktop.DBus.Properties')
+
       modem_iface['modem'].Enable(True)
   
       # if we get here then we know that our modem works
@@ -490,10 +493,13 @@ def get_modem_info():
 
     if modem:
       props = modem['device'].GetAll('org.freedesktop.ModemManager1.Modem')
+      sim = modem['sim'].GetAll('org.freedesktop.ModemManager1.Sim')
 
-      modem_info = {}
-
-      modem_info = { 'imei': props.get('EquipmentIdentifier') }
+      modem_info = { 
+        'imsi': sim.get('Imsi'),
+        'icc': sim.get('SimIdentifier'),
+        'imei': props.get('EquipmentIdentifier') 
+      }
       numberList = props.get('OwnNumbers')
 
       if numberList:
