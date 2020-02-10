@@ -451,14 +451,26 @@ def incr(key, value=1):
       pass
 
 
-def kv_get(key=None, expiry=0, use_cache=False, default=None, bootcount=None):
+def kv_get(key=None, expiry=None, use_cache=False, default=None, bootcount=None):
   # Retrieves a value from the database, tentative on the expiry. 
   # If the cache is set to true then it retrieves it from in-memory if available, otherwise
   # it goes out to the db. Other than directly hitting up the _params parameter which is 
   # used internally, there is no way to invalidate the cache.
   global _params
+  where_parts = []
+  where_str = ''
 
-  bc_str = ' and bootcount={}'.format(bootcount) if bootcount else ''
+  if bootcount:
+    where_parts.append('bootcount = {}'.format(bootcount))
+
+  if key:
+    where_parts.append("key = '{}'".format(key))
+
+  if expiry is not None:
+    where_parts.append("created_at >= datetime(current_timestamp, '-{} second')".format(expiry))
+
+  if len(where_parts) > 0:
+    where_str = "where {}".format(' and '.join(where_parts))
 
   # only use the cache if the expiry is not set.
   if use_cache and key in _params and expiry == 0:
@@ -468,13 +480,9 @@ def kv_get(key=None, expiry=0, use_cache=False, default=None, bootcount=None):
     return _params[key]
 
   if key is None:
-    return dict([[x['key'],x['value']] for x in run("select key,value from kv").fetchall()])
+    return dict([[x['key'],x['value']] for x in run("select key,value from kv {}".format(where_str)).fetchall()])
 
-  if expiry > 0:
-    # If we let things expire, we first sweep for it
-    res = run("select value, created_at from kv where key = '%s' and created_at >= datetime(current_timestamp, '-%d second') {}".format(bc_str) % (key, expiry)).fetchone()
-  else:
-    res = run('select value, created_at from kv where key = ? {}'.format(bc_str), (key, )).fetchone()
+  res = run("select value, created_at from kv {}".format(where_str)).fetchone()
 
   if res:
     if default and type(default) is int: 
@@ -539,7 +547,7 @@ def sess_set(key, value = 1):
   bc = None if value is None else get_bootcount()
   kv_set(key, value, bootcount=bc)
 
-def sess_get(key):
+def sess_get(key = None):
   return kv_get(key, bootcount = get_bootcount())
 
 def kv_incr(key):
