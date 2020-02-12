@@ -20,7 +20,6 @@ var Engine = function(opts){
 
       pause: false,
 
-      slowCPU: false,
       doScroll: true,
       doOliver: true,
 
@@ -34,11 +33,10 @@ var Engine = function(opts){
     // This is the actual breakdown of the content on
     // the screen into different partitions
     Strategy = {},
+    _id = Engine._length,
     _box = {},
     _start = new Date(),
     _uniq = 0,
-    _last_uniq = false,
-    _last_container = false,
     _jobId = 0,
     _downweight = 0.7,
     _nop = () => {},
@@ -50,10 +48,13 @@ var Engine = function(opts){
       debug: false,
       last: false,
       last_sow: [+_start, +_start],
+      last_uniq: false,
+      last_container: false,
+      last_shown: false,
       isNetUp: true,
       current: false,
       firstRun: false,
-      fallback: false,
+      fallbackJob: false,
       maxPriority: 0,
     };
 
@@ -109,7 +110,8 @@ var Engine = function(opts){
 
   // a little fisher yates to start the day
   function shuffle(array) {
-    var temporaryValue, randomIndex, currentIndex = array.length;
+    var currentIndex = array.length;
+    var temporaryValue, randomIndex;
 
     // While there remain elements to shuffle...
     while (0 !== currentIndex) {
@@ -127,7 +129,9 @@ var Engine = function(opts){
   }
 
   function event(what, data) {
-    console.log(">>> event", what, data);
+    if(_.debug) {
+      console.log(">>> event[" + _id + "]", what, data);
+    }
     _res.data[what] = data;
     if(_res.listeners[what]) {
       _res.listeners[what].forEach(cb => cb(data))
@@ -136,7 +140,7 @@ var Engine = function(opts){
   }
   function on(what, cb) {
     if(_res.data[what]) {
-      return {once:_nop, res:cb(_res.data[what])};
+      return cb(_res.data[what]);
     } 
     if(!(what in _res.listeners)) {
       _res.listeners[what] = [];
@@ -196,15 +200,9 @@ var Engine = function(opts){
         var parentratio = container.width/container.height;
         var ratio = e.target.width / e.target.height;
         if(parentratio > ratio) {
-          var maxHeight = _res.target.width * e.target.height / e.target.width;
-          e.target.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
-          e.target.style.width = _res.target.width + "px";
-          //e.target.style.width = '100%';
+          e.target.style.width = '100%';
         } else {
-          var maxWidth = _res.target.height * e.target.width / e.target.height;
-          e.target.style.width =  Math.min(_res.target.width, maxWidth * 1.2) + "px";
-          e.target.style.height = _res.target.height + "px";
-          //e.target.style.height = '100%';
+          e.target.style.height = '100%';
         }
       }
       asset.active = true;
@@ -220,10 +218,6 @@ var Engine = function(opts){
       var container = _res.container.getBoundingClientRect();
       var parentratio = container.width/container.height;
       var ratio = img.width / img.height;
-      /*
-       * commented out because dynamic widgets aren't needed
-       * for project oliver (2019-12-02)
-       *
       if(parentratio > ratio) {
         img.style.width = '100%';
         img.style.height = 'auto';
@@ -231,7 +225,6 @@ var Engine = function(opts){
         img.style.width = 'auto';
         img.style.height = '100%';
       }
-      */
       return cb && cb();
     }
     asset.pause = asset.rewind = asset.play = _nop;
@@ -247,7 +240,7 @@ var Engine = function(opts){
     asset.rewind = asset.pause = asset.play = _nop;
     asset.run = _passthru;
     asset.active = true;
-    asset.duration = asset.duration || 100 * _res.duration;
+    asset.duration = asset.duration || 1000 * _res.duration;
     obj.duration += asset.duration;
     obj.active = true;
     asset.type = 'iframe';
@@ -283,8 +276,7 @@ var Engine = function(opts){
       if (playPromise !== undefined) {
         playPromise.then(_nop)
         .catch(function(e) {
-          // console.log(new Date() - _start, "setting " + asset.url + " to unplayable", e);
-          console.log(e.message, e.name);
+          console.log('unplayable', _id, asset.uniq, e.message, e.name, asset, vid.duration, vid.currentTime);
           if(new Date() - now < 100) {
             // if we were interrupted in some normal interval, maybe it will just work
             // if we try again ... might as well - don't reset the clock though.
@@ -315,7 +307,7 @@ var Engine = function(opts){
       asset.active = true;
       // if a video is really short then we force loop it.
       if(asset.duration < 0.8) {
-        asset.cycles = Math.ceil(1 / asset.duration); 
+        asset.cycles = Math.ceil(1/asset.duration); 
         vid.setAttribute('loop', true);
         // console.log(asset.url + " is " + asset.duration + "s. Looping " + asset.cycles + " times");
         asset.duration *= asset.cycles;
@@ -330,7 +322,7 @@ var Engine = function(opts){
         } else {
           vid.style.height = '100%';
         }
-          /*
+        /*
           var maxHeight = _res.target.width * vid.videoHeight / vid.videoWidth;
           vid.style.height =  Math.min(_res.target.height, maxHeight * 1.2) + "px";
           vid.style.width = _res.target.width + "px";
@@ -351,22 +343,24 @@ var Engine = function(opts){
       assetError(asset, e);
     }
 
-    vid.addEventListener('seeked', function() {
+    vid.addEventListener('play', function() {
       if(mycb) {
         mycb();
-        dbg("running");
       }
       mylock = false;
     });
 
-    // var m = ["emptied","ended","loadeddata","play","playing","progress","seeked","seeking","pause"];
-    // for(var ix = 0; ix < m.length; ix++) {
-    //  (function(row) {
-    //    vid.addEventListener(row, function() {
-    //      dbg(' > ' + row + ' ' + JSON.stringify(Array.prototype.slice.call(arguments))); 
-    //    });
-    //  })(m[ix]);
-    // }
+    /* 
+    var m = ["emptied","ended","loadeddata","play","playing","progress","seeked","seeking","pause"];
+    for(var ix = 0; ix < m.length; ix++) {
+      (function(row) {
+        vid.addEventListener(row, function() {
+          self.vid = vid;
+          console.log(+new Date(), _id, asset.uniq, row, vid.duration, vid.currentTime);
+        });
+      })(m[ix]);
+    }
+    */
 
     asset.type = 'video';
     return asset;
@@ -382,22 +376,27 @@ var Engine = function(opts){
     return asset.url.match('(' + ext.join('|') + ')');
   }
 
-  function urlToAsset(url, obj) {
-    var container = document.createElement('div');
-    var asset = isString(url) ? {url: url} : url;
-    container.classList.add(_key('container'));
+  // Similar to makeJob, we intend to come out of this
+  // with {url: <str>, duration: <int>, ... } AND the
+  // actual DOM object that will sit on the screen.
+  function urlToAsset(row, obj) {
+    var asset = isString(row) ? {url: url} : row;
+    if(!asset.container){ 
+      var container = document.createElement('div');
+      container.classList.add(_key('container'));
 
-    if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
-      asset = image(asset, obj);
-    } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
-      asset = video(asset, obj);
-      container.className += " hasvideo";
-    } else {
-      asset = iframe(asset, obj);
+      if(assetTest(asset, 'image', ['png','jpg','jpeg'])) {
+        asset = image(asset, obj);
+      } else if(assetTest(asset, 'video', ['mp4', 'avi', 'mov', 'ogv'])) {
+        asset = video(asset, obj);
+        container.classList.add("hasvideo");
+      } else {
+        asset = iframe(asset, obj);
+      }
+      asset.uniq = _uniq++;
+      asset.container = container;
+      asset.container.appendChild(asset.dom);
     }
-    asset.uniq = _uniq++;
-    asset.container = container;
-    asset.container.appendChild(asset.dom);
     return asset;
   }
 
@@ -406,7 +405,27 @@ var Engine = function(opts){
   //  run() - for videos it resets the time and starts the video
   //  duration - how long the asset should be displayed.
   //
+  // Essentially the obj has the properties:
+  //
+  //  {
+  //    asset_meta:  [
+  //      { 
+  //        url:
+  //        duration:
+  //      } ...
+  //    ]
+  //  }
+  //
+  // If we pass something in with asset_meta, that's fine.
+  // If we pass in a string, then it's the url of one asset
+  // If we pass in {url: blah} then it becomes 1 asset.
+  //
   function makeJob(obj) {
+    if( isString(obj) ) {
+      obj = {asset_meta: [{ url: obj }] };
+    } else if('url' in obj) {
+      obj.asset_meta = [{ url: obj.url }];
+    }
     obj = Object.assign({
       downweight: 1,
       completed_seconds: 0,
@@ -421,17 +440,7 @@ var Engine = function(opts){
       id: _jobId++,
     }, obj);
     
-    if( ! ('url' in obj) && ('asset' in obj) ) {
-      obj.url = obj.asset;
-    }
-
-    if( isString(obj.url) ) {
-      obj.url = [ obj.url ];
-    }
-
-    if( obj.url ) {
-      obj.assetList = obj.url.map(row => urlToAsset(row, obj));
-    }
+    obj.assetList = obj.asset_meta.map(row => urlToAsset(row, obj));
 
     obj.remove = function(what) {
       obj.assetList = obj.assetList.filter(row => row.uniq != what.uniq );
@@ -454,7 +463,7 @@ var Engine = function(opts){
       // This acts as the instantiation. 
       // the merging of the rest of the data
       // will come below.
-      _res.db[job.campaign_id] = makeJob({ url: job.asset });
+      _res.db[job.campaign_id] = makeJob(job);
     }
 
     // This places in things like the goal
@@ -469,7 +478,7 @@ var Engine = function(opts){
   // conditions.
   function remote(verb, url, what, onsuccess, onfail = _log) {
     if(!_res.server) {
-      onfail();
+      return onfail();
     }
     remote.ix++;
 
@@ -548,147 +557,6 @@ var Engine = function(opts){
     });
   }
 
-  var Timeline = {
-    _data: [], 
-    // This goes forward and loops around ... *almost*
-    // it depends on what happens, see below for more
-    // excitement.
-    position: 0,
-
-    // This returns if thre is a next slot without looping.
-    hasNext: function() {
-      return Timeline._data.length > Timeline.position;
-    },
-
-    // This is different, this will loop.
-    move: function(amount) {
-      // the classic trick for negatives
-      Timeline.position = (Timeline._data.length + Timeline.position + amount) % Timeline._data.length
-      return Timeline._data[Timeline.position];
-    },
-
-    bath: function() {
-      // scrub scrub, clean up time.
-      // This is actually only 3 hours of 7 second ads
-      // which we cut back to 2. This should be fine 
-      if(Timeline._data.length > 1500 && Timeline.position > 500) {
-        // this moves our pointer
-        Timeline._data = Timeline._data.slice(500);
-        // so we move our pointer.
-        Timeline.position -= 500;
-      }
-    },
-
-    add: function(job) {
-      // Just adds it to the current place.
-      Timeline._data.splice(Timeline.position, 0, job);
-      Timeline.bath();
-    },
-
-    mostRecent: function() {
-      if(Timeline._data.length > 1) {
-        var last = (Timeline.position + Timeline._data.length - 1) % Timeline._data.length;
-        return Timeline._data[last];
-      }
-    },
-
-    addAtEnd: function(job) {
-      Timeline._data.push(job);
-      Timeline.bath();
-    },
-  };
-
-  var Widget = {
-    doTime: function() {
-      var now = new Date();
-      _box.time.innerHTML = [
-          (now.getHours() + 100).toString().slice(1),
-          (now.getMinutes() + 100).toString().slice(1)
-        ].join(':')
-    },
-    feedMap: {},
-    active: {},
-    show: {
-      weather: function(cloud, temp) {
-        _box.widget.innerHTML = [
-          "<div class='app weather-xA8tAY4YSBmn2RTQqnnXXw cloudy'>", 
-          "<img src=/cloudy_" + cloud + ".svg>",
-          temp + "&deg;",
-          "</div>"
-        ].join('');
-      }
-    },
-    updateView: function(what, where) {
-      Widget.active[what] = where;
-      var hasBottom = Widget.active.time || Widget.active.ticker;
-      var hasWidget = hasBottom || Widget.active.app;
-      _res.container.classList[hasWidget ? 'add' : 'remove']('addon');
-      _res.container.classList[hasBottom ? 'add' : 'remove']('hasBottom');
-    },
-
-    time: function(onoff) {
-      Widget.updateView('time', onoff);
-      if(onoff) {
-        _box.time.style.display = 'block';
-        if(!Widget._time) {
-          Widget._time = setInterval(Widget.doTime, 1000);
-          Widget.doTime();
-        }
-      } else {
-        _box.time.style.display = 'none';
-        clearInterval(Widget._time);
-        Widget._time = false;
-      }
-    },
-    app: function(feed) {
-      if(arguments.length > 0) {
-        Widget.updateView('app', feed);
-        if(feed) {
-          _box.widget.style.display = 'block';
-          return Widget.show.weather(
-            feed.summary.match(/partly/i) ? 50 : 0,
-            Math.round(feed.temperature)
-          );
-        } 
-        _box.widget.style.display = 'none';
-      }
-    },
-    ticker: function(feed) {
-      var amount =_res.slowCPU ? 3 : 1.4,
-          delay = _res.slowCPU ? 70 : 30;
-      if(arguments.length === 0) {
-        return;
-      }
-      function scroll() {
-        _box.ticker.style.opacity = 1;
-        _box.ticker.scrollLeft = 1;
-        clearInterval(Widget._ticker);
-        Widget._ticker = setInterval(function(){
-          var before = _box.ticker.scrollLeft;
-          _box.ticker.scrollLeft += amount;
-          if (_box.ticker.scrollLeft === before) {
-            clearInterval(Widget._ticker);
-            scroll();
-          }
-        }, delay);
-      }
-      Widget.updateView('ticker', feed);
-      if(feed) {
-        _box.ticker.style.display = 'block';
-        if(feed.map) {
-          _box.ticker.innerHTML = "<div class=ticker-content-xA8tAY4YSBmn2RTQqnnXXw>" + 
-            shuffle(feed).map(row => "<span>" + row + "</span>") + "</div>";
-        }
-
-        scroll();
-      } else {
-        _box.ticker.style.display = 'none';
-        clearInterval(Widget._ticker);
-        Widget._ticker = false;
-      }
-    },
-  };
-
   var scrollIval;
   function scrollIfNeeded(){
     if(!_res.doScroll) { 
@@ -700,8 +568,8 @@ var Engine = function(opts){
         anchor  = dim == 'vertical' ? 'marginTop' : 'marginLeft',
         dom  = obj.dom,
         goal = obj.goal,
-        time = obj.duration || 7500,
-        period = 1000 / (_res.slowCPU ? 14 : 40),
+        time = obj.duration || _res.duration * 1000;
+        period = 1000 / 40,
         rounds = time / period,
         step = goal / rounds,
         ix = 0;
@@ -736,10 +604,9 @@ var Engine = function(opts){
   // to do that work ... when nextAsset has no more assets for a particular job
   // it calls NextJob again.
   function nextAsset() {
-    var prev;
-    var timeoutDuration = 0;
-    var doFade = false;
+    var prev, timeoutDuration = 0, didRun = false, doFade = false;
 
+    //console.log(new Error().stack);
     if(_res.pause) {
       return;
     }
@@ -748,28 +615,26 @@ var Engine = function(opts){
     // be transitioning away from a previous job
     //
     // so this is when we do the reporting.
-    if(_.current.position === 0) {
+    if(_.current.position === 0 && _.last) {
 
       // If this exists then it'd be set at the last asset
       // previous job.
-      if(_.last) {
-        // We can state that we've shown all the assets that
-        // we plan to show
-        _.last.completed_seconds += _.last.duration;
+      // We can state that we've shown all the assets that
+      // we plan to show
+      _.last.completed_seconds += _.last.duration;
 
-        // and report it up to the server
-        sow({
-          start_time: _.last_sow[0],
-          end_time: _.last_sow[1],
-          job: _.last.job_id,
-          camp: _.last.campaign_id, 
-          done: _.last.completed_seconds
-        });
+      // and report it up to the server
+      sow({
+        start_time: _.last_sow[0],
+        end_time: _.last_sow[1],
+        job_id: _.last.job_id,
+        campaign_id: _.last.campaign_id, 
+        completed_seconds: _.last.completed_seconds
+      });
 
-        if(_.last.job_id !== _.current.job_id) {
-          // we reset the downweight -- it can come back
-          _.last.downweight = 1;
-        }
+      if(_.last.job_id !== _.current.job_id) {
+        // we reset the downweight -- it can come back
+        _.last.downweight = 1;
       }
     }
 
@@ -782,46 +647,37 @@ var Engine = function(opts){
 
     _.current.shown = _.current.assetList[_.current.position];
     _.current.shown.run( function() {
-      if(_res.slowCPU && prev) {
-        _box.ad.removeChild(prev);
+      if(_.current.shown.container.parentNode !== _box.ad || _.current.shown.forceReload) {
+        _box.ad.appendChild(_.current.shown.container);
       }
-      _box.ad.appendChild(_.current.shown.container);
       if(_.current.shown.type == 'image') {
         scrollIfNeeded();
       }
+      didRun = true;
     });
 
-    if(_.current.shown.uniq != _last_uniq) {
+    if(_.last_container && _.current.shown.uniq != _.last_uniq) {
       // This is NEEDED because by the time 
-      // we come back around, _last.shown will be 
+      // we come back around, _.last.shown will be 
       // redefined.
-      prev = _last_container;
-      if(prev) {
-        if(!_res.slowCPU) {
-          prev.classList.add(_key('fadeOut'));
-          _timeout(function() {
-            prev.classList.remove(_key('fadeOut'));
-            _box.ad.removeChild(prev);
-          }, _res.fadeMs, 'assetFade');
-        } else {
-          //dbg("removeChild {");
-          //_box.ad.removeChild(prev);
-          //dbg("} removeChild");
-          // we don't have to worry about the re-pointing
-          // because we aren't in the timeout
-          _.current.shown.rewind();
+      prev = _.last_container;
+      prev.classList.add(_key('fadeOut'));
+      _timeout(function() {
+        // the second part is there because this bug is still
+        // somehow around. We really need to squash it.
+        if(didRun && prev.parentNode === _box.ad) {
+          prev.classList.remove(_key('fadeOut'));
+          _box.ad.removeChild(prev);
         }
-        doFade = true;
-      }
-    }
-    _last_uniq = _.current.shown.uniq;
-    _last_container = _.current.shown.container;
-
-    if(!_res.slowCPU) {
-      _.current.shown.container.classList[doFade ? 'add' : 'remove' ](_key('fadeIn'));
+      }, _res.fadeMs, 'assetFade');
+      doFade = true;
     }
 
-    //console.log(new Date() - _start, _playCount, "Job #" + _current.id, "Asset #" + _current.position, "Duration " + _current.shown.duration, _current.shown.url, _current.shown.cycles);
+    _.last_uniq = _.current.shown.uniq;
+    _.last_container = _.current.shown.container;
+    _.last_shown = _.current.shown;
+
+    _.current.shown.container.classList[doFade ? 'add' : 'remove' ](_key('fadeIn'));
 
     // These will EQUAL each other EXCEPT when the position is 0.
     _.last = _.current;
@@ -830,12 +686,9 @@ var Engine = function(opts){
     // when we come back around
     _.current.position ++;
 
-    timeoutDuration = _.current.shown.duration * 1000; 
-    if(!_res.slowCPU) {
-      timeoutDuration -= _res.fadeMs / 2;
-    }
+    timeoutDuration = Math.max(_.current.shown.duration * 1000 - _res.fadeMs / 2, 1000);
 
-    _timeout(nextAsset, Math.max(timeoutDuration, 1000), 'nextAsset');
+    _timeout(nextAsset, timeoutDuration, 'nextAsset');
   }
 
   function setNextJob(job) {
@@ -862,8 +715,8 @@ var Engine = function(opts){
       // we can override this when we get the
       // default.
       topicList = [],
+      current = false,
       jobIx = 0,
-      currentTopic = false,
       activeList = [],
       doReplace = true,
       topicIx = 0;
@@ -900,7 +753,7 @@ var Engine = function(opts){
       // can choose from.  
       //
 
-      activeList = Object.values(_res.db).filter(row => row.active && row.duration);
+      activeList = Object.values(_res.db).filter(row => row.duration);
 
       //
       // We need to clear out our local copy of the ads
@@ -909,6 +762,7 @@ var Engine = function(opts){
       topicMap = {};
 
       activeList.forEach(row => {
+        // The null case is actually ok here.
         if (!topicMap[row.topic]) {
           topicMap[row.topic] = [];
         }
@@ -929,32 +783,36 @@ var Engine = function(opts){
       // it's kinda the server's responsibility to
       // make sure there's default campaigns for each
       // of these.
-      currentTopic = topicMap[topicList[topicIx].internal];
-      if(!currentTopic) {
-        currentTopic = activeList;
+      current = topicMap[topicList[topicIx].internal];
+
+      if(!current) {
+        current = topicMap[null];
       }
 
+      //console.log(_id, current, activeList, topicMap, _res.db);
+
       render();
+      nextJob();
     }
 
     function nextJob() {
-      if(!currentTopic || !currentTopic.length) {
-        nextTopic();
-      }
-
-      if(!currentTopic || !currentTopic.length) {
+      if(!current) {
         // This means we've really fucked up somehow
         doReplace = true;
-        setNextJob(_.fallback);
+        if(!_.fallbackJob) {
+          console.warn(_id, "I'm at a nextJob but have no assets or fallbacks");
+          return _timeout(_res.NextJob, 1500, 'nextJob');
+        }
+        setNextJob(_.fallbackJob);
 
         // Force the topics off for now.
         render(true);
 
         // nextAsset is at the bottom
       } else {
-        console.log(topicMap, currentTopic, jobIx, topicList);
+        // console.log(topicMap, current, jobIx, topicList);
         
-        if(jobIx === currentTopic.length) {
+        if(jobIx === current.length) {
           nextTopic();
         }
         //
@@ -963,7 +821,7 @@ var Engine = function(opts){
         // and that our sequential revisiting will handle our
         // mechanics correctly.
         //
-        setNextJob( currentTopic[jobIx] );
+        setNextJob( current[jobIx] );
         jobIx++;
 
         //
@@ -972,7 +830,7 @@ var Engine = function(opts){
         // flagged our sow strategy to replace before we 
         // go into our timeout.
         // 
-        if(jobIx === currentTopic.length) {
+        if(jobIx === current.length) {
           doReplace = true;
         }
       }
@@ -995,7 +853,7 @@ var Engine = function(opts){
 
     function enable() {
       // This enables the top category and swaps out the nextJob with us
-      _res.NextJob = nextJob;
+      _res.NextJob = nextTopic;
       _box.topicList = [];
       setTopicList([
         {internal: 'event', display: 'Events'},
@@ -1021,7 +879,7 @@ var Engine = function(opts){
   Strategy.Freeform = (function() {
     return {
       enable: function() {
-        _res.nextJob = Strategy.Freeform.nextJob;
+        _res.nextJob = Freeform.nextJob;
         sow.strategy = forgetAndReplace;
       },
       nextJob: function () {
@@ -1069,13 +927,13 @@ var Engine = function(opts){
         // If there's nothing we have to show then we fallback to our default asset
         if( range <= 0 ) {
 
-          if(!_.fallback) {
+          if(!_.fallbackJob) {
             // woops what do we do now?! 
             // I guess we just try this again?!
             return _timeout(_res.NextJob, 1500, 'nextJob');
           }
 
-          setNextJob(_.fallback);
+          setNextJob(_.fallbackJob);
 
           if(!_.firstRun && activeList.length == 0 && Object.values(_res.db) > 1) {
             // If we just haven't loaded the assets then
@@ -1108,16 +966,16 @@ var Engine = function(opts){
         nextAsset();
       }
     };
-  })();
+  });
 
-  function SetFallback (url, force) {
-    _res.fallbackURL = _res.fallbackURL || url;
+  function SetFallback (assetList, force) {
+    _res.fallback = _res.fallback || assetList;
 
     // We look for a system default
-    if(force || !_res.fallbackURL) {
+    if(_res.server && (force || !_res.fallback)) {
       // If we have a server we can get it from there
       return get('/default', function(res) {
-        _.fallback = makeJob(res.data.campaign);
+        _.fallbackJob = makeJob(res.data.campaign);
 
         if(_res.data.topicList) {
           Strategy.Oliver.setTopicList(_res.data.topicList);
@@ -1137,11 +995,14 @@ var Engine = function(opts){
       });
 
     } 
-    _.fallback = makeJob({url: _res.fallbackURL, duration: .1});
+    if(_res.fallback) {
+      _.fallbackJob = makeJob(_res.fallback);
+    }
+    event('system', {});
   }
 
   // A repository of engines
-  Engine.list.push(_res);
+  Engine[Engine._length++] = _res;
 
   // This makes sure the _box references are valid before
   // running Start().
@@ -1154,7 +1015,7 @@ var Engine = function(opts){
   // variables start with lower case letters,
   // function start with upper case.
   return Object.assign(_res, {
-    Strategy, Widget, SetFallback, on,
+    Strategy, SetFallback, on, _,
 
     Play: function() {
       _res.pause = false;
@@ -1195,7 +1056,6 @@ var Engine = function(opts){
       var div = makeBox('debug');
       _.debug = true;
 
-      _box.top.style.display="none";
       if(div) {
         _box.top.appendChild(div);
       }
@@ -1223,4 +1083,4 @@ var Engine = function(opts){
   });
 };
 
-Engine.list = [];
+Engine._length = 0;
