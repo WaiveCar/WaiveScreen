@@ -99,31 +99,34 @@ def sow(work = False):
   try:
     # we probably want a smarter way to do this.
     # probably from https://github.com/python-xlib/python-xlib
-    dpms = os.popen('/usr/bin/xset -display {} q'.format(lib.DISPLAY)).read().strip()[-2:]
-    power = 'awake' if dpms == 'On' else 'sleep'
+    #
+    # We are not doing sleep mode as of 2012-02
+    # dpms = os.popen('/usr/bin/xset -display {} q'.format(lib.DISPLAY)).read().strip()[-2:]
+    # power = 'awake' if dpms == 'On' else 'sleep'
+    #
+    # if power != 'sleep':
 
-    if power != 'sleep':
-      jobList = request.get_json()
-      # jobList = json.loads(await request.text())
+    jobList = request.get_json()
+    # jobList = json.loads(await request.text())
 
-      if type(jobList) is not list:
-        jobList = [ jobList ]
+    if type(jobList) is not list:
+      jobList = [ jobList ]
 
-      payload['jobs'] = jobList
+    payload['jobs'] = jobList
 
-      for i in range(len(jobList)):
-        job = jobList[i]
+    for i in range(len(jobList)):
+      job = jobList[i]
 
-        locationList = [dict(x) for x in db.range('location', job['start_time'], job['end_time'], 'round(lat,5) as lat,round(lng,5) as lng,created_at as t')]
-        job['location'] = locationList
+      locationList = [dict(x) for x in db.range('location', job['start_time'], job['end_time'], 'round(lat,5) as lat,round(lng,5) as lng,created_at as t')]
+      job['location'] = locationList
 
-        for key in ['start_time','end_time']:
-          del job[key]
+      for key in ['start_time','end_time']:
+        del job[key]
 
-        # start_time and end_time are javascript epochs
-        # so they are in millisecond
-        #job['start_time'] = datetime.datetime.utcfromtimestamp(job['start_time']/1000).strftime(DTFORMAT)
-        #job['end_time'] = datetime.datetime.utcfromtimestamp(job['end_time']/1000).strftime(DTFORMAT)
+      # start_time and end_time are javascript epochs
+      # so they are in millisecond
+      #job['start_time'] = datetime.datetime.utcfromtimestamp(job['start_time']/1000).strftime(DTFORMAT)
+      #job['end_time'] = datetime.datetime.utcfromtimestamp(job['end_time']/1000).strftime(DTFORMAT)
 
     # We really don't have an "off" anymore
     #payload['power'] = power
@@ -180,6 +183,7 @@ def sow(work = False):
 
         logging.debug("success: {}".format(json.dumps(job_list)))
         return success(job_list)
+
       else:
         logging.debug("failure: {}".format(json.dumps(data)))
         return failure(data['data'])

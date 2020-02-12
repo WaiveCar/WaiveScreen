@@ -597,6 +597,7 @@ def image_swapper(match):
 
 def asset_cache(check, only_filename=False, announce=False):
   import magic
+
   # Now we have the campaign in the database, yay us I guess
   if type(check) is str:
     check = { 'asset_meta': [{'url':check, 'nocache': True}] }
@@ -626,6 +627,7 @@ def asset_cache(check, only_filename=False, announce=False):
 
     if skipcache:
       res.append(row)
+
     else:
       checksum_name = "{}/{}{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest(), ext)
 
