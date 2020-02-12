@@ -557,8 +557,8 @@ def get_port():
   return port
 
 def update_number_if_needed():
-  if not db.sess_get('simok'):
-    return None
+  #if not db.sess_get('simok'):
+  #  return None
 
   info = get_modem_info() or {}
 
