@@ -569,7 +569,7 @@ def update_number_if_needed():
   # And then to avoid clearing out a correct number but
   # going through this again, we then immediately set
   # our new icc, with an empty number.
-  if db.kv_get('icc') != info.get('icc'):
+  if db.kv_get('phone_icc') != info.get('icc'):
     db.kv_set('number', None) 
 
   #
@@ -579,7 +579,7 @@ def update_number_if_needed():
   #
   for k in ['imsi','icc','imei']:
     if k in info:
-      db.kv_set(k, info.get(k))
+      db.kv_set('phone_{}'.format(k), info.get(k))
 
   return get_number()
 
