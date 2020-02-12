@@ -556,6 +556,33 @@ def get_port():
 
   return port
 
+def update_number_if_needed():
+  if not db.sess_get('simok'):
+    return None
+
+  info = get_modem_info() or {}
+
+  if 'number' in info:
+    del info['number']
+
+  # The first thing we do is clear out our old number.
+  # And then to avoid clearing out a correct number but
+  # going through this again, we then immediately set
+  # our new icc, with an empty number.
+  if db.kv_get('icc') != info.get('icc'):
+    db.kv_set('number', None) 
+
+  #
+  # DO NOT OPTIMIZE. WE DO NOT WANT THE PHONE NUMBER IN
+  # THE INFO OBJECT TO BE SET HERE. REALLY, IT SHOULD
+  # ABSOLUTELY NOT BE DONE HERE.
+  #
+  for k in ['imsi','icc','imei']:
+    if k in info:
+      db.kv_set(k, info.get(k))
+
+  return get_number()
+
 def get_number():
   return re.sub('[^\d]', '', db.kv_get('number') or '')
 

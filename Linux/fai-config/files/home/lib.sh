@@ -289,7 +289,7 @@ enable_gps() {
 get_number() {
   # mmcli may not properly be reporting the phone number. T-mobile sends it to
   # us in our first text so we try to work it from there.
-  phone=$( pycall lib.get_number )
+  phone=$( pycall lib.update_number_if_needed )
   if [[ -z "$phone" ]]; then
     # mmcli may not properly number the sms messages starting at 0 so we find the earliest
     sms 8559248355 '__echo__'
@@ -374,8 +374,8 @@ EPERL
 
   if ping -c 1 -i 0.3 $SERVER; then
     _info "$SERVER found" 
-    get_number
     pycall db.sess_set simok,1 
+    get_number
   else
     _warn "$SERVER unresolvable!"
 

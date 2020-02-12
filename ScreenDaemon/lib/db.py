@@ -499,6 +499,12 @@ def kv_set(key, value = None, bootcount = None):
   # Returns the value that was sent.
   global _params
 
+  if type(key) is dict:
+    value_list = []
+    for k,v in key.items():
+      value_list.append(kv_set(k,v))
+    return value_list
+
   try:
     # Let's just do two calls. Nobody else is accessing it right here I think
     # this is atomic enough.
