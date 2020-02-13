@@ -609,6 +609,11 @@ def asset_cache(check, only_filename=False, announce=False):
 
 
   res = []
+
+  if 'asset_meta' not in check:
+    logging.warning("Woops, couldn't find an asset meta in something I was told to cache")
+    return check
+
   # Moving from asset -> asset_meta (2020-01-02)
   for row in check['asset_meta']:
     # checksum name (#188)
