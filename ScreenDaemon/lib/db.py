@@ -249,14 +249,7 @@ def upsert(table, data):
   except:
     logging.warning("Unable to upsert a record {}".format(','.join([str(x) for x in values])))
 
-
-# Ok so if column order or type changes, this isn't found ... nor
-# are we doing formal migrations where you can roll back or whatever
-# because way too fancy ...
-def upgrade():
-  my_set = __builtins__['set']
-  db = connect()
-
+def pragma_update(db):
   if '_PRAGMA' in globals():
     for name, value in _PRAGMA:
       existing_value = db['c'].execute('pragma {}'.format(name)).fetchone()
@@ -268,7 +261,17 @@ def upgrade():
 
       except Exception as ex:
         logging.warning("Failed to query or change pragma {} to {}: {}".format(name, value, ex))
+    db['conn'].commit()
 
+
+# Ok so if column order or type changes, this isn't found ... nor
+# are we doing formal migrations where you can roll back or whatever
+# because way too fancy ...
+def upgrade():
+  my_set = __builtins__['set']
+  db = connect()
+
+  pragma_update(db)
 
   for table, schema in list(_SCHEMA.items()):
     existing_schema = db['c'].execute('pragma table_info(%s)' % table).fetchall()
@@ -424,6 +427,8 @@ def connect(db_file=None):
   })
 
   if db_file == default_db and _dbcount == 0: 
+
+    pragma_update(_instance[id])
 
     for table, schema in list(_SCHEMA.items()):
       dfn = ','.join(["%s %s" % (key, klass) for key, klass in schema])
