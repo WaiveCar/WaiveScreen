@@ -375,7 +375,6 @@ EPERL
   if ping -c 1 -i 0.3 $SERVER; then
     _info "$SERVER found" 
     pycall db.sess_set simok,1 
-    get_number
   else
     _warn "$SERVER unresolvable!"
 
@@ -395,6 +394,7 @@ EPERL
     fi
   fi
   pycall db.sess_set modem,1 
+  get_number
 }
 
 ## test this later.
