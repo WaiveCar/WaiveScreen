@@ -40,7 +40,7 @@ ENDL
       param=-r
       pipe=/usr/bin/sort
     elif [[ $1 =~ ^[0-9]*$ ]]; then
-      qstr=$qstr' | select (.id=='${1,,}' or .port=='${1,,}')'
+      qstr=$qstr' | select (.id=='${1,,}' or .port=='${1,,}' or .phone=="'+${1,,}'" )'
     else
       qstr=$qstr' | select (.uid=="'${1,,}'" or .car=="'${1,,}'")' 
     fi
