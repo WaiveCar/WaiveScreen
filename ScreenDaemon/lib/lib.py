@@ -126,6 +126,9 @@ def get_modem(try_again=False, BUS=False):
         'location': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Location'),
         'time': dbus.Interface(proxy, dbus_interface='org.freedesktop.ModemManager1.Modem.Time')
       }
+      proxy = BUS.get_object('org.freedesktop.ModemManager1','/org/freedesktop/ModemManager1/SIM/{}'.format(ix))
+      modem_iface['sim'] = dbus.Interface(proxy, dbus_interface='org.freedesktop.DBus.Properties')
+
       modem_iface['modem'].Enable(True)
   
       # if we get here then we know that our modem works
@@ -490,10 +493,13 @@ def get_modem_info():
 
     if modem:
       props = modem['device'].GetAll('org.freedesktop.ModemManager1.Modem')
+      sim = modem['sim'].GetAll('org.freedesktop.ModemManager1.Sim')
 
-      modem_info = {}
-
-      modem_info = { 'imei': props.get('EquipmentIdentifier') }
+      modem_info = { 
+        'imsi': sim.get('Imsi'),
+        'icc': sim.get('SimIdentifier'),
+        'imei': props.get('EquipmentIdentifier') 
+      }
       numberList = props.get('OwnNumbers')
 
       if numberList:
@@ -550,6 +556,33 @@ def get_port():
 
   return port
 
+def update_number_if_needed():
+  #if not db.sess_get('simok'):
+  #  return None
+
+  info = get_modem_info() or {}
+
+  if 'number' in info:
+    del info['number']
+
+  # The first thing we do is clear out our old number.
+  # And then to avoid clearing out a correct number but
+  # going through this again, we then immediately set
+  # our new icc, with an empty number.
+  if db.kv_get('phone_icc') != info.get('icc'):
+    db.kv_set('number', None) 
+
+  #
+  # DO NOT OPTIMIZE. WE DO NOT WANT THE PHONE NUMBER IN
+  # THE INFO OBJECT TO BE SET HERE. REALLY, IT SHOULD
+  # ABSOLUTELY NOT BE DONE HERE.
+  #
+  for k in ['imsi','icc','imei']:
+    if k in info:
+      db.kv_set('phone_{}'.format(k), info.get(k))
+
+  return get_number()
+
 def get_number():
   return re.sub('[^\d]', '', db.kv_get('number') or '')
 
@@ -564,6 +597,7 @@ def image_swapper(match):
 
 def asset_cache(check, only_filename=False, announce=False):
   import magic
+
   # Now we have the campaign in the database, yay us I guess
   if type(check) is str:
     check = { 'asset_meta': [{'url':check, 'nocache': True}] }
@@ -575,6 +609,11 @@ def asset_cache(check, only_filename=False, announce=False):
 
 
   res = []
+
+  if 'asset_meta' not in check:
+    logging.warning("Woops, couldn't find an asset meta in something I was told to cache")
+    return check
+
   # Moving from asset -> asset_meta (2020-01-02)
   for row in check['asset_meta']:
     # checksum name (#188)
@@ -593,6 +632,7 @@ def asset_cache(check, only_filename=False, announce=False):
 
     if skipcache:
       res.append(row)
+
     else:
       checksum_name = "{}/{}{}".format(path, hashlib.md5(asset.encode('utf-8')).hexdigest(), ext)
 

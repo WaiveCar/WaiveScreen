@@ -10,6 +10,7 @@ ScreenDisplay/assets/
 ScreenDaemon/middle/
 power-history
 Linux/keys/ScreenAccess
+Linux/keys/BackupAccess*
 Linux/fai-config/files/home/pip/*.whl
 Linux/fai-config/files/home/pip/*.gz
 patch

@@ -256,7 +256,7 @@ set_wrap() {
 }
 
 set_event() {
-  pid=${2:-$!}
+  local pid=${2:-$!}
   [[ -e $EV/$1 ]] || _info $1
   echo -n $pid | $SUDO tee $EV/$1
 }
@@ -289,7 +289,7 @@ enable_gps() {
 get_number() {
   # mmcli may not properly be reporting the phone number. T-mobile sends it to
   # us in our first text so we try to work it from there.
-  phone=$( pycall lib.get_number )
+  phone=$( pycall lib.update_number_if_needed )
   if [[ -z "$phone" ]]; then
     # mmcli may not properly number the sms messages starting at 0 so we find the earliest
     sms 8559248355 '__echo__'
@@ -374,7 +374,6 @@ EPERL
 
   if ping -c 1 -i 0.3 $SERVER; then
     _info "$SERVER found" 
-    get_number
     pycall db.sess_set simok,1 
   else
     _warn "$SERVER unresolvable!"
@@ -395,6 +394,7 @@ EPERL
     fi
   fi
   pycall db.sess_set modem,1 
+  get_number
 }
 
 ## test this later.
@@ -455,7 +455,7 @@ ssh_hole() {
     done
   } > /dev/null &
 
-  set_wrap ssh_hole
+  set_wrap $event
 }
 
 screen_daemon() {
@@ -572,7 +572,7 @@ wait_for() {
   path=${2:-$EV}/$1
 
   if [[ ! -e "$path" ]]; then
-    echo `date +%R:%S` WAIT $1
+    echo $(date +%R:%S) WAIT $1
     until [[ -e "$path" ]]; do
       sleep 0.5
     done
@@ -940,9 +940,9 @@ disk_monitor() {
 }
 
 _avrdude() {
-    $BASE/tools/client/avrdude -C$BASE/tools/client/avrdude.conf \
-      -v -patmega328p -carduino -P/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0 -b57600 -D \
-      $*
+  $BASE/tools/client/avrdude -C$BASE/tools/client/avrdude.conf \
+    -v -patmega328p -carduino -P/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0 -b57600 -D \
+    $*
 }
 
 update_arduino() {

@@ -1,7 +1,11 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-EP='waivescreen.com/api/screens?removed=0'
+SERVER=${SERVER:-waivescreen.com}
+EP="$SERVER/api/screens?removed=0"
 HOST=reflect.waivescreen.com
+USER=adorno
+KEY=
+PORT=
 
 die() {
   echo $*
@@ -21,49 +25,65 @@ print("{:8}| {:6} | {}".format("NAME","UPTIME","VERSION"))
 for row in json.load(urllib.request.urlopen("http://$EP")):
   last_seen = time.mktime(time.gmtime()) - time.mktime(datetime.datetime.strptime(row['last_seen'], '%Y-%m-%d %H:%M:%S').timetuple())
   if last_seen < 330:
+    row['car'] = row['car'] or row['port']
     print("{:8}| {:6} | {}".format(row['car'], row['uptime'], row['version']))
 ENDL
     exit
   fi
     
   local qstr='.[]'
+  local param=
+  local pipe=/bin/cat
   if [[ -n "$1" ]]; then
-    if [[ $1 =~ ^[0-9]*$ ]]; then
-      qstr=$qstr' | select (.id=='${1,,}' or .port=='${1,,}')'
+    if [[ $1 =~ ^\. ]]; then
+      qstr=$qstr' | .car + " " + ('$1'|tostring)'
+      param=-r
+      pipe=/usr/bin/sort
+    elif [[ $1 =~ ^[0-9]*$ ]]; then
+      qstr=$qstr' | select (.id=='${1,,}' or .port=='${1,,}' or .phone=="'+${1,,}'" )'
     else
       qstr=$qstr' | select (.uid=="'${1,,}'" or .car=="'${1,,}'")' 
     fi
   fi
 
   checkfor jq
-  curl -s $EP | tr '[A-Z]' '[a-z]' | jq "$qstr"
+  curl -s $EP | tr '[A-Z]' '[a-z]' | jq $param "$qstr" | $pipe
 }
 
 resolve() {
-  local keypath=$DIR/../../Linux/keys/ScreenAccess 
+  local base=$DIR/../../Linux/keys/
+
+  if [[ $1 == 'backup' ]]; then
+    local keypath=$base/BackupAccess 
+  else
+    local keypath=$base/ScreenAccess 
+  fi
 
   if [[ ! -e $keypath ]]; then
     echo "I need $keypath to go on without a password"
   else
-    key="-i $keypath"
+    KEY="-i $keypath"
   fi
 
-  if [[ $1 =~ ^[0-9]*$ ]]; then
-    port=$1
+  if [[ $1 = "backup" ]]; then
+    USER=foucault
+    PORT=4040
+  elif [[ $1 =~ ^[0-9]*$ ]]; then
+    PORT=$1
   elif [[ $1 =~ ^[0-9\.]*$ ]]; then
     HOST=$1
-    port=22
+    PORT=22
   else
     checkfor jq
-    port=$(curl -s $EP | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'${1,,}'") | .port')
-    [[ -z "$port" ]] && die "Woops, $1 wasn't found."
+    PORT=$(curl -s $EP | tr '[A-Z]' '[a-z]' | jq '.[] | select(.car=="'${1,,}'") | .port')
+    [[ -z "$PORT" ]] && die "Woops, $1 wasn't found."
   fi
 }
 
 connect() {
   resolve $1
   set -x
-  ssh -C -oStrictHostKeyChecking=no $key -p $port adorno@$HOST
+  ssh -C -oStrictHostKeyChecking=no $KEY -p $PORT $USER@$HOST
 
   exit
 }
@@ -72,8 +92,8 @@ shot() {
   resolve $1
   local name=/tmp/shot-$1.jpg
   set -x
-  ssh -C -oStrictHostKeyChecking=no $key -p $port adorno@$HOST "import -display :0 -window root -resize 500x $name"
-  scp -C -oStrictHostKeyChecking=no $key -P $port adorno@$HOST:$name $name
+  ssh -C -oStrictHostKeyChecking=no $KEY -p $PORT adorno@$HOST "import -display :0 -window root -resize 500x $name"
+  scp -C -oStrictHostKeyChecking=no $KEY -P $PORT adorno@$HOST:$name $name
   display $name
 }
 
@@ -81,24 +101,25 @@ pull() {
   resolve $1
   local=${3:-.}
   set -x
-  scp -C -oStrictHostKeyChecking=no $key -P $port adorno@$HOST:$2 $local
+  scp -C -oStrictHostKeyChecking=no $KEY -P $PORT adorno@$HOST:$2 $local
 
   exit
 }
+
 copy() {
   resolve $1
   set -x
-  scp -C -oStrictHostKeyChecking=no $key -P $port $2 adorno@$HOST:$3
+  scp -C -oStrictHostKeyChecking=no $KEY -P $PORT $2 adorno@$HOST:$3
 
   exit
 }
 
 state() { 
   if [[ -n "$1" ]]; then
-    scp -C waivescreen.com:/var/states/$1 /tmp/
+    scp -C $SERVER:/var/states/$1 /tmp/
     echo /tmp/$1
   else
-    ssh waivescreen.com "ls -ltr /var/states"
+    ssh $SERVER "ls -ltr /var/states"
   fi
 }
 
@@ -123,7 +144,7 @@ reload() {
   rm $LOCK
 }
 
-# To get power management working, setthe following up in bios
+# To get power management working, set the following up in bios
 #
 # Advanced ▷ LPSS & SCC Configuration ▷ OS Selection ▷ Android
 #
@@ -131,25 +152,37 @@ restart() {
   ssh screen "sudo reboot"&
 }
 
+help() {
+  cat "${BASH_SOURCE[0]}" | grep -Po ' [\|\w]+\)' | sort | tr ')' ' ' | sed -E s'/\s+/ /g'
+}
+
+[[ $# = 0 ]] && help
+
 for i in $*; do
   case $1 in
     list) list $2; exit 0 ;;
     patch) 
-      curl http://waivescreen.com/patchfile > /tmp/patch || die "Can't find waivescreen.com"
+      curl http://$SERVER/patchfile > /tmp/patch || die "Can't find $SERVER"
       git apply /tmp/patch || die "Can't apply /tmp/patch"
       ;;
     shot) shot $2; exit 0;;
     state) state $2; exit 0;;
     connect) connect $2 ;;
-    copy) copy $2 "$3" $4 ;;
+    push|copy) copy $2 "$3" $4 ;;
     pull) pull $2 "$3" $4 ;;
+
+    #
+    # The parameters below were used in early development when the screen
+    # was on the same local network. This may happen again so might as
+    # well keep it around.
+    #
     sync|reload) reload ;;
     on) on.js ;;
     off) off.js ;;
     force) $DIR/pcycle.js ;;
     restart|reboot|reset|pcycle) restart ;;
+    help) help ;;
     *) 
-      echo -e "Error: $1\nValid: patch sync|reload list off connect on restart|reboot"
       [[ $# -gt "1" ]] && echo "Exit: Found unknown command. Ending parsing"
       exit
       ;;
