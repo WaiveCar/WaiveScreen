@@ -12,8 +12,7 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SSH_KEY="${DIR}/../../Linux/keys/ScreenAccess.pub"
 SBC="root@${1}"
-SSH="ssh -i ${T_KEY} ${SBC} "
-SCP="scp -i ${T_KEY} "
+SSH="ssh ${SBC} "
 
 read -p "Please enter the root password for the SBC when prompted. [Press Enter to continue]"
 ssh-copy-id -f -i ${SSH_KEY} ${SBC} 
@@ -23,13 +22,14 @@ then
   echo "Unable to install the ssh key for access to the SBC" && exit 1
 fi
 
-${SCP} ${DIR}/../../Linux/fai-config/files/home/.ssh/{config,github} ${SBC}:.ssh/
+scp ${DIR}/../../Linux/fai-config/files/home/.ssh/{config,github} ${SBC}:.ssh/
 ${SSH} << EOF
 chmod 0600 .ssh/github
-apt update && apt full-upgrade -y && apt install -y rsync fai-client git gpg sudo python3-pip python3-setuptools python3-dev
+apt update && apt full-upgrade -y && apt install -y rsync fai-client git gpg sudo python3-pip python3-setuptools python3-dev python3-numpy
 git clone git@github.com:WaiveCar/WaiveScreen.git
 cd WaiveScreen && git checkout armbian-port && cd ..
 mkdir -p /srv/fai/config
+sed -i '/^\(opencv\)/d' WaiveScreen/ScreenDaemon/requirements.txt
 NONET=1 WaiveScreen/tools/server/syncer.sh pip
 fai -v -N -c DEBIAN -s file:///srv/fai/config softupdate
 systemctl disable location-daemon hostapd isc-dhcp-server

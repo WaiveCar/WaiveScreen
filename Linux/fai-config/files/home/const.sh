@@ -6,7 +6,7 @@ export BASE=$DEST/WaiveScreen
 
 export SQLTIMEOUTMS=500
 export SERVER=waivescreen.com
-export BRANCH=release
+export BRANCH=armbian-port
 export CACHE=/var/cache/assets
 export DB=/var/db/config.db
 export DEV=$BASE.sshfs
