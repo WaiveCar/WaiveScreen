@@ -165,7 +165,7 @@ while True:
 
   # We are unable to communicate with the arduino.  We will assume that the screen is on
   # at max brightness and shutdown the screen immediately.
-  except ArduinoError as ex:
+  except (ArduinoError, OSError) as ex:
     if not _arduinoConnectionDown:
       logging.error('Arduino communication down: {}'.format(ex))
       _arduinoConnectionDown = True
