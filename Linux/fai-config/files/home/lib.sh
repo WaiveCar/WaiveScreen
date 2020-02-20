@@ -518,8 +518,8 @@ get_uuid() {
       # The MAC addresses are just SOOO similar we want more variation so let's md5sum
       local uuid_old=$(< $UUIDfile )
       local uuid="unknown"
-      for i in /sys/class/net/{enp3s0,eth0}/address; do
-        if [[ -f "${i}" ]]; then
+      for eth_addr_file in /sys/class/net/{enp3s0,eth0}/address; do
+        if [[ -f "${eth_addr_file}" ]]; then
           uuid=$(cat "${eth_addr_file}" | md5sum | awk ' { print $1 } ' | xxd -r -p | base64 | sed -E 's/[=\/\+]//g')
           break
         fi
