@@ -73,5 +73,5 @@ ssh_hole
 sms_cleanup
 first_run
 upgrade_scripts
-camera_daemon
+#camera_daemon
 driving_upgrade_check
