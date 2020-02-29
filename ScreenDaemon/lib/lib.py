@@ -837,7 +837,8 @@ def feature_detect():
       'size': size_list 
     },
     'layout'  : layout,
-    'wifi'    : os.path.exists("/proc/sys/net/ipv4/conf/wlp1s0"),
+    'wifi'    : os.path.exists("/proc/sys/net/ipv4/conf/wlp1s0") or
+                os.path.exists("/proc/sys/net/ipv4/conf/wlan0"),
     'sim'     : hasSim > 0,
     'size'    : int(os.popen('df -m --output=size / | tail -1').read().strip())
   }

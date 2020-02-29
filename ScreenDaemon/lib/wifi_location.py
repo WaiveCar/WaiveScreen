@@ -10,7 +10,8 @@ from gi.repository import GLib
 
 DBusGMainLoop(set_as_default=True)
 
-WIFI_IF = 'wlp1s0'
+#WIFI_IF = 'wlp1s0'
+WIFI_IF = 'wlan0'
 WPA_BUS_NAME = 'fi.w1.wpa_supplicant1'
 WPA_OBJECT_NAME = '/fi/w1/wpa_supplicant1'
 WPA_IF_NAME = '{}.Interface'.format(WPA_BUS_NAME)

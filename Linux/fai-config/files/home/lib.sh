@@ -646,7 +646,7 @@ hotspot() {
 
   SSID=Waive-$( kv_get number | cut -c 6- )
   DEV_INTERNET=$( ip addr show | grep ww[pa] | head -1 | awk -F ':' ' { print $2 } ' )
-  DEV_AP=wlp1s0
+  DEV_AP=$( ip addr show | grep wl[pa] | head -1 | awk -F ': ' ' { print $2 } ' )
 
   IP_START=172.16.10
   IP_END=.1
