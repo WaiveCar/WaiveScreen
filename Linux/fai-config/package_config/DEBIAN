@@ -18,8 +18,8 @@ xorg xserver-xorg-video-all xserver-xorg-input-all
 x11-xserver-utils
 notion
 fonts-freefont-ttf
-chromium 
-chromium-sandbox
+#chromium 
+#chromium-sandbox
 xterm
 exfat-utils
 tmux
@@ -47,7 +47,7 @@ libtimedate-perl
 gdb python3-dbg
 
 # and ble
-firmware-atheros
+#firmware-atheros
 bluez
 bluez-tools
 v4l-utils
@@ -86,6 +86,9 @@ policykit-1
 
 xosd-bin
 unattended-upgrades
+
+# Armbian Port
+chromium-browser
 
 PACKAGES install NONFREE
 # you may want these non-free kernel drivers
