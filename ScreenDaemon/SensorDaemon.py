@@ -152,16 +152,6 @@ while True:
     if ix % CMD_QUEUE_PERIOD == 0:
       arduino.process_arduino_queue()
 
-    # Now you'd think that we just sleep on the frequency, that'd be wrong.
-    # Thanks, try again. Instead we need to use the baseline time from start
-    # up multiplied by the counter, then subtracted from the time to account
-    # for the skew that is introduced from the sensor reads.
-    ix += 1
-    naptime = (START + ix * FREQUENCY) - time.time()
-    if naptime > 0:
-      time.sleep(naptime)
-
-    arduino.clear()
 
   # We are unable to communicate with the arduino.  We will assume that the screen is on
   # at max brightness and shutdown the screen immediately.
@@ -182,5 +172,21 @@ while True:
         logging.info('Arduino has never been detected: Leaving the screen on')
       # if _arduino isn't set to false, we won't reconnect
       arduino.arduino_disconnect()
-    time.sleep(1)
+      time.sleep(1)
+
+  if ix % POWERTEMP_PERIOD == 0:
+    lib.update_uptime_log()
+    lib.update_modem_usage_log()
+
+  # Now you'd think that we just sleep on the frequency, that'd be wrong.
+  # Thanks, try again. Instead we need to use the baseline time from start
+  # up multiplied by the counter, then subtracted from the time to account
+  # for the skew that is introduced from the sensor reads.
+  ix += 1
+  naptime = (START + ix * FREQUENCY) - time.time()
+  if naptime > 0:
+    time.sleep(naptime)
+
+  if not _arduinoConnectionDown:
+    arduino.clear()
 
