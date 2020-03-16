@@ -426,6 +426,7 @@ var Engine = function(opts){
     } else if('url' in obj) {
       obj.asset_meta = [{ url: obj.url }];
     }
+    let asset_original = ('asset_meta' in obj) ? JSON.parse(JSON.stringify(obj.asset_meta)) : false;
 
     // We want the object to actually take
     // these values as references while also
@@ -447,13 +448,13 @@ var Engine = function(opts){
         // This is the total duration of all the
         // assets included in this job.
         duration: 0,
-        asset_original: JSON.parse(JSON.stringify(obj.asset_meta)),
+        asset_original: asset_original,
         assetList: [],
         id: _jobId++,
       }, obj)
     );
     
-    obj.assetList = obj.asset_meta.map(row => urlToAsset(row, obj));
+    obj.assetList = ('asset_meta' in obj) ? obj.asset_meta.map(row => urlToAsset(row, obj)) : [];
 
     obj.remove = function(what) {
       obj.assetList = obj.assetList.filter(row => row.uniq != what.uniq );
