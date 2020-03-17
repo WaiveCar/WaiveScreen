@@ -600,7 +600,7 @@ def asset_cache(check, only_filename=False, announce=False):
 
   # Now we have the campaign in the database, yay us I guess
   if type(check) is str:
-    check = { 'asset_meta': [{'url':check, 'nocache': True}] }
+    check = { 'asset_meta': [{'url': check, 'nocache': True}] }
 
   path = CACHE
   if not os.path.exists(path):
@@ -686,8 +686,9 @@ def asset_cache(check, only_filename=False, announce=False):
       #
       mime = magic.from_file(checksum_name, mime=True)
 
-      duration = 7.5
-      if 'html' in mime and 'html' not in checksum_name:
+      if row.get('duration'):
+        duration = row['duration']
+      elif 'html' in mime and 'html' not in checksum_name:
         import shutil
         happybrowser = "{}.html".format(checksum_name)
         if not os.path.exists(happybrowser):
@@ -695,15 +696,11 @@ def asset_cache(check, only_filename=False, announce=False):
 
         checksum_name = happybrowser
         duration = 150
+      else:
+        duration = 7.5
 
       if only_filename:
         return checksum_name
-
-      # If the asset_meta has a duration then we use it
-      # as an override, otherwise we do whatever happens
-      # above.
-      if row['duration']:
-        duration = row['duration']
 
       # see #154 - we're restructuring this away from a string and
       # into an object - eventually we have to assume that
