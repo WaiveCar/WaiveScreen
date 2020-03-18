@@ -32,6 +32,7 @@ mkdir -p /srv/fai/config
 sed -i '/^\(opencv\|pandas\|numpy\)/d' WaiveScreen/ScreenDaemon/requirements.txt
 NONET=1 WaiveScreen/tools/server/syncer.sh pip
 fai -v -N -c DEBIAN -s file:///srv/fai/config softupdate
+systemctl disable rk3399-bluetooth
 #systemctl disable location-daemon hostapd isc-dhcp-server
 #rm -rf /root/WaiveScreen
 #rm /root/.ssh/{config,github}
