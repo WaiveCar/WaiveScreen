@@ -45,12 +45,13 @@ ainsl -a /etc/modprobe.d/blacklist.conf 'blacklist pcspkr'
 ainsl /etc/fuse.conf "^user_allow_other"
 
 # Gives the user perms for arduino
-ainsl /etc/group "dialout:x:20:adorno"
-ainsl /etc/group- "dialout:x:20:adorno"
+adduser "${USER}" dialout
 
 # Gives the user perms for wpa_supplicant
-ainsl /etc/group "netdev:x:109:adorno"
-ainsl /etc/group- "netdev:x:109:adorno"
+adduser "${USER}" netdev
+
+# Gives the user perms for camera_daemon
+adduser "${USER}" video
 
 # Make sure the paths from the lib are shared to the shell
 ainsl $CHDEST/.bashrc 'source $HOME/const.sh' 'const.sh'
