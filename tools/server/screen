@@ -20,10 +20,11 @@ list() {
   if [[ $1 == 'on' ]]; then
     python3 << ENDL
 #!/usr/bin/python3
-import sys, json, time, datetime, urllib.request
+import sys, json, time, urllib.request
 print("{:8}| {:6} | {}".format("NAME","UPTIME","VERSION"))
 for row in json.load(urllib.request.urlopen("http://$EP")):
-  last_seen = time.mktime(time.gmtime()) - time.mktime(datetime.datetime.strptime(row['last_seen'], '%Y-%m-%d %H:%M:%S').timetuple())
+  last_seen_utc = '{} UTC'.format(row['last_seen'])
+  last_seen = time.mktime(time.gmtime()) - time.mktime(time.strptime(last_seen_utc, '%Y-%m-%d %H:%M:%S %Z'))
   if last_seen < 330:
     row['car'] = row['car'] or row['port']
     print("{:8}| {:6} | {}".format(row['car'], row['uptime'], row['version']))
