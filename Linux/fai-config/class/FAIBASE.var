@@ -25,3 +25,5 @@ MAXPACKAGES=800
 # a user account will be created
 username=adorno
 USERPW='$1$25289$Dcnt3cKbubWxa8BYZyrQt1'
+# Gives the user perms for arduino wpa_supplicant and camera_daemon
+groups='dialout netdev video'
