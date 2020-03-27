@@ -29,7 +29,7 @@ apt update && apt full-upgrade -y && apt install -y rsync fai-client git gpg sud
 git clone git@github.com:WaiveCar/WaiveScreen.git
 cd WaiveScreen && git checkout armbian-port && cd ..
 mkdir -p /srv/fai/config
-sed -i '/^\(opencv\|pandas\|numpy\)/d' WaiveScreen/ScreenDaemon/requirements.txt
+#sed -i '/^\(opencv\|pandas\|numpy\)/d' WaiveScreen/ScreenDaemon/requirements.txt
 NONET=1 WaiveScreen/tools/server/syncer.sh pip
 fai -v -N -c DEBIAN -s file:///srv/fai/config softupdate
 systemctl disable rk3399-bluetooth

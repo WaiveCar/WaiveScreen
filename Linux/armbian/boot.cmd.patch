@@ -1,0 +1,15 @@
+--- boot.cmd    2020-03-13 18:46:16.053633706 -0700
++++ boot.new    2020-03-26 19:36:42.962154106 -0700
+@@ -3,6 +3,12 @@
+ # Please edit /boot/armbianEnv.txt to set supported parameters
+ #
+
++# Attempt USB boot if present (adds 7 seconds to boot)
++run bootcmd_usb0
++# Change devum back to 1
++# The sdcard is 1 while usb is 0 (emmc would be 0 too)
++setenv devnum 1
++
+ setenv load_addr "0x39000000"
+ setenv overlay_error "false"
+ # default values

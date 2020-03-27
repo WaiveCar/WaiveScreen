@@ -105,8 +105,10 @@ linux-image-amd64
 memtest86+
 
 PACKAGES install ARM64
-grub-efi-arm64
-linux-image-arm64
+gcc-aarch64-linux-gnu
+# Removing because Armbian has it's own kernel and u-boot packages
+#grub-efi-arm64
+#linux-image-arm64
 
 PACKAGES install GRUB_PC
 grub-pc
