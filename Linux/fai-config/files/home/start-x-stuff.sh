@@ -65,7 +65,9 @@ text_loop &
 # stack spoils our beautiful virgin modem
 # (it gets confused very easily apparently)
 #
-modem_connect
+# T-Mobile sims are down, turning off for testing.
+#modem_connect
+enable_gps
 hotspot
 
 pycall lib.ping

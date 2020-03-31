@@ -40,6 +40,14 @@ systemctl enable armbian-resize-filesystem
 rm /root/.rootfs_resize
 sfdisk --delete /dev/mmcblk1 2
 
+# Force updating UUID and hostname on next boot
+rm -f /etc/UUID
+
 # TODO cleanup
 rm -f /root/.not_logged_in_yet /root/.desktop_autologin
+rm -rf /srv/fai/config /root/.ssh
 systemctl disable waivescreen-install
+
+echo "WaiveScreen Installation Finished.  Shutdown in 30 seconds..."
+sleep 30
+shutdown -P now
