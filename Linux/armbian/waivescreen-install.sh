@@ -41,4 +41,5 @@ rm /root/.rootfs_resize
 sfdisk --delete /dev/mmcblk1 2
 
 # TODO cleanup
+rm -f /root/.not_logged_in_yet /root/.desktop_autologin
 systemctl disable waivescreen-install
