@@ -105,7 +105,7 @@ linux-image-amd64
 memtest86+
 
 PACKAGES install ARM64
-gcc-aarch64-linux-gnu
+gcc
 # Removing because Armbian has it's own kernel and u-boot packages
 #grub-efi-arm64
 #linux-image-arm64

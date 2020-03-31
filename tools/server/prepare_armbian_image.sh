@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-# TODO Write this
+# TODO Write this nice summary.
+
 set -x
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -29,15 +30,22 @@ sudo mount "/dev/mapper/${ARM_PART}" "${ARM_MOUNT}"
 # Copy key and config for Github access
 sudo rsync -vP ${DIR}/../../Linux/fai-config/files/home/.ssh/{config,github} "${ARM_MOUNT}/root/.ssh/"
 sudo chmod 0700 "${ARM_MOUNT}/root/.ssh/"
-sudo chmod 0600 "${ARM_MOUNT}/root/.ssh/*"
+sudo chmod 0600 "${ARM_MOUNT}/root/.ssh/"{config,github}
 
 # Copy and install WaiveScreen setup scripts
 sudo rsync -avP "${DIR}/../../Linux/armbian/" "${ARM_MOUNT}/root/armbian/"
+sudo cp "${ARM_MOUNT}/root/armbian/waivescreen-install.service" "${ARM_MOUNT}/lib/systemd/system/"
+sudo ln -s "${ARM_MOUNT}/lib/systemd/system/waivescreen-install.service" "${ARM_MOUNT}/etc/systemd/system/multi-user.target.wants/"
 
-# Only grow the filesystem to 3GB
-echo '6000000s' | sudo tee "${ARM_MOUNT}/root/.rootfs_resize"
+# Only grow the filesystem to 2.5GB
+echo '5000000s' | sudo tee "${ARM_MOUNT}/root/.rootfs_resize"
 
-# TODO systemd oneshot enable
+# Disable bluetooth patchram daemon
+sudo rm "${ARM_MOUNT}/etc/systemd/system/multi-user.target.wants/rk3399-bluetooth.service"
+
+# Show the install process on the serial debug terminal too
+sudo sed -i 's/verbosity=1/verbosity=7/' "${ARM_MOUNT}/boot/armbianEnv.txt"
+
 
 # TODO cleanup
 cd "${DIR}"

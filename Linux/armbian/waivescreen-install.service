@@ -1,0 +1,17 @@
+# WaiveScreen installation service
+# This service runs the install script on boot, preparing the
+# Armbian system image for cloning and distribution.
+
+[Unit]
+Description=WaiveScreen install
+Wants=network-online.target
+After=network.target network-online.target armbian-firstrun.service time-sync.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+StandardOutput=journal+console
+ExecStart=/root/armbian/waivescreen-install.sh
+
+[Install]
+WantedBy=multi-user.target
