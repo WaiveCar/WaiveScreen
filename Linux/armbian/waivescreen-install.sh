@@ -15,8 +15,8 @@ BRANCH=${BRANCH:-armbian-port}
 # sudo doesn't work with an expired password
 chage -d 18330 root
 
-# Wait up to 30 seconds for NTP time sync
-chronyc waitsync 3
+# Wait for NTP time sync
+chronyc waitsync
 
 apt update && apt full-upgrade -y && apt install -y rsync fai-client git gpg sudo patch python3-pip python3-setuptools python3-dev
 
@@ -42,6 +42,9 @@ sfdisk --delete /dev/mmcblk1 2
 
 # Force updating UUID and hostname on next boot
 rm -f /etc/UUID
+
+# Remove Armbian hardcoded MAC address
+rm -f /etc/NetworkManager/system-connections/*
 
 # TODO cleanup
 rm -f /root/.not_logged_in_yet /root/.desktop_autologin
