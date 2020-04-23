@@ -7,10 +7,11 @@
 # the installed image for cloning.
 
 set -x
+set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TMP_DIR="$(mktemp -d)"
-BRANCH=${BRANCH:-armbian-port}
+BRANCH="armbian-port"
 
 # sudo doesn't work with an expired password
 chage -d 18330 root
@@ -18,24 +19,32 @@ chage -d 18330 root
 # Wait for NTP time sync
 chronyc waitsync
 
-apt update && apt full-upgrade -y && apt install -y rsync fai-client git gpg sudo patch python3-pip python3-setuptools python3-dev
+# Update the system and install some needed software packages
+apt update && apt full-upgrade -y
+apt update && apt install -y rsync fai-client git gpg sudo patch python3-pip python3-setuptools python3-dev python3-wheel
 
 cd "${TMP_DIR}"
 git clone git@github.com:WaiveCar/WaiveScreen.git
 cd WaiveScreen && git checkout "${BRANCH}"
 
+# Prepare for, and perform, an FAI softupdate
 mkdir -p /srv/fai/config
 NONET=1 tools/server/syncer.sh pip
 fai -v -N -c DEBIAN -s file:///srv/fai/config softupdate
+
+# Add our custom DeviceTree Overlay
+rsync -avP "${DIR}/overlay-user/" /boot/overlay-user/
+dtc -q -O dtb -o /boot/overlay-user/st-lis3dh.dtbo /boot/overlay-user/st-lis3dh.dts
+echo "user_overlays=st-lis3dh" >> /boot/armbianEnv.txt
 
 # Modify boot.cmd for USB booting
 patch -N /boot/boot.cmd "${DIR}/boot.cmd.patch"
 mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
 
-# TODO ssh key generation on next boot
+# Perform ssh key generation on next boot
 systemctl enable armbian-firstrun
 
-# TODO grow fs on next boot
+# Grow FS on next boot
 systemctl enable armbian-resize-filesystem
 rm /root/.rootfs_resize
 sfdisk --delete /dev/mmcblk1 2
@@ -46,11 +55,12 @@ rm -f /etc/UUID
 # Remove Armbian hardcoded MAC address
 rm -f /etc/NetworkManager/system-connections/*
 
-# TODO cleanup
+# Cleanup
 rm -f /root/.not_logged_in_yet /root/.desktop_autologin
 rm -rf /srv/fai/config /root/.ssh
 systemctl disable waivescreen-install
 
+# Shutdown the system
 echo "WaiveScreen Installation Finished.  Shutdown in 30 seconds..."
 sleep 30
 shutdown -P now

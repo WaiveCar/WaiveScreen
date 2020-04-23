@@ -47,12 +47,12 @@ if sudo mount "/dev/mapper/${ARM_PART}" "${ARM_MOUNT}"; then
   sudo chmod 0600 "${ARM_MOUNT}/root/.ssh/"{config,github}
 
   # Copy and install WaiveScreen setup scripts
-  sudo rsync -avP "${DIR}/../../Linux/armbian/" "${ARM_MOUNT}/root/armbian/"
+  sudo rsync -avP --chown=root:root "${DIR}/../../Linux/armbian/" "${ARM_MOUNT}/root/armbian/"
   sudo cp "${ARM_MOUNT}/root/armbian/waivescreen-install.service" "${ARM_MOUNT}/lib/systemd/system/"
   sudo ln -s "${ARM_MOUNT}/lib/systemd/system/waivescreen-install.service" "${ARM_MOUNT}/etc/systemd/system/multi-user.target.wants/"
 
-  # Only grow the filesystem to 2.5GB
-  echo '5000000s' | sudo tee "${ARM_MOUNT}/root/.rootfs_resize"
+  # Only grow the filesystem to 3GB
+  echo '6000000s' | sudo tee "${ARM_MOUNT}/root/.rootfs_resize"
 
   # Disable bluetooth patchram daemon
   sudo rm "${ARM_MOUNT}/etc/systemd/system/multi-user.target.wants/rk3399-bluetooth.service"
