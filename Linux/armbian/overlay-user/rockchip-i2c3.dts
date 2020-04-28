@@ -1,0 +1,16 @@
+/dts-v1/;
+
+/*  Enable the i2c3 bus on the SOM-RK3399v2 Dev Kit */
+
+/ {
+	compatible = "rockchip,rk3399";
+
+	fragment@0 {
+		target-path = "/i2c@ff130000";
+
+		__overlay__ {
+			status = "okay";
+
+		};
+	};
+};

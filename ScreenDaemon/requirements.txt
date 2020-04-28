@@ -12,3 +12,5 @@ timezonefinder==4.1.0
 python-magic==0.4.15
 opencv-python-headless==4.1.0.25; platform_machine == 'x86_64'
 numpy
+smbus2; platform_machine == 'aarch64'
+lis3dh; platform_machine == 'aarch64'
