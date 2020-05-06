@@ -68,7 +68,7 @@ text_loop &
 # T-Mobile sims are down, turning off for testing.
 #modem_connect
 enable_gps
-hotspot
+#hotspot
 
 pycall lib.ping
 ssh_hole

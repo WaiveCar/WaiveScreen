@@ -44,6 +44,9 @@ mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
 # Perform ssh key generation on next boot
 systemctl enable armbian-firstrun
 
+# Disable Armbian ramlog
+systemctl disable armbian-ramlog
+
 # Grow FS on next boot
 systemctl enable armbian-resize-filesystem
 rm /root/.rootfs_resize

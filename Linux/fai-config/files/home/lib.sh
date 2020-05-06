@@ -284,6 +284,9 @@ enable_gps() {
     --location-enable-gps-raw \
     --location-enable-3gpp \
     --location-disable-agps
+  if [[ $? ]]; then
+    pycall db.sess_set modem,1
+  fi
 }
 
 get_number() {
