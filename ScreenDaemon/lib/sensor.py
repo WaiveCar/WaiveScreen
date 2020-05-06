@@ -58,18 +58,6 @@ def get_sensors():
   sensors = {}
   Sensor = collections.namedtuple('Sensor', ['reader', 'file', 'in_scale', 'out_scale'])
 
-#  accel_dev = iio_device_path('lis3dh')
-#  if accel_dev:
-#    os.system("/bin/echo {} | /usr/bin/sudo /usr/bin/tee {}/sampling_frequency".format(25, accel_dev))
-#    for axis in ['x', 'y', 'z']:
-#      scale = False
-#      with open("{}/in_accel_{}_scale".format(accel_dev, axis)) as s:
-#        scale = s.read().strip()
-#      scale_val = float(scale) if scale else 1.0
-#      f = sensor_sysfs_open("{}/in_accel_{}_raw".format(accel_dev, axis))
-#      if f:
-#        sensors["Accel_{}".format(axis)] = Sensor(f, scale_val)
-  
   try:
     registers = lis3dh.device()
     # TODO: Test on car what scale we should be using.
@@ -87,6 +75,14 @@ def get_sensors():
       f = sensor_sysfs_open("{}/in_voltage{}_raw".format(adc_dev, pin))
       if f:
         sensors[name] = Sensor(adc_read, f, [0, 1023], out_scale)
+
+  try:
+    dht = DHT11()
+    dht.start_reader()
+    sensors['dht11'] = Sensor(dht.read, None, None, None)
+  except Exception as ex:
+    logging.error("Failure to setup DHT11 sensor: {}".format(ex))
+
   return sensors
 
 def sensors_read():
