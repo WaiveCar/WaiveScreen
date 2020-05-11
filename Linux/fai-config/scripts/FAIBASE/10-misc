@@ -29,7 +29,7 @@ chown -c root:root $target/root
 fcopy -ir /root
 
 # use tmpfs for /tmp
-ainsl /etc/fstab "tmpfs     /tmp tmpfs     nodev,nosuid,size=50%,mode=1777   0    0"
+ainsl /etc/fstab "tmpfs     /tmp tmpfs     nodev,nosuid,size=50%,mode=1777   0    0" "/tmp"
 chmod -c 1777 ${target}/tmp
 chown -c 0:0  ${target}/tmp
 
