@@ -89,13 +89,11 @@ def sensors_read():
   t_start = time()
   global _sensors
   if not _sensors:
-    print("getting _sensors")
+    logging.debug("getting _sensors")
     _sensors = get_sensors()
+  s = {}
   for name, sensor in _sensors.items():
-    print("{}: {}".format(name, sensor.reader((name, sensor))))
-    print("TIME: {}".format(time() - t_start))
-#  for name, val in sensor_read_pool.map(sensor_read, _sensors.items()):
-#    print("{}: {}".format(name, val))
-#    print("TIME: {}".format(time() - t_start))
-#  return
-
+    s[name] = sensor.reader((name, sensor))
+    logging.debug("{}: {}".format(name, sensor.reader((name, sensor))))
+    logging.debug("TIME: {}".format(time() - t_start))
+  return s

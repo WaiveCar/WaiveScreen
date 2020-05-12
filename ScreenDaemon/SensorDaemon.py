@@ -2,6 +2,7 @@
 import lib.lib as lib
 import lib.db as db
 import lib.arduino as arduino
+import lib.sensor as sensors
 import logging
 import sys
 
@@ -38,6 +39,7 @@ ix = 0
 first = True
 avg = 0
 _arduinoConnectionDown = False
+sysarch = os.uname().machine
 
 SIXDOF_FIELDS = ['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y', 'Gyro_z', 'Pitch', 'Roll', 'Yaw']
 POWERTEMP_FIELDS = ['Time', 'Voltage', 'Current', 'Temp', 'Fan', 'Light', 'DPMS1', 'DPMS2']
@@ -88,38 +90,71 @@ sixdof_writer = open_csv_writer('{}/sixdof.csv'.format(lib.LOG), SIXDOF_FIELDS)
 powertemp_writer = open_csv_writer('{}/powertemp.csv'.format(lib.LOG), POWERTEMP_FIELDS)
 
 while True:
-  try:
-    sensor = arduino.arduino_read()
 
-    if not sensor:
-      raise ArduinoError('arduino_read() returned no data')
+  if sysarch == "aarch64":
+    sensor = sensors.sensors_read()
+  else:
+    try:
+      sensor = arduino.arduino_read()
 
-    elif _arduinoConnectionDown:
-      _arduinoConnectionDown = False
-      logging.info('Connection to arduino reestablished')
-      arduino.do_awake()
+      if not sensor:
+        raise ArduinoError('arduino_read() returned no data')
+
+      elif _arduinoConnectionDown:
+        _arduinoConnectionDown = False
+        logging.info('Connection to arduino reestablished')
+        arduino.do_awake()
 
 
-    if first:
-      # Tell the arduino that we are live.
-      arduino.send_arduino_ping()
+      if first:
+        # Tell the arduino that we are live.
+        arduino.send_arduino_ping()
 
-      logging.info("Got first arduino read")
-      first = False
-      db.kv_set('arduino_seen', db.get_bootcount())
-      db.kv_set('arduino_version', sensor.get('Sw_version'))
+        logging.info("Got first arduino read")
+        first = False
+        db.kv_set('arduino_seen', db.get_bootcount())
+        db.kv_set('arduino_version', sensor.get('Sw_version'))
 
-    if not _autobright_set:
-      location = lib.get_latlng()
-      try:
-        if location:
-          _autobright_set = True
-          arduino.set_autobright()
-      except:
-        pass
+      if not _autobright_set:
+        location = lib.get_latlng()
+        try:
+          if location:
+            _autobright_set = True
+            arduino.set_autobright()
+        except:
+          pass
 
+      # Check for commands to send to Arduino and process them.
+      if ix % CMD_QUEUE_PERIOD == 0:
+        arduino.process_arduino_queue()
+
+
+    # We are unable to communicate with the arduino.  We will assume that the screen is on
+    # at max brightness and shutdown the screen immediately.
+    except (ArduinoError, OSError) as ex:
+      if not _arduinoConnectionDown:
+        logging.error('Arduino communication down: {}'.format(ex))
+        _arduinoConnectionDown = True
+        # TODO Add more logic to guess the state of the car before we lost contact.
+        arduino_seen = db.kv_get('arduino_seen')
+        if arduino_seen is not None:
+          logging.info('Arduino disconnected: Putting the screen to sleep')
+          try:
+            arduino.do_sleep()
+          except:
+            # The call should turn off the display but fail trying to turn off the backlight.  That's okay.
+            pass
+        else:
+          logging.info('Arduino has never been detected: Leaving the screen on')
+        # if _arduino isn't set to false, we won't reconnect
+        arduino.arduino_disconnect()
+        time.sleep(1)
+      continue
+    if not _arduinoConnectionDown:
+      arduino.clear()
+
+  if len(sensor) > 0:
     all = {**sensor, 'run': run, 'Time': time.time()}
-
 
     window.append(all.get('Voltage'))
     if len(window) > WINDOW_SIZE * 1.2:
@@ -145,34 +180,6 @@ while True:
     if ix % POWERTEMP_PERIOD == 0:
       all['DPMS1'], all['DPMS2'] = lib.get_dpms_state()
       powertemp_writer.writerow(all)
-      lib.update_uptime_log()
-      lib.update_modem_usage_log()
-
-    # Check for commands to send to Arduino and process them.
-    if ix % CMD_QUEUE_PERIOD == 0:
-      arduino.process_arduino_queue()
-
-
-  # We are unable to communicate with the arduino.  We will assume that the screen is on
-  # at max brightness and shutdown the screen immediately.
-  except (ArduinoError, OSError) as ex:
-    if not _arduinoConnectionDown:
-      logging.error('Arduino communication down: {}'.format(ex))
-      _arduinoConnectionDown = True
-      # TODO Add more logic to guess the state of the car before we lost contact.
-      arduino_seen = db.kv_get('arduino_seen')
-      if arduino_seen is not None:
-        logging.info('Arduino disconnected: Putting the screen to sleep')
-        try:
-          arduino.do_sleep()
-        except:
-          # The call should turn off the display but fail trying to turn off the backlight.  That's okay.
-          pass
-      else:
-        logging.info('Arduino has never been detected: Leaving the screen on')
-      # if _arduino isn't set to false, we won't reconnect
-      arduino.arduino_disconnect()
-      time.sleep(1)
 
   if ix % POWERTEMP_PERIOD == 0:
     lib.update_uptime_log()
@@ -186,7 +193,4 @@ while True:
   naptime = (START + ix * FREQUENCY) - time.time()
   if naptime > 0:
     time.sleep(naptime)
-
-  if not _arduinoConnectionDown:
-    arduino.clear()
 
