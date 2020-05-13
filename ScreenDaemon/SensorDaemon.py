@@ -42,7 +42,7 @@ _arduinoConnectionDown = False
 sysarch = os.uname().machine
 
 SIXDOF_FIELDS = ['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y', 'Gyro_z', 'Pitch', 'Roll', 'Yaw']
-POWERTEMP_FIELDS = ['Time', 'Voltage', 'Current', 'Temp', 'Fan', 'Light', 'DPMS1', 'DPMS2']
+POWERTEMP_FIELDS = ['Time', 'Voltage', 'Current', 'Temp', 'Humidity', 'Fan', 'Light', 'DPMS1', 'DPMS2']
 FIELDS_TO_ROUND = {'Time': 2, 'Pitch': 3, 'Roll': 3, 'Yaw': 3, 'Voltage': 2, 'Current': 2, 'Temp': 2}
 
 if lib.DEBUG:

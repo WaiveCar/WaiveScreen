@@ -106,6 +106,7 @@ memtest86+
 
 PACKAGES install ARM64
 gcc
+python3-libgpiod
 # Removing because Armbian has it's own kernel and u-boot packages
 #grub-efi-arm64
 #linux-image-arm64

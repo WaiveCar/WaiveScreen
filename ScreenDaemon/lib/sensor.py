@@ -5,10 +5,9 @@ import glob
 import lis3dh
 from time import time
 from numpy import interp
-#from concurrent.futures import ThreadPoolExecutor
+from . import dht11
 
 _sensors = False
-#sensor_read_pool = ThreadPoolExecutor(max_workers=10)
 
 def iio_device_path(device_name):
   for n in glob.glob('/sys/bus/iio/devices/*/name'):
@@ -44,6 +43,11 @@ def accel_read(sensor_tuple):
   x, y, z = sensor.file.read_all_axes()
   return [('Accel_x', x), ('Accel_y', y), ('Accel_z', z)]
 
+def dht_read(sensor_tuple):
+  name, sensor = sensor_tuple
+  sensor_dict = sensor.file.read()
+  return [ (k, v) for k, v in sensor_dict.items() if v is not None ]
+
 def sensor_read_old(sensor):
   raw = sensor.f.readline().strip()
   sensor.f.seek(0)
@@ -77,9 +81,9 @@ def get_sensors():
         sensors[name] = Sensor(adc_read, f, [0, 1023], out_scale)
 
   try:
-    dht = DHT11()
+    dht = dht11.DHT11()
     dht.start_reader()
-    sensors['dht11'] = Sensor(dht.read, None, None, None)
+    sensors['dht11'] = Sensor(dht_read, dht, None, None)
   except Exception as ex:
     logging.error("Failure to setup DHT11 sensor: {}".format(ex))
 
