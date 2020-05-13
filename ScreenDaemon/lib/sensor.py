@@ -93,7 +93,9 @@ def sensors_read():
     _sensors = get_sensors()
   s = {}
   for name, sensor in _sensors.items():
-    s[name] = sensor.reader((name, sensor))
+    reading_list = sensor.reader((name, sensor))
+    for n, v in reading_list:
+      s[n] = v
     logging.debug("{}: {}".format(name, sensor.reader((name, sensor))))
     logging.debug("TIME: {}".format(time() - t_start))
   return s
