@@ -1,5 +1,5 @@
 resize() {
-  if [[ $# -ne 12 ]]; then
+  if [ $# -ne 12 ]; then
     echo "resize: Unspecified mode"
     return 3
   else
@@ -20,7 +20,7 @@ onebigscreen() {
   xrandr --output HDMI-2 --reflect xy
 }
 
-if [[ $(uname -m) = "aarch64" ]]; then
+if [ $(uname -m) = "aarch64" ]; then
   resize 1920x538_59.00  79.92  1920 1984 2176 2432  538 539 542 557  -HSync +Vsync
 else
   resize 1920x675_60.00  104.25  1920 2008 2200 2480  675 678 688 702 -hsync +vsync
