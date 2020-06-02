@@ -47,3 +47,30 @@ On boot, it will begin the install process, running the `WaiveScreen/Linux/armbi
 Upon completion, the system will shutdown.
 
 The SD card is now ready for copying and distribution onto new systems.
+
+---
+
+### Miscellaneous Notes
+
+## Recompiling kernel modules:
+
+Steps taken from [this blog post](http://blog.vmsplice.net/2018/01/how-to-modify-kernel-modules-without.html).
+
+If you built your image with the BUILD_KSRC and INSTALL_KSRC options above, you will have the tarred up sources in /usr/src/ on your image.  Make an appropriate directory and untar the source files.
+
+```
+cd /usr/src
+mkdir 5.4.41-rockchip64
+cd 5.4.41-rockchip64
+tar xvf ../linux-source-5.4.41-rockchip64.tar.xz
+```
+
+Make the changes you want to the source of the module you're working on (for example drivers/gpu/drm).  Then compile the module.
+
+```
+cd /usr/src/5.4.41-rockchip64
+make oldconfig
+sed -i 's/^CONFIG_LOCALVERSION=.*$/CONFIG_LOCALVERSION="-rockchip64"/' .config
+make modules_prepare
+make -j4 M=drivers/gpu/drm modules
+```

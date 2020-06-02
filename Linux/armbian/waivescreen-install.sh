@@ -35,7 +35,7 @@ fai -v -N -c DEBIAN -s file:///srv/fai/config softupdate
 # Add our custom DeviceTree Overlay
 rsync -avP "${DIR}/overlay-user/" /boot/overlay-user/
 dtc -q -O dtb -o /boot/overlay-user/rockchip-i2c3.dtbo /boot/overlay-user/rockchip-i2c3.dts
-echo "user_overlays=rockchip-i2c3" >> /boot/armbianEnv.txt
+echo -e "user_overlays=rockchip-i2c3\nextraargs=video=1920x538@59" >> /boot/armbianEnv.txt
 
 # Modify boot.cmd for USB booting
 patch -N /boot/boot.cmd "${DIR}/boot.cmd.patch"
