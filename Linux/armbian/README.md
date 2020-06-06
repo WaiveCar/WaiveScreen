@@ -17,14 +17,11 @@ git clone --depth 1 https://github.com/armbian/build
 cd build
 ```
 
+Before building the image, we add a kernel patch that allows us to set a custom output resolution.  From this repo, copy the file `userpatches/hdmi-allow_all_modes.patch` to `userpatches/kernel/rockchip64-current/` on the build system.
+
 Builds are made with the following command (as a user with sudo privileges):
 
-`./compile.sh  BOARD=nanopim4v2 BRANCH=current RELEASE=buster BUILD_MINIMAL=yes BUILD_DESKTOP=no KERNEL_ONLY=no KERNEL_CONFIGURE=yes BUILD_KSRC=yes INSTALL_KSRC=yes`
-
-In the kernel configuration menu, we add the modules:
-
-* Device Drivers -> Industrial I/O Support -> Accelerometers -> STMicroelectronics accelerometers 3-Axis Driver
-* Device Drivers -> Industrial I/O Support -> Humidity sensors -> DHT11 (and compatible sensors) driver
+`./compile.sh  BOARD=nanopim4v2 BRANCH=current RELEASE=buster BUILD_MINIMAL=yes BUILD_DESKTOP=no KERNEL_ONLY=no KERNEL_CONFIGURE=no BUILD_KSRC=yes INSTALL_KSRC=yes`
 
 The resutling image can be found in `output/images/`.
 
