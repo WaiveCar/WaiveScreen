@@ -71,3 +71,38 @@ sed -i 's/^CONFIG_LOCALVERSION=.*$/CONFIG_LOCALVERSION="-rockchip64"/' .config
 make modules_prepare
 make -j4 M=drivers/gpu/drm modules
 ```
+
+## Serial Console (U-Boot access and troubleshooting)
+
+Accessible through the DBG_UART pins on the carrier board.  The baud rate is a very strange 1500000.  Not all USB to TTL adapters support such a high rate, so you may need to check the specs for your adapter's chip if you have trouble.  You can use the following command to connect:
+
+`minicom -D /dev/ttyUSB0 -b 1500000`
+
+The system will start booting from the sdcard if present, then the emmc.  You can interrupt U-Boot for a brief second to access the boot prompt.  When you see the beginning of the following section, repeatedly press the space bar to stop the boot process.
+
+```
+U-Boot 2020.04-armbian (Jun 02 2020 - 00:24:52 -0700)
+
+Model: FriendlyElec NanoPi M4V2
+DRAM:  2 GiB
+PMIC:  RK808
+MMC:   dwmmc@fe320000: 1, sdhci@fe330000: 0
+Loading Environment from MMC... *** Warning - bad CRC, using default environment
+
+In:    serial
+Out:   vidconsole
+Err:   vidconsole
+Model: FriendlyElec NanoPi M4V2
+Net:   eth0: ethernet@fe300000
+Hit any key to stop autoboot:
+```
+
+From the prompt, you can change the boot device (among other things):
+
+```
+=> mmc list
+dwmmc@fe320000: 1
+sdhci@fe330000: 0 (eMMC)
+=> setenv devnum 0
+=> run mmc_boot
+```
