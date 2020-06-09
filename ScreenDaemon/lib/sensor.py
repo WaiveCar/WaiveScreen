@@ -7,6 +7,20 @@ from time import time
 from numpy import interp
 from . import dht11
 
+"""
+Screen v3.0 sensors library for SOM-RK3399.
+
+Wiring Diagram: WaiveScreen/docs/sensors_wiring-screen_v3.png
+
+3-Axis Accelerometer: The carrier board has a built-in LIS3DH on the i2c-3 bus.
+  We're using a python library that talks to it directly over the i2c bus because
+  it gives us faster read times than the linux kernel driver did.
+
+Temp / Humidity: We're connecting a DHT-11 to the GPIO1_B1 and GPIO1_B2 pins.
+
+Voltage / Current / Light: These sensors are connected to board's the ADC inputs.
+"""
+
 _sensors = False
 
 def iio_device_path(device_name):
@@ -47,16 +61,6 @@ def dht_read(sensor_tuple):
   name, sensor = sensor_tuple
   sensor_dict = sensor.file.read()
   return [ (k, v) for k, v in sensor_dict.items() if v is not None ]
-
-def sensor_read_old(sensor):
-  raw = sensor.f.readline().strip()
-  sensor.f.seek(0)
-  if raw:
-    try:
-      return float(raw)
-    except ValueError as ex:
-      logging.error("Sensor Read Error ({}): {}".format(sensor.f.name, ex))
-  return None
 
 def get_sensors():
   sensors = {}
@@ -100,6 +104,6 @@ def sensors_read():
     reading_list = sensor.reader((name, sensor))
     for n, v in reading_list:
       s[n] = v
-    logging.debug("{}: {}".format(name, sensor.reader((name, sensor))))
-    logging.debug("TIME: {}".format(time() - t_start))
+    #logging.debug("{}: {}".format(name, sensor.reader((name, sensor))))
+    #logging.debug("TIME: {}".format(time() - t_start))
   return s

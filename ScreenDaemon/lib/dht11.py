@@ -4,6 +4,15 @@ import atexit
 import logging
 from time import sleep
 
+"""
+Library for gathering temperature and humidity readings from a DHT-11 sensor.
+
+We are using two pins because libgpiod doesn't allow us to switch direction on the fly.
+We would have to release the pin and re-request access, which is too slow.  This may
+be fixed in a future kernel version:
+  https://stackoverflow.com/questions/58735140/using-libgpiod-how-do-i-switch-direction-of-a-requested-line-on-the-fly
+"""
+
 # GPIO Pins are specified in the form (chip_number, pin_number)
 GPIO_PIN_IN = (1, 10)
 GPIO_PIN_OUT = (1, 9)
