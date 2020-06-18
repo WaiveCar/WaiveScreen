@@ -21,7 +21,7 @@ Temp / Humidity: We're connecting a DHT-11 to the GPIO1_B1 and GPIO1_B2 pins.
 Voltage / Current / Light: These sensors are connected to board's the ADC inputs.
 """
 
-_sensors = False
+_sensors = None
 
 def iio_device_path(device_name):
   for n in glob.glob('/sys/bus/iio/devices/*/name'):
@@ -96,7 +96,7 @@ def get_sensors():
 def sensors_read():
   t_start = time()
   global _sensors
-  if not _sensors:
+  if _sensors is None:
     logging.debug("getting _sensors")
     _sensors = get_sensors()
   s = {}
