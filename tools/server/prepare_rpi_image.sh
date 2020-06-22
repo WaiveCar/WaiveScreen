@@ -51,6 +51,9 @@ if sudo mount "/dev/mapper/${RPI_PART}" "${RPI_MOUNT}"; then
   sudo cp "${RPI_MOUNT}/root/rpi/waivescreen-install.service" "${RPI_MOUNT}/lib/systemd/system/"
   sudo ln -s "${RPI_MOUNT}/lib/systemd/system/waivescreen-install.service" "${RPI_MOUNT}/etc/systemd/system/multi-user.target.wants/"
 
+  # Remove image's default autologin
+  sudo rm "${RPI_MOUNT}"/etc/systemd/system/{autologin@.service,getty@tty1.service.d/autologin.conf}
+
   # Only grow the filesystem to 3GB
   echo '6000000s' | sudo tee "${RPI_MOUNT}/root/.rootfs_resize"
 

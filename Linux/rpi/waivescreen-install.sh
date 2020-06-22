@@ -14,6 +14,10 @@ TMP_DIR="$(mktemp -d)"
 BRANCH="rpi-port"
 
 
+# change default "pi" user to adorno
+usermod --login adorno --home /home/adorno --move-home pi
+groupmod --new-name adorno pi
+
 # Update the system and install some needed software packages
 apt update && apt full-upgrade -y
 apt update && apt install -y rsync fai-client git gpg sudo patch python3-pip python3-setuptools python3-dev python3-wheel
