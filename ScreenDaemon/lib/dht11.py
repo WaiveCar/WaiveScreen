@@ -14,6 +14,7 @@ be fixed in a future kernel version:
 """
 
 # GPIO Pins are specified in the form (chip_number, pin_number)
+# Default pins for SOM-RK3399
 GPIO_PIN_IN = (1, 10)
 GPIO_PIN_OUT = (1, 9)
 

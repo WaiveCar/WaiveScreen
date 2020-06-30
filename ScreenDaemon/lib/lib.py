@@ -1172,3 +1172,11 @@ def calibrate_cameras():
   except Exception as ex:
     logging.error('Failed to calibrate cameras with error: {}'.format(ex))
 
+def is_rpi():
+  model_file = '/sys/firmware/devicetree/base/model'
+  try:
+    with open(model_file, 'r') as f:
+      return f.read(9) == 'Raspberry'
+  except:
+    logging.error('Unable to read: {}'.format(model_file))
+    return False
