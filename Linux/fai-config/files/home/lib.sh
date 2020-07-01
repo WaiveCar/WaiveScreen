@@ -278,6 +278,7 @@ set_brightness() {
 }
 
 enable_gps() {
+  $SUDO $MM -e
   $SUDO $MM \
     --location-set-enable-signal \
     --location-enable-gps-nmea \

@@ -7,7 +7,7 @@
 # the installed image for cloning.
 
 set -x
-set -e
+#set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TMP_DIR="$(mktemp -d)"
@@ -31,19 +31,28 @@ mkdir -p /srv/fai/config
 NONET=1 tools/server/syncer.sh pip
 fai -v -N -c DEBIAN -s file:///srv/fai/config softupdate
 
+# Set adorno user password
+. Linux/fai-config/class/FAIBASE.var
+usermod -p "${USERPW}" adorno
+
 # Set screen resolution
-echo -e 'hdmi_cvt=1920 538 60 6\nhdmi_group=2\nhdmi_mode=87\nhdmi_drive=2' >> /boot/firmware/usercfg.txt
+#echo -e 'hdmi_cvt=1920 538 60 6\nhdmi_group=2\nhdmi_mode=87\nhdmi_drive=2' >> /boot/firmware/usercfg.txt
+
+# Enable i2c-1 bus and disable overscan on HDMI output
+echo -e 'dtparam=i2c_arm=on\ndisable_overscan=1' >> /boot/config.txt
+
+# Enable sshd
+systemctl enable ssh
 
 # Modify boot.cmd for USB booting
 
 # Perform ssh key generation on next boot
-
-# Disable Armbian ramlog
+systemctl enable regenerate_ssh_host_keys
 
 # Grow FS on next boot
 
 # Force updating UUID and hostname on next boot
-#rm -f /etc/UUID
+rm -f /etc/UUID
 
 # Remove Armbian hardcoded MAC address
 #rm -f /etc/NetworkManager/system-connections/*

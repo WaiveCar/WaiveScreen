@@ -15,6 +15,7 @@
 
 # TODO remove
 set -x
+set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BRANCH=${BRANCH:-rpi-port}
