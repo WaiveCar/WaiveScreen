@@ -75,7 +75,11 @@ def ads1115_read(sensor_tuple, pin):
   name, sensor = sensor_tuple
   try:
     #TODO: adjust voltage range and sample rate for production sensors
-    raw = sensor.file.readADCSingleEnded(channel=pin)
+    raw = sensor.file.readADCSingleEnded(channel=pin, pga=4096, sps=128)
+    logging.debug("Raw ADC Read {}: {}".format(pin, raw))
+    #TODO: REMOVE after demo
+    if raw == 0 or raw == False:
+      return [ (name, 0.0) ]
     try:
       return [ (name, interp(float(raw), sensor.in_scale, sensor.out_scale)) ]
     except ValueError as ex:
@@ -101,7 +105,7 @@ def mpu6050_read(sensor_tuple):
     t = sensor.file.get_temp()
     return [('Accel_x', a_x), ('Accel_y', a_y), ('Accel_z', a_z), 
             ('Gyro_x', g_x), ('Gyro_y', g_y), ('Gyro_z', g_z), 
-            ('Temp', t) ]
+            ('Temp_2', t) ]
   except OSError as ex:
     logging.error("Unable to read from MPU6050 sensor: {}".format(ex))
   return None
@@ -125,11 +129,11 @@ def get_sensors():
     try:
       ads = ADS1115()
       # TODO: set appropriate scales for production sensors
-      for pin, name, out_scale in [(0, 'Light', [0, 100]), (2, 'Voltage', [0, 30]), (3, 'Current', [-15, 15])]:
+      for pin, name, out_scale in [(0, 'Light', [100, 0]), (2, 'Voltage', [0, 30]), (3, 'Current', [-15, 15])]:
         try:
           v = ads.readADCSingleEnded(channel=pin)
-          reader = lambda x: ads1115_read(x, pin)
-          sensors[name] = Sensor(reader, ads, [0, 1023], out_scale)
+          reader = lambda x, p=pin: ads1115_read(x, p)
+          sensors[name] = Sensor(reader, ads, [0, 3300], out_scale)
         except OSError as ex:
           logging.error("ADS1115 - Error reading from pin {}: {}".format(pin, ex))
     except Exception as ex:
@@ -191,6 +195,7 @@ def sensors_read():
       continue
     for n, v in reading_list:
       s[n] = v
+      logging.debug("{}: {}".format(n, v))
     #logging.debug("{}: {}".format(name, sensor.reader((name, sensor))))
     #logging.debug("TIME: {}".format(time() - t_start))
   return s

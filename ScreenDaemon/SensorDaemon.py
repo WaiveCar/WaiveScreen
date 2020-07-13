@@ -12,6 +12,7 @@ import shutil
 import time
 import pprint
 from datetime import datetime
+import gpiod
 
 # Reading interval, so a number such as 0.2
 # would take a reading every 0.2 seconds
@@ -22,9 +23,13 @@ WINDOW_SIZE = int(12.0 / FREQUENCY)
 # If all the sensor deltas reach this percentage
 # (multiplied by 100) from the baseline, then we
 # call this a "significant event" and store it.
-AGGREGATE_THRESHOLD = 10
+AGGREGATE_THRESHOLD = 5
 
 START = time.time()
+
+# The frequency at which to send sensor data to the server
+SERVERPOST_FREQ = 15.0
+SERVERPOST_PERIOD = SERVERPOST_FREQ / FREQUENCY
 
 # The frequency at which to sample the Power/Temp sensors in seconds
 POWERTEMP_FREQ = 2.0
@@ -36,14 +41,18 @@ CMD_QUEUE_PERIOD = CMD_QUEUE_FREQ / FREQUENCY
 
 _autobright_set = False
 ix = 0
+ix_hb = 0
 first = True
+last_reading = None
+jolt_detected = False
+door_open = 0
 avg = 0
 _arduinoConnectionDown = False
 sysarch = os.uname().machine
 
 SIXDOF_FIELDS = ['Time', 'Accel_x', 'Accel_y', 'Accel_z', 'Gyro_x', 'Gyro_y', 'Gyro_z', 'Pitch', 'Roll', 'Yaw']
 POWERTEMP_FIELDS = ['Time', 'Voltage', 'Current', 'Temp', 'Humidity', 'Fan', 'Light', 'DPMS1', 'DPMS2']
-FIELDS_TO_ROUND = {'Time': 2, 'Pitch': 3, 'Roll': 3, 'Yaw': 3, 'Voltage': 2, 'Current': 2, 'Temp': 2}
+FIELDS_TO_ROUND = {'Time': 2, 'Pitch': 3, 'Roll': 3, 'Yaw': 3, 'Voltage': 2, 'Current': 2, 'Temp': 2, 'Temp_2': 2, 'Light': 1}
 
 if lib.DEBUG:
   lib.set_logger(sys.stderr)
@@ -51,6 +60,39 @@ else:
   #lib.set_logger(sys.stderr)
   lib.set_logger('{}/sensordaemon.log'.format(lib.LOG))
 
+chip = gpiod.Chip('0')
+led1 = chip.get_line(24)
+led1.request('door', gpiod.LINE_REQ_DIR_OUT)
+led2 = chip.get_line(23)
+led2.request('jolt', gpiod.LINE_REQ_DIR_OUT)
+
+
+
+def jolt_detect(totest):
+  global last_reading, ix_hb
+  if last_reading is None:
+    last_reading = totest
+    return False
+  else:
+    deltaMap = {
+      'Accel_x': 1,
+      'Accel_y': 1,
+      'Accel_z': 1,
+      'Gyro_x': 5,
+      'Gyro_y': 5,
+      'Gyro_z': 5
+    }
+    ttl = 0
+    for k, v in deltaMap.items():
+      if k not in last_reading:
+        continue
+      if k in totest:
+        diff = abs(last_reading[k] - totest[k])
+        if diff > v:
+          ttl += (diff / v) - 1
+
+    last_reading = totest
+    return ttl > AGGREGATE_THRESHOLD
 
 def open_csv_writer(filename, fieldnames):
   """ Return a csv.DictWriter for the given filename.  If the
@@ -177,9 +219,30 @@ while True:
 
     round_fields(all)
     sixdof_writer.writerow(all)
+    if jolt_detect(all):
+      jolt_detected = True
+      led2.set_value(1)
     if ix % POWERTEMP_PERIOD == 0:
       all['DPMS1'], all['DPMS2'] = lib.get_dpms_state()
       powertemp_writer.writerow(all)
+      if all.get('Light', 100) > 10:
+        led1.set_value(1)
+        door_open += 1
+      else:
+        led1.set_value(0)
+
+    if ix % SERVERPOST_PERIOD == 0:
+      all['Jolt_event'] = jolt_detected
+      jolt_detected = False
+      led2.set_value(0)
+      all['Fridge_door'] = door_open > 3
+      door_open = 0
+      all['screen_id'] = lib.get_uuid()
+      all.update(lib.get_latlng())
+      try:
+        lib.post('sensor_data', all)
+      except Exception as ex:
+        logging.error("Error sending sensor_data to server: {}".format(ex))
 
   if ix % POWERTEMP_PERIOD == 0:
     lib.update_uptime_log()

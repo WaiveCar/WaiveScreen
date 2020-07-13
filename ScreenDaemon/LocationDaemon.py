@@ -61,15 +61,15 @@ def location_loop():
           stop_wifi_location_service()
         location_source('gps')
         save_location(location)
-      elif time.time() - wifi_last_submission() >= MIN_WIFI_INTERVAL:
-        location = get_location_from_wifi()
-        if location:
-          location_source('wifi')
-          save_location(location)
-        else:
-          failure_count += 1
-          location_source('none')
-          logging.warning('Unable to determine our location.  GPS and Wifi failed.')
+      #elif time.time() - wifi_last_submission() >= MIN_WIFI_INTERVAL:
+      #  location = get_location_from_wifi()
+      #  if location:
+      #    location_source('wifi')
+      #    save_location(location)
+      #  else:
+      #    failure_count += 1
+      #    location_source('none')
+      #    logging.warning('Unable to determine our location.  GPS and Wifi failed.')
     except Exception as ex:
       failure_count += 1
       logging.error('Error in location_loop: {}'.format(ex))
