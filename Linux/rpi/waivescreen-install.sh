@@ -54,8 +54,8 @@ systemctl enable regenerate_ssh_host_keys
 # Force updating UUID and hostname on next boot
 rm -f /etc/UUID
 
-# Remove Armbian hardcoded MAC address
-#rm -f /etc/NetworkManager/system-connections/*
+# Set Wifi Country
+echo 'country=US' >> /etc/wpa_supplicant/wpa_supplicant.conf
 
 # Cleanup
 #rm -f /root/.not_logged_in_yet /root/.desktop_autologin
