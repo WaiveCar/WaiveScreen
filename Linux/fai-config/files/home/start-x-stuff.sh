@@ -26,7 +26,7 @@ _warn $(get_uuid) $(get_version)
 # have this fail when I move the host around.
 ssh-keygen -f "$DEST/.ssh/known_hosts" -R "reflect.waivescreen.com"
 
-sensor_daemon
+#sensor_daemon
 screen_daemon
 screen_display 
 disk_monitor
@@ -52,13 +52,13 @@ NOMODEM=1 pycall arduino.set_autobright
 # and running then it will break it and we 
 # need to start over.
 #
-sudo service ModemManager start &
-sleep 17
+#sudo service ModemManager start &
+#sleep 17
 
 # Putting this higher than the modem connect
 # is important. Otherwise we won't receive
 # our number
-text_loop &
+#text_loop &
 
 #
 # Get online first before anything in the 
@@ -67,13 +67,13 @@ text_loop &
 #
 # T-Mobile sims are down, turning off for testing.
 #modem_connect
-enable_gps
+#enable_gps
 #hotspot
 
 pycall lib.ping
 ssh_hole
-sms_cleanup
+#sms_cleanup
 first_run
 upgrade_scripts
 #camera_daemon
-driving_upgrade_check
+#driving_upgrade_check
