@@ -56,6 +56,7 @@ rm -f /etc/UUID
 
 # Set Wifi Country
 echo 'country=US' >> /etc/wpa_supplicant/wpa_supplicant.conf
+rfkill unblock 0
 
 # Cleanup
 #rm -f /root/.not_logged_in_yet /root/.desktop_autologin
