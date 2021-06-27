@@ -90,8 +90,8 @@ def sow(work = False):
   # The first thing we get is the last known location.
   payload = {
     'uid': lib.get_uuid(),
-    'lat': round(float(db.kv_get('Lat')),5),
-    'lng': round(float(db.kv_get('Lng')),5)
+    'lat': round(float(db.kv_get('Lat') or '-37.301614'),5),
+    'lng': round(float(db.kv_get('Lng') or '-12.674838'),5)
   }
 
   db.kv_set('last_sow', int(time.time()))
