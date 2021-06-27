@@ -1,8 +1,8 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SERVER=${SERVER:-waivescreen.com}
+SERVER=${SERVER:-screen.waive.com}
 EP="$SERVER/api/screens?removed=0"
-HOST=reflect.waivescreen.com
+HOST=reflect.screen.waive.com
 USER=adorno
 KEY=
 PORT=

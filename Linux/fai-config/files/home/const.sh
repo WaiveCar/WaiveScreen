@@ -5,7 +5,7 @@ export DEST=/home/$WHO
 export BASE=$DEST/WaiveScreen
 
 export SQLTIMEOUTMS=500
-export SERVER=waivescreen.com
+export SERVER=screen.waive.com
 export BRANCH=rpi-port
 export CACHE=/var/cache/assets
 export DB=/var/db/config.db

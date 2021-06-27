@@ -228,7 +228,7 @@ def browser(request):
       else:
         insta = user
 
-      playlist.append(lib.asset_cache('http://www.waivescreen.com/insta.php?loop=1&user={}'.format(insta), only_filename=True, announce="@{}".format(insta)))
+      playlist.append(lib.asset_cache('http://www.screen.waive.com/insta.php?loop=1&user={}'.format(insta), only_filename=True, announce="@{}".format(insta)))
 
     payload = {'action': 'playnow', 'args': playlist}
   

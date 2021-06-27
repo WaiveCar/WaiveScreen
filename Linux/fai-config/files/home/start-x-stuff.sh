@@ -24,7 +24,7 @@ _warn $(get_uuid) $(get_version)
 
 # Honestly I don't care if there's some miraculous DNS spoofing. I can't
 # have this fail when I move the host around.
-ssh-keygen -f "$DEST/.ssh/known_hosts" -R "reflect.waivescreen.com"
+ssh-keygen -f "$DEST/.ssh/known_hosts" -R "reflect.screen.waive.com"
 
 #sensor_daemon
 screen_daemon

@@ -5,9 +5,9 @@ DB=/var/db/waivescreen/main.db
 get_db() {
   compress=/tmp/backup.sql.bz2
   sql=/tmp/backup.sql
-  ssh waivescreen.com "sqlite3 $DB .dump | bzip2 -c > $compress"
+  ssh screen.waive.com "sqlite3 $DB .dump | bzip2 -c > $compress"
   rm -f $compress $DB $sql
-  scp -C waivescreen.com:$compress $compress
+  scp -C screen.waive.com:$compress $compress
   bunzip2 -d $compress 
   sudo sqlite3 $DB < $sql
   sudo chown www-data.www-data $DB
@@ -15,8 +15,8 @@ get_db() {
 
 db_stage() {
   set -x
-  ssh waivescreen.com "sqlite3 $DB .dump > /tmp/sql"
-  scp waivescreen.com:/tmp/sql staging.waivescreen.com:/tmp/sql
+  ssh screen.waive.com "sqlite3 $DB .dump > /tmp/sql"
+  scp screen.waive.com:/tmp/sql staging.waivescreen.com:/tmp/sql
   ssh staging.waivescreen.com "sudo rm $DB; sudo sqlite3 $DB < /tmp/sql; sudo chown www-data.www-data $DB; sudo chmod 0777 $DB"
 }
 
