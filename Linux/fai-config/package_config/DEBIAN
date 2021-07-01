@@ -53,8 +53,8 @@ bluez-tools
 v4l-utils
 
 # hotspot
-isc-dhcp-server
-hostapd
+#isc-dhcp-server
+#hostapd
 
 # power management suite
 acpitool
@@ -86,6 +86,10 @@ policykit-1
 
 xosd-bin
 unattended-upgrades
+
+# RaspberryPiOS has removed network-manager (we're switching back)
+network-manager
+-dhcpcd5
 
 PACKAGES install NONFREE
 # you may want these non-free kernel drivers
