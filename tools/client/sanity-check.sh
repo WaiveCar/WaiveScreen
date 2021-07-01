@@ -63,7 +63,8 @@ check_online() {
   host=8.8.8.8
   if ! ping -c 1 -i 0.3 $host; then
     # we try to do a one-shot reconnection thing
-    doit modem_connect no-ping
+    #doit modem_connect no-ping
+    /bin/true
 
     # if things still suck
     if ! ping -c 1 -i 0.3 $host; then
@@ -88,7 +89,7 @@ elif dcall sess_get modem; then
   pycall lib.ping
   pycall lib.update_uptime_log
   check_screen_daemon
-  check_sensor_daemon
+  #check_sensor_daemon
   check_screen_display
 else
   echo $(date) nomodem >> /tmp/sanity-check
