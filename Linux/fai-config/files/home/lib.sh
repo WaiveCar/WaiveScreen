@@ -418,7 +418,8 @@ network_check() {
 first_run() {
   if [[ -z $(kv_get first_run) ]]; then
     set -x
-    $SUDO systemctl disable hostapd
+    #$SUDO systemctl disable hostapd
+    sudo nmcli connection add type wifi ifname wlan0 con-name REEF_CORP ssid REEF_CORP 802-11-wireless-security.key-mgmt WPA-PSK 802-11-wireless-security.psk 'M!am!2021'
     $SUDO systemctl enable location-daemon
     $SUDO apt -y update || die "Can't find network" info
     kv_set first_run,1
