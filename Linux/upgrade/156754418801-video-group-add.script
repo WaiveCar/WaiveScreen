@@ -1,9 +1,0 @@
-#!/bin/bash
-#
-
-upgradepost() {
-  # Allows adorno access to /dev/video?
-  adduser adorno video
-}
-
-eval $1
