@@ -2,7 +2,7 @@
 
 base=/home/adorno/WaiveScreen
 
-$base/ScreenDaemon/dcall set_autobright
+#$base/ScreenDaemon/dcall set_autobright
 $base/tools/client/sanity-check.sh
 $base/ScreenDaemon/dcall ping
 

@@ -1,1 +1,0 @@
-KERNEL=="i2c-3", GROUP="adorno", MODE="0660"
