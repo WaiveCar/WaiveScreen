@@ -1,0 +1,23 @@
+#!/bin/bash
+export LC_ALL=C
+
+enable_disable_wifi ()
+{
+    result=$(nmcli dev | grep "ethernet" | grep -w "connected")
+    if [ -n "$result" ]; then
+        nmcli device disconnect wlan0
+    else
+        result2=$(nmcli dev | grep "wifi" | grep -w "disconnected")
+        if [ -n "$result2" ]; then
+          nmcli device connect wlan0
+        fi
+    fi
+}
+
+if [ "$2" = "up" ]; then
+    enable_disable_wifi
+fi
+
+if [ "$2" = "down" ]; then
+    enable_disable_wifi
+fi
