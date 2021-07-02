@@ -59,7 +59,7 @@ echo 'country=US' >> /etc/wpa_supplicant/wpa_supplicant.conf
 rfkill unblock 0
 
 # Remove this (which locks the interfaces) in favor or network-manager
-apt remove dhcpcd5
+apt remove --purge -y dhcpcd5
 
 # Cleanup
 #rm -f /root/.not_logged_in_yet /root/.desktop_autologin
