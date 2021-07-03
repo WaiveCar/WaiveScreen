@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+# Remove dhcpcd5 (which blocks access to the wlan0 interface) and install
+# network-manager, which plays nice with our location scanning.
+
+upgradepre() {
+  # Currently ignored and not run.
+  /bin/true
+}
+
+upgradepost() {
+  # Remove some unneeded files
+  rm -fv /etc/udev/rules.d/45-arduino.rules
+  rm -fv /etc/udev/rules.d/99-som-rk3399.rules
+
+  # Update to new version
+  local dir=/etc/cron.hourly
+  local file=autobright
+  set -x
+  cp -puv /home/adorno/WaiveScreen/Linux/fai-config/files/$dir/$file/DEBIAN $dir/$file
+
+  # Install network-manager, remove problem package (dhcpcd5) and two unneeded ones.
+  apt install -y network-manager && \
+    apt remove --purge -y dhcpcd5 hostapd isc-dhcp-server
+
+  # Install wifi failover script
+  local dir=/etc/NetworkManager/dispatcher.d
+  local file=70-wifi-wired-exclusive.sh
+  set -x
+  cp -puv /home/adorno/WaiveScreen/Linux/fai-config/files/$dir/$file/DEBIAN $dir/$file
+
+  # Add REEF_CORP wifi config
+  sudo nmcli connection add type wifi \
+    ifname wlan0 \
+    con-name REEF_CORP \
+    ssid REEF_CORP \
+    802-11-wireless-security.key-mgmt WPA-PSK \
+    802-11-wireless-security.psk 'M!am!2021'
+
+  # Remove the block on the wlan interface
+  rfkill unblock wlan
+  
+  reboot
+}
+
+rollback() {
+  /bin/true
+}
+
+eval $1
