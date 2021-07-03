@@ -2,7 +2,7 @@ aiohttp
 aiohttp_cors
 flask-cors==3.0.7
 flask-socketio
-requests==2.22.0
+requests==2.25.1
 pyserial==3.4
 pandas==0.24.2; platform_machine == 'x86_64'
 wheel==0.33.4
