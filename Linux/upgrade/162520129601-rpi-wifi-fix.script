@@ -28,6 +28,7 @@ upgradepost() {
   local file=70-wifi-wired-exclusive.sh
   set -x
   cp -puv /home/adorno/WaiveScreen/Linux/fai-config/files/$dir/$file/DEBIAN $dir/$file
+  chown root:root $dir/$file
 
   # Add REEF_CORP wifi config
   sudo nmcli connection add type wifi \
