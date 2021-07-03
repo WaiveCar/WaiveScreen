@@ -56,7 +56,7 @@ rm -f /etc/UUID
 
 # Set Wifi Country
 echo 'country=US' >> /etc/wpa_supplicant/wpa_supplicant.conf
-rfkill unblock 0
+rfkill unblock wlan
 
 # Remove this (which locks the interfaces) in favor or network-manager
 apt remove --purge -y dhcpcd5
