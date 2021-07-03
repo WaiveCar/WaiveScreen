@@ -813,7 +813,7 @@ _upgrade_post() {
   pycall db.upgrade
   add_history upgrade "$version"
 
-  update_arduino
+  #update_arduino
   upgrade_scripts
   $SUDO systemctl restart location-daemon
   stack_restart 
