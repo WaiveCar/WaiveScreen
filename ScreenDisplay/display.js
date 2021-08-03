@@ -9,7 +9,7 @@ function showText(what) {
 
 window.onload = function init() {
   let server = 'http://localhost:4096/';
-  self.ads = Engine({
+  let ads = Engine({
     //slowCPU: true,
     server
   });
