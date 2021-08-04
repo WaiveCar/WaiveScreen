@@ -1,0 +1,16 @@
+#!/bin/bash
+
+_as_adorno() {
+  su adorno -c "$*"
+}
+
+upgradepost() {
+  # Update ssh config to use the same github key for Bitbucket
+  cp -puv /home/adorno/WaiveScreen/Linux/fai-config/files/home/.ssh/config /home/adorno/.ssh/config
+  # Remove the github remote/origin and replace it with the new Bitbucket repo
+  cd /home/adorno/WaiveScreen
+  _as_adorno git remote rm origin
+  _as_adorno git remote add origin git@bitbucket.org:parkjockey/ad-frontend.git
+}
+
+eval $1

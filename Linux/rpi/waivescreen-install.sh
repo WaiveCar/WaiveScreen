@@ -11,6 +11,7 @@ set -x
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TMP_DIR="$(mktemp -d)"
+git_repo_url="$( cd $DIR && git remote get-url origin )"
 BRANCH="rpi-port"
 
 
@@ -23,7 +24,7 @@ apt update && apt full-upgrade -y
 apt update && apt install -y rsync fai-client git gpg sudo patch python3-pip python3-setuptools python3-dev python3-wheel
 
 cd "${TMP_DIR}"
-git clone git@github.com:WaiveCar/WaiveScreen.git
+git clone "${git_repo_url}" WaiveScreen
 cd WaiveScreen && git checkout "${BRANCH}"
 
 # Prepare for, and perform, an FAI softupdate

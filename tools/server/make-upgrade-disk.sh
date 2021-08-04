@@ -20,6 +20,7 @@ path=/tmp/upgradedisk
 package=/tmp/upgrade.package
 mount=/tmp/mount
 dest_home=$path/Linux/fai-config/files/home
+git_repo_url="$( cd $DIR && git remote get-url origin )"
 BRANCH=${BRANCH:-release}
 
 _mkdir() {
@@ -35,7 +36,7 @@ if [[ -z "$NOCLONE" ]]; then
     cp -puvr $DIR/../../* $path
   else
     echo "Using $BRANCH"
-    git clone git@github.com:WaiveCar/WaiveScreen.git $path
+    git clone "${git_repo_url}" $path
     cd $path && git checkout --track origin/$BRANCH
   fi
 
