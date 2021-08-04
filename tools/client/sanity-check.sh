@@ -83,7 +83,7 @@ check_online() {
 
 if dcall sess_get nosanity; then
   echo $(date) nosanity >> /tmp/sanity-check
-elif dcall sess_get modem; then
+else
   date >> /tmp/sanity-check
   check_online && check_ssh_hole
   pycall lib.ping
@@ -91,6 +91,4 @@ elif dcall sess_get modem; then
   check_screen_daemon
   #check_sensor_daemon
   check_screen_display
-else
-  echo $(date) nomodem >> /tmp/sanity-check
 fi
